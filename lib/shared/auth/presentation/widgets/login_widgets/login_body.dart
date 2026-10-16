@@ -248,6 +248,7 @@ class _BrandShowcaseSide extends StatelessWidget {
                   child: const CustomAssetImage(
                     path: AppIcons.appLogo,
                     fit: BoxFit.contain,
+                    color: AppColors.white,
                   ),
                 ),
 
@@ -396,28 +397,12 @@ class _MobileStackedLoginLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // ─── Upper Section: Brand Header ─────────────────────────────
-                Container(
-                  width: 80,
-                  height: 80,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: AppColors.grayE2E8F0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const CustomAssetImage(
-                    path: AppIcons.appLogo,
-                    fit: BoxFit.contain,
-                  ),
+                CustomAssetImage(
+                  path: AppIcons.appLogo,
+                  fit: BoxFit.fitWidth,
+                  width: 160,
+                  height: 160,
                 ),
-                const SizedBox(height: 16),
                 Text(
                   'welcome_to_dashboard'.tr(),
                   textAlign: TextAlign.center,

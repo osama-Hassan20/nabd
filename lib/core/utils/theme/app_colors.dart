@@ -12,8 +12,10 @@ class AppColors {
   static const Color darkPrimary = Color(0xFF111111);
   static const Color darkSurface = Color(0xFF18181A);
 
-  static const Color secondary = Color(0xFF2E9A68); // أخضر طبي هادئ ونظيف
-  static const Color secondaryLight = Color(0xFFEBF7F0); // خلفية خضراء باهتة لحالات النجاح
+  static const Color secondary = Color(0xFF2D6A4F); // أوكالبتوس غابي أنيق ينسجم بتناغم مكمل مع التيراكوتا
+  static const Color secondaryLight = Color(0xFFEEF6F2); // غسول أوكالبتوس ناعم جداً لحالات الاكتمال والتأكيد
+  static const Color secondaryDark = Color(0xFF1E4A37);
+  static const Color secondaryHover = Color(0xFF245741);
 
   // ─── Tone-on-Tone Surfaces & Layering ───────────────────────────────────────
   static const Color outerScaffold = Color(0xFFEBEBED); // خلفية النافذة الخارجية
