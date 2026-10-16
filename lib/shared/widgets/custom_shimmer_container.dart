@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+
+class CustomShimmerContainer extends StatelessWidget {
+  const CustomShimmerContainer({
+    super.key,
+    required this.height,
+    required this.width,
+    this.borderRadius = 12,
+  });
+
+  final double height, width, borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Shimmer.fromColors(
+      baseColor: isDark ? Colors.grey[800]! : Colors.grey[100]!,
+      highlightColor: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[800] : Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+      ),
+    );
+  }
+}

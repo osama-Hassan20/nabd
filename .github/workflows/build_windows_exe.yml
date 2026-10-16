@@ -1,0 +1,166 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+    inputs:
+      flutter_channel:
+        description: 'Flutter Channel'
+        required: false
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - beta
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows EXE & Installer
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ github.event.inputs.flutter_channel || 'stable' }}
+          cache: true
+
+      - name: Verify Flutter Environment
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Enable Windows Desktop Support
+        run: flutter config --enable-windows-desktop
+
+      - name: Get Flutter Dependencies
+        run: flutter pub get
+
+      - name: Extract App Name & Version from pubspec.yaml
+        id: app_info
+        shell: pwsh
+        run: |
+          $name = (Select-String -Path pubspec.yaml -Pattern '^name:').Line.Split(':')[1].Trim()
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:').Line.Split(':')[1].Trim().Split('+')[0]
+          "APP_NAME=$name" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "App Name: $name"
+          Write-Host "App Version: $version"
+
+      - name: Build Windows (Release)
+        run: flutter build windows --release
+
+      - name: Package Portable Windows ZIP
+        shell: pwsh
+        run: |
+          $appName = "${{ steps.app_info.outputs.APP_NAME }}"
+          $appVersion = "${{ steps.app_info.outputs.APP_VERSION }}"
+          $sourceDir = "build/windows/x64/runner/Release"
+          $zipPath = "$appName-v$appVersion-windows-portable.zip"
+
+          Compress-Archive -Path "$sourceDir\*" -DestinationPath $zipPath -Force
+          Write-Host "Portable package created: $zipPath"
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+        shell: pwsh
+
+      - name: Generate Inno Setup Script
+        shell: pwsh
+        run: |
+          $appName    = "${{ steps.app_info.outputs.APP_NAME }}"
+          $appVersion = "${{ steps.app_info.outputs.APP_VERSION }}"
+          $exeName    = (Get-ChildItem "build/windows/x64/runner/Release" -Filter "*.exe" | Select-Object -First 1).Name
+
+          New-Item -ItemType Directory -Force -Path installer_output | Out-Null
+
+          $lines = @(
+            "[Setup]",
+            "AppName=$appName",
+            "AppVersion=$appVersion",
+            "AppPublisher=Purexo",
+            "DefaultDirName={autopf}\$appName",
+            "DefaultGroupName=$appName",
+            "OutputDir=installer_output",
+            "OutputBaseFilename=$appName-v$appVersion-Setup",
+            "Compression=lzma2/ultra64",
+            "SolidCompression=yes",
+            "WizardStyle=modern",
+            "",
+            "[Languages]",
+            'Name: "english"; MessagesFile: "compiler:Default.isl"',
+            "",
+            "[Tasks]",
+            'Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"',
+            "",
+            "[Files]",
+            'Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs',
+            "",
+            "[Icons]",
+            "Name: `"{group}\$appName`"; Filename: `"{app}\$exeName`"",
+            "Name: `"{commondesktop}\$appName`"; Filename: `"{app}\$exeName`"; Tasks: desktopicon",
+            "",
+            "[Run]",
+            "Filename: `"{app}\$exeName`"; Description: `"{cm:LaunchProgram,$appName}`"; Flags: nowait postinstall skipifsilent"
+          )
+
+          $lines | Out-File -FilePath "setup.iss" -Encoding UTF8
+          Write-Host "setup.iss generated successfully"
+
+      - name: Compile Inno Setup Installer (.exe)
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+          Write-Host "Installer compilation completed"
+
+      - name: Upload Installer (.exe) Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.app_info.outputs.APP_NAME }}-v${{ steps.app_info.outputs.APP_VERSION }}-installer
+          path: installer_output/*.exe
+          retention-days: 14
+
+      - name: Upload Portable (.zip) Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.app_info.outputs.APP_NAME }}-v${{ steps.app_info.outputs.APP_VERSION }}-portable
+          path: "*.zip"
+          retention-days: 14
+
+      - name: Publish GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            installer_output/*.exe
+            *.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+      - name: Send Installer to Telegram (Optional)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Telegram credentials not set. Skipping Telegram notification."
+            exit 0
+          fi
+          INSTALLER=$(ls installer_output/*.exe 2>/dev/null | head -n 1)
+          if [ -n "$INSTALLER" ] && [ -f "$INSTALLER" ]; then
+            echo "Sending $INSTALLER to Telegram..."
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+              -F chat_id="${TELEGRAM_CHAT_ID}" \
+              -F document=@"$INSTALLER" \
+              -F caption="🖥️ *Purexo Windows Installer*%0A🏷️ Version: \`${{ steps.app_info.outputs.APP_VERSION }}\`%0A📦 Branch: \`${{ github.ref_name }}\`%0A👤 Triggered by: ${{ github.actor }}" \
+              -F parse_mode="Markdown"
+          else
+            echo "No installer found to send."
+          fi
