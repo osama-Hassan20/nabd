@@ -44,10 +44,7 @@ class CustomSideBarList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 10 : 16,
-              vertical: 8,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -155,7 +152,10 @@ class CustomSideBarList extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(2),
+                          bottomLeft: Radius.circular(2),
+                        ),
                         gradient: isSelected ? AppGradient.greenGradient : null,
                       ),
                       child: CustomListTile(

@@ -78,7 +78,9 @@ class AppColors {
   static const Color accent = Color(0xFFE0583E); // تيراكوتا كعلامة رئيسية
   static const Color success = Color(0xFF2E9A68); // أخضر طبي هادئ
   static const Color error = Color(0xFFE54848); // أحمر واضح وغير فاقع
-  static const Color warning = Color(0xFFE89A24); // برتقالي دافئ للانتظار
+  static const Color warning = Color(0xFFE89A24);
+  static const Color statusWarning = Color(0xFFE89A24);
+  static const Color statusWarningLight = Color(0xFFFEF6E9); // برتقالي دافئ للانتظار
   static const Color orange = Color(0xFFE89A24);
   static const Color amber = Color(0xFFE89A24);
   static const Color yellowF4CA01 = Color(0xFFE89A24);

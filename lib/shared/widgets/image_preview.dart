@@ -37,10 +37,12 @@ class _ImagePreviewState extends State<ImagePreview> {
     } else {
       final position = _doubleTapDetails?.localPosition ?? Offset.zero;
       _transformationController.value = Matrix4.identity()
+        // ignore: deprecated_member_use
         ..translate(
           -position.dx * (_zoomScale - 1),
           -position.dy * (_zoomScale - 1),
         )
+        // ignore: deprecated_member_use
         ..scale(_zoomScale);
     }
   }

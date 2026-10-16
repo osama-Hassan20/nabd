@@ -2,10 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
-import 'package:eyadty/core/utils/theme/app_images.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
-import 'package:eyadty/features/technicians/data/models/enums/technician_gender_enum.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
 import 'package:eyadty/features/technicians/data/models/technician_model.dart';
@@ -130,14 +128,12 @@ class BookingDetailsTechniciansSection extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 16,
-                        backgroundColor:
-                            tech.gender == TechnicianGenderEnum.male
-                            ? AppColors.primaryLight
-                            : AppColors.pink.withValues(alpha: 0.1),
-                        child: CustomAssetImage(
-                          path: tech.gender == TechnicianGenderEnum.male
-                              ? AppImages.cleanerMan
-                              : AppImages.cleanerWomen,
+                        backgroundColor: AppColors.primaryLight,
+                        child: const CustomAssetImage(
+                          path: AppIcons.user,
+                          width: 16,
+                          height: 16,
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(width: 8),

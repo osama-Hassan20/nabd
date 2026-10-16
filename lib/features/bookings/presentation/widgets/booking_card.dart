@@ -1,15 +1,13 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
-import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
-import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/presentation/helpers/booking_time_formatter.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
-import 'package:eyadty/shared/widgets/custom_container.dart';
 
 class BookingCard extends StatelessWidget {
   final BookingModel booking;
@@ -18,6 +16,7 @@ class BookingCard extends StatelessWidget {
   final VoidCallback onChangeStatus;
   final VoidCallback onReassignTechnician;
   final VoidCallback onDelete;
+  final VoidCallback? onCallPatient;
 
   const BookingCard({
     super.key,
@@ -27,73 +26,80 @@ class BookingCard extends StatelessWidget {
     required this.onChangeStatus,
     required this.onReassignTechnician,
     required this.onDelete,
+    this.onCallPatient,
   });
 
   @override
   Widget build(BuildContext context) {
-    final status = booking.status ?? BookingStatusEnum.scheduled;
-    final dateStr = BookingTimeFormatter.formatDateWithDay(
-      booking.date,
-      context,
-    );
-    final timeStr = BookingTimeFormatter.formatTimeRange(
-      booking.startTime,
-      booking.endTime,
-      context,
-    );
+    final status = booking.status ?? BookingStatusEnum.waiting;
+    final visitType = booking.visitType ?? BookingTypeEnum.newVisit;
+    final paymentStatus = booking.paymentStatus ?? PaymentStatusEnum.unpaid;
 
-    return InkWell(
-      onTap: onViewDetails,
-      borderRadius: BorderRadius.circular(12),
-      child: CustomContainer(
-        backGroundColor: AppColors.white,
-        padding: const EdgeInsets.all(16),
-        borderRaduis: 12,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.grayE2E8F0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: ID + Status Badge + Actions Menu
+          // ─── Header: Queue Number + Status + Call Action + Menu ───────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.grayf2,
-                      borderRadius: BorderRadius.circular(6),
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
                     ),
-                    child: Text(
-                      booking.id ?? '#',
-                      style: CustomAppFontStyle.medium12.copyWith(
-                        color: AppColors.darkText,
+                    child: Center(
+                      child: Text(
+                        '#${booking.queueNumber ?? 1}',
+                        style: CustomAppFontStyle.bold14.copyWith(
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: 10,
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
                       color: status.backgroundColor,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(100),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CustomAssetImage(
-                          path: status.icon,
-                          width: 12,
-                          height: 12,
-                          color: status.color,
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: status.color,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
                           status.label,
                           style: CustomAppFontStyle.medium12.copyWith(
@@ -105,185 +111,211 @@ class BookingCard extends StatelessWidget {
                   ),
                 ],
               ),
-              BookingActionsMenu(
-                onViewDetails: onViewDetails,
-                onEdit: onEdit,
-                onChangeStatus: onChangeStatus,
-                onReassignTechnician: onReassignTechnician,
-                onDelete: onDelete,
+              Row(
+                children: [
+                  if (onCallPatient != null)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: onCallPatient,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.volume_up_rounded,
+                              size: 14,
+                              color: AppColors.white,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'call_patient'.tr(),
+                              style: CustomAppFontStyle.semiBold11.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 4),
+                  BookingActionsMenu(
+                    onViewDetails: onViewDetails,
+                    onEdit: onEdit,
+                    onChangeStatus: onChangeStatus,
+                    onReassignTechnician: onReassignTechnician,
+                    onDelete: onDelete,
+                    onCallPatient: onCallPatient,
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // Customer Information
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  color: AppColors.grayf2,
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(8),
-                child: const CustomAssetImage(
-                  path: AppIcons.user,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      booking.customerName ?? 'customer_unassigned'.tr(),
-                      style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.darkText,
-                      ),
+          // ─── Patient Information ──────────────────────────────────────────
+          InkWell(
+            onTap: onViewDetails,
+            borderRadius: BorderRadius.circular(8),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: AppColors.primary,
+                      size: 20,
                     ),
-                    if (booking.customerPhone != null)
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        booking.patientName ?? booking.customerName ?? 'patient_unassigned'.tr(),
+                        style: CustomAppFontStyle.semiBold14.copyWith(
+                          color: AppColors.darkText,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
                       Directionality(
                         textDirection: TextDirection.ltr,
                         child: Text(
-                          booking.customerPhone!,
+                          '${booking.patientPhone ?? ''} ${booking.fileNumber != null ? '• #${booking.fileNumber}' : ''}'.trim(),
                           style: CustomAppFontStyle.regular12.copyWith(
                             color: AppColors.gray71717A,
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${MonyHelper.formatMoney(booking.consultationFee ?? booking.totalPrice ?? 0)} ${'currency'.tr()}',
+                      style: CustomAppFontStyle.bold15.copyWith(
+                        color: AppColors.darkText,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: paymentStatus.backgroundColor,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        paymentStatus.label,
+                        style: CustomAppFontStyle.medium10.copyWith(
+                          color: paymentStatus.color,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              Text(
-                '${MonyHelper.formatMoney(booking.totalPrice ?? 0)} ${'currency'.tr()}',
-                style: CustomAppFontStyle.bold16.copyWith(
-                  color: AppColors.success,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           const Divider(height: 1),
           const SizedBox(height: 12),
 
-          // Service + Type Badge
+          // ─── Doctor, Clinic Room & Visit Type ─────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  booking.serviceName ?? 'service_default'.tr(),
-                  style: CustomAppFontStyle.medium13.copyWith(
-                    color: AppColors.darkText,
-                  ),
-                ),
-              ),
-              if (booking.bookingType != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: booking.bookingType!.backgroundColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    booking.bookingType!.label,
-                    style: CustomAppFontStyle.regular11.copyWith(
-                      color: booking.bookingType!.color,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.medical_services_outlined,
+                      size: 14,
+                      color: AppColors.primary,
                     ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Date & Time
-          Row(
-            children: [
-              const CustomAssetImage(
-                path: AppIcons.calendar,
-                width: 14,
-                height: 14,
-                color: AppColors.gray71717A,
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  '$dateStr • $timeStr',
-                  style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray71717A,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Technician(s)
-          Row(
-            children: [
-              const CustomAssetImage(
-                path: AppIcons.team,
-                width: 14,
-                height: 14,
-                color: AppColors.gray71717A,
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: booking.technicianNames.length > 1
-                    ? Tooltip(
-                        message: booking.technicianNames.join('، '),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                booking.technicianNames.first,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: CustomAppFontStyle.regular12.copyWith(
-                                  color: AppColors.gray71717A,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '+${booking.technicianNames.length - 1}',
-                                style: CustomAppFontStyle.semiBold11.copyWith(
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Text(
-                        booking.technicianName ?? 'technician_unassigned'.tr(),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        '${booking.doctorName ?? 'doctor_unassigned'.tr()} (${booking.clinicRoom ?? 'عيادة 1'})',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray71717A,
+                        style: CustomAppFontStyle.medium13.copyWith(
+                          color: AppColors.darkText,
                         ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: visitType.backgroundColor,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  visitType.label,
+                  style: CustomAppFontStyle.regular11.copyWith(
+                    color: visitType.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // ─── Arrival Time & Estimated Wait Remaining ──────────────────────
+          Row(
+            children: [
+              const Icon(
+                Icons.access_time_rounded,
+                size: 14,
+                color: AppColors.gray71717A,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${'arrival_time'.tr()}: ${booking.startTime ?? '--:--'}',
+                style: CustomAppFontStyle.regular12.copyWith(
+                  color: AppColors.gray71717A,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.statusWarningLight,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
+                  style: CustomAppFontStyle.medium11.copyWith(
+                    color: AppColors.statusWarning,
+                  ),
+                ),
               ),
             ],
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 }

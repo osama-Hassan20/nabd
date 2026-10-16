@@ -7,6 +7,7 @@ import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/pagination_table.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/adaptive_bookings_view.dart';
@@ -69,6 +70,18 @@ class _BookingsPageView extends StatelessWidget {
     );
   }
 
+  void _onCallPatient(BuildContext context, BookingModel booking) {
+    final cubit = context.read<BookingsCubit>();
+    cubit.changeBookingStatus(
+      booking.id ?? '',
+      BookingStatusEnum.inConsultation,
+    );
+    CustomToast(
+      context: context,
+      header: 'call_patient_success'.tr(),
+    ).showTopToast();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<BookingsCubit>();
@@ -104,10 +117,10 @@ class _BookingsPageView extends StatelessWidget {
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  BookingSummarySection(),
+                  const BookingSummarySection(),
                   const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-                  // Booking Type Tab Switcher (One-Time vs Recurring)
+                  // Clinical Visit Type Tab Bar (New, Revisit, Emergency)
                   SliverToBoxAdapter(
                     child: BlocBuilder<BookingsCubit, BookingsState>(
                       buildWhen: (prev, curr) =>
@@ -137,6 +150,7 @@ class _BookingsPageView extends StatelessWidget {
                       onReassignTechnician: (b) =>
                           _onReassignTechnician(context, b),
                       onDelete: (b) => _onDeleteBooking(context, b),
+                      onCallPatient: (b) => _onCallPatient(context, b),
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),

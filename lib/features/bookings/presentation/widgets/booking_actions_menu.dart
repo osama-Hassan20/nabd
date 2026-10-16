@@ -11,6 +11,7 @@ class BookingActionsMenu extends StatelessWidget {
   final VoidCallback? onChangeStatus;
   final VoidCallback? onReassignTechnician;
   final VoidCallback? onDelete;
+  final VoidCallback? onCallPatient;
   final Color iconColor;
   final double iconSize;
 
@@ -21,6 +22,7 @@ class BookingActionsMenu extends StatelessWidget {
     this.onChangeStatus,
     this.onReassignTechnician,
     this.onDelete,
+    this.onCallPatient,
     this.iconColor = AppColors.gray71717A,
     this.iconSize = 20,
   });
@@ -29,10 +31,14 @@ class BookingActionsMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
       color: AppColors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 6,
       icon: Icon(Icons.more_vert, size: iconSize, color: iconColor),
       onSelected: (value) {
         switch (value) {
+          case 'call_patient':
+            onCallPatient?.call();
+            break;
           case 'view_details':
             onViewDetails?.call();
             break;
@@ -51,6 +57,27 @@ class BookingActionsMenu extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
+        if (onCallPatient != null)
+          PopupMenuItem(
+            value: 'call_patient',
+            child: Row(
+              children: [
+                const CustomAssetImage(
+                  path: AppIcons.speaker,
+                  width: 16,
+                  height: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'call_patient'.tr(),
+                  style: CustomAppFontStyle.semiBold13.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (onViewDetails != null)
           PopupMenuItem(
             value: 'view_details',
@@ -60,26 +87,10 @@ class BookingActionsMenu extends StatelessWidget {
                   path: AppIcons.visibileOn,
                   width: 16,
                   height: 16,
-                  color: AppColors.primary,
+                  color: AppColors.gray71717A,
                 ),
                 const SizedBox(width: 8),
                 Text('view_details'.tr(), style: CustomAppFontStyle.regular13),
-              ],
-            ),
-          ),
-        if (onEdit != null)
-          PopupMenuItem(
-            value: 'edit',
-            child: Row(
-              children: [
-                const CustomAssetImage(
-                  path: AppIcons.edit,
-                  width: 16,
-                  height: 16,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Text('edit_booking'.tr(), style: CustomAppFontStyle.regular13),
               ],
             ),
           ),
@@ -92,10 +103,26 @@ class BookingActionsMenu extends StatelessWidget {
                   path: AppIcons.change,
                   width: 16,
                   height: 16,
-                  color: AppColors.success,
+                  color: AppColors.secondary,
                 ),
                 const SizedBox(width: 8),
                 Text('change_status'.tr(), style: CustomAppFontStyle.regular13),
+              ],
+            ),
+          ),
+        if (onEdit != null)
+          PopupMenuItem(
+            value: 'edit',
+            child: Row(
+              children: [
+                const CustomAssetImage(
+                  path: AppIcons.edit,
+                  width: 16,
+                  height: 16,
+                  color: AppColors.gray71717A,
+                ),
+                const SizedBox(width: 8),
+                Text('edit_medical_appointment'.tr(), style: CustomAppFontStyle.regular13),
               ],
             ),
           ),
@@ -108,11 +135,11 @@ class BookingActionsMenu extends StatelessWidget {
                   path: AppIcons.team,
                   width: 16,
                   height: 16,
-                  color: AppColors.accent,
+                  color: AppColors.secondary,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'reassign_technician'.tr(),
+                  'transfer_doctor'.tr(),
                   style: CustomAppFontStyle.regular13,
                 ),
               ],
@@ -132,7 +159,7 @@ class BookingActionsMenu extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'delete_booking'.tr(),
+                  'cancel_appointment'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
                     color: AppColors.error,
                   ),
