@@ -3,18 +3,26 @@ import 'package:flutter/cupertino.dart';
 class PageSlideTransition extends PageRouteBuilder {
   final Widget page;
   final AxisDirection direction;
+  final Duration duration;
+  final Curve curve;
 
-  PageSlideTransition({required this.page, required this.direction})
-      : super(
-          transitionDuration: const Duration(milliseconds: 500),
+  PageSlideTransition({
+    required this.page,
+    required this.direction,
+    this.duration = const Duration(milliseconds: 300),
+    this.curve = Curves.easeOutCubic,
+  }) : super(
+          transitionDuration: duration,
+          reverseTransitionDuration: duration,
           pageBuilder: (context, animation, secondaryAnimation) => page,
         );
 
   @override
   Widget buildTransitions(context, animation, secondaryAnimation, child) {
     return SlideTransition(
-      position: Tween<Offset>(begin: getBeginOffset(), end: Offset.zero)
-          .animate(animation),
+      position: Tween<Offset>(begin: getBeginOffset(), end: Offset.zero).animate(
+        CurvedAnimation(parent: animation, curve: curve),
+      ),
       child: child,
     );
   }

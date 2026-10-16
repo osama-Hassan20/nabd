@@ -9,9 +9,9 @@ class HoverScaleAnimation extends StatefulWidget {
   const HoverScaleAnimation({
     super.key,
     required this.child,
-    this.hoverScale = 1.1,
-    this.tapScale = 0.95,
-    this.duration = const Duration(milliseconds: 200),
+    this.hoverScale = 1.025,
+    this.tapScale = 0.98,
+    this.duration = const Duration(milliseconds: 180),
   });
 
   @override
@@ -29,6 +29,7 @@ class _HoverScaleAnimationState extends State<HoverScaleAnimation> {
         : (_isHovered ? widget.hoverScale : 1.0);
 
     return MouseRegion(
+      cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: Listener(
@@ -38,7 +39,7 @@ class _HoverScaleAnimationState extends State<HoverScaleAnimation> {
         child: AnimatedScale(
           scale: scale,
           duration: widget.duration,
-          curve: Curves.easeInOut,
+          curve: Curves.easeOutCubic,
           child: widget.child,
         ),
       ),

@@ -1,6 +1,7 @@
-﻿import 'package:eyadty/core/animation/scale_transition_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/animation/fade_transition_animation.dart';
+import 'package:eyadty/core/utils/theme/app_animations.dart';
 
 import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../domain/repositories/login_repo.dart';
@@ -17,9 +18,10 @@ class LoginPage extends StatelessWidget {
       create: (context) => LoginCubit(
         loginUseCase: LoginUseCase(loginRepo: getIt.get<LoginRepo>()),
       )..checkRemeberMe(),
-      child: Scaffold(
-        body: ScaleTransitionAnimation(
-          duration: const Duration(milliseconds: 700),
+      child: const Scaffold(
+        body: FadeTransitionAnimation(
+          duration: AppAnimations.medium,
+          curve: AppAnimations.defaultCurve,
           child: LoginBody(),
         ),
       ),

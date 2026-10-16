@@ -4,10 +4,13 @@ class ScaleTransitionAnimation extends StatefulWidget {
   const ScaleTransitionAnimation({
     super.key,
     required this.child,
-    required this.duration,
+    this.duration = const Duration(milliseconds: 350),
     this.repeat = false,
-    this.begin = 0.0,
+    this.begin = 0.92,
     this.end = 1.0,
+    this.curve = Curves.easeOutCubic,
+    this.withFade = true,
+    this.delay,
   });
 
   final Widget child;
@@ -15,6 +18,9 @@ class ScaleTransitionAnimation extends StatefulWidget {
   final bool repeat;
   final double begin;
   final double end;
+  final Curve curve;
+  final bool withFade;
+  final Duration? delay;
 
   @override
   State<ScaleTransitionAnimation> createState() =>
@@ -24,20 +30,33 @@ class ScaleTransitionAnimation extends StatefulWidget {
 class _ScaleTransitionAnimationState extends State<ScaleTransitionAnimation>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
-    _controller = AnimationController(vsync: this, duration: widget.duration);
-    _animation = Tween<double>(begin: widget.begin, end: widget.end).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn),
-    );
-    if (widget.repeat) {
-      _controller.repeat(reverse: true);
-    } else {
-      _controller.forward();
-    }
     super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    final curved = CurvedAnimation(parent: _controller, curve: widget.curve);
+    _scaleAnimation = Tween<double>(begin: widget.begin, end: widget.end).animate(curved);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(curved);
+
+    if (widget.delay != null) {
+      Future.delayed(widget.delay!, () {
+        if (!mounted) return;
+        if (widget.repeat) {
+          _controller.repeat(reverse: true);
+        } else {
+          _controller.forward();
+        }
+      });
+    } else {
+      if (widget.repeat) {
+        _controller.repeat(reverse: true);
+      } else {
+        _controller.forward();
+      }
+    }
   }
 
   @override
@@ -48,6 +67,12 @@ class _ScaleTransitionAnimationState extends State<ScaleTransitionAnimation>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(scale: _animation, child: widget.child);
+    if (widget.withFade) {
+      return FadeTransition(
+        opacity: _fadeAnimation,
+        child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
+      );
+    }
+    return ScaleTransition(scale: _scaleAnimation, child: widget.child);
   }
 }

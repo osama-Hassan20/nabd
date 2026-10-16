@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 
 class FadeTransitionAnimation extends StatefulWidget {
-  const FadeTransitionAnimation(
-      {super.key, required this.child, required this.duration, this.curve});
+  const FadeTransitionAnimation({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 350),
+    this.curve = Curves.easeOutCubic,
+    this.delay,
+  });
 
   final Widget child;
   final Duration duration;
-  final Curve? curve;
+  final Curve curve;
+  final Duration? delay;
 
   @override
   State<FadeTransitionAnimation> createState() =>
@@ -20,16 +26,21 @@ class _FadeTransitionAnimationState extends State<FadeTransitionAnimation>
 
   @override
   void initState() {
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: widget.curve ?? Curves.easeIn,
+      curve: widget.curve,
     );
-    _controller.forward();
-    super.initState();
+
+    if (widget.delay != null) {
+      Future.delayed(widget.delay!, () {
+        if (!mounted) return;
+        _controller.forward();
+      });
+    } else {
+      _controller.forward();
+    }
   }
 
   @override

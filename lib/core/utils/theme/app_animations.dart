@@ -1,27 +1,34 @@
+import 'package:flutter/animation.dart';
+
 class AppAnimations {
-  static const String profileAnimation =
-      'assets/animations/animation_profile.json';
-  static const String emptyAnimation = 'assets/animations/empty_animation.json';
-  static const String emptyProfile = 'assets/animations/profile_empty.json';
-  static const String shoppingCart = 'assets/animations/shopping_cart.json';
-  static const String noInternet = 'assets/animations/no_internet.json';
-  static const String addAnimal = 'assets/animations/add_animal.json';
+  // ─── Standard Durations ──────────────────────────────────────────────────
+  static const Duration micro = Duration(milliseconds: 150);
+  static const Duration fast = Duration(milliseconds: 250);
+  static const Duration medium = Duration(milliseconds: 350);
+  static const Duration slow = Duration(milliseconds: 550);
+  static const Duration extraSlow = Duration(milliseconds: 800);
+  static const Duration pageTransition = Duration(milliseconds: 300);
+
+  // ─── Stagger Delays ──────────────────────────────────────────────────────
+  static const Duration staggerShort = Duration(milliseconds: 80);
+  static const Duration staggerMedium = Duration(milliseconds: 160);
+  static const Duration staggerLong = Duration(milliseconds: 240);
+  static const Duration staggerExtraLong = Duration(milliseconds: 320);
+
+  // ─── Standard Easing Curves ──────────────────────────────────────────────
+  static const Curve defaultCurve = Curves.easeOutCubic;
+  static const Curve smooth = Curves.easeInOutCubic;
+  static const Curve spring = Curves.easeOutBack;
+  static const Curve decelerate = Curves.fastOutSlowIn;
+
+  // ─── Lottie Fallback Asset Paths ─────────────────────────────────────────
   static const String loading = 'assets/animations/loading.json';
-  static const String loadingTemp =
-      'assets/animations/huda_youssef_loading.json';
-  static const String emptySearch = 'assets/animations/empty_search.json';
-  static const String canceled = 'assets/animations/cancel_booking.json';
-  static const String deleted = 'assets/animations/delete.json';
-  static const String failedProcess = 'assets/animations/failed_animation.json';
-  static const String notificationDisabled =
-      'assets/animations/disabled_notification.json';
-  static const String noFavouriteAnimation =
-      'assets/animations/favourite_animation.json';
-  static const String lockAcc = 'assets/animations/lock_acc.json';
+  static const String success = 'assets/animations/success.json';
+  static const String empty = 'assets/animations/empty_animation.json';
   static const String emptyOrders = 'assets/animations/empty_orders.json';
-
-  static const String noLocations = 'assets/animations/empty_location.json';
-  static const String shoppingPage = 'assets/animations/shopping_page.json';
-
-  static const String cancelOrder = 'assets/animations/cancel_order.json';
+  static const String failedProcess = 'assets/animations/failed_animation.json';
+  static const String noInternet = 'assets/animations/no_internet.json';
+  static const String emptySearch = 'assets/animations/empty_search.json';
+  static const String lockAcc = 'assets/animations/lock_acc.json';
+  static const String notificationDisabled = 'assets/animations/disabled_notification.json';
 }
