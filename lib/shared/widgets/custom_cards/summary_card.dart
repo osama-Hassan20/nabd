@@ -13,12 +13,14 @@ class SummaryCard extends StatelessWidget {
     this.subTitle,
     this.iconPath,
     this.borderRadius = 16,
+    this.gradient,
   });
 
   final String? title;
   final String? subTitle;
   final String? iconPath;
   final double borderRadius;
+  final Gradient? gradient;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class SummaryCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: AppGradient.blackLinearGradient,
+        gradient: gradient ?? AppGradient.summaryCardGradient,
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.08),
         ),
@@ -125,15 +127,15 @@ class SummaryCardShimmer extends StatelessWidget {
       child: CustomListTile(
         backgroundColor: Colors.transparent,
         border: Border.all(color: Colors.transparent),
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         horizontalSpacing: 8,
-        leadingIconInstead: CustomShimmerContainer(
+        leadingIconInstead: const CustomShimmerContainer(
           width: 60,
           height: 60,
           borderRadius: 30,
         ),
-        titleInstead: CustomShimmerContainer(width: 100, height: 20),
-        subTitleInstead: CustomShimmerContainer(width: 60, height: 16),
+        titleInstead: const CustomShimmerContainer(width: 100, height: 20),
+        subTitleInstead: const CustomShimmerContainer(width: 60, height: 16),
       ),
     );
   }

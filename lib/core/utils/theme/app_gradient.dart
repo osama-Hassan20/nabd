@@ -44,13 +44,21 @@ class AppGradient {
     end: Alignment.bottomCenter,
   );
 
-  // ─── Obsidian / Charcoal Linear Gradient ─────────────────────────────────
+  // ─── Obsidian / Charcoal Linear Gradient (Themed for Eyadty) ─────────────
+  /// Rich obsidian & graphite dark gradient with subtle warm terracotta undertone
   static const LinearGradient blackLinearGradient = LinearGradient(
-    colors: [Color(0xFF1E1E22), Color(0xFF111111)],
-    stops: [0.0, 1.0],
-    begin: AlignmentDirectional.topEnd,
-    end: AlignmentDirectional.centerStart,
+    colors: [
+      Color(0xFF261D1A), // Deep warm obsidian with subtle terracotta undertone
+      Color(0xFF18181B), // Rich dark graphite
+      Color(0xFF101012), // Pitch obsidian black
+    ],
+    stops: [0.0, 0.55, 1.0],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
+
+  /// Themed card gradient alias for summary metrics
+  static const LinearGradient summaryCardGradient = blackLinearGradient;
 
   // ─── Active Checkboxes & Vibrant Accent Gradient ─────────────────────────
   static const LinearGradient redGradient = LinearGradient(
