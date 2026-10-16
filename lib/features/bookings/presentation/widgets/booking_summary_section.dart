@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
-import 'package:purexo/features/bookings/data/models/booking_summary_model.dart';
-import 'package:purexo/features/bookings/presentation/manager/bookings_cubit.dart';
-import 'package:purexo/features/bookings/presentation/manager/bookings_state.dart';
-import 'package:purexo/shared/widgets/custom_cards/summary_card.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
+import 'package:eyadty/shared/widgets/custom_cards/summary_card.dart';
 
 class BookingSummarySection extends StatelessWidget {
   const BookingSummarySection({super.key});

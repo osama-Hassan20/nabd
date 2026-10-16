@@ -1,9 +1,9 @@
-﻿import 'package:purexo/core/layout_adaptive/widgets/custom_text.dart';
-import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_gradient.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
-import 'package:purexo/shared/widgets/custom_text_field.dart';
+﻿import 'package:eyadty/core/layout_adaptive/widgets/custom_text.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_gradient.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';

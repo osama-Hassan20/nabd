@@ -1,4 +1,4 @@
-﻿import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
+﻿import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 
 import '../../core/utils/theme/app_colors.dart';
 import '../../core/utils/theme/custom_app_font_styles.dart';

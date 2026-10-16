@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import 'package:purexo/core/api/api_consumer.dart';
-import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/uses_cases/params.dart';
+import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
 
-import 'package:purexo/features/bookings/data/models/recurrence_rule_model.dart';
+import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
 
 import '../../domain/repo/customers_repo.dart';
 import '../models/customer_model.dart';

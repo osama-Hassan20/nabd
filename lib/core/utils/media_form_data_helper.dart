@@ -1,4 +1,4 @@
-﻿import 'package:purexo/core/models/media_model.dart';
+﻿import 'package:eyadty/core/models/media_model.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 

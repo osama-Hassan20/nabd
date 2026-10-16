@@ -1,4 +1,4 @@
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

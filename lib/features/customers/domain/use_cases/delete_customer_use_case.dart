@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/uses_cases/use_cases.dart';
+import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/uses_cases/use_cases.dart';
 import '../repo/customers_repo.dart';
 
 class DeleteCustomerUseCase extends UseCase<String, String> {

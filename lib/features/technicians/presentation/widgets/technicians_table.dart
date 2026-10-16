@@ -1,13 +1,13 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:purexo/core/layout_adaptive/widgets/cutom_table.dart';
-import 'package:purexo/core/routing/routes.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
-import 'package:purexo/features/technicians/data/models/enums/technician_gender_enum.dart';
-import 'package:purexo/features/technicians/data/models/enums/technician_status_enum.dart';
-import 'package:purexo/features/technicians/data/models/technician_model.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
+import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/technicians/data/models/enums/technician_gender_enum.dart';
+import 'package:eyadty/features/technicians/data/models/enums/technician_status_enum.dart';
+import 'package:eyadty/features/technicians/data/models/technician_model.dart';
 
 import 'technician_actions_menu.dart';
 import 'technician_status_badge.dart';

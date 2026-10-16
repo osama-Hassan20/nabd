@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/theme/app_icons.dart';

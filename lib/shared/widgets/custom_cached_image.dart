@@ -1,6 +1,6 @@
 ﻿import 'package:cached_network_image/cached_network_image.dart';
-import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/api/end_points.dart';

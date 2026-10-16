@@ -1,5 +1,5 @@
-﻿import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/models/media_model.dart';
+﻿import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/models/media_model.dart';
 import 'package:dartz/dartz.dart';
 
 abstract class FileUploadRepo {

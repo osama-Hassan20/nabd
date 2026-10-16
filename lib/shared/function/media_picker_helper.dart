@@ -1,7 +1,7 @@
 ﻿import 'dart:io';
-import 'package:purexo/core/models/media_model.dart';
-import 'package:purexo/shared/widgets/custom_media_picker.dart';
-import 'package:purexo/shared/widgets/custom_toast.dart';
+import 'package:eyadty/core/models/media_model.dart';
+import 'package:eyadty/shared/widgets/custom_media_picker.dart';
+import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';

@@ -1,5 +1,5 @@
 ﻿// import 'dart:io';
-// import 'package:purexo/core/models/media_model.dart';
+// import 'package:eyadty/core/models/media_model.dart';
 // import 'package:dartz/dartz.dart';
 // import 'package:dio/dio.dart';
 // import 'package:flutter_image_compress/flutter_image_compress.dart';

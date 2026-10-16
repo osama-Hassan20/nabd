@@ -1,7 +1,7 @@
 ﻿// import 'dart:math' as math;
-// import 'package:purexo/core/api/end_points.dart';
+// import 'package:eyadty/core/api/end_points.dart';
 // import 'package:flutter/material.dart';
-// import 'package:purexo/core/audio/platform_audio_player.dart';
+// import 'package:eyadty/core/audio/platform_audio_player.dart';
 // import '../../../core/models/audio_model.dart';
 // import '../../../core/utils/extensions/theme_mode_extensions.dart';
 // import '../../../core/utils/theme/app_colors.dart';

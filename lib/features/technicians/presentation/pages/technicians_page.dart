@@ -1,17 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purexo/core/dependency_injection/dependency_injection.dart';
-import 'package:purexo/core/layout_adaptive/widgets/pagination_table.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
-import 'package:purexo/core/utils/extensions/sliver_extentions.dart';
-import 'package:purexo/features/technicians/presentation/cubit/technicians_cubit.dart';
-import 'package:purexo/features/technicians/presentation/cubit/technicians_state.dart';
-import 'package:purexo/features/technicians/presentation/widgets/adaptive_technicians_view.dart';
-import 'package:purexo/features/technicians/presentation/widgets/technicians_filter_bar.dart';
-import 'package:purexo/features/technicians/presentation/widgets/technicians_shimmer.dart';
-import 'package:purexo/shared/widgets/custom_empty_widget.dart';
-import 'package:purexo/shared/widgets/error_page.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/pagination_table.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/sliver_extentions.dart';
+import 'package:eyadty/features/technicians/presentation/cubit/technicians_cubit.dart';
+import 'package:eyadty/features/technicians/presentation/cubit/technicians_state.dart';
+import 'package:eyadty/features/technicians/presentation/widgets/adaptive_technicians_view.dart';
+import 'package:eyadty/features/technicians/presentation/widgets/technicians_filter_bar.dart';
+import 'package:eyadty/features/technicians/presentation/widgets/technicians_shimmer.dart';
+import 'package:eyadty/shared/widgets/custom_empty_widget.dart';
+import 'package:eyadty/shared/widgets/error_page.dart';
 
 class TechniciansPage extends StatelessWidget {
   const TechniciansPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:purexo/features/customers/data/models/customer_model.dart';
-import 'package:purexo/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/features/customers/data/models/customer_model.dart';
+import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 
 import 'customer_card.dart';
 import 'customers_table.dart';

@@ -1,10 +1,10 @@
-import 'package:purexo/shared/cubit/basic_cubit.dart';
+import 'package:eyadty/shared/cubit/basic_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // import 'package:firebase_core/firebase_core.dart';
-// import 'package:purexo/firebase_options.dart';
+// import 'package:eyadty/firebase_options.dart';
 import 'app.dart';
 import 'core/bloc_observer.dart';
 import 'core/dependency_injection/dependency_injection.dart';

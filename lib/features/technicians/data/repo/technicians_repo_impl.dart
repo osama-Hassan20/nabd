@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:purexo/core/api/api_consumer.dart';
-import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/uses_cases/params.dart';
+import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
 
 import '../../domain/repo/technicians_repo.dart';
 import '../models/enums/technician_gender_enum.dart';

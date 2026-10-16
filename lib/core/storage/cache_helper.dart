@@ -1,4 +1,4 @@
-﻿import 'package:purexo/core/utils/constants/app_constants.dart';
+﻿import 'package:eyadty/core/utils/constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String token = 'token';

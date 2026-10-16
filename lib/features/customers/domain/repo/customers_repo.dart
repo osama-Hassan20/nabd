@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/uses_cases/params.dart';
+import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
 import '../../data/models/customer_model.dart';
 import '../../data/models/customers_response_model.dart';
 

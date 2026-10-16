@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import '../../data/models/enums/technician_status_enum.dart';
 
 class TechnicianStatusBadge extends StatelessWidget {

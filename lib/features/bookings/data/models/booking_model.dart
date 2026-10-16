@@ -1,5 +1,5 @@
-import 'package:purexo/features/customers/data/models/customer_model.dart';
-import 'package:purexo/features/technicians/data/models/technician_model.dart';
+import 'package:eyadty/features/customers/data/models/customer_model.dart';
+import 'package:eyadty/features/technicians/data/models/technician_model.dart';
 import 'enums/booking_status_enum.dart';
 import 'enums/booking_type_enum.dart';
 import 'enums/payment_status_enum.dart';

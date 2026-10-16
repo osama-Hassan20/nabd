@@ -1,10 +1,10 @@
-﻿// import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
-// import 'package:purexo/core/utils/theme/app_colors.dart';
-// import 'package:purexo/core/utils/theme/app_gradient.dart';
-// import 'package:purexo/core/utils/theme/app_icons.dart';
-// import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
-// import 'package:purexo/shared/widgets/custom_asset_image.dart';
-// import 'package:purexo/shared/widgets/custom_push_container_button.dart';
+﻿// import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+// import 'package:eyadty/core/utils/theme/app_colors.dart';
+// import 'package:eyadty/core/utils/theme/app_gradient.dart';
+// import 'package:eyadty/core/utils/theme/app_icons.dart';
+// import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+// import 'package:eyadty/shared/widgets/custom_asset_image.dart';
+// import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 // import 'package:flutter/material.dart';
 // import 'package:go_router/go_router.dart';
 

@@ -1,9 +1,9 @@
 ﻿import 'dart:io';
 
-import 'package:purexo/core/api/api_consumer.dart';
-import 'package:purexo/core/api/end_points.dart';
-import 'package:purexo/core/models/media_model.dart';
-import 'package:purexo/shared/uploads/data/models/file_upload_model.dart';
+import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/api/end_points.dart';
+import 'package:eyadty/core/models/media_model.dart';
+import 'package:eyadty/shared/uploads/data/models/file_upload_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';

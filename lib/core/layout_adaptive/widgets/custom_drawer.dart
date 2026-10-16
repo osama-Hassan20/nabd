@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:purexo/core/layout_adaptive/widgets/custom_side_bar.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/custom_side_bar.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({

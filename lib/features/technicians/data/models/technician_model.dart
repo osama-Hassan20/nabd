@@ -1,4 +1,4 @@
-import 'package:purexo/core/utils/theme/app_images.dart';
+import 'package:eyadty/core/utils/theme/app_images.dart';
 import 'enums/technician_gender_enum.dart';
 import 'enums/technician_status_enum.dart';
 

@@ -1,9 +1,9 @@
 ﻿import 'dart:io';
-import 'package:purexo/core/models/media_model.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
-import 'package:purexo/shared/widgets/custom_cached_image.dart';
-import 'package:purexo/shared/function/media_picker_helper.dart';
+import 'package:eyadty/core/models/media_model.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/shared/widgets/custom_cached_image.dart';
+import 'package:eyadty/shared/function/media_picker_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 

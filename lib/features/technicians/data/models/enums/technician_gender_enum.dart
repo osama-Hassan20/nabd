@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:purexo/core/utils/theme/app_images.dart';
+import 'package:eyadty/core/utils/theme/app_images.dart';
 
 enum TechnicianGenderEnum {
   male(

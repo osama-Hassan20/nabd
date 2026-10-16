@@ -1,6 +1,6 @@
 ﻿// import 'dart:ui';
 
-// import 'package:purexo/core/utils/extensions/dimensions.dart';
+// import 'package:eyadty/core/utils/extensions/dimensions.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_svg/svg.dart';
 

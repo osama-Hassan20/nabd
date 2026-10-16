@@ -1,20 +1,20 @@
 ﻿import 'dart:io';
-import 'package:purexo/core/models/media_model.dart';
-import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
-import 'package:purexo/shared/widgets/custom_container.dart';
-import 'package:purexo/shared/widgets/image_preview.dart';
+import 'package:eyadty/core/models/media_model.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/shared/widgets/custom_container.dart';
+import 'package:eyadty/shared/widgets/image_preview.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
-import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
-import 'package:purexo/shared/widgets/custom_box_validator.dart';
-import 'package:purexo/shared/widgets/custom_cached_image.dart'
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/shared/widgets/custom_box_validator.dart';
+import 'package:eyadty/shared/widgets/custom_cached_image.dart'
     show CustomCachedImage;
-import 'package:purexo/shared/function/media_picker_helper.dart';
+import 'package:eyadty/shared/function/media_picker_helper.dart';
 
 class CustomAddMediaList extends StatefulWidget {
   const CustomAddMediaList({

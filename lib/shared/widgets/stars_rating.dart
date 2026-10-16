@@ -1,5 +1,5 @@
-﻿import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+﻿import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 

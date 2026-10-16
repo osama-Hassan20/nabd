@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 
 class BookingFormHeader extends StatelessWidget {
   final bool isEdit;

@@ -1,6 +1,6 @@
-﻿import 'package:purexo/core/storage/cache_helper.dart';
-import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+﻿import 'package:eyadty/core/storage/cache_helper.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
 import '../../core/utils/theme/app_colors.dart';
 import '../../core/utils/theme/app_icons.dart';
@@ -9,9 +9,9 @@ import '../../shared/widgets/custom_push_container_button.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purexo/shared/cubit/basic_cubit.dart';
-import 'package:purexo/core/dependency_injection/dependency_injection.dart';
-import 'package:purexo/core/services/notification_service.dart';
+import 'package:eyadty/shared/cubit/basic_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/services/notification_service.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomLogOutSheet extends StatelessWidget {

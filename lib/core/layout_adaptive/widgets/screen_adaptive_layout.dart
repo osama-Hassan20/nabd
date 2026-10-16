@@ -1,4 +1,4 @@
-﻿import 'package:purexo/shared/widgets/responsive_helper/screen_width_breakpoints.dart';
+﻿import 'package:eyadty/shared/widgets/responsive_helper/screen_width_breakpoints.dart';
 import 'package:flutter/material.dart';
 
 /// Adaptive layout that uses MediaQuery (screen width) instead of LayoutBuilder (constraint width).

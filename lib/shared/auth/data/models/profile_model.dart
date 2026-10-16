@@ -1,4 +1,4 @@
-import 'package:purexo/shared/auth/data/models/user_model.dart';
+import 'package:eyadty/shared/auth/data/models/user_model.dart';
 
 class ProfileModel {
   final String id;

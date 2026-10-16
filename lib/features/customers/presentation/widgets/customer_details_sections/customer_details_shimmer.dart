@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:purexo/shared/widgets/custom_shimmer_container.dart';
+import 'package:eyadty/shared/widgets/custom_shimmer_container.dart';
 
 class CustomerDetailsShimmer extends StatelessWidget {
   const CustomerDetailsShimmer({super.key});

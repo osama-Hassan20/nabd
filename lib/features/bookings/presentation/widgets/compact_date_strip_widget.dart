@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
-import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
-import 'package:purexo/features/bookings/presentation/widgets/calendar_year_dropdown.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/calendar_year_dropdown.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
 class CompactDateStripWidget extends StatefulWidget {
   final DateTime? selectedDate;

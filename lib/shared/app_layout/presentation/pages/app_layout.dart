@@ -1,16 +1,16 @@
-import 'package:purexo/shared/cubit/basic_cubit.dart';
-import 'package:purexo/core/layout_adaptive/widgets/custom_drawer.dart';
+import 'package:eyadty/shared/cubit/basic_cubit.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/custom_drawer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purexo/core/layout_adaptive/widgets/custom_side_bar.dart';
-import 'package:purexo/core/layout_adaptive/widgets/screen_adaptive_layout.dart';
-import 'package:purexo/core/storage/cache_helper.dart';
-import 'package:purexo/core/utils/constants/app_constants.dart';
-import 'package:purexo/core/utils/constants/app_list.dart';
-import 'package:purexo/shared/app_layout/presentation/widgets/header_layout.dart';
-import 'package:purexo/shared/widgets/custom_full_screen_loading.dart';
-import 'package:purexo/shared/widgets/error_page.dart';
-import 'package:purexo/shared/widgets/responsive_helper/adaptive_layout.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/custom_side_bar.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/screen_adaptive_layout.dart';
+import 'package:eyadty/core/storage/cache_helper.dart';
+import 'package:eyadty/core/utils/constants/app_constants.dart';
+import 'package:eyadty/core/utils/constants/app_list.dart';
+import 'package:eyadty/shared/app_layout/presentation/widgets/header_layout.dart';
+import 'package:eyadty/shared/widgets/custom_full_screen_loading.dart';
+import 'package:eyadty/shared/widgets/error_page.dart';
+import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:flutter/material.dart';
 
 class AppLayout extends StatefulWidget {

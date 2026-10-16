@@ -1,7 +1,7 @@
-﻿import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/models/media_model.dart';
-import 'package:purexo/shared/uploads/data/data_source/file_upload_data_source.dart';
-import 'package:purexo/shared/uploads/domain/repo/files_upload_repo.dart';
+﻿import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/models/media_model.dart';
+import 'package:eyadty/shared/uploads/data/data_source/file_upload_data_source.dart';
+import 'package:eyadty/shared/uploads/domain/repo/files_upload_repo.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 

@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:purexo/core/base/safe_cubit.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
-import 'package:purexo/shared/app_layout/domain/use_cases/get_profile_use_case.dart';
-import 'package:purexo/shared/auth/data/models/profile_model.dart';
-import 'package:purexo/shared/auth/data/models/user_model.dart';
+import 'package:eyadty/core/base/safe_cubit.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/shared/app_layout/domain/use_cases/get_profile_use_case.dart';
+import 'package:eyadty/shared/auth/data/models/profile_model.dart';
+import 'package:eyadty/shared/auth/data/models/user_model.dart';
 
 part 'basic_states.dart';
 

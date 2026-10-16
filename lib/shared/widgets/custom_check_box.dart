@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_gradient.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_gradient.dart';
 
 class CustomCheckBox extends StatefulWidget {
   const CustomCheckBox({super.key, this.value = false, this.onChanged});

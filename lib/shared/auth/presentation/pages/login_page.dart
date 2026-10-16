@@ -1,4 +1,4 @@
-﻿import 'package:purexo/core/animation/scale_transition_animation.dart';
+﻿import 'package:eyadty/core/animation/scale_transition_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

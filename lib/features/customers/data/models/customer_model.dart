@@ -1,4 +1,4 @@
-import 'package:purexo/features/bookings/data/models/recurrence_rule_model.dart';
+import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
 
 class CustomerModel {
   final String? id;

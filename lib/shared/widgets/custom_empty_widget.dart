@@ -1,6 +1,6 @@
-﻿import 'package:purexo/core/utils/theme/app_images.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
-import 'package:purexo/shared/widgets/custom_push_container_button.dart';
+﻿import 'package:eyadty/core/utils/theme/app_images.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 
 import 'package:flutter/material.dart';
 

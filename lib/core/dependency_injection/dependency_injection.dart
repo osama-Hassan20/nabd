@@ -2,65 +2,65 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:purexo/core/api/app_interceptor.dart';
-import 'package:purexo/core/api/dio_consumer.dart';
-import 'package:purexo/core/api/end_points.dart';
-import 'package:purexo/core/services/notification_service.dart';
-import 'package:purexo/shared/app_layout/data/repositories/layout_repo_impl.dart';
-import 'package:purexo/shared/app_layout/domain/repositories/layout_repo.dart';
-import 'package:purexo/shared/app_layout/domain/use_cases/get_profile_use_case.dart';
-import 'package:purexo/shared/auth/data/repositories/login_repo_impl.dart';
-import 'package:purexo/shared/auth/domain/repositories/login_repo.dart';
-import 'package:purexo/shared/auth/domain/use_cases/login/login_use_case.dart';
-import 'package:purexo/shared/cubit/basic_cubit.dart';
+import 'package:eyadty/core/api/app_interceptor.dart';
+import 'package:eyadty/core/api/dio_consumer.dart';
+import 'package:eyadty/core/api/end_points.dart';
+import 'package:eyadty/core/services/notification_service.dart';
+import 'package:eyadty/shared/app_layout/data/repositories/layout_repo_impl.dart';
+import 'package:eyadty/shared/app_layout/domain/repositories/layout_repo.dart';
+import 'package:eyadty/shared/app_layout/domain/use_cases/get_profile_use_case.dart';
+import 'package:eyadty/shared/auth/data/repositories/login_repo_impl.dart';
+import 'package:eyadty/shared/auth/domain/repositories/login_repo.dart';
+import 'package:eyadty/shared/auth/domain/use_cases/login/login_use_case.dart';
+import 'package:eyadty/shared/cubit/basic_cubit.dart';
 
-import 'package:purexo/features/bookings/data/repo/bookings_repo_impl.dart';
-import 'package:purexo/features/bookings/domain/repo/bookings_repo.dart';
-import 'package:purexo/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/create_booking_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/delete_booking_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/get_booking_by_id_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/get_booking_summary_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/get_bookings_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
-import 'package:purexo/features/bookings/domain/use_cases/update_booking_use_case.dart';
-import 'package:purexo/features/bookings/presentation/manager/bookings_cubit.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
+import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/get_booking_by_id_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/get_booking_summary_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 
 // Customers Feature
-import 'package:purexo/features/customers/data/repo/customers_repo_impl.dart';
-import 'package:purexo/features/customers/domain/repo/customers_repo.dart';
-import 'package:purexo/features/customers/domain/use_cases/add_customer_use_case.dart';
-import 'package:purexo/features/customers/domain/use_cases/delete_customer_use_case.dart';
-import 'package:purexo/features/customers/domain/use_cases/get_customer_by_id_use_case.dart';
-import 'package:purexo/features/customers/domain/use_cases/get_customers_use_case.dart';
-import 'package:purexo/features/customers/domain/use_cases/update_customer_use_case.dart';
-import 'package:purexo/features/customers/presentation/manager/customers_cubit.dart';
+import 'package:eyadty/features/customers/data/repo/customers_repo_impl.dart';
+import 'package:eyadty/features/customers/domain/repo/customers_repo.dart';
+import 'package:eyadty/features/customers/domain/use_cases/add_customer_use_case.dart';
+import 'package:eyadty/features/customers/domain/use_cases/delete_customer_use_case.dart';
+import 'package:eyadty/features/customers/domain/use_cases/get_customer_by_id_use_case.dart';
+import 'package:eyadty/features/customers/domain/use_cases/get_customers_use_case.dart';
+import 'package:eyadty/features/customers/domain/use_cases/update_customer_use_case.dart';
+import 'package:eyadty/features/customers/presentation/manager/customers_cubit.dart';
 
 // Settings Feature
-import 'package:purexo/features/settings/data/repo/settings_repo_impl.dart';
-import 'package:purexo/features/settings/domain/repo/settings_repo.dart';
-import 'package:purexo/features/settings/domain/use_cases/add_special_holiday_use_case.dart';
-import 'package:purexo/features/settings/domain/use_cases/change_password_use_case.dart';
-import 'package:purexo/features/settings/domain/use_cases/delete_special_holiday_use_case.dart';
-import 'package:purexo/features/settings/domain/use_cases/get_company_settings_use_case.dart';
-import 'package:purexo/features/settings/domain/use_cases/update_company_settings_use_case.dart';
-import 'package:purexo/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
+import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
+import 'package:eyadty/features/settings/domain/use_cases/add_special_holiday_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/change_password_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/delete_special_holiday_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/update_company_settings_use_case.dart';
+import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 
 // Technicians Feature
-import 'package:purexo/features/technicians/data/repo/technicians_repo_impl.dart';
-import 'package:purexo/features/technicians/domain/repo/technicians_repo.dart';
-import 'package:purexo/features/technicians/domain/use_cases/add_technician_leave_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/add_technician_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/delete_technician_leave_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/delete_technician_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/get_technician_by_id_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/get_technician_leaves_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/get_technicians_use_case.dart';
-import 'package:purexo/features/technicians/domain/use_cases/update_technician_use_case.dart';
-import 'package:purexo/features/technicians/presentation/cubit/technicians_cubit.dart';
+import 'package:eyadty/features/technicians/data/repo/technicians_repo_impl.dart';
+import 'package:eyadty/features/technicians/domain/repo/technicians_repo.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/add_technician_leave_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/add_technician_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/delete_technician_leave_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/delete_technician_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/get_technician_by_id_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/get_technician_leaves_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/get_technicians_use_case.dart';
+import 'package:eyadty/features/technicians/domain/use_cases/update_technician_use_case.dart';
+import 'package:eyadty/features/technicians/presentation/cubit/technicians_cubit.dart';
 
 // Features
-import 'package:purexo/features/home_dashboard/presentation/cubit/home_dashboard_cubit.dart';
+import 'package:eyadty/features/home_dashboard/presentation/cubit/home_dashboard_cubit.dart';
 
 final getIt = GetIt.instance;
 

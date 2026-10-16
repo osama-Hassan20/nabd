@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:purexo/core/layout_adaptive/widgets/custom_side_bar.dart';
-import 'package:purexo/core/routing/routes.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/custom_side_bar.dart';
+import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
 
 List<SideBarItemModel> layoutItems(BuildContext context) {
   return [

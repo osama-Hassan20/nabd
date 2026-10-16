@@ -1,15 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purexo/core/utils/extensions/date_time_extentision.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_icons.dart';
-import 'package:purexo/core/utils/theme/custom_app_font_styles.dart';
-import 'package:purexo/features/technicians/data/models/technician_leave_model.dart';
-import 'package:purexo/features/technicians/presentation/cubit/technicians_cubit.dart';
-import 'package:purexo/features/technicians/presentation/cubit/technicians_state.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
-import 'package:purexo/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/core/utils/extensions/date_time_extentision.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/technicians/data/models/technician_leave_model.dart';
+import 'package:eyadty/features/technicians/presentation/cubit/technicians_cubit.dart';
+import 'package:eyadty/features/technicians/presentation/cubit/technicians_state.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 
 import '../dialogs/add_technician_leave_dialog.dart';
 

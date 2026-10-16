@@ -2,16 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:purexo/core/dependency_injection/dependency_injection.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/booking_model.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:purexo/features/bookings/presentation/manager/bookings_cubit.dart';
-import 'package:purexo/features/bookings/presentation/manager/bookings_state.dart';
-import 'package:purexo/features/bookings/presentation/widgets/action_dialogs/change_booking_status_dialog.dart';
-import 'package:purexo/features/bookings/presentation/widgets/action_dialogs/delete_booking_dialog.dart';
-import 'package:purexo/features/bookings/presentation/widgets/action_dialogs/reassign_technician_dialog.dart';
-import 'package:purexo/shared/widgets/custom_toast.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/booking_model.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/change_booking_status_dialog.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/delete_booking_dialog.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/reassign_technician_dialog.dart';
+import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class BookingActionDialogs {
   /// Helper to resolve BookingsCubit safely

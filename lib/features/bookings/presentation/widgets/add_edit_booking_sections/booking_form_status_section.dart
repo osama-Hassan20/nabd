@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_type_enum.dart';
-import 'package:purexo/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:purexo/features/bookings/presentation/manager/bookings_cubit.dart';
-import 'package:purexo/shared/widgets/custom_stack_selector.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 
 class BookingFormStatusSection extends StatelessWidget {
   final TextEditingController bookingTypeController;

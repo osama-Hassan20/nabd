@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/shared/widgets/responsive_helper/adaptive_layout.dart';
-import 'package:purexo/shared/widgets/shimmer/custom_shimmer_container.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/shared/widgets/shimmer/custom_shimmer_container.dart';
 
 class BookingDetailsShimmer extends StatelessWidget {
   const BookingDetailsShimmer({super.key});

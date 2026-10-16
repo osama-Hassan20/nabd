@@ -1,6 +1,6 @@
-﻿import 'package:purexo/core/models/media_model.dart';
-import 'package:purexo/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:purexo/shared/widgets/custom_asset_image.dart';
+﻿import 'package:eyadty/core/models/media_model.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/utils/theme/app_colors.dart';
 import '../../core/utils/theme/app_icons.dart';

@@ -1,10 +1,12 @@
-name: purexo
-description: A new Flutter project - purexo
+name: eyadty
+description: Eyadty - Multi-Branch Clinic & Medical Group SaaS Dashboard
 publish_to: none
 version: 1.0.3+4
 environment:
   sdk: ^3.13.1
 dependencies:
+  pdf: ^3.11.1
+  printing: ^5.13.2
   bloc: ^9.1.0
   cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8

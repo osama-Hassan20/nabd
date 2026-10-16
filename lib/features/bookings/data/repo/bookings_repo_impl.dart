@@ -1,19 +1,19 @@
 import 'package:dartz/dartz.dart';
-import 'package:purexo/core/api/api_consumer.dart';
-import 'package:purexo/core/errors/failures.dart';
-import 'package:purexo/core/uses_cases/params.dart';
-import 'package:purexo/features/bookings/data/models/booking_model.dart';
-import 'package:purexo/features/bookings/data/models/booking_summary_model.dart';
-import 'package:purexo/features/bookings/data/models/bookings_response_model.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_type_enum.dart';
-import 'package:purexo/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/recurrence_rule_model.dart';
-import 'package:purexo/features/bookings/domain/repo/bookings_repo.dart';
-import 'package:purexo/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
-import 'package:purexo/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
-import 'package:purexo/features/customers/data/models/customer_model.dart';
-import 'package:purexo/features/technicians/data/models/technician_model.dart';
+import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
+import 'package:eyadty/features/bookings/data/models/booking_model.dart';
+import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
+import 'package:eyadty/features/bookings/data/models/bookings_response_model.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
+import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
+import 'package:eyadty/features/customers/data/models/customer_model.dart';
+import 'package:eyadty/features/technicians/data/models/technician_model.dart';
 
 class BookingsRepoImpl implements BookingsRepo {
   final ApiConsumer? apiConsumer;

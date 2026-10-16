@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:purexo/shared/widgets/custom_text_field.dart';
+import 'package:eyadty/shared/widgets/custom_text_field.dart';
 
 class BookingFormPricingSection extends StatelessWidget {
   final TextEditingController hourlyRateController;

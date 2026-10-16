@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:purexo/core/layout_adaptive/widgets/cutom_table.dart';
-import 'package:purexo/shared/widgets/responsive_helper/screen_width_breakpoints.dart';
-import 'package:purexo/shared/widgets/custom_shimmer_container.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
+import 'package:eyadty/shared/widgets/responsive_helper/screen_width_breakpoints.dart';
+import 'package:eyadty/shared/widgets/custom_shimmer_container.dart';
 
 import 'customers_table.dart';
 

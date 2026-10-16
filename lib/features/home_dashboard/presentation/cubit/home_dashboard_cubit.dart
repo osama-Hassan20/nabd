@@ -1,4 +1,4 @@
-import 'package:purexo/core/base/safe_cubit.dart';
+import 'package:eyadty/core/base/safe_cubit.dart';
 import 'home_dashboard_state.dart';
 
 class HomeDashboardCubit extends SafeCubit<HomeDashboardState> {

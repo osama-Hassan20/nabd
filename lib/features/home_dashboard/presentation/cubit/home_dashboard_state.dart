@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 
 class HomeDashboardState extends Equatable {
   final RequestStatusEnum status;

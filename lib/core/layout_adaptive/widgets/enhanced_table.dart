@@ -1,6 +1,6 @@
-﻿import 'package:purexo/core/utils/theme/app_colors.dart';
-import 'package:purexo/core/utils/theme/app_gradient.dart';
-import 'package:purexo/shared/widgets/custom_container.dart';
+﻿import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_gradient.dart';
+import 'package:eyadty/shared/widgets/custom_container.dart';
 import 'package:flutter/material.dart';
 
 class EnhancedTable extends StatelessWidget {

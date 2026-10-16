@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:purexo/features/technicians/data/models/technician_model.dart';
-import 'package:purexo/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/features/technicians/data/models/technician_model.dart';
+import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'technician_card.dart';
 import 'technicians_table.dart';
 

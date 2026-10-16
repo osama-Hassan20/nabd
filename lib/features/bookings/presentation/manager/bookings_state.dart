@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
-import 'package:purexo/core/uses_cases/params.dart';
-import 'package:purexo/core/utils/enums/request_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/booking_form_options_model.dart';
-import 'package:purexo/features/bookings/data/models/booking_model.dart';
-import 'package:purexo/features/bookings/data/models/booking_summary_model.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/enums/booking_type_enum.dart';
-import 'package:purexo/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:purexo/features/bookings/data/models/recurrence_rule_model.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
+import 'package:eyadty/features/bookings/data/models/booking_model.dart';
+import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
 
 class BookingFormState extends Equatable {
   final String? bookingId;
