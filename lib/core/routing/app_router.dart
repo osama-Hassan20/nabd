@@ -7,13 +7,17 @@ import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/constants/app_constants.dart';
 import 'package:eyadty/core/utils/constants/app_list.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:eyadty/features/analytics/presentation/pages/analytics_page.dart';
 import 'package:eyadty/features/bookings/presentation/pages/booking_details_page.dart';
 import 'package:eyadty/features/bookings/presentation/pages/bookings_page.dart';
+import 'package:eyadty/features/cashier/presentation/pages/cashier_page.dart';
 import 'package:eyadty/features/customers/presentation/pages/customer_details_page.dart';
 import 'package:eyadty/features/customers/presentation/pages/customers_page.dart';
+import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
 import 'package:eyadty/features/settings/presentation/pages/settings_page.dart';
 import 'package:eyadty/features/technicians/presentation/pages/technician_details_page.dart';
 import 'package:eyadty/features/technicians/presentation/pages/technicians_page.dart';
+import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/shared/app_layout/presentation/pages/app_layout.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
 
@@ -34,54 +38,61 @@ enum AnimationType {
   cupertino,
 }
 
+// Function to check if the platform is iOS
 bool checkIsIOS() {
   if (kIsWeb) return false;
   return Platform.isIOS;
 }
 
-// Custom Page Builder with Animation Support
-Page<T> buildAnimatedPage<T extends Object?>({
-  required Widget child,
+// Helper function to build animated page transitions
+Page<dynamic> buildAnimatedPage({
   required LocalKey key,
+  required Widget child,
   AnimationType animationType = AnimationType.fade,
   Duration duration = const Duration(milliseconds: 300),
-  Curve curve = Curves.easeInOut,
+  Duration reverseDuration = const Duration(milliseconds: 5),
+  RouteTransitionsBuilder? customTransitionsBuilder,
 }) {
-  if (checkIsIOS() && animationType == AnimationType.cupertino) {
-    return CupertinoPage<T>(key: key, child: child);
-  }
-
-  return CustomTransitionPage<T>(
+  return CustomTransitionPage(
     key: key,
     child: child,
     transitionDuration: duration,
-    reverseTransitionDuration: Duration(milliseconds: 300),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return _getAnimationTransition(
-        animationType,
-        animation,
-        secondaryAnimation,
-        child,
-        curve,
-      );
-    },
+    reverseTransitionDuration: reverseDuration,
+    transitionsBuilder: customTransitionsBuilder ??
+        (context, animation, secondaryAnimation, child) {
+          return _buildTransition(
+            animationType,
+            animation,
+            secondaryAnimation,
+            child,
+          );
+        },
   );
 }
 
-// Animation Builder Function
-Widget _getAnimationTransition(
+// Helper function to build different transitions based on AnimationType
+Widget _buildTransition(
   AnimationType type,
   Animation<double> animation,
   Animation<double> secondaryAnimation,
   Widget child,
-  Curve curve,
 ) {
-  final curvedAnimation = CurvedAnimation(parent: animation, curve: curve);
-
   Widget transition;
+
   switch (type) {
+    case AnimationType.cupertino:
+      return CupertinoPageTransition(
+        primaryRouteAnimation: animation,
+        secondaryRouteAnimation: secondaryAnimation,
+        linearTransition: false,
+        child: child,
+      );
+
     case AnimationType.fade:
-      transition = FadeTransition(opacity: curvedAnimation, child: child);
+      transition = FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        child: child,
+      );
       break;
 
     case AnimationType.slide:
@@ -90,7 +101,9 @@ Widget _getAnimationTransition(
         position: Tween<Offset>(
           begin: const Offset(1.0, 0.0),
           end: Offset.zero,
-        ).animate(curvedAnimation),
+        ).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        ),
         child: child,
       );
       break;
@@ -100,7 +113,9 @@ Widget _getAnimationTransition(
         position: Tween<Offset>(
           begin: const Offset(-1.0, 0.0),
           end: Offset.zero,
-        ).animate(curvedAnimation),
+        ).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        ),
         child: child,
       );
       break;
@@ -110,7 +125,9 @@ Widget _getAnimationTransition(
         position: Tween<Offset>(
           begin: const Offset(0.0, 1.0),
           end: Offset.zero,
-        ).animate(curvedAnimation),
+        ).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        ),
         child: child,
       );
       break;
@@ -120,31 +137,32 @@ Widget _getAnimationTransition(
         position: Tween<Offset>(
           begin: const Offset(0.0, -1.0),
           end: Offset.zero,
-        ).animate(curvedAnimation),
+        ).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        ),
         child: child,
       );
       break;
 
     case AnimationType.scale:
       transition = ScaleTransition(
-        scale: curvedAnimation,
-        child: FadeTransition(opacity: curvedAnimation, child: child),
+        scale: Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        ),
+        child: child,
       );
       break;
 
     case AnimationType.rotation:
       transition = RotationTransition(
-        turns: curvedAnimation,
-        child: FadeTransition(opacity: curvedAnimation, child: child),
+        turns: Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        ),
+        child: child,
       );
-      break;
-
-    case AnimationType.cupertino:
-      transition = FadeTransition(opacity: curvedAnimation, child: child);
       break;
   }
 
-  // Make the outgoing page disappear immediately
   return FadeTransition(
     opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
@@ -240,7 +258,6 @@ final GoRouter appRouter = GoRouter(
   observers: [routeObserver],
   initialLocation: AppRouter.bookings,
   redirect: (context, state) {
-    // Bypassed for now: No backend connection yet
     return null;
   },
   routes: [
@@ -263,11 +280,15 @@ final GoRouter appRouter = GoRouter(
         final Map<String, (String title, String subtitle)> subRouteHeaders = {
           '${AppRouter.bookings}/:id': (
             'booking_details'.tr(),
-            'bookings_subtitle'.tr(),
+            'nav_queue_subtitle'.tr(),
           ),
           '${AppRouter.customers}/:id': (
             'customer_details'.tr(),
-            'customers_subtitle'.tr(),
+            'nav_patients_subtitle'.tr(),
+          ),
+          '${AppRouter.technicians}/:id': (
+            'technician_details'.tr(),
+            'nav_doctors_subtitle'.tr(),
           ),
         };
 
@@ -296,6 +317,8 @@ final GoRouter appRouter = GoRouter(
           path: AppRouter.appLayout,
           redirect: (context, state) => AppRouter.bookings,
         ),
+
+        // 1. Live Queue & Appointments
         GoRoute(
           path: AppRouter.bookings,
           name: AppRouter.bookings,
@@ -326,35 +349,7 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
 
-        GoRoute(
-          path: AppRouter.technicians,
-          name: AppRouter.technicians,
-          pageBuilder: (context, state) => buildAnimatedPage(
-            key: state.pageKey,
-            child: const TechniciansPage(),
-            animationType: checkIsIOS()
-                ? AnimationType.cupertino
-                : AnimationType.slideFromLeft,
-            duration: const Duration(milliseconds: 600),
-          ),
-          routes: [
-            GoRoute(
-              path: ':id',
-              name: 'technicianDetails',
-              pageBuilder: (context, state) {
-                final id = state.pathParameters['id'] ?? '';
-                return buildAnimatedPage(
-                  key: state.pageKey,
-                  child: TechnicianDetailsPage(technicianId: id),
-                  animationType: checkIsIOS()
-                      ? AnimationType.cupertino
-                      : AnimationType.slideFromRight,
-                  duration: const Duration(milliseconds: 350),
-                );
-              },
-            ),
-          ],
-        ),
+        // 2. Patients & Medical EMR
         GoRoute(
           path: AppRouter.customers,
           name: AppRouter.customers,
@@ -384,6 +379,95 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
+
+        // 3. Clinical Visits & Prescriptions
+        GoRoute(
+          path: AppRouter.visits,
+          name: AppRouter.visits,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const VisitsPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // 4. Doctors & Staff Schedules
+        GoRoute(
+          path: AppRouter.technicians,
+          name: AppRouter.technicians,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const TechniciansPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+          routes: [
+            GoRoute(
+              path: ':id',
+              name: 'technicianDetails',
+              pageBuilder: (context, state) {
+                final id = state.pathParameters['id'] ?? '';
+                return buildAnimatedPage(
+                  key: state.pageKey,
+                  child: TechnicianDetailsPage(technicianId: id),
+                  animationType: checkIsIOS()
+                      ? AnimationType.cupertino
+                      : AnimationType.slideFromRight,
+                  duration: const Duration(milliseconds: 350),
+                );
+              },
+            ),
+          ],
+        ),
+
+        // 5. Cashier & Shift Drawer
+        GoRoute(
+          path: AppRouter.cashier,
+          name: AppRouter.cashier,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const CashierPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // 6. HR & Doctor Settlements
+        GoRoute(
+          path: AppRouter.hr,
+          name: AppRouter.hr,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const HrPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // 7. Executive Analytics & Statistics
+        GoRoute(
+          path: AppRouter.analytics,
+          name: AppRouter.analytics,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const AnalyticsPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // 8. Facility & Multi-Branch Settings
         GoRoute(
           path: AppRouter.settings,
           name: AppRouter.settings,

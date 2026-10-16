@@ -9,6 +9,8 @@ import 'package:eyadty/shared/widgets/custom_list_tile.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:go_router/go_router.dart';
 
+import 'header_branch_switcher.dart';
+
 class CustomHeaderLayout extends StatelessWidget
     implements PreferredSizeWidget {
   const CustomHeaderLayout({
@@ -57,7 +59,7 @@ class CustomHeaderLayout extends StatelessWidget
               onPressed: () {
                 scaffoldKey.currentState?.openDrawer();
               },
-              icon: CustomAssetImage(
+              icon: const CustomAssetImage(
                 path: AppIcons.drawer,
                 color: AppColors.gray7A828E,
               ),
@@ -73,13 +75,17 @@ class CustomHeaderLayout extends StatelessWidget
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 8),
+            // Branch Switcher on Mobile/Tablet
+            const HeaderBranchSwitcher(),
+            const SizedBox(width: 8),
             _buildProfileAvatar(context),
           ],
         ),
       );
     }
 
-    // Desktop: Render Full Header Layout
+    // Desktop: Render Full Header Layout with Branch Switcher
     return Padding(
       padding: const EdgeInsetsDirectional.only(top: 12),
       child: CustomListTile(
@@ -97,7 +103,10 @@ class CustomHeaderLayout extends StatelessWidget
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           spacing: 12,
-          children: [_buildProfileAvatar(context)],
+          children: [
+            const HeaderBranchSwitcher(),
+            _buildProfileAvatar(context),
+          ],
         ),
       ),
     );
@@ -116,7 +125,7 @@ class CustomHeaderLayout extends StatelessWidget
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.fillDisableColor, width: 2),
         ),
-        child: Center(child: CustomAssetImage(path: AppIcons.settings)),
+        child: const Center(child: CustomAssetImage(path: AppIcons.settings)),
       ),
     );
   }

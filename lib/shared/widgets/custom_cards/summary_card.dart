@@ -28,10 +28,8 @@ class SummaryCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: gradient ?? AppGradient.summaryCardGradient,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
+        gradient: gradient ?? AppGradient.primaryGradient,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Stack(
         children: [
@@ -44,7 +42,7 @@ class SummaryCard extends StatelessWidget {
               height: 90,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -58,7 +56,7 @@ class SummaryCard extends StatelessWidget {
               height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.14),
+                color: AppColors.white.withValues(alpha: 0.14),
               ),
             ),
           ),
@@ -85,14 +83,14 @@ class SummaryCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               horizontalSpacing: 10,
               leadingIconInstead: CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                backgroundColor: AppColors.white.withValues(alpha: 0.2),
                 radius: 30,
                 child: iconPath != null
                     ? CustomAssetImage(
                         width: 30,
                         height: 30,
                         path: iconPath!,
-                        color: AppColors.primary,
+                        color: AppColors.white,
                       )
                     : null,
               ),

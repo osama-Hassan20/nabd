@@ -38,23 +38,23 @@ class BookingSummarySection extends StatelessWidget {
         final items = [
           SummaryCard(
             title: '${summary.totalBookings ?? 0}',
-            subTitle: 'total_bookings'.tr(),
-            iconPath: AppIcons.totalBooking,
+            subTitle: 'clinic_visits_today'.tr(),
+            iconPath: AppIcons.calendar,
           ),
           SummaryCard(
             title: '${summary.upcomingBookings ?? 0}',
-            subTitle: 'upcoming_bookings'.tr(),
-            iconPath: AppIcons.comingBooking,
+            subTitle: 'clinic_in_waiting'.tr(),
+            iconPath: AppIcons.clock,
           ),
           SummaryCard(
             title: '${summary.completedBookings ?? 0}',
-            subTitle: 'completed_bookings'.tr(),
-            iconPath: AppIcons.completedBooking,
+            subTitle: 'clinic_in_consultation'.tr(),
+            iconPath: AppIcons.team,
           ),
           SummaryCard(
             title: '${summary.cancelledBookings ?? 0}',
-            subTitle: 'cancelled_bookings'.tr(),
-            iconPath: AppIcons.cancelledBooking,
+            subTitle: 'clinic_completed_today'.tr(),
+            iconPath: AppIcons.checkmarkCircle,
           ),
         ];
 

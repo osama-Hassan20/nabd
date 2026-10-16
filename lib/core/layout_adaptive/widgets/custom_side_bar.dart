@@ -133,7 +133,7 @@ class CustomSideBarList extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: CustomActionButton(
-                          borderRadius: 0,
+                          borderRadius: 14,
                           icon: isSelected
                               ? item.selectedIconPath
                               : item.iconPath,
@@ -155,7 +155,7 @@ class CustomSideBarList extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(0),
+                        borderRadius: BorderRadius.circular(14),
                         gradient: isSelected ? AppGradient.greenGradient : null,
                       ),
                       child: CustomListTile(
@@ -198,7 +198,7 @@ class CustomSideBarList extends StatelessWidget {
             isTablet
                 ? CustomActionButton(
                     width: double.infinity,
-                    borderRadius: 0,
+                    borderRadius: 14,
 
                     icon: AppIcons.logout,
                     padding: EdgeInsets.only(left: 16),
@@ -218,7 +218,7 @@ class CustomSideBarList extends StatelessWidget {
                     margin: const EdgeInsets.symmetric(vertical: 12)
                         .copyWith(left: 16),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(0),
+                      borderRadius: BorderRadius.circular(14),
                       color: AppColors.red1A,
                     ),
                     child: CustomListTile(
