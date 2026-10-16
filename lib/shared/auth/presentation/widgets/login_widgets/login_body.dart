@@ -139,10 +139,10 @@ class _DesktopSplitLoginLayout extends StatelessWidget {
                       ),
                       backGroundColor: AppColors.white,
                       border: Border.all(color: AppColors.grayE2E8F0),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.05),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
@@ -199,7 +199,7 @@ class _BrandShowcaseSide extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.primaryDark, AppColors.primary, Color(0xFF143765)],
+          colors: [Color(0xFF18181B), Color(0xFF111111), Color(0xFF0D0D0E)],
         ),
       ),
       child: Stack(
@@ -260,16 +260,16 @@ class _BrandShowcaseSide extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(100),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: AppColors.primary.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Text(
                     'purexo_dashboard_tag'.tr(),
                     style: CustomAppFontStyle.medium14.copyWith(
-                      color: Colors.white,
+                      color: AppColors.primaryLight,
                     ),
                   ),
                 ),
@@ -317,7 +317,7 @@ class _BrandShowcaseSide extends StatelessWidget {
 
                 // Footer version tag
                 Text(
-                  'Purexo Dashboard © 2026',
+                  'Eyadty Clinic SaaS Platform © 2026',
                   style: CustomAppFontStyle.regular12.copyWith(
                     color: Colors.white.withValues(alpha: 0.5),
                   ),
@@ -332,25 +332,25 @@ class _BrandShowcaseSide extends StatelessWidget {
 
   Widget _buildFeatureItem({required String iconPath, required String text}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.09)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: CustomAssetImage(
               path: iconPath,
               width: 18,
               height: 18,
-              color: Colors.white,
+              color: AppColors.primary,
             ),
           ),
           const SizedBox(width: 14),
@@ -406,7 +406,7 @@ class _MobileStackedLoginLayout extends StatelessWidget {
                     border: Border.all(color: AppColors.grayE2E8F0),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.08),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                         blurRadius: 18,
                         offset: const Offset(0, 6),
                       ),
@@ -447,7 +447,7 @@ class _MobileStackedLoginLayout extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.05),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -584,7 +584,7 @@ class _LoginFormFields extends StatelessWidget {
             builder: (context, state) {
               return CustomPushButton(
                 height: isMobile ? 48 : 52,
-                radius: 12,
+                radius: 100,
                 backgroundColor: AppColors.primary,
                 isLoading: state is LoadingLoginPushState,
                 onTap: onSubmit,
