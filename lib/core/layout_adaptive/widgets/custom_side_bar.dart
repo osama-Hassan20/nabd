@@ -57,7 +57,7 @@ class CustomSideBarList extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _GradientText(
-                            text: "بيور",
+                            text: "عيا",
                             gradient: const LinearGradient(
                               colors: [
                                 AppColors.secondary,
@@ -72,7 +72,7 @@ class CustomSideBarList extends StatelessWidget {
                             ),
                           ),
                           _GradientText(
-                            text: "كسو",
+                            text: "دتي",
                             gradient: const LinearGradient(
                               colors: [AppColors.primary, AppColors.primary],
                               begin: Alignment.topRight,
