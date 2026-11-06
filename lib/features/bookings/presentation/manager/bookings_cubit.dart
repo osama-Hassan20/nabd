@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'package:eyadty/core/base/safe_cubit.dart';
 import 'package:eyadty/core/mixins/search_mixin.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
+import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
@@ -22,6 +25,7 @@ import 'package:eyadty/features/customers/data/models/customer_model.dart';
 import 'package:eyadty/features/customers/domain/use_cases/get_customers_use_case.dart';
 import 'package:eyadty/features/technicians/data/models/technician_model.dart';
 import 'package:eyadty/features/technicians/domain/use_cases/get_technicians_use_case.dart';
+import 'package:eyadty/shared/services/app_branch_service.dart';
 
 import 'bookings_state.dart';
 
@@ -37,6 +41,8 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   final GetTechniciansUseCase? getTechniciansUseCase;
   final GetCustomersUseCase? getCustomersUseCase;
 
+  Timer? _noShowTimer;
+
   BookingsCubit({
     required this.getBookingSummaryUseCase,
     required this.getBookingsUseCase,
@@ -49,12 +55,44 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     this.getTechniciansUseCase,
     this.getCustomersUseCase,
   }) : super(const BookingsState()) {
+    _initBranchListener();
+    _startPeriodicNoShowTimer();
     _initFormOptions();
     fetchTechnicians();
     fetchCustomers();
   }
 
   String? _currentBookingId;
+
+  void _initBranchListener() {
+    emit(state.copyWith(
+      selectedBranchId: AppBranchService.instance.currentBranchId,
+    ));
+    AppBranchService.instance.selectedBranchNotifier
+        .addListener(_onGlobalBranchChanged);
+  }
+
+  void _onGlobalBranchChanged() {
+    final newBranch = AppBranchService.instance.currentBranchId;
+    if (state.selectedBranchId != newBranch) {
+      emit(state.copyWith(selectedBranchId: newBranch, currentPage: 1));
+      fetchBookingSummary();
+      fetchBookings(resetPage: true);
+    }
+  }
+
+  void _startPeriodicNoShowTimer() {
+    _noShowTimer?.cancel();
+    _noShowTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (isClosed) return;
+      final isViewingToday = state.selectedDate == null ||
+          CairoTimeHelper.isToday(state.selectedDate);
+      if (isViewingToday) {
+        fetchBookingSummary();
+        fetchBookings(resetPage: false);
+      }
+    });
+  }
 
   void init() {
     _initFormOptions();
@@ -140,7 +178,12 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
 
   Future<void> fetchBookingSummary() async {
     emit(state.copyWith(summaryStatus: RequestStatusEnum.loading));
-    final result = await getBookingSummaryUseCase(NoParams());
+    final result = await getBookingSummaryUseCase(
+      GetBookingSummaryParams(
+        date: state.selectedDate ?? CairoTimeHelper.now(),
+        branchId: state.selectedBranchId,
+      ),
+    );
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -170,6 +213,10 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     if (state.searchQuery.isNotEmpty) {
       filters.add(FilterParam(key: 'search', value: state.searchQuery));
     }
+    // Filter by branch
+    filters.add(
+      FilterParam(key: 'branchId', value: state.selectedBranchId),
+    );
     // Filter by active tab (one_time or recurring)
     filters.add(
       FilterParam(key: 'bookingType', value: state.activeBookingTypeTab.value),
@@ -182,8 +229,9 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     }
 
     if (state.activeBookingTypeTab == BookingTypeEnum.oneTime) {
-      if (state.selectedDate != null) {
-        final d = state.selectedDate!;
+      final effectiveDate = state.selectedDate ?? CairoTimeHelper.now();
+      if (state.selectedDate != null || !state.isMonthFilterActive) {
+        final d = effectiveDate;
         final dateStr =
             "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
         filters.add(FilterParam(key: 'date', value: dateStr));
@@ -266,6 +314,17 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     fetchBookings(resetPage: true);
   }
 
+  void toggleStatusFilterFromCard(BookingStatusEnum? status) {
+    if (status == null) {
+      emit(state.copyWith(clearSelectedStatus: true));
+    } else if (state.selectedStatus == status) {
+      emit(state.copyWith(clearSelectedStatus: true));
+    } else {
+      emit(state.copyWith(selectedStatus: status));
+    }
+    fetchBookings(resetPage: true);
+  }
+
   void onMonthSelected(DateTime? month, {bool filterByWholeMonth = false}) {
     if (month == null) {
       emit(
@@ -286,6 +345,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         ),
       );
     }
+    fetchBookingSummary();
     fetchBookings(resetPage: true);
   }
 
@@ -300,6 +360,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         isMonthFilterActive: false,
       ),
     );
+    fetchBookingSummary();
     fetchBookings(resetPage: true);
   }
 
@@ -314,6 +375,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         isMonthFilterActive: false,
       ),
     );
+    fetchBookingSummary();
     fetchBookings(resetPage: true);
   }
 
@@ -329,7 +391,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         isMonthFilterActive: false,
       ),
     );
-
+    fetchBookingSummary();
     fetchBookings(resetPage: true);
   }
 
@@ -354,7 +416,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   void goToToday() {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
     onDateSelected(today);
   }
@@ -370,6 +432,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         isMonthFilterActive: false,
       ),
     );
+    fetchBookingSummary();
     fetchBookings(resetPage: true);
   }
 
@@ -381,6 +444,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         isMonthFilterActive: false,
       ),
     );
+    fetchBookingSummary();
     fetchBookings(resetPage: true);
   }
 
@@ -902,12 +966,27 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
 
   Future<bool> changeBookingStatus(
     String bookingId,
-    BookingStatusEnum newStatus,
-  ) async {
+    BookingStatusEnum newStatus, {
+    DateTime? rescheduledTo,
+    String? postponeReason,
+    String? cancelReason,
+    String? cancelledBy,
+    DateTime? cancelledAt,
+    DateTime? arrivalTime,
+  }) async {
     emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
     final params = ChangeBookingStatusParams(
       bookingId: bookingId,
       newStatus: newStatus,
+      rescheduledTo: rescheduledTo ?? state.dialogPostponeDate,
+      postponeReason: postponeReason ?? state.dialogPostponeReason,
+      cancelReason: cancelReason ?? state.dialogCancelReason,
+      cancelledBy: cancelledBy ?? state.dialogCancelledBy,
+      cancelledAt: cancelledAt ??
+          (newStatus == BookingStatusEnum.cancelled
+              ? CairoTimeHelper.now()
+              : null),
+      arrivalTime: arrivalTime,
     );
     final result = await changeBookingStatusUseCase(params);
     return result.fold(
@@ -924,11 +1003,29 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         final currentSelected = state.selectedBooking;
         final updatedBooking =
             (currentSelected != null && currentSelected.id == bookingId)
-            ? currentSelected.copyWith(
-                status: newStatus,
-                updatedAt: DateTime.now(),
-              )
-            : currentSelected;
+                ? currentSelected.copyWith(
+                    status: newStatus,
+                    rescheduledTo:
+                        rescheduledTo ?? state.dialogPostponeDate,
+                    postponeReason:
+                        postponeReason ?? state.dialogPostponeReason,
+                    cancelReason:
+                        cancelReason ?? state.dialogCancelReason,
+                    cancelledBy:
+                        cancelledBy ?? state.dialogCancelledBy,
+                    cancelledAt: cancelledAt ??
+                        (newStatus == BookingStatusEnum.cancelled
+                            ? CairoTimeHelper.now()
+                            : null),
+                    arrivalTime: arrivalTime ??
+                        (newStatus == BookingStatusEnum.waiting &&
+                                currentSelected.status ==
+                                    BookingStatusEnum.noShow
+                            ? CairoTimeHelper.now()
+                            : currentSelected.arrivalTime),
+                    updatedAt: CairoTimeHelper.now(),
+                  )
+                : currentSelected;
         emit(
           state.copyWith(
             actionStatus: RequestStatusEnum.success,
@@ -1042,17 +1139,47 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
 
   // ─── Action Dialogs State Management (Clean Cubit Driven) ───────────────
 
-  void initChangeStatusDialog(BookingStatusEnum currentStatus) {
+  void initChangeStatusDialog(
+    BookingStatusEnum currentStatus, {
+    BookingModel? booking,
+  }) {
     emit(
       state.copyWith(
         actionStatus: RequestStatusEnum.initial,
         dialogStatus: currentStatus,
+        dialogPostponeDate: booking?.rescheduledTo,
+        dialogPostponeTime: booking?.rescheduledTo != null
+            ? '${booking!.rescheduledTo!.hour.toString().padLeft(2, '0')}:${booking.rescheduledTo!.minute.toString().padLeft(2, '0')}'
+            : null,
+        dialogPostponeReason: booking?.postponeReason,
+        dialogCancelReason: booking?.cancelReason,
+        dialogCancelledBy: booking?.cancelledBy ?? 'patient',
       ),
     );
   }
 
   void selectStatusToChange(BookingStatusEnum status) {
     emit(state.copyWith(dialogStatus: status));
+  }
+
+  void updateDialogPostponeDate(DateTime date) {
+    emit(state.copyWith(dialogPostponeDate: date));
+  }
+
+  void updateDialogPostponeTime(String time) {
+    emit(state.copyWith(dialogPostponeTime: time));
+  }
+
+  void updateDialogPostponeReason(String reason) {
+    emit(state.copyWith(dialogPostponeReason: reason));
+  }
+
+  void updateDialogCancelReason(String reason) {
+    emit(state.copyWith(dialogCancelReason: reason));
+  }
+
+  void updateDialogCancelledBy(String by) {
+    emit(state.copyWith(dialogCancelledBy: by));
   }
 
   void initReassignTechniciansDialog(List<String> currentIds) {
@@ -1080,6 +1207,9 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
 
   @override
   Future<void> close() {
+    _noShowTimer?.cancel();
+    AppBranchService.instance.selectedBranchNotifier
+        .removeListener(_onGlobalBranchChanged);
     disposeSearch();
     return super.close();
   }

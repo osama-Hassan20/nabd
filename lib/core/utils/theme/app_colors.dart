@@ -113,6 +113,7 @@ class AppColors {
 
   // ─── Red Variants ──────────────────────────────────────────────────────────
   static const Color red = Color(0xFFE54848);
+  static const Color errorLight = Color(0x1FE54848);
   static const Color red02 = Color(0xFFE54848);
   static const Color red1A = Color.fromRGBO(229, 72, 72, 0.1);
   static const Color pink = Color(0xFFD94876);

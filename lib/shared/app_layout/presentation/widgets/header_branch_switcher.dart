@@ -4,6 +4,7 @@ import 'package:eyadty/core/animation/hover_scale_animation.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/shared/services/app_branch_service.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
@@ -53,6 +54,30 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
 
   String _selectedBranchId = 'branch_1';
 
+  @override
+  void initState() {
+    super.initState();
+    _selectedBranchId = AppBranchService.instance.currentBranchId;
+    AppBranchService.instance.selectedBranchNotifier
+        .addListener(_onServiceBranchChanged);
+  }
+
+  void _onServiceBranchChanged() {
+    if (mounted &&
+        _selectedBranchId != AppBranchService.instance.currentBranchId) {
+      setState(() {
+        _selectedBranchId = AppBranchService.instance.currentBranchId;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    AppBranchService.instance.selectedBranchNotifier
+        .removeListener(_onServiceBranchChanged);
+    super.dispose();
+  }
+
   BranchItemInfo get _activeBranch => _branches.firstWhere(
         (b) => b.id == _selectedBranchId,
         orElse: () => _branches.first,
@@ -63,6 +88,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
     setState(() {
       _selectedBranchId = branch.id;
     });
+    AppBranchService.instance.selectBranch(branch.id);
 
     CustomToast(
       context: context,

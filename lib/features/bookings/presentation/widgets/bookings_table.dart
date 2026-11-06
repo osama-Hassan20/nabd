@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -163,7 +164,56 @@ class BookingsTable extends StatelessWidget {
       ),
     );
 
-    // 4: Arrival Time & Estimated Wait Remaining
+    // 4: Arrival Time & Estimated Wait Remaining / Delay Info
+    final delayMinutes = CairoTimeHelper.calculateDelayMinutes(
+      item.appointmentTime ?? item.date,
+      item.startTime,
+    );
+    final isDelayed = delayMinutes > 0 && item.arrivalTime == null &&
+        (item.status == BookingStatusEnum.noShow || item.status == BookingStatusEnum.waiting);
+
+    Widget waitOrStatusDetail;
+    if (item.status == BookingStatusEnum.noShow || isDelayed) {
+      waitOrStatusDetail = Text(
+        CairoTimeHelper.formatDelayArabic(delayMinutes),
+        style: CustomAppFontStyle.semiBold11.copyWith(
+          color: AppColors.error,
+        ),
+      );
+    } else if (item.status == BookingStatusEnum.cancelled) {
+      final cancelledByText = item.cancelledBy == 'clinic'
+          ? 'cancelled_by_clinic'.tr()
+          : 'cancelled_by_patient'.tr();
+      waitOrStatusDetail = Text(
+        item.cancelReason != null && item.cancelReason!.isNotEmpty
+            ? '$cancelledByText: ${item.cancelReason}'
+            : cancelledByText,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: CustomAppFontStyle.regular11.copyWith(
+          color: AppColors.error,
+        ),
+      );
+    } else if (item.status == BookingStatusEnum.postponed && item.rescheduledTo != null) {
+      final r = item.rescheduledTo!;
+      final dateStr = '${r.year}/${r.month.toString().padLeft(2, '0')}/${r.day.toString().padLeft(2, '0')}';
+      waitOrStatusDetail = Text(
+        'إلى: $dateStr',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: CustomAppFontStyle.medium11.copyWith(
+          color: AppColors.secondary,
+        ),
+      );
+    } else {
+      waitOrStatusDetail = Text(
+        '${item.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
+        style: CustomAppFontStyle.regular11.copyWith(
+          color: AppColors.statusWarning,
+        ),
+      );
+    }
+
     final cell4 = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -186,12 +236,7 @@ class BookingsTable extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 2),
-        Text(
-          '${item.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
-          style: CustomAppFontStyle.regular11.copyWith(
-            color: AppColors.statusWarning,
-          ),
-        ),
+        waitOrStatusDetail,
       ],
     );
 

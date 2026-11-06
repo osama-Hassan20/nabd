@@ -202,10 +202,22 @@ class BookingsState extends Equatable {
     BookingTechnicianOption(id: 'DOC-02', name: 'د. نورهان السيد (أطفال)'),
     BookingTechnicianOption(id: 'DOC-03', name: 'د. حازم زكي (عظام)'),
     BookingTechnicianOption(id: 'DOC-04', name: 'د. ريم المهدي (عيون)'),
-    BookingTechnicianOption(id: 'TECH-03', name: 'يوسف النجار'),
-    BookingTechnicianOption(id: 'TECH-04', name: 'طارق العسيري'),
-    BookingTechnicianOption(id: 'TECH-05', name: 'ماجد القاضي'),
+    BookingTechnicianOption(
+      id: 'TECH-03',
+      name: 'د. يوسف النجار (أنف وأذن)',
+      isAvailable: false,
+      unavailableReason: 'في إجازة سنوية',
+    ),
+    BookingTechnicianOption(id: 'TECH-04', name: 'د. طارق العسيري (جلدية)'),
+    BookingTechnicianOption(id: 'TECH-05', name: 'د. ماجد القاضي (أسنان)'),
   ];
+
+  final String selectedBranchId;
+  final DateTime? dialogPostponeDate;
+  final String? dialogPostponeTime;
+  final String? dialogPostponeReason;
+  final String? dialogCancelReason;
+  final String dialogCancelledBy;
 
   const BookingsState({
     this.summaryStatus = RequestStatusEnum.initial,
@@ -217,6 +229,7 @@ class BookingsState extends Equatable {
     this.pagination,
     this.customers = initialCustomers,
     this.technicians = initialTechnicians,
+    this.selectedBranchId = 'branch_1',
     this.selectedDate,
     this.selectedMonth,
     this.isMonthFilterActive = false,
@@ -232,6 +245,11 @@ class BookingsState extends Equatable {
     this.isDeleted = false,
     this.dialogStatus,
     this.dialogTechnicianIds = const {},
+    this.dialogPostponeDate,
+    this.dialogPostponeTime,
+    this.dialogPostponeReason,
+    this.dialogCancelReason,
+    this.dialogCancelledBy = 'patient',
   });
 
   BookingsState copyWith({
@@ -244,6 +262,7 @@ class BookingsState extends Equatable {
     PaginationModel? pagination,
     List<BookingCustomerOption>? customers,
     List<BookingTechnicianOption>? technicians,
+    String? selectedBranchId,
     DateTime? selectedDate,
     bool clearSelectedDate = false,
     DateTime? selectedMonth,
@@ -266,6 +285,15 @@ class BookingsState extends Equatable {
     BookingStatusEnum? dialogStatus,
     bool clearDialogStatus = false,
     Set<String>? dialogTechnicianIds,
+    DateTime? dialogPostponeDate,
+    bool clearDialogPostponeDate = false,
+    String? dialogPostponeTime,
+    bool clearDialogPostponeTime = false,
+    String? dialogPostponeReason,
+    bool clearDialogPostponeReason = false,
+    String? dialogCancelReason,
+    bool clearDialogCancelReason = false,
+    String? dialogCancelledBy,
   }) {
     return BookingsState(
       summaryStatus: summaryStatus ?? this.summaryStatus,
@@ -277,23 +305,43 @@ class BookingsState extends Equatable {
       pagination: pagination ?? this.pagination,
       customers: customers ?? this.customers,
       technicians: technicians ?? this.technicians,
-      selectedDate: clearSelectedDate ? null : (selectedDate ?? this.selectedDate),
-      selectedMonth: clearSelectedMonth ? null : (selectedMonth ?? this.selectedMonth),
+      selectedBranchId: selectedBranchId ?? this.selectedBranchId,
+      selectedDate:
+          clearSelectedDate ? null : (selectedDate ?? this.selectedDate),
+      selectedMonth:
+          clearSelectedMonth ? null : (selectedMonth ?? this.selectedMonth),
       isMonthFilterActive: isMonthFilterActive ?? this.isMonthFilterActive,
-      selectedStatus: clearSelectedStatus ? null : (selectedStatus ?? this.selectedStatus),
+      selectedStatus:
+          clearSelectedStatus ? null : (selectedStatus ?? this.selectedStatus),
       searchQuery: searchQuery ?? this.searchQuery,
       currentPage: currentPage ?? this.currentPage,
       activeBookingTypeTab: activeBookingTypeTab ?? this.activeBookingTypeTab,
       selectedDayOfWeek: clearSelectedDayOfWeek
           ? null
           : (selectedDayOfWeek ?? this.selectedDayOfWeek),
-      selectedBooking: clearSelectedBooking ? null : (selectedBooking ?? this.selectedBooking),
+      selectedBooking: clearSelectedBooking
+          ? null
+          : (selectedBooking ?? this.selectedBooking),
       formState: clearFormState ? null : (formState ?? this.formState),
       errMessage: errMessage,
       actionSuccessMessage: actionSuccessMessage,
       isDeleted: isDeleted ?? this.isDeleted,
-      dialogStatus: clearDialogStatus ? null : (dialogStatus ?? this.dialogStatus),
+      dialogStatus:
+          clearDialogStatus ? null : (dialogStatus ?? this.dialogStatus),
       dialogTechnicianIds: dialogTechnicianIds ?? this.dialogTechnicianIds,
+      dialogPostponeDate: clearDialogPostponeDate
+          ? null
+          : (dialogPostponeDate ?? this.dialogPostponeDate),
+      dialogPostponeTime: clearDialogPostponeTime
+          ? null
+          : (dialogPostponeTime ?? this.dialogPostponeTime),
+      dialogPostponeReason: clearDialogPostponeReason
+          ? null
+          : (dialogPostponeReason ?? this.dialogPostponeReason),
+      dialogCancelReason: clearDialogCancelReason
+          ? null
+          : (dialogCancelReason ?? this.dialogCancelReason),
+      dialogCancelledBy: dialogCancelledBy ?? this.dialogCancelledBy,
     );
   }
 
@@ -308,6 +356,7 @@ class BookingsState extends Equatable {
         pagination,
         customers,
         technicians,
+        selectedBranchId,
         selectedDate,
         selectedMonth,
         isMonthFilterActive,
@@ -323,6 +372,11 @@ class BookingsState extends Equatable {
         isDeleted,
         dialogStatus,
         dialogTechnicianIds,
+        dialogPostponeDate,
+        dialogPostponeTime,
+        dialogPostponeReason,
+        dialogCancelReason,
+        dialogCancelledBy,
       ];
 }
 

@@ -14,6 +14,9 @@ class SummaryCard extends StatelessWidget {
     this.iconPath,
     this.borderRadius = 16,
     this.gradient,
+    this.onTap,
+    this.isSelected = false,
+    this.activeBorderColor,
   });
 
   final String? title;
@@ -21,90 +24,135 @@ class SummaryCard extends StatelessWidget {
   final String? iconPath;
   final double borderRadius;
   final Gradient? gradient;
+  final VoidCallback? onTap;
+  final bool isSelected;
+  final Color? activeBorderColor;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
+    final border = isSelected
+        ? Border.all(
+            color: activeBorderColor ?? AppColors.white,
+            width: 2.5,
+          )
+        : Border.all(color: Colors.white.withValues(alpha: 0.12));
+
+    final effectiveGradient = gradient ?? AppGradient.primaryGradient;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: gradient ?? AppGradient.primaryGradient,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Stack(
-        children: [
-          // ─── Ambient Bubble 1 (Top-Right: Translucent White Glow) ────────
-          Positioned(
-            top: -24,
-            right: -24,
-            child: Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            gradient: effectiveGradient,
+            border: border,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: (activeBorderColor ?? AppColors.primary)
+                          .withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
+          child: Stack(
+            children: [
+              // ─── Ambient Bubble 1 (Top-Right: Translucent Glow) ─────────
+              Positioned(
+                top: -24,
+                right: -24,
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+              ),
 
-          // ─── Ambient Bubble 2 (Bottom-Left: Terracotta Ambient Glow) ──────
-          Positioned(
-            bottom: -36,
-            left: -18,
-            child: Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.white.withValues(alpha: 0.14),
+              // ─── Ambient Bubble 2 (Bottom-Left) ──────────────────────────
+              Positioned(
+                bottom: -36,
+                left: -18,
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.14),
+                  ),
+                ),
               ),
-            ),
-          ),
 
-          // ─── Ambient Bubble 3 (Soft Floating Accent) ─────────────────────
-          Positioned(
-            top: 14,
-            right: 50,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.02),
-              ),
-            ),
-          ),
+              // ─── Selected Check Indicator Badge ─────────────────────────
+              if (isSelected)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                      color: AppColors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: AppColors.darkText,
+                    ),
+                  ),
+                ),
 
-          // ─── Card Foreground Content ──────────────────────────────────────
-          Center(
-            child: CustomListTile(
-              backgroundColor: Colors.transparent,
-              border: Border.all(color: Colors.transparent),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              horizontalSpacing: 10,
-              leadingIconInstead: CircleAvatar(
-                backgroundColor: AppColors.white.withValues(alpha: 0.2),
-                radius: 30,
-                child: iconPath != null
-                    ? CustomAssetImage(
-                        width: 30,
-                        height: 30,
-                        path: iconPath!,
-                        color: AppColors.white,
-                      )
-                    : null,
+              // ─── Card Foreground Content ─────────────────────────────────
+              Center(
+                child: CustomListTile(
+                  backgroundColor: Colors.transparent,
+                  border: Border.all(color: Colors.transparent),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  horizontalSpacing: 10,
+                  spacing: 2,
+                  leadingIconInstead: CircleAvatar(
+                    backgroundColor: AppColors.white.withValues(alpha: 0.2),
+                    radius: 23,
+                    child: iconPath != null
+                        ? CustomAssetImage(
+                            width: 24,
+                            height: 24,
+                            path: iconPath!,
+                            color: AppColors.white,
+                          )
+                        : null,
+                  ),
+                  title: title,
+                  titleTextStyle: CustomAppFontStyle.bold18.copyWith(
+                    color: AppColors.white,
+                  ),
+                  subtitle: subTitle,
+                  subTitleStyle: CustomAppFontStyle.regular12.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                    height: 1.25,
+                  ),
+                ),
               ),
-              title: title,
-              titleTextStyle: CustomAppFontStyle.bold18.copyWith(
-                color: AppColors.primaryLight,
-              ),
-              subtitle: subTitle,
-              subTitleStyle: CustomAppFontStyle.regular14.copyWith(
-                color: AppColors.primaryLight,
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -125,14 +173,14 @@ class SummaryCardShimmer extends StatelessWidget {
       child: CustomListTile(
         backgroundColor: Colors.transparent,
         border: Border.all(color: Colors.transparent),
-        padding: const EdgeInsets.all(12),
-        horizontalSpacing: 8,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        horizontalSpacing: 10,
         leadingIconInstead: const CustomShimmerContainer(
-          width: 60,
-          height: 60,
-          borderRadius: 30,
+          width: 46,
+          height: 46,
+          borderRadius: 23,
         ),
-        titleInstead: const CustomShimmerContainer(width: 100, height: 20),
+        titleInstead: const CustomShimmerContainer(width: 80, height: 20),
         subTitleInstead: const CustomShimmerContainer(width: 60, height: 16),
       ),
     );

@@ -11,6 +11,7 @@ import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 class ReassignTechnicianDialog extends StatelessWidget {
   final List<BookingTechnicianOption> technicians;
   final Set<String> selectedIds;
+  final String? currentDoctorId;
   final bool isLoading;
   final ValueChanged<String> onToggleTechnician;
   final VoidCallback onConfirm;
@@ -19,6 +20,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
     super.key,
     required this.technicians,
     required this.selectedIds,
+    this.currentDoctorId,
     required this.isLoading,
     required this.onToggleTechnician,
     required this.onConfirm,
@@ -26,6 +28,10 @@ class ReassignTechnicianDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Exclude current doctor from reassignment candidate list
+    final candidateDoctors = technicians.where((t) => t.id != currentDoctorId).toList();
+    final availableDoctorsCount = candidateDoctors.where((t) => t.isAvailable).length;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -48,7 +54,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'reassign_technician'.tr(),
+                        'transfer_doctor'.tr(),
                         style: CustomAppFontStyle.semiBold18.copyWith(
                           color: AppColors.darkText,
                         ),
@@ -57,14 +63,14 @@ class ReassignTechnicianDialog extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 2,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          '${selectedIds.length}',
+                          '$availableDoctorsCount متاح',
                           style: CustomAppFontStyle.semiBold12.copyWith(
                             color: AppColors.primary,
                           ),
@@ -72,12 +78,12 @@ class ReassignTechnicianDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-                  CloseButton(),
+                  const CloseButton(),
                 ],
               ),
               const Divider(height: 1, color: AppColors.grayE2E8F0),
               const SizedBox(height: 16),
-              if (technicians.isEmpty)
+              if (candidateDoctors.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
@@ -95,56 +101,93 @@ class ReassignTechnicianDialog extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: technicians.map((tech) {
+                      children: candidateDoctors.map((tech) {
                         final isSelected = selectedIds.contains(tech.id);
+                        final isAvailable = tech.isAvailable;
+
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: InkWell(
-                            onTap: () => onToggleTechnician(tech.id),
+                            onTap: isAvailable
+                                ? () => onToggleTechnician(tech.id)
+                                : null,
                             borderRadius: BorderRadius.circular(10),
-                            child: AnimatedContainer(
+                            child: AnimatedOpacity(
                               duration: const Duration(milliseconds: 150),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary.withValues(alpha: 0.12)
-                                    : AppColors.grayf2,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
+                              opacity: isAvailable ? 1.0 : 0.5,
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.primary
-                                      : Colors.transparent,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  const CustomAssetImage(
-                                    path: AppIcons.team,
-                                    width: 18,
-                                    height: 18,
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      tech.name,
-                                      style:
-                                          CustomAppFontStyle.medium14.copyWith(
-                                        color: AppColors.darkText,
-                                      ),
-                                    ),
-                                  ),
-                                  Icon(
-                                    isSelected
-                                        ? Icons.check_circle
-                                        : Icons.circle_outlined,
+                                      ? AppColors.primary.withValues(alpha: 0.12)
+                                      : (isAvailable ? AppColors.grayf2 : AppColors.grayE2E8F0.withValues(alpha: 0.3)),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
                                     color: isSelected
                                         ? AppColors.primary
-                                        : AppColors.gray71717A,
-                                    size: 20,
+                                        : Colors.transparent,
+                                    width: 1.5,
                                   ),
-                                ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    CustomAssetImage(
+                                      path: AppIcons.team,
+                                      width: 18,
+                                      height: 18,
+                                      color: isAvailable ? AppColors.primary : AppColors.gray71717A,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            tech.name,
+                                            style: CustomAppFontStyle.medium14.copyWith(
+                                              color: isAvailable
+                                                  ? AppColors.darkText
+                                                  : AppColors.gray71717A,
+                                            ),
+                                          ),
+                                          if (!isAvailable && tech.unavailableReason != null) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              tech.unavailableReason!,
+                                              style: CustomAppFontStyle.regular12.copyWith(
+                                                color: AppColors.error,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    if (isAvailable)
+                                      Icon(
+                                        isSelected
+                                            ? Icons.check_circle
+                                            : Icons.circle_outlined,
+                                        color: isSelected
+                                            ? AppColors.primary
+                                            : AppColors.gray71717A,
+                                        size: 20,
+                                      )
+                                    else
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.grayE2E8F0,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          'doctor_not_available'.tr(),
+                                          style: CustomAppFontStyle.regular11.copyWith(
+                                            color: AppColors.gray71717A,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

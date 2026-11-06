@@ -33,12 +33,12 @@ class BookingFormCustomerSection extends StatelessWidget {
           children: [
             Expanded(
               child: CustomStackSelector<BookingCustomerOption>(
-                header: 'customer_label'.tr(),
+                header: 'patient_label'.tr(),
                 controller: controller,
                 list: state.customers,
                 itemAsString: (c) => "${c.name} ${c.phone}",
                 displayStringForController: (c) => c.name,
-                hintText: 'select_customer'.tr(),
+                hintText: 'select_patient'.tr(),
                 enableSearch: true,
                 itemBuilder: (context, c) {
                   return Column(
@@ -94,7 +94,7 @@ class BookingFormCustomerSection extends StatelessWidget {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'add_new_customer'.tr(),
+                        'add_new_patient'.tr(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: CustomAppFontStyle.semiBold13.copyWith(

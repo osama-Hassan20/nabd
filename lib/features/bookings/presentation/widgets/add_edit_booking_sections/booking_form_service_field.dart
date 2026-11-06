@@ -15,8 +15,8 @@ class BookingFormServiceField extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomTextFormField(
       controller: controller,
-      headerText: 'service_label'.tr(),
-      hintText: 'service_name_hint'.tr(),
+      headerText: 'reason_for_visit_label'.tr(),
+      hintText: 'reason_for_visit_hint'.tr(),
       isRequired: true,
       inputFormatters: [
         LengthLimitingTextInputFormatter(80),

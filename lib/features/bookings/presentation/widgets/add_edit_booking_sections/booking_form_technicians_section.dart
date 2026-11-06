@@ -36,7 +36,7 @@ class BookingFormTechniciansSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CustomStackSelector<BookingTechnicianOption>(
-              header: 'technician_label'.tr(),
+              header: 'doctor_label'.tr(),
               closeOnSelect: false,
               besideHeader: selectedTechs.isNotEmpty
                   ? Container(
@@ -52,7 +52,7 @@ class BookingFormTechniciansSection extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        '${selectedTechs.length} فنيين',
+                        '${selectedTechs.length} أطباء',
                         style: CustomAppFontStyle.medium11.copyWith(
                           color: AppColors.primary,
                         ),
@@ -62,7 +62,7 @@ class BookingFormTechniciansSection extends StatelessWidget {
               controller: controller,
               list: state.technicians,
               itemAsString: (t) => t.name,
-              hintText: 'اختر الفنيين...',
+              hintText: 'select_doctor_hint'.tr(),
               enableSearch: true,
               itemBuilder: (ctx, t) {
                 final isSelected = selectedTechs.any((s) => s.id == t.id);

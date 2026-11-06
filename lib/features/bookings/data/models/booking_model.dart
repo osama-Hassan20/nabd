@@ -32,6 +32,16 @@ class BookingModel {
   final num? hourlyRate;
   final int? durationMinutes;
 
+  // Multi-branch & cancellation / postponement fields
+  final String? branchId;
+  final String? cancelReason;
+  final DateTime? cancelledAt;
+  final String? cancelledBy; // 'patient' or 'clinic'
+  final DateTime? originalAppointmentTime;
+  final DateTime? rescheduledTo;
+  final DateTime? postponedAt;
+  final String? postponeReason;
+
   // Embedded legacy models & legacy parameters
   final CustomerModel? customer;
   final List<TechnicianModel> technicians;
@@ -72,6 +82,14 @@ class BookingModel {
     this.recurrence,
     this.hourlyRate,
     this.durationMinutes,
+    this.branchId = 'branch_1',
+    this.cancelReason,
+    this.cancelledAt,
+    this.cancelledBy,
+    this.originalAppointmentTime,
+    this.rescheduledTo,
+    this.postponedAt,
+    this.postponeReason,
     this.customer,
     this.technicians = const [],
     this.serviceName,
@@ -162,6 +180,22 @@ class BookingModel {
       durationMinutes: json['durationMinutes'] is int
           ? json['durationMinutes'] as int
           : int.tryParse(json['durationMinutes']?.toString() ?? ''),
+      branchId: json['branchId']?.toString() ?? 'branch_1',
+      cancelReason: json['cancelReason'] as String?,
+      cancelledAt: json['cancelledAt'] != null
+          ? DateTime.tryParse(json['cancelledAt'].toString())
+          : null,
+      cancelledBy: json['cancelledBy'] as String?,
+      originalAppointmentTime: json['originalAppointmentTime'] != null
+          ? DateTime.tryParse(json['originalAppointmentTime'].toString())
+          : null,
+      rescheduledTo: json['rescheduledTo'] != null
+          ? DateTime.tryParse(json['rescheduledTo'].toString())
+          : null,
+      postponedAt: json['postponedAt'] != null
+          ? DateTime.tryParse(json['postponedAt'].toString())
+          : null,
+      postponeReason: json['postponeReason'] as String?,
       customer: parsedCustomer,
       technicians: parsedTechs,
       serviceName: json['serviceName'] as String? ?? json['specialty'] as String?,
@@ -204,6 +238,17 @@ class BookingModel {
       if (recurrence != null) 'recurrence': recurrence?.toJson(),
       if (hourlyRate != null) 'hourlyRate': hourlyRate,
       if (durationMinutes != null) 'durationMinutes': durationMinutes,
+      if (branchId != null) 'branchId': branchId,
+      if (cancelReason != null) 'cancelReason': cancelReason,
+      if (cancelledAt != null) 'cancelledAt': cancelledAt?.toIso8601String(),
+      if (cancelledBy != null) 'cancelledBy': cancelledBy,
+      if (originalAppointmentTime != null)
+        'originalAppointmentTime': originalAppointmentTime?.toIso8601String(),
+      if (rescheduledTo != null)
+        'rescheduledTo': rescheduledTo?.toIso8601String(),
+      if (postponedAt != null)
+        'postponedAt': postponedAt?.toIso8601String(),
+      if (postponeReason != null) 'postponeReason': postponeReason,
       if (serviceName != null) 'serviceName': serviceName,
       if (bookingType != null) 'bookingType': bookingType?.value,
       if (date != null) 'date': date?.toIso8601String(),
@@ -243,6 +288,14 @@ class BookingModel {
     RecurrenceRuleModel? recurrence,
     num? hourlyRate,
     int? durationMinutes,
+    String? branchId,
+    String? cancelReason,
+    DateTime? cancelledAt,
+    String? cancelledBy,
+    DateTime? originalAppointmentTime,
+    DateTime? rescheduledTo,
+    DateTime? postponedAt,
+    String? postponeReason,
     CustomerModel? customer,
     List<TechnicianModel>? technicians,
     String? serviceName,
@@ -282,6 +335,15 @@ class BookingModel {
       recurrence: recurrence ?? this.recurrence,
       hourlyRate: hourlyRate ?? this.hourlyRate,
       durationMinutes: durationMinutes ?? this.durationMinutes,
+      branchId: branchId ?? this.branchId,
+      cancelReason: cancelReason ?? this.cancelReason,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancelledBy: cancelledBy ?? this.cancelledBy,
+      originalAppointmentTime:
+          originalAppointmentTime ?? this.originalAppointmentTime,
+      rescheduledTo: rescheduledTo ?? this.rescheduledTo,
+      postponedAt: postponedAt ?? this.postponedAt,
+      postponeReason: postponeReason ?? this.postponeReason,
       customer: customer ?? this.customer,
       technicians: technicians ?? this.technicians,
       serviceName: serviceName ?? this.serviceName,

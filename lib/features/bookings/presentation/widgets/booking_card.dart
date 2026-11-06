@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -283,36 +284,107 @@ class BookingCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ─── Arrival Time & Estimated Wait Remaining ──────────────────────
-          Row(
-            children: [
-              const Icon(
-                Icons.access_time_rounded,
-                size: 14,
-                color: AppColors.gray71717A,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${'arrival_time'.tr()}: ${booking.startTime ?? '--:--'}',
-                style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray71717A,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.statusWarningLight,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
-                  style: CustomAppFontStyle.medium11.copyWith(
-                    color: AppColors.statusWarning,
+          // ─── Arrival Time & Estimated Wait / Delay / Postpone Details ──────
+          Builder(
+            builder: (context) {
+              final delayMinutes = CairoTimeHelper.calculateDelayMinutes(
+                booking.appointmentTime ?? booking.date,
+                booking.startTime,
+              );
+              final isDelayed = delayMinutes > 0 &&
+                  booking.arrivalTime == null &&
+                  (booking.status == BookingStatusEnum.noShow ||
+                      booking.status == BookingStatusEnum.waiting);
+
+              Widget detailWidget;
+              if (booking.status == BookingStatusEnum.noShow || isDelayed) {
+                detailWidget = Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.red1A,
+                    borderRadius: BorderRadius.circular(100),
                   ),
-                ),
-              ),
-            ],
+                  child: Text(
+                    CairoTimeHelper.formatDelayArabic(delayMinutes),
+                    style: CustomAppFontStyle.semiBold11.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
+                );
+              } else if (booking.status == BookingStatusEnum.cancelled) {
+                final text = booking.cancelledBy == 'clinic'
+                    ? 'cancelled_by_clinic'.tr()
+                    : 'cancelled_by_patient'.tr();
+                detailWidget = Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.red1A,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    booking.cancelReason != null && booking.cancelReason!.isNotEmpty
+                        ? '$text: ${booking.cancelReason}'
+                        : text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: CustomAppFontStyle.regular11.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
+                );
+              } else if (booking.status == BookingStatusEnum.postponed &&
+                  booking.rescheduledTo != null) {
+                final r = booking.rescheduledTo!;
+                final dateStr =
+                    '${r.year}/${r.month.toString().padLeft(2, '0')}/${r.day.toString().padLeft(2, '0')}';
+                detailWidget = Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    'موعد جديد: $dateStr',
+                    style: CustomAppFontStyle.medium11.copyWith(
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                );
+              } else {
+                detailWidget = Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.statusWarningLight,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
+                    style: CustomAppFontStyle.medium11.copyWith(
+                      color: AppColors.statusWarning,
+                    ),
+                  ),
+                );
+              }
+
+              return Row(
+                children: [
+                  const Icon(
+                    Icons.access_time_rounded,
+                    size: 14,
+                    color: AppColors.gray71717A,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${'arrival_time'.tr()}: ${booking.startTime ?? '--:--'}',
+                    style: CustomAppFontStyle.regular12.copyWith(
+                      color: AppColors.gray71717A,
+                    ),
+                  ),
+                  const Spacer(),
+                  detailWidget,
+                ],
+              );
+            },
           ),
         ],
       ),

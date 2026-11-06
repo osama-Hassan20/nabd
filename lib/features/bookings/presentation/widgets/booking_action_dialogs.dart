@@ -37,6 +37,7 @@ class BookingActionDialogs {
     final cubit = _resolveCubit(context, bookingsCubit);
     cubit.initChangeStatusDialog(
       booking.status ?? BookingStatusEnum.scheduled,
+      booking: booking,
     );
 
     return showDialog<bool>(
@@ -68,16 +69,60 @@ class BookingActionDialogs {
                 BookingStatusEnum.scheduled,
             isLoading: state.actionStatus == RequestStatusEnum.loading,
             onSelectStatus: (status) => cubit.selectStatusToChange(status),
+            postponeDate: state.dialogPostponeDate,
+            postponeTime: state.dialogPostponeTime,
+            postponeReason: state.dialogPostponeReason,
+            onPickPostponeDate: cubit.updateDialogPostponeDate,
+            onPickPostponeTime: cubit.updateDialogPostponeTime,
+            onPostponeReasonChanged: cubit.updateDialogPostponeReason,
+            cancelReason: state.dialogCancelReason,
+            cancelledBy: state.dialogCancelledBy,
+            onCancelReasonChanged: cubit.updateDialogCancelReason,
+            onCancelledByChanged: cubit.updateDialogCancelledBy,
             onConfirm: () {
               final selected = state.dialogStatus ??
                   booking.status ??
                   BookingStatusEnum.scheduled;
+
+              if (selected == BookingStatusEnum.postponed) {
+                if (state.dialogPostponeDate == null) {
+                  CustomToast(
+                    context: ctx,
+                    header: 'please_select_rescheduled_date'.tr(),
+                  ).showErrorToast();
+                  return;
+                }
+              }
+
               if (onConfirm != null) {
                 onConfirm(selected);
               } else {
+                DateTime? rescheduledTo;
+                if (selected == BookingStatusEnum.postponed &&
+                    state.dialogPostponeDate != null) {
+                  final pDate = state.dialogPostponeDate!;
+                  final pTime = state.dialogPostponeTime ?? '09:00';
+                  final parts = pTime.split(':');
+                  final hour = int.tryParse(parts.first) ?? 9;
+                  final min =
+                      int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+                  rescheduledTo =
+                      DateTime(pDate.year, pDate.month, pDate.day, hour, min);
+                }
+
                 cubit.changeBookingStatus(
                   booking.id ?? '',
                   selected,
+                  rescheduledTo: rescheduledTo,
+                  postponeReason: state.dialogPostponeReason,
+                  cancelReason: state.dialogCancelReason,
+                  cancelledBy: state.dialogCancelledBy,
+                  cancelledAt: selected == BookingStatusEnum.cancelled
+                      ? DateTime.now()
+                      : null,
+                  arrivalTime: selected == BookingStatusEnum.waiting
+                      ? (booking.arrivalTime ?? DateTime.now())
+                      : null,
                 );
               }
             },
@@ -105,6 +150,9 @@ class BookingActionDialogs {
 
     cubit.initReassignTechniciansDialog(initialIds);
 
+    final currentDocId = booking.technicianId ??
+        (booking.technicianIds.isNotEmpty ? booking.technicianIds.first : null);
+
     return showDialog<bool>(
       context: context,
       useSafeArea: true,
@@ -131,6 +179,7 @@ class BookingActionDialogs {
           builder: (ctx, state) => ReassignTechnicianDialog(
             technicians: state.technicians,
             selectedIds: state.dialogTechnicianIds,
+            currentDoctorId: currentDocId,
             isLoading: state.actionStatus == RequestStatusEnum.loading,
             onToggleTechnician: (id) => cubit.toggleReassignTechnician(id),
             onConfirm: () {

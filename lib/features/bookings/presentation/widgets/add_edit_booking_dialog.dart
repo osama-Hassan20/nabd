@@ -126,7 +126,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
           ? (initialTechs.length == 1
                 ? initialTechs.first.name
                 : (initialTechs.isNotEmpty
-                      ? '${initialTechs.length} فنيين (${initialTechs.map((t) => t.name).join('، ')})'
+                      ? '${initialTechs.length} أطباء (${initialTechs.map((t) => t.name).join('، ')})'
                       : ''))
           : '',
     );
@@ -166,11 +166,12 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
 
   void _onHourlyRateChanged() {
     final rate = num.tryParse(_hourlyRateController.text.trim()) ?? 0;
-    final cubit = context.read<BookingsCubit>();
-    final form = cubit.state.formState;
-    final duration = form?.durationMinutes ?? 0;
-    if (rate > 0 && duration > 0) {
-      final total = (rate * (duration / 60)).round();
+    if (rate > 0) {
+      final cubit = context.read<BookingsCubit>();
+      final form = cubit.state.formState;
+      final duration = form?.durationMinutes ?? 0;
+      // In a medical clinic, consultation fee sets total price, or prorates if duration specified
+      final total = duration > 0 ? (rate * (duration / 60)).round() : rate.round();
       if (_totalPriceController.text != total.toString()) {
         _totalPriceController.text = total.toString();
       }
@@ -235,7 +236,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
       _technicianSelectorController.text = techs.first.name;
     } else {
       _technicianSelectorController.text =
-          '${techs.length} فنيين (${techs.map((t) => t.name).join('، ')})';
+          '${techs.length} أطباء (${techs.map((t) => t.name).join('، ')})';
     }
   }
 
@@ -392,7 +393,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     if (form.customer == null) {
       CustomToast(
         context: context,
-        header: 'يرجى اختيار العميل أولاً',
+        header: 'يرجى اختيار المريض أولاً',
       ).showErrorToast();
       return;
     }

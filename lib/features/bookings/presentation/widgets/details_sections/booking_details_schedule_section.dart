@@ -8,6 +8,8 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/presentation/helpers/booking_time_formatter.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+
 class BookingDetailsScheduleSection extends StatelessWidget {
   final BookingModel booking;
 
@@ -175,6 +177,95 @@ class BookingDetailsScheduleSection extends StatelessWidget {
               ],
             ),
           ),
+
+          // Postponement Information Banner
+          if (booking.status == BookingStatusEnum.postponed && booking.rescheduledTo != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.event_repeat_rounded, size: 16, color: AppColors.secondary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'postponed_to_other_day'.tr(),
+                        style: CustomAppFontStyle.semiBold13.copyWith(color: AppColors.secondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${'rescheduled_appointment'.tr()}: ${BookingTimeFormatter.formatDateWithDay(booking.rescheduledTo, context)} ${BookingTimeFormatter.formatSingleTime('${booking.rescheduledTo!.hour.toString().padLeft(2, '0')}:${booking.rescheduledTo!.minute.toString().padLeft(2, '0')}', context)}',
+                    style: CustomAppFontStyle.medium12.copyWith(color: AppColors.darkText),
+                  ),
+                  if (booking.postponeReason != null && booking.postponeReason!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${'postpone_reason_label'.tr()}: ${booking.postponeReason}',
+                      style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray71717A),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+
+          // Cancellation Information Banner
+          if (booking.status == BookingStatusEnum.cancelled) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.errorLight,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.cancel_outlined, size: 16, color: AppColors.error),
+                      const SizedBox(width: 8),
+                      Text(
+                        'cancelled_today'.tr(),
+                        style: CustomAppFontStyle.semiBold13.copyWith(color: AppColors.error),
+                      ),
+                      const Spacer(),
+                      Text(
+                        booking.cancelledBy == 'clinic'
+                            ? 'cancelled_by_clinic'.tr()
+                            : 'cancelled_by_patient'.tr(),
+                        style: CustomAppFontStyle.medium11.copyWith(color: AppColors.error),
+                      ),
+                    ],
+                  ),
+                  if (booking.cancelReason != null && booking.cancelReason!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${'cancel_reason_label'.tr()}: ${booking.cancelReason}',
+                      style: CustomAppFontStyle.regular12.copyWith(color: AppColors.darkText),
+                    ),
+                  ],
+                  if (booking.cancelledAt != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${'cancellation_time'.tr()}: ${booking.cancelledAt!.toCustomFormatWithTime()}',
+                      style: CustomAppFontStyle.regular11.copyWith(color: AppColors.gray71717A),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
 
           if (booking.createdAt != null) ...[
             const SizedBox(height: 14),

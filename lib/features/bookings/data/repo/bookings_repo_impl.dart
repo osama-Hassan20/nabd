@@ -2,12 +2,14 @@ import 'package:dartz/dartz.dart';
 import 'package:eyadty/core/api/api_consumer.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
 import 'package:eyadty/features/bookings/data/models/bookings_response_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
@@ -200,6 +202,11 @@ class BookingsRepoImpl implements BookingsRepo {
         specialty: 'أخصائية طب وجراحة العيون',
         visitType: BookingTypeEnum.newVisit,
         status: BookingStatusEnum.postponed,
+        originalAppointmentTime:
+            today.add(const Duration(hours: 11, minutes: 30)),
+        rescheduledTo: today.add(const Duration(days: 3, hours: 14)),
+        postponedAt: today.add(const Duration(hours: 10)),
+        postponeReason: 'تأخرت المريضة في الطريق وطلبت تأجيل الموعد لتاريخ آخر',
         paymentStatus: PaymentStatusEnum.unpaid,
         consultationFee: 250,
         paidAmount: 0,
@@ -307,6 +314,7 @@ class BookingsRepoImpl implements BookingsRepo {
       ),
       BookingModel(
         id: 'MED-108',
+        branchId: 'branch_2',
         queueNumber: 8,
         patientId: 'PAT-08',
         patientName: 'وليد عصام النجار',
@@ -396,6 +404,10 @@ class BookingsRepoImpl implements BookingsRepo {
         specialty: 'استشاري جراحة العظام والمفاصل',
         visitType: BookingTypeEnum.newVisit,
         status: BookingStatusEnum.cancelled,
+        cancelledAt: today.add(const Duration(hours: 9)),
+        cancelledBy: 'patient',
+        cancelReason:
+            'اعتذر المريض عن الحضور وتم إلغاء الحجز بناءً على اتصاله هاتفياً',
         paymentStatus: PaymentStatusEnum.unpaid,
         consultationFee: 350,
         paidAmount: 0,
@@ -422,38 +434,61 @@ class BookingsRepoImpl implements BookingsRepo {
         hourlyRate: 350,
         totalPrice: 350,
       ),
+      BookingModel(
+        id: 'MED-111',
+        queueNumber: 11,
+        patientId: 'PAT-11',
+        patientName: 'أحمد محمود البدري',
+        patientPhone: '+20 111 234 5678',
+        fileNumber: 'EMR-2024-111',
+        doctorId: 'DOC-01',
+        doctorName: 'د. رامي سلامة',
+        clinicRoom: 'عيادة الباطنة (غرفة 1)',
+        specialty: 'استشاري أمراض باطنة وسكري',
+        visitType: BookingTypeEnum.newVisit,
+        status: BookingStatusEnum.noShow,
+        paymentStatus: PaymentStatusEnum.unpaid,
+        consultationFee: 300,
+        paidAmount: 0,
+        appointmentTime: today.add(const Duration(hours: 8, minutes: 30)),
+        arrivalTime: null,
+        estimatedWaitMinutes: 0,
+        notes: 'لم يحضر المريض في الموعد المحدد ولم يتم تسجيل وصوله بالعيادة',
+        createdAt: now.subtract(const Duration(days: 1)),
+        customer: const CustomerModel(
+          id: 'PAT-11',
+          name: 'أحمد محمود البدري',
+          phone: '+20 111 234 5678',
+          address: 'مدينة نصر - عباس العقاد',
+        ),
+        technicians: const [
+          TechnicianModel(id: 'DOC-01', name: 'د. رامي سلامة'),
+        ],
+        serviceName: 'عيادة الباطنة (غرفة 1)',
+        bookingType: BookingTypeEnum.newVisit,
+        date: today,
+        startTime: '08:30',
+        endTime: '09:00',
+        durationMinutes: 30,
+        hourlyRate: 300,
+        totalPrice: 300,
+      ),
     ]);
   }
 
   @override
-  Future<Either<Failures, BookingSummaryModel>> getBookingSummary() async {
+  Future<Either<Failures, BookingSummaryModel>> getBookingSummary({
+    DateTime? date,
+    String? branchId,
+  }) async {
     try {
-      final total = _bookings.length;
-      final waiting = _bookings
-          .where((b) =>
-              b.status == BookingStatusEnum.waiting ||
-              b.status == BookingStatusEnum.scheduled)
-          .length;
-      final inConsult = _bookings
-          .where((b) => b.status == BookingStatusEnum.inConsultation)
-          .length;
-      final completed = _bookings
-          .where((b) => b.status == BookingStatusEnum.completed)
-          .length;
-      final cancelled = _bookings
-          .where((b) => b.status == BookingStatusEnum.cancelled)
-          .length;
-
-      return right(
-        BookingSummaryModel(
-          totalBookings: total,
-          upcomingBookings: waiting,
-          inWaitingCount: waiting,
-          inConsultationCount: inConsult,
-          completedBookings: completed,
-          cancelledBookings: cancelled,
-        ),
+      final targetDate = date ?? CairoTimeHelper.now();
+      final summary = BookingStatisticsCalculator.calculateSummary(
+        bookings: _bookings,
+        selectedDate: targetDate,
+        branchId: branchId,
       );
+      return right(summary);
     } catch (e) {
       return left(ServerFailure(errMessage: e.toString()));
     }
@@ -469,6 +504,7 @@ class BookingsRepoImpl implements BookingsRepo {
       String? searchQuery;
       String? statusFilter;
       String? dateFilter;
+      String? branchIdFilter;
       String? bookingTypeFilter;
       String? dayOfWeekFilter;
       String? customerIdFilter;
@@ -481,6 +517,8 @@ class BookingsRepoImpl implements BookingsRepo {
           statusFilter = filter.value.toString().trim().toLowerCase();
         } else if (filter.key == 'date') {
           dateFilter = filter.value.toString().trim();
+        } else if (filter.key == 'branchId' || filter.key == 'branch') {
+          branchIdFilter = filter.value.toString().trim();
         } else if (filter.key == 'bookingType' || filter.key == 'type') {
           bookingTypeFilter = filter.value.toString().trim().toLowerCase();
         } else if (filter.key == 'dayOfWeek') {
@@ -509,28 +547,56 @@ class BookingsRepoImpl implements BookingsRepo {
         }).toList();
       }
 
-      // Status filter
+      // Branch filter
+      if (branchIdFilter != null &&
+          branchIdFilter.isNotEmpty &&
+          branchIdFilter != 'all') {
+        filtered = filtered
+            .where((b) =>
+                BookingStatisticsCalculator.matchesBranch(b, branchIdFilter))
+            .toList();
+      }
+
+      DateTime? selectedDateObj;
+      if (dateFilter != null && dateFilter.isNotEmpty && dateFilter.length == 10) {
+        selectedDateObj = DateTime.tryParse(dateFilter);
+      }
+
+      // Status & Date filter synchronized with BookingStatisticsCalculator
       if (statusFilter != null &&
           statusFilter.isNotEmpty &&
           statusFilter != 'all') {
+        final statusEnum = BookingStatusEnum.fromValue(statusFilter);
+        if (statusEnum != null && selectedDateObj != null) {
+          filtered = filtered.where((b) {
+            return BookingStatisticsCalculator.matchesStatusFilter(
+              b,
+              statusEnum,
+              selectedDate: selectedDateObj!,
+              branchId: branchIdFilter,
+            );
+          }).toList();
+        } else if (statusEnum != null) {
+          filtered = filtered.where((b) => b.status == statusEnum).toList();
+        }
+      } else if (selectedDateObj != null) {
+        // Date filter with all statuses: include bookings for this date or postponed from this date
         filtered = filtered.where((b) {
-          return b.status?.value.toLowerCase() == statusFilter;
+          return BookingStatisticsCalculator.matchesStatusFilter(
+            b,
+            null,
+            selectedDate: selectedDateObj!,
+            branchId: branchIdFilter,
+          );
         }).toList();
-      }
-
-      // Date filter (YYYY-MM-DD or YYYY-MM)
-      if (dateFilter != null && dateFilter.isNotEmpty) {
+      } else if (dateFilter != null && dateFilter.length == 7) {
+        // Month filter
         filtered = filtered.where((b) {
-          if (b.date == null) return false;
-          final d = b.date!;
-          final dayFormatted =
-              "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+          final d = b.appointmentTime ?? b.date;
+          if (d == null) return false;
           final monthFormatted =
               "${d.year}-${d.month.toString().padLeft(2, '0')}";
-          if (dateFilter!.length == 7) {
-            return monthFormatted == dateFilter;
-          }
-          return dayFormatted == dateFilter;
+          return monthFormatted == dateFilter;
         }).toList();
       }
 
@@ -653,9 +719,49 @@ class BookingsRepoImpl implements BookingsRepo {
     try {
       final index = _bookings.indexWhere((b) => b.id == params.bookingId);
       if (index != -1) {
-        _bookings[index] = _bookings[index].copyWith(
+        final existing = _bookings[index];
+        final now = CairoTimeHelper.now();
+
+        DateTime? originalAppointmentTime = existing.originalAppointmentTime;
+        DateTime? rescheduledTo = existing.rescheduledTo;
+        DateTime? postponedAt = existing.postponedAt;
+        String? postponeReason = existing.postponeReason;
+
+        String? cancelReason = existing.cancelReason;
+        String? cancelledBy = existing.cancelledBy;
+        DateTime? cancelledAt = existing.cancelledAt;
+
+        DateTime? arrivalTime = existing.arrivalTime;
+
+        if (params.newStatus == BookingStatusEnum.postponed) {
+          originalAppointmentTime ??=
+              existing.appointmentTime ?? existing.date;
+          rescheduledTo = params.rescheduledTo ?? existing.rescheduledTo;
+          postponedAt = now;
+          postponeReason = params.postponeReason ?? existing.postponeReason;
+        } else if (params.newStatus == BookingStatusEnum.cancelled) {
+          cancelReason = params.cancelReason ?? existing.cancelReason;
+          cancelledBy = params.cancelledBy ?? existing.cancelledBy ?? 'patient';
+          cancelledAt = params.cancelledAt ?? now;
+        } else if (params.newStatus == BookingStatusEnum.waiting) {
+          // If moving to waiting room from no-show, register arrival
+          if (existing.status == BookingStatusEnum.noShow ||
+              existing.arrivalTime == null) {
+            arrivalTime = params.arrivalTime ?? now;
+          }
+        }
+
+        _bookings[index] = existing.copyWith(
           status: params.newStatus,
-          updatedAt: DateTime.now(),
+          originalAppointmentTime: originalAppointmentTime,
+          rescheduledTo: rescheduledTo,
+          postponedAt: postponedAt,
+          postponeReason: postponeReason,
+          cancelReason: cancelReason,
+          cancelledBy: cancelledBy,
+          cancelledAt: cancelledAt,
+          arrivalTime: arrivalTime,
+          updatedAt: now,
         );
         return right(unit);
       }
@@ -694,8 +800,21 @@ class BookingsRepoImpl implements BookingsRepo {
   @override
   Future<Either<Failures, Unit>> deleteBooking(String bookingId) async {
     try {
-      _bookings.removeWhere((b) => b.id == bookingId);
-      return right(unit);
+      final index = _bookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        final existing = _bookings[index];
+        final now = CairoTimeHelper.now();
+        _bookings[index] = existing.copyWith(
+          status: BookingStatusEnum.cancelled,
+          cancelledAt: now,
+          cancelledBy: existing.cancelledBy ?? 'clinic',
+          cancelReason: existing.cancelReason ??
+              'تم إلغاء الحجز بواسطة إدارة العيادة بناءً على طلب المريض',
+          updatedAt: now,
+        );
+        return right(unit);
+      }
+      return left(const ServerFailure(errMessage: 'Booking not found'));
     } catch (e) {
       return left(ServerFailure(errMessage: e.toString()));
     }

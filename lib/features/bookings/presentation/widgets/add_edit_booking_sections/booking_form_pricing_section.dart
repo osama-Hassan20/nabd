@@ -20,7 +20,7 @@ class BookingFormPricingSection extends StatelessWidget {
         Expanded(
           child: CustomTextFormField(
             controller: hourlyRateController,
-            headerText: 'hourly_rate_label'.tr(),
+            headerText: 'consultation_fee_label'.tr(),
             hintText: '0',
             textInputType: TextInputType.number,
             inputFormatters: [

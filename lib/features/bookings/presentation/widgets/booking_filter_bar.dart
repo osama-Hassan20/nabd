@@ -225,6 +225,43 @@ class _StatusDropdownState extends State<_StatusDropdown> {
       list: list,
       itemAsString: (s) => s?.label ?? 'all_statuses'.tr(),
       hintText: 'all_statuses'.tr(),
+      itemBuilder: (context, s) {
+        if (s == null) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Text(
+              'all_statuses'.tr(),
+              style: CustomAppFontStyle.medium14.copyWith(
+                color: AppColors.darkText,
+              ),
+            ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: s.color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  s.label,
+                  style: CustomAppFontStyle.medium14.copyWith(
+                    color: AppColors.darkText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
       changeValue: (s) => widget.onChanged(s),
     );
   }

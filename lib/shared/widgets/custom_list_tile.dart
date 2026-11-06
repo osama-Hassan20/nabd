@@ -1,4 +1,4 @@
-﻿import 'package:eyadty/core/layout_adaptive/widgets/custom_text.dart';
+import 'package:eyadty/core/layout_adaptive/widgets/custom_text.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 
 import '../../../core/utils/theme/app_colors.dart';
@@ -112,6 +112,8 @@ class CustomListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRaduis),
         ),
         child: Column(
+          mainAxisSize: mainAxisSize,
+          mainAxisAlignment: MainAxisAlignment.center,
           spacing: expantionWidget != null ? spacing ?? 5 : spacing ?? 0,
           children: [
             Row(
