@@ -1,8 +1,11 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/providers/active_bookings_count_provider.dart';
 import '../../../../core/services/audit_logger.dart';
 import '../../../settings/data/models/special_holiday_model.dart';
+import '../../../settings/data/repo/settings_mock_repo_impl.dart';
+import '../../../settings/domain/repo/settings_repo.dart';
 import '../../domain/repo/branches_repo.dart';
 import '../models/branch_model.dart';
 import '../models/copy_branch_settings_param.dart';
@@ -207,6 +210,13 @@ class BranchesMockRepoImpl implements BranchesRepo {
 
       _branches[index] = updated;
 
+      if (getIt.isRegistered<SettingsRepo>()) {
+        final settingsRepo = getIt<SettingsRepo>();
+        if (settingsRepo is SettingsMockRepoImpl) {
+          settingsRepo.syncFromBranchModel(updated);
+        }
+      }
+
       auditLogger?.log(
         eventType: 'update_branch',
         performedByUserId: currentUserId,
@@ -277,6 +287,13 @@ class BranchesMockRepoImpl implements BranchesRepo {
       );
 
       _branches[index] = updated;
+
+      if (getIt.isRegistered<SettingsRepo>()) {
+        final settingsRepo = getIt<SettingsRepo>();
+        if (settingsRepo is SettingsMockRepoImpl) {
+          settingsRepo.syncFromBranchModel(updated);
+        }
+      }
 
       auditLogger?.log(
         eventType: 'toggle_branch_status',
@@ -381,6 +398,18 @@ class BranchesMockRepoImpl implements BranchesRepo {
 
       target = target.copyWith(updatedAt: DateTime.now());
       _branches[targetIndex] = target;
+
+      if (getIt.isRegistered<SettingsRepo>()) {
+        final settingsRepo = getIt<SettingsRepo>();
+        if (settingsRepo is SettingsMockRepoImpl) {
+          settingsRepo.copyBranchSettings(
+            sourceBranchId: srcId,
+            targetBranchId: targetId,
+            copyWorkingHours: param.copyWorkingHours ?? false,
+            copySpecialHolidays: param.copySpecialHolidays ?? false,
+          );
+        }
+      }
 
       auditLogger?.log(
         eventType: 'copy_branch_settings',
