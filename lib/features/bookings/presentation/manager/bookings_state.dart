@@ -198,18 +198,12 @@ class BookingsState extends Equatable {
   ];
 
   static const List<BookingTechnicianOption> initialTechnicians = [
-    BookingTechnicianOption(id: 'DOC-01', name: 'د. رامي سلامة (باطنة)'),
-    BookingTechnicianOption(id: 'DOC-02', name: 'د. نورهان السيد (أطفال)'),
-    BookingTechnicianOption(id: 'DOC-03', name: 'د. حازم زكي (عظام)'),
-    BookingTechnicianOption(id: 'DOC-04', name: 'د. ريم المهدي (عيون)'),
-    BookingTechnicianOption(
-      id: 'TECH-03',
-      name: 'د. يوسف النجار (أنف وأذن)',
-      isAvailable: false,
-      unavailableReason: 'في إجازة سنوية',
-    ),
-    BookingTechnicianOption(id: 'TECH-04', name: 'د. طارق العسيري (جلدية)'),
-    BookingTechnicianOption(id: 'TECH-05', name: 'د. ماجد القاضي (أسنان)'),
+    BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى (باطنة وقلب)'),
+    BookingTechnicianOption(id: 'DOC-02', name: 'د. أحمد الشافعي (جراحة عامة ومناظير)'),
+    BookingTechnicianOption(id: 'DOC-03', name: 'د. سارة المنشاوي (أطفال وحديثي الولادة)'),
+    BookingTechnicianOption(id: 'DOC-04', name: 'د. محمود خليل (عظام ومفاصل)'),
+    BookingTechnicianOption(id: 'DOC-05', name: 'د. ريم عبد الوهاب (جلدية وتجميل)'),
+    BookingTechnicianOption(id: 'DOC-06', name: 'د. طارق العوضي (أنف وأذن وحنجرة)'),
   ];
 
   final String selectedBranchId;

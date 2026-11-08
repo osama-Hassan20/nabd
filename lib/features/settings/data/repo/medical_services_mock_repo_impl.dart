@@ -76,8 +76,8 @@ class MedicalServicesMockRepoImpl implements MedicalServicesRepo {
         durationMinutes: 30,
         isActive: true,
         assignedDoctorId: 'DOC-01',
-        assignedDoctorName: 'د. رامي سلامة',
-        description: 'فحص سريري متقدم ومخصص لمرضى القلب والأوعية الدموية مع د. رامي.',
+        assignedDoctorName: 'د. حسام الدين مصطفى',
+        description: 'فحص سريري متقدم ومخصص لمرضى القلب والأوعية الدموية مع د. حسام الدين مصطفى.',
       ),
       const MedicalServiceModel(
         id: 'SRV-08',

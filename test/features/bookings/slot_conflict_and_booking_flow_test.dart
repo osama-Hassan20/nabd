@@ -80,7 +80,7 @@ void main() {
       // DOC-01 عنده حجز MED-101 اليوم من 10:00 إلى 10:30
       final conflictingBooking = BookingModel(
         doctorId: 'DOC-01',
-        technicians: const [TechnicianModel(id: 'DOC-01', name: 'د. رامي سلامة')],
+        technicians: const [TechnicianModel(id: 'DOC-01', name: 'د. حسام الدين مصطفى')],
         patientId: 'PAT-000102',
         date: testDate,
         startTime: '10:00',
@@ -105,7 +105,7 @@ void main() {
       // موعد الساعة 08:00 صباحاً بينما الوقت الحالي 08:30
       final pastBooking = BookingModel(
         doctorId: 'DOC-01',
-        technicians: const [TechnicianModel(id: 'DOC-01', name: 'د. رامي سلامة')],
+        technicians: const [TechnicianModel(id: 'DOC-01', name: 'د. حسام الدين مصطفى')],
         patientId: 'PAT-000102',
         date: testDate,
         startTime: '08:00',
@@ -149,7 +149,7 @@ void main() {
       // DOC-01 استراحته من 12:00 إلى 12:30
       final breakBooking = BookingModel(
         doctorId: 'DOC-01',
-        technicians: const [TechnicianModel(id: 'DOC-01', name: 'د. رامي سلامة')],
+        technicians: const [TechnicianModel(id: 'DOC-01', name: 'د. حسام الدين مصطفى')],
         patientId: 'PAT-000103',
         date: testDate,
         startTime: '12:00',
@@ -174,7 +174,7 @@ void main() {
 
       // 1. اختيار الطبيب
       cubit.updateFormTechnician(
-        const BookingTechnicianOption(id: 'DOC-01', name: 'د. رامي سلامة'),
+        const BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى'),
       );
       // لم تكتمل المدخلات بعد (الخدمة غير محددة)
       expect(cubit.state.slotsStatus, RequestStatusEnum.initial);
@@ -207,7 +207,7 @@ void main() {
       cubit.initBookingForm(null);
 
       cubit.updateFormTechnician(
-        const BookingTechnicianOption(id: 'DOC-01', name: 'د. رامي سلامة'),
+        const BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى'),
       );
       final slotsFuture1 = cubit.stream
           .firstWhere((s) => s.slotsStatus == RequestStatusEnum.success);
@@ -227,7 +227,7 @@ void main() {
 
       // تغيير الطبيب -> يمسح الفترة المختارة ويعيد التحميل
       cubit.updateFormTechnician(
-        const BookingTechnicianOption(id: 'DOC-02', name: 'د. نورهان السيد'),
+        const BookingTechnicianOption(id: 'DOC-02', name: 'د. أحمد الشافعي'),
       );
       expect(cubit.state.formState?.startTime, '');
       expect(cubit.state.formState?.endTime, '');
@@ -245,7 +245,7 @@ void main() {
         ),
       );
       cubit.updateFormTechnician(
-        const BookingTechnicianOption(id: 'DOC-01', name: 'د. رامي سلامة'),
+        const BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى'),
       );
       final slotsFuture = cubit.stream
           .firstWhere((s) => s.slotsStatus == RequestStatusEnum.success);

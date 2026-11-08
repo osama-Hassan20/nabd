@@ -148,3 +148,4 @@ STOP_BEFORE     = Wave 7      # (F-33 وما بعده) يحتاج backend حقي
 1. احفظ الملف ده في docs/AGENT_OPERATING_GUIDE.md.
 2. نفّذ R-1 لـ R-4 ثم F-02 (M3 لـ M6)، وبعدها الموجة 1 وكمّل حسب CHECKPOINT_MODE.
 3. ابدأ بتحديث PROGRESS.md بالخطوة الأولى.
+

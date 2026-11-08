@@ -52,7 +52,7 @@ void main() {
       final res = await repo.getStaffUsers();
       final users = res.getOrElse(() => []);
 
-      expect(users.length, greaterThanOrEqualTo(14)); // owner + medDir + mgr + rec + nurse + acc + hr + 7 docs
+      expect(users.length, greaterThanOrEqualTo(13)); // owner + medDir + mgr + rec + nurse + acc + hr + 6 docs
 
       // Owner exists and has isOwner: true
       final owner = users.firstWhere((u) => u.id == 'USER-OWNER');
@@ -64,8 +64,8 @@ void main() {
       expect(medDir.isOwner, isFalse);
       expect(medDir.linkedDoctorId, isNull);
 
-      // Doctors mapped DOC-01 through DOC-07
-      for (int i = 1; i <= 7; i++) {
+      // Doctors mapped DOC-01 through DOC-06
+      for (int i = 1; i <= 6; i++) {
         final docId = 'DOC-0$i';
         final docUser = users.firstWhere((u) => u.linkedDoctorId == docId);
         expect(docUser.id, equals('USER-$docId'));

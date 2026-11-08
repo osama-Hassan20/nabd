@@ -273,11 +273,12 @@ class _DoctorBookingsSectionState extends State<DoctorBookingsSection>
     cubit.initReassignDoctorsDialog(booking.technicianIds);
 
     const availableDoctors = [
-      BookingDoctorOption(id: 'DOC-01', name: 'د. خالد عبد الرحمن (باطنة)'),
-      BookingDoctorOption(id: 'DOC-02', name: 'د. سارة المنشاوي (أطفال)'),
-      BookingDoctorOption(id: 'DOC-03', name: 'د. محمد إبراهيم (عظام)'),
-      BookingDoctorOption(id: 'DOC-04', name: 'د. فاطمة الزهراء (جلدية)'),
-      BookingDoctorOption(id: 'DOC-05', name: 'د. محمود حسن (أنف وأذن)'),
+      BookingDoctorOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى (باطنة وقلب)'),
+      BookingDoctorOption(id: 'DOC-02', name: 'د. أحمد الشافعي (جراحة عامة ومناظير)'),
+      BookingDoctorOption(id: 'DOC-03', name: 'د. سارة المنشاوي (أطفال وحديثي الولادة)'),
+      BookingDoctorOption(id: 'DOC-04', name: 'د. محمود خليل (عظام ومفاصل)'),
+      BookingDoctorOption(id: 'DOC-05', name: 'د. ريم عبد الوهاب (جلدية وتجميل)'),
+      BookingDoctorOption(id: 'DOC-06', name: 'د. طارق العوضي (أنف وأذن وحنجرة)'),
     ];
 
     showDialog(

@@ -136,7 +136,7 @@ void main() {
       cubit.initBookingForm(null);
 
       cubit.updateFormTechnician(
-        const BookingTechnicianOption(id: 'DOC-01', name: 'د. رامي سلامة'),
+        const BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى'),
       );
       cubit.updateFormService(
         const MedicalServiceModel(

@@ -244,7 +244,7 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
     );
     _passwords[hrId] = '123456';
 
-    // 2.8 Doctors mapped strictly to existing IDs: DOC-01 through DOC-07
+    // 2.8 Doctors mapped strictly to existing IDs: DOC-01 through DOC-06 from DoctorsRepo
     final doctorsData = [
       (
         'DOC-01',
@@ -269,31 +269,24 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
       ),
       (
         'DOC-04',
-        'د. خالد محمود',
-        'khaled@eyadty.com',
-        '+20 10 5566 7788',
+        'د. محمود خليل',
+        'mahmoud@eyadty.com',
+        '+20 15 4455 6677',
         'استشاري جراحة العظام والمفاصل'
       ),
       (
         'DOC-05',
-        'د. نورهان علي',
-        'nourhan@eyadty.com',
-        '+20 11 7788 9900',
+        'د. ريم عبد الوهاب',
+        'reem@eyadty.com',
+        '+20 10 5566 7788',
         'أخصائية جلدية وتجميل وليزر'
       ),
       (
         'DOC-06',
-        'د. محمد عبد الرحمن',
-        'm.abdelrahman@eyadty.com',
-        '+20 12 8899 0011',
+        'د. طارق العوضي',
+        'tarek@eyadty.com',
+        '+20 11 6677 8899',
         'استشاري جراحة الأنف والأذن والحنجرة'
-      ),
-      (
-        'DOC-07',
-        'د. ريهام سعيد',
-        'reham@eyadty.com',
-        '+20 10 9900 1122',
-        'أخصائية طب وجراحة العيون'
       ),
     ];
 
