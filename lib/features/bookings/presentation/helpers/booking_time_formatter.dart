@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 
 class BookingTimeFormatter {
   /// Formats date to day name + full date:
@@ -9,7 +10,7 @@ class BookingTimeFormatter {
     if (date == null) return '';
     final locale = context.locale.languageCode;
     final formatter = DateFormat('EEEE، d MMMM y', locale);
-    return formatter.format(date);
+    return AppFormatterHelper.forceLatinDigits(formatter.format(date));
   }
 
   /// Formats compact date (e.g. "15 أكتوبر 2026" or "Oct 15, 2026")
@@ -17,7 +18,7 @@ class BookingTimeFormatter {
     if (date == null) return '';
     final locale = context.locale.languageCode;
     final formatter = DateFormat('d MMM y', locale);
-    return formatter.format(date);
+    return AppFormatterHelper.forceLatinDigits(formatter.format(date));
   }
 
   /// Formats day of week short (e.g. "الأربعاء" or "Wed")

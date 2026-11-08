@@ -11,12 +11,12 @@ import 'package:eyadty/features/analytics/presentation/pages/analytics_page.dart
 import 'package:eyadty/features/bookings/presentation/pages/booking_details_page.dart';
 import 'package:eyadty/features/bookings/presentation/pages/bookings_page.dart';
 import 'package:eyadty/features/cashier/presentation/pages/cashier_page.dart';
-import 'package:eyadty/features/customers/presentation/pages/customer_details_page.dart';
-import 'package:eyadty/features/customers/presentation/pages/customers_page.dart';
+import 'package:eyadty/features/patients/presentation/pages/patient_details_page.dart';
+import 'package:eyadty/features/patients/presentation/pages/patients_page.dart';
 import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
 import 'package:eyadty/features/settings/presentation/pages/settings_page.dart';
-import 'package:eyadty/features/technicians/presentation/pages/technician_details_page.dart';
-import 'package:eyadty/features/technicians/presentation/pages/technicians_page.dart';
+import 'package:eyadty/features/doctors/presentation/pages/doctor_details_page.dart';
+import 'package:eyadty/features/doctors/presentation/pages/doctors_page.dart';
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/shared/app_layout/presentation/pages/app_layout.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
@@ -282,12 +282,12 @@ final GoRouter appRouter = GoRouter(
             'booking_details'.tr(),
             'nav_queue_subtitle'.tr(),
           ),
-          '${AppRouter.customers}/:id': (
-            'customer_details'.tr(),
+          '${AppRouter.patients}/:id': (
+            'patient_details'.tr(),
             'nav_patients_subtitle'.tr(),
           ),
-          '${AppRouter.technicians}/:id': (
-            'technician_details'.tr(),
+          '${AppRouter.doctors}/:id': (
+            'doctor_details'.tr(),
             'nav_doctors_subtitle'.tr(),
           ),
         };
@@ -351,11 +351,11 @@ final GoRouter appRouter = GoRouter(
 
         // 2. Patients & Medical EMR
         GoRoute(
-          path: AppRouter.customers,
-          name: AppRouter.customers,
+          path: AppRouter.patients,
+          name: AppRouter.patients,
           pageBuilder: (context, state) => buildAnimatedPage(
             key: state.pageKey,
-            child: const CustomersPage(),
+            child: const PatientsPage(),
             animationType: checkIsIOS()
                 ? AnimationType.cupertino
                 : AnimationType.slideFromLeft,
@@ -364,12 +364,12 @@ final GoRouter appRouter = GoRouter(
           routes: [
             GoRoute(
               path: ':id',
-              name: 'customerDetails',
+              name: 'patientDetails',
               pageBuilder: (context, state) {
                 final id = state.pathParameters['id'] ?? '';
                 return buildAnimatedPage(
                   key: state.pageKey,
-                  child: CustomerDetailsPage(customerId: id),
+                  child: PatientDetailsPage(patientId: id),
                   animationType: checkIsIOS()
                       ? AnimationType.cupertino
                       : AnimationType.slideFromRight,
@@ -396,11 +396,11 @@ final GoRouter appRouter = GoRouter(
 
         // 4. Doctors & Staff Schedules
         GoRoute(
-          path: AppRouter.technicians,
-          name: AppRouter.technicians,
+          path: AppRouter.doctors,
+          name: AppRouter.doctors,
           pageBuilder: (context, state) => buildAnimatedPage(
             key: state.pageKey,
-            child: const TechniciansPage(),
+            child: const DoctorsPage(),
             animationType: checkIsIOS()
                 ? AnimationType.cupertino
                 : AnimationType.slideFromLeft,
@@ -409,12 +409,12 @@ final GoRouter appRouter = GoRouter(
           routes: [
             GoRoute(
               path: ':id',
-              name: 'technicianDetails',
+              name: 'doctorDetails',
               pageBuilder: (context, state) {
                 final id = state.pathParameters['id'] ?? '';
                 return buildAnimatedPage(
                   key: state.pageKey,
-                  child: TechnicianDetailsPage(technicianId: id),
+                  child: DoctorDetailsPage(doctorId: id),
                   animationType: checkIsIOS()
                       ? AnimationType.cupertino
                       : AnimationType.slideFromRight,

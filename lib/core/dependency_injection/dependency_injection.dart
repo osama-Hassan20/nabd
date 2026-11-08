@@ -5,6 +5,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/services/notification_service.dart';
 import 'package:eyadty/shared/app_layout/data/repositories/layout_repo_impl.dart';
 import 'package:eyadty/shared/app_layout/domain/repositories/layout_repo.dart';
@@ -14,7 +16,7 @@ import 'package:eyadty/shared/auth/domain/repositories/login_repo.dart';
 import 'package:eyadty/shared/auth/domain/use_cases/login/login_use_case.dart';
 import 'package:eyadty/shared/cubit/basic_cubit.dart';
 
-import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
@@ -22,22 +24,30 @@ import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_cas
 import 'package:eyadty/features/bookings/domain/use_cases/get_booking_by_id_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_booking_summary_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/get_doctor_bookings_for_date_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 
-// Customers Feature
-import 'package:eyadty/features/customers/data/repo/customers_repo_impl.dart';
-import 'package:eyadty/features/customers/domain/repo/customers_repo.dart';
-import 'package:eyadty/features/customers/domain/use_cases/add_customer_use_case.dart';
-import 'package:eyadty/features/customers/domain/use_cases/delete_customer_use_case.dart';
-import 'package:eyadty/features/customers/domain/use_cases/get_customer_by_id_use_case.dart';
-import 'package:eyadty/features/customers/domain/use_cases/get_customers_use_case.dart';
-import 'package:eyadty/features/customers/domain/use_cases/update_customer_use_case.dart';
-import 'package:eyadty/features/customers/presentation/manager/customers_cubit.dart';
+// Patients Feature
+import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/domain/repo/medical_catalog_repo.dart';
+import 'package:eyadty/features/patients/domain/repo/patients_repo.dart';
+import 'package:eyadty/features/patients/domain/use_cases/add_medical_catalog_item_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/add_patient_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/archive_patient_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/delete_patient_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/find_patients_by_phone_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/get_medical_catalog_items_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/get_patient_by_id_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/get_patients_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/unarchive_patient_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/update_patient_use_case.dart';
+import 'package:eyadty/features/patients/presentation/manager/patients_cubit.dart';
 
 // Settings Feature
-import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/features/settings/domain/use_cases/add_special_holiday_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/change_password_use_case.dart';
@@ -46,18 +56,31 @@ import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_u
 import 'package:eyadty/features/settings/domain/use_cases/update_company_settings_use_case.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 
-// Technicians Feature
-import 'package:eyadty/features/technicians/data/repo/technicians_repo_impl.dart';
-import 'package:eyadty/features/technicians/domain/repo/technicians_repo.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/add_technician_leave_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/add_technician_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/delete_technician_leave_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/delete_technician_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/get_technician_by_id_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/get_technician_leaves_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/get_technicians_use_case.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/update_technician_use_case.dart';
-import 'package:eyadty/features/technicians/presentation/cubit/technicians_cubit.dart';
+// Medical Services Catalog Feature
+import 'package:eyadty/features/settings/data/repo/medical_services_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/domain/repo/medical_services_repo.dart';
+import 'package:eyadty/features/settings/domain/use_cases/add_medical_service_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/delete_medical_service_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/get_medical_service_by_id_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/get_medical_services_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/toggle_medical_service_status_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/update_medical_service_use_case.dart';
+import 'package:eyadty/features/settings/presentation/cubit/medical_services_cubit.dart';
+
+// Doctors Feature
+import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/domain/repo/doctors_repo.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/add_doctor_leave_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/add_doctor_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/delete_doctor_leave_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/delete_doctor_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_by_id_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_leaves_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_schedule_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctors_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/save_doctor_schedule_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/update_doctor_use_case.dart';
+import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 
 // Features
 import 'package:eyadty/features/home_dashboard/presentation/cubit/home_dashboard_cubit.dart';
@@ -100,6 +123,18 @@ Future<void> setupGetIt() async {
     () => NotificationService(),
   );
 
+  // ─── Session & Role Provider ──────────────────────────────────────────────
+  getIt.registerLazySingleton<SessionCubit>(
+    () => SessionCubit(
+      const SessionState(
+        currentRole: UserRoleEnum.admin,
+        userId: 'USR-001',
+        userName: 'Admin User',
+      ),
+    ),
+  );
+  getIt.registerLazySingleton<CurrentRoleProvider>(() => getIt<SessionCubit>());
+
   // ─── Shared & Auth ─────────────────────────────────────────────────────────
   getIt.registerLazySingleton<LoginRepo>(
     () => LoginRepoImpl(apiConsumer: getIt<DioConsumer>()),
@@ -125,7 +160,7 @@ Future<void> setupGetIt() async {
 
   // ─── Bookings Feature ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<BookingsRepo>(
-    () => BookingsRepoImpl(apiConsumer: getIt<DioConsumer>()),
+    () => BookingsMockRepoImpl(apiConsumer: getIt<DioConsumer>()),
   );
 
   getIt.registerLazySingleton<GetBookingSummaryUseCase>(
@@ -152,6 +187,9 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<DeleteBookingUseCase>(
     () => DeleteBookingUseCase(repo: getIt<BookingsRepo>()),
   );
+  getIt.registerLazySingleton<GetDoctorBookingsForDateUseCase>(
+    () => GetDoctorBookingsForDateUseCase(repo: getIt<BookingsRepo>()),
+  );
 
   getIt.registerFactory<BookingsCubit>(
     () => BookingsCubit(
@@ -163,39 +201,73 @@ Future<void> setupGetIt() async {
       changeBookingStatusUseCase: getIt<ChangeBookingStatusUseCase>(),
       reassignTechnicianUseCase: getIt<ReassignTechnicianUseCase>(),
       deleteBookingUseCase: getIt<DeleteBookingUseCase>(),
-      getTechniciansUseCase: getIt<GetTechniciansUseCase>(),
-      getCustomersUseCase: getIt<GetCustomersUseCase>(),
+      getDoctorsUseCase: getIt<GetDoctorsUseCase>(),
+      getPatientsUseCase: getIt<GetPatientsUseCase>(),
+      getMedicalServicesUseCase: getIt<GetMedicalServicesUseCase>(),
+      getDoctorScheduleUseCase: getIt<GetDoctorScheduleUseCase>(),
+      getDoctorLeavesUseCase: getIt<GetDoctorLeavesUseCase>(),
+      getCompanySettingsUseCase: getIt<GetCompanySettingsUseCase>(),
+      getDoctorBookingsForDateUseCase: getIt<GetDoctorBookingsForDateUseCase>(),
     ),
   );
 
-  // ─── Customers Feature ─────────────────────────────────────────────────────
-  getIt.registerLazySingleton<CustomersRepo>(
-    () => CustomersRepoImpl(apiConsumer: getIt<DioConsumer>()),
+  // ─── Patients Feature ───────────────────────────────────────────────────────
+  getIt.registerLazySingleton<MedicalCatalogRepo>(
+    () => MedicalCatalogMockRepoImpl(),
   );
 
-  getIt.registerLazySingleton<GetCustomersUseCase>(
-    () => GetCustomersUseCase(repo: getIt<CustomersRepo>()),
+  getIt.registerLazySingleton<GetMedicalCatalogItemsUseCase>(
+    () => GetMedicalCatalogItemsUseCase(repo: getIt<MedicalCatalogRepo>()),
   );
-  getIt.registerLazySingleton<GetCustomerByIdUseCase>(
-    () => GetCustomerByIdUseCase(repo: getIt<CustomersRepo>()),
-  );
-  getIt.registerLazySingleton<AddCustomerUseCase>(
-    () => AddCustomerUseCase(repo: getIt<CustomersRepo>()),
-  );
-  getIt.registerLazySingleton<UpdateCustomerUseCase>(
-    () => UpdateCustomerUseCase(repo: getIt<CustomersRepo>()),
-  );
-  getIt.registerLazySingleton<DeleteCustomerUseCase>(
-    () => DeleteCustomerUseCase(repo: getIt<CustomersRepo>()),
+  getIt.registerLazySingleton<AddMedicalCatalogItemUseCase>(
+    () => AddMedicalCatalogItemUseCase(repo: getIt<MedicalCatalogRepo>()),
   );
 
-  getIt.registerFactory<CustomersCubit>(
-    () => CustomersCubit(
-      getCustomersUseCase: getIt<GetCustomersUseCase>(),
-      getCustomerByIdUseCase: getIt<GetCustomerByIdUseCase>(),
-      addCustomerUseCase: getIt<AddCustomerUseCase>(),
-      updateCustomerUseCase: getIt<UpdateCustomerUseCase>(),
-      deleteCustomerUseCase: getIt<DeleteCustomerUseCase>(),
+  getIt.registerLazySingleton<PatientsRepo>(
+    () => PatientsMockRepoImpl(
+      apiConsumer: getIt<DioConsumer>(),
+      roleProvider: getIt<CurrentRoleProvider>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetPatientsUseCase>(
+    () => GetPatientsUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<GetPatientByIdUseCase>(
+    () => GetPatientByIdUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<AddPatientUseCase>(
+    () => AddPatientUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<UpdatePatientUseCase>(
+    () => UpdatePatientUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<DeletePatientUseCase>(
+    () => DeletePatientUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<ArchivePatientUseCase>(
+    () => ArchivePatientUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<UnarchivePatientUseCase>(
+    () => UnarchivePatientUseCase(repo: getIt<PatientsRepo>()),
+  );
+  getIt.registerLazySingleton<FindPatientsByPhoneUseCase>(
+    () => FindPatientsByPhoneUseCase(repo: getIt<PatientsRepo>()),
+  );
+
+  getIt.registerFactory<PatientsCubit>(
+    () => PatientsCubit(
+      getPatientsUseCase: getIt<GetPatientsUseCase>(),
+      getPatientByIdUseCase: getIt<GetPatientByIdUseCase>(),
+      addPatientUseCase: getIt<AddPatientUseCase>(),
+      updatePatientUseCase: getIt<UpdatePatientUseCase>(),
+      deletePatientUseCase: getIt<DeletePatientUseCase>(),
+      archivePatientUseCase: getIt<ArchivePatientUseCase>(),
+      unarchivePatientUseCase: getIt<UnarchivePatientUseCase>(),
+      findPatientsByPhoneUseCase: getIt<FindPatientsByPhoneUseCase>(),
+      getMedicalCatalogItemsUseCase: getIt<GetMedicalCatalogItemsUseCase>(),
+      addMedicalCatalogItemUseCase: getIt<AddMedicalCatalogItemUseCase>(),
       getBookingsUseCase: getIt<GetBookingsUseCase>(),
       changeBookingStatusUseCase: getIt<ChangeBookingStatusUseCase>(),
       reassignTechnicianUseCase: getIt<ReassignTechnicianUseCase>(),
@@ -205,7 +277,7 @@ Future<void> setupGetIt() async {
 
   // ─── Settings Feature ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<SettingsRepo>(
-    () => SettingsRepoImpl(apiConsumer: getIt<DioConsumer>()),
+    () => SettingsMockRepoImpl(apiConsumer: getIt<DioConsumer>()),
   );
 
   getIt.registerLazySingleton<GetCompanySettingsUseCase>(
@@ -224,34 +296,72 @@ Future<void> setupGetIt() async {
     () => ChangePasswordUseCase(repo: getIt<SettingsRepo>()),
   );
 
-  // ─── Technicians Feature ───────────────────────────────────────────────────
-  getIt.registerLazySingleton<TechniciansRepo>(
-    () => TechniciansRepoImpl(apiConsumer: getIt<DioConsumer>()),
+  // ─── Medical Services Catalog ───────────────────────────────────────────────
+  getIt.registerLazySingleton<MedicalServicesRepo>(
+    () => MedicalServicesMockRepoImpl(
+      roleProvider: getIt<CurrentRoleProvider>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+    ),
   );
 
-  getIt.registerLazySingleton<GetTechniciansUseCase>(
-    () => GetTechniciansUseCase(repo: getIt<TechniciansRepo>()),
+  getIt.registerLazySingleton<GetMedicalServicesUseCase>(
+    () => GetMedicalServicesUseCase(repo: getIt<MedicalServicesRepo>()),
   );
-  getIt.registerLazySingleton<GetTechnicianByIdUseCase>(
-    () => GetTechnicianByIdUseCase(repo: getIt<TechniciansRepo>()),
+  getIt.registerLazySingleton<GetMedicalServiceByIdUseCase>(
+    () => GetMedicalServiceByIdUseCase(repo: getIt<MedicalServicesRepo>()),
   );
-  getIt.registerLazySingleton<AddTechnicianUseCase>(
-    () => AddTechnicianUseCase(repo: getIt<TechniciansRepo>()),
+  getIt.registerLazySingleton<AddMedicalServiceUseCase>(
+    () => AddMedicalServiceUseCase(repo: getIt<MedicalServicesRepo>()),
   );
-  getIt.registerLazySingleton<UpdateTechnicianUseCase>(
-    () => UpdateTechnicianUseCase(repo: getIt<TechniciansRepo>()),
+  getIt.registerLazySingleton<UpdateMedicalServiceUseCase>(
+    () => UpdateMedicalServiceUseCase(repo: getIt<MedicalServicesRepo>()),
   );
-  getIt.registerLazySingleton<DeleteTechnicianUseCase>(
-    () => DeleteTechnicianUseCase(repo: getIt<TechniciansRepo>()),
+  getIt.registerLazySingleton<ToggleMedicalServiceStatusUseCase>(
+    () => ToggleMedicalServiceStatusUseCase(repo: getIt<MedicalServicesRepo>()),
   );
-  getIt.registerLazySingleton<GetTechnicianLeavesUseCase>(
-    () => GetTechnicianLeavesUseCase(repo: getIt<TechniciansRepo>()),
+  getIt.registerLazySingleton<DeleteMedicalServiceUseCase>(
+    () => DeleteMedicalServiceUseCase(repo: getIt<MedicalServicesRepo>()),
   );
-  getIt.registerLazySingleton<AddTechnicianLeaveUseCase>(
-    () => AddTechnicianLeaveUseCase(repo: getIt<TechniciansRepo>()),
+
+  // ─── Doctors Feature ───────────────────────────────────────────────────────
+  getIt.registerLazySingleton<DoctorsRepo>(
+    () => DoctorsMockRepoImpl(
+      apiConsumer: getIt<DioConsumer>(),
+      roleProvider: getIt<CurrentRoleProvider>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+      settingsRepo: getIt<SettingsRepo>(),
+    ),
   );
-  getIt.registerLazySingleton<DeleteTechnicianLeaveUseCase>(
-    () => DeleteTechnicianLeaveUseCase(repo: getIt<TechniciansRepo>()),
+
+  getIt.registerLazySingleton<GetDoctorsUseCase>(
+    () => GetDoctorsUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<GetDoctorByIdUseCase>(
+    () => GetDoctorByIdUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<AddDoctorUseCase>(
+    () => AddDoctorUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<UpdateDoctorUseCase>(
+    () => UpdateDoctorUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<DeleteDoctorUseCase>(
+    () => DeleteDoctorUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<GetDoctorLeavesUseCase>(
+    () => GetDoctorLeavesUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<AddDoctorLeaveUseCase>(
+    () => AddDoctorLeaveUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<DeleteDoctorLeaveUseCase>(
+    () => DeleteDoctorLeaveUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<GetDoctorScheduleUseCase>(
+    () => GetDoctorScheduleUseCase(repo: getIt<DoctorsRepo>()),
+  );
+  getIt.registerLazySingleton<SaveDoctorScheduleUseCase>(
+    () => SaveDoctorScheduleUseCase(repo: getIt<DoctorsRepo>()),
   );
 
   // ─── Features Cubits ───────────────────────────────────────────────────────
@@ -259,16 +369,18 @@ Future<void> setupGetIt() async {
     () => HomeDashboardCubit(),
   );
 
-  getIt.registerFactory<TechniciansCubit>(
-    () => TechniciansCubit(
-      getTechniciansUseCase: getIt<GetTechniciansUseCase>(),
-      getTechnicianByIdUseCase: getIt<GetTechnicianByIdUseCase>(),
-      addTechnicianUseCase: getIt<AddTechnicianUseCase>(),
-      updateTechnicianUseCase: getIt<UpdateTechnicianUseCase>(),
-      deleteTechnicianUseCase: getIt<DeleteTechnicianUseCase>(),
-      getTechnicianLeavesUseCase: getIt<GetTechnicianLeavesUseCase>(),
-      addTechnicianLeaveUseCase: getIt<AddTechnicianLeaveUseCase>(),
-      deleteTechnicianLeaveUseCase: getIt<DeleteTechnicianLeaveUseCase>(),
+  getIt.registerFactory<DoctorsCubit>(
+    () => DoctorsCubit(
+      getDoctorsUseCase: getIt<GetDoctorsUseCase>(),
+      getDoctorByIdUseCase: getIt<GetDoctorByIdUseCase>(),
+      addDoctorUseCase: getIt<AddDoctorUseCase>(),
+      updateDoctorUseCase: getIt<UpdateDoctorUseCase>(),
+      deleteDoctorUseCase: getIt<DeleteDoctorUseCase>(),
+      getDoctorLeavesUseCase: getIt<GetDoctorLeavesUseCase>(),
+      addDoctorLeaveUseCase: getIt<AddDoctorLeaveUseCase>(),
+      deleteDoctorLeaveUseCase: getIt<DeleteDoctorLeaveUseCase>(),
+      getDoctorScheduleUseCase: getIt<GetDoctorScheduleUseCase>(),
+      saveDoctorScheduleUseCase: getIt<SaveDoctorScheduleUseCase>(),
       getBookingsUseCase: getIt<GetBookingsUseCase>(),
       changeBookingStatusUseCase: getIt<ChangeBookingStatusUseCase>(),
       reassignTechnicianUseCase: getIt<ReassignTechnicianUseCase>(),
@@ -283,6 +395,17 @@ Future<void> setupGetIt() async {
       addSpecialHolidayUseCase: getIt<AddSpecialHolidayUseCase>(),
       deleteSpecialHolidayUseCase: getIt<DeleteSpecialHolidayUseCase>(),
       changePasswordUseCase: getIt<ChangePasswordUseCase>(),
+    ),
+  );
+
+  getIt.registerFactory<MedicalServicesCubit>(
+    () => MedicalServicesCubit(
+      getMedicalServicesUseCase: getIt<GetMedicalServicesUseCase>(),
+      addMedicalServiceUseCase: getIt<AddMedicalServiceUseCase>(),
+      updateMedicalServiceUseCase: getIt<UpdateMedicalServiceUseCase>(),
+      toggleMedicalServiceStatusUseCase:
+          getIt<ToggleMedicalServiceStatusUseCase>(),
+      deleteMedicalServiceUseCase: getIt<DeleteMedicalServiceUseCase>(),
     ),
   );
 }

@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
@@ -10,6 +11,7 @@ import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:go_router/go_router.dart';
 
 import 'header_branch_switcher.dart';
+import 'header_role_switcher.dart';
 
 class CustomHeaderLayout extends StatelessWidget
     implements PreferredSizeWidget {
@@ -78,6 +80,10 @@ class CustomHeaderLayout extends StatelessWidget
             const SizedBox(width: 8),
             // Branch Switcher on Mobile/Tablet
             const HeaderBranchSwitcher(),
+            if (kDebugMode) ...[
+              const SizedBox(width: 8),
+              const HeaderRoleSwitcher(),
+            ],
             const SizedBox(width: 8),
             _buildProfileAvatar(context),
           ],
@@ -104,6 +110,7 @@ class CustomHeaderLayout extends StatelessWidget
           mainAxisSize: MainAxisSize.min,
           spacing: 12,
           children: [
+            if (kDebugMode) const HeaderRoleSwitcher(),
             const HeaderBranchSwitcher(),
             _buildProfileAvatar(context),
           ],

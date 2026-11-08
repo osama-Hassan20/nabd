@@ -1,29 +1,30 @@
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
 import 'package:eyadty/features/bookings/presentation/helpers/booking_time_formatter.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_customer_section.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_patient_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_footer_actions.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_header.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_notes_section.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_one_time_schedule.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_slot_picker_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_pricing_section.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_recurring_schedule.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_service_field.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_status_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_technicians_section.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/add_new_customer_dialog.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/add_new_patient_dialog.dart';
+import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 
@@ -97,6 +98,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
   late final TextEditingController _dateController;
   late final TextEditingController _startTimeController;
   late final TextEditingController _endTimeController;
+  late final TextEditingController _serviceSelectorController;
   late final TextEditingController _serviceController;
   late final TextEditingController _notesController;
   late final TextEditingController _hourlyRateController;
@@ -144,6 +146,9 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     _startTimeController = TextEditingController();
     _endTimeController = TextEditingController();
 
+    _serviceSelectorController = TextEditingController(
+      text: isEdit ? (form?.serviceName ?? '') : '',
+    );
     _serviceController = TextEditingController(
       text: isEdit ? (form?.serviceName ?? '') : '',
     );
@@ -151,8 +156,8 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
       text: isEdit ? (form?.notes ?? '') : '',
     );
     _hourlyRateController = TextEditingController(
-      text: isEdit && form != null && form.hourlyRate > 0
-          ? form.hourlyRate.toString()
+      text: isEdit && form != null && (form.consultationFee > 0 || form.hourlyRate > 0)
+          ? (form.consultationFee > 0 ? form.consultationFee : form.hourlyRate).toString()
           : '',
     );
     _totalPriceController = TextEditingController(
@@ -165,15 +170,11 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
   }
 
   void _onHourlyRateChanged() {
-    final rate = num.tryParse(_hourlyRateController.text.trim()) ?? 0;
-    if (rate > 0) {
-      final cubit = context.read<BookingsCubit>();
-      final form = cubit.state.formState;
-      final duration = form?.durationMinutes ?? 0;
-      // In a medical clinic, consultation fee sets total price, or prorates if duration specified
-      final total = duration > 0 ? (rate * (duration / 60)).round() : rate.round();
-      if (_totalPriceController.text != total.toString()) {
-        _totalPriceController.text = total.toString();
+    final fee = num.tryParse(_hourlyRateController.text.trim()) ?? 0;
+    if (fee > 0) {
+      if (_totalPriceController.text.isEmpty ||
+          _totalPriceController.text == '0') {
+        _totalPriceController.text = fee.toString();
       }
     }
   }
@@ -222,6 +223,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     _dateController.dispose();
     _startTimeController.dispose();
     _endTimeController.dispose();
+    _serviceSelectorController.dispose();
     _serviceController.dispose();
     _notesController.dispose();
     _hourlyRateController.dispose();
@@ -238,142 +240,29 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
       _technicianSelectorController.text =
           '${techs.length} أطباء (${techs.map((t) => t.name).join('، ')})';
     }
-  }
 
-  TimeOfDay _parseTimeOfDay(String time) {
-    final parts = time.split(':');
-    if (parts.length >= 2) {
-      return TimeOfDay(
-        hour: int.tryParse(parts[0]) ?? 10,
-        minute: int.tryParse(parts[1]) ?? 0,
+    final cubit = context.read<BookingsCubit>();
+    final form = cubit.state.formState;
+    if (form?.serviceId != null) {
+      final currentService = cubit.state.medicalServices.firstWhere(
+        (s) => s.id == form!.serviceId,
+        orElse: () => const MedicalServiceModel(),
       );
-    }
-    return const TimeOfDay(hour: 10, minute: 0);
-  }
-
-  Future<void> _pickDate() async {
-    final cubit = context.read<BookingsCubit>();
-    final currentDate = cubit.state.formState?.date ?? DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: currentDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-    );
-    if (picked != null) {
-      cubit.updateFormDate(picked);
-      if (mounted) {
-        _dateController.text = BookingTimeFormatter.formatCompactDate(
-          picked,
-          context,
-        );
+      if (currentService.assignedDoctorId != null &&
+          currentService.assignedDoctorId!.isNotEmpty &&
+          !techs.any((t) => t.id == currentService.assignedDoctorId)) {
+        _serviceSelectorController.text = '';
+        CustomToast(
+          context: context,
+          header: 'service_changed_doctor_warning'.tr(),
+        ).showErrorToast();
       }
     }
   }
 
-  Future<void> _pickStartTime() async {
-    final cubit = context.read<BookingsCubit>();
-    final form = cubit.state.formState;
-    final initial = (form != null && form.startTime.isNotEmpty)
-        ? _parseTimeOfDay(form.startTime)
-        : const TimeOfDay(hour: 10, minute: 0);
-    final picked = await showTimePicker(context: context, initialTime: initial);
-    if (picked != null) {
-      final timeStr =
-          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-      cubit.updateFormStartTime(timeStr);
-      if (mounted) {
-        _startTimeController.text = BookingTimeFormatter.formatSingleTime(
-          timeStr,
-          context,
-        );
-
-        // If endTime is set and start >= end, automatically adjust end time to start + 2 hours
-        if (_endTimeController.text.isNotEmpty &&
-            form != null &&
-            form.endTime.isNotEmpty) {
-          final startMinutes = picked.hour * 60 + picked.minute;
-          final endMinutes =
-              _parseTimeOfDay(form.endTime).hour * 60 +
-              _parseTimeOfDay(form.endTime).minute;
-          if (startMinutes >= endMinutes) {
-            final newEndHour = (picked.hour + 2) % 24;
-            final newEndStr =
-                '${newEndHour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-            cubit.updateFormEndTime(newEndStr);
-            _endTimeController.text = BookingTimeFormatter.formatSingleTime(
-              newEndStr,
-              context,
-            );
-          }
-        }
-
-        _onHourlyRateChanged();
-      }
-    }
-  }
-
-  Future<void> _pickEndTime() async {
-    final cubit = context.read<BookingsCubit>();
-    final form = cubit.state.formState;
-    final initial = (form != null && form.endTime.isNotEmpty)
-        ? _parseTimeOfDay(form.endTime)
-        : const TimeOfDay(hour: 12, minute: 0);
-    final picked = await showTimePicker(context: context, initialTime: initial);
-    if (picked != null) {
-      // Validate that picked end time is strictly after start time
-      if (form != null && form.startTime.isNotEmpty) {
-        final start = _parseTimeOfDay(form.startTime);
-        final startMinutes = start.hour * 60 + start.minute;
-        final endMinutes = picked.hour * 60 + picked.minute;
-        if (endMinutes <= startMinutes) {
-          if (mounted) {
-            CustomToast(
-              context: context,
-              header: 'وقت الانتهاء يجب أن يكون بعد وقت البدء',
-            ).showErrorToast();
-          }
-          return;
-        }
-      }
-
-      final timeStr =
-          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-      cubit.updateFormEndTime(timeStr);
-      if (mounted) {
-        _endTimeController.text = BookingTimeFormatter.formatSingleTime(
-          timeStr,
-          context,
-        );
-        _onHourlyRateChanged();
-      }
-    }
-  }
-
-  Future<void> _pickRecurringTime(
-    String dayKey,
-    bool isStart,
-    String currentTimeStr,
-  ) async {
-    final cubit = context.read<BookingsCubit>();
-    final initial = currentTimeStr.isNotEmpty
-        ? _parseTimeOfDay(currentTimeStr)
-        : const TimeOfDay(hour: 10, minute: 0);
-
-    final picked = await showTimePicker(context: context, initialTime: initial);
-    if (picked != null) {
-      final timeStr =
-          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-      if (isStart) {
-        cubit.updateRecurringDayTime(dayKey, startTime: timeStr);
-      } else {
-        cubit.updateRecurringDayTime(dayKey, endTime: timeStr);
-      }
-    }
-  }
-
-  Future<void> _onAddNewCustomerPressed() async {
-    final newCustomer = await AddNewCustomerDialog.show(context);
+  Future<void> _onAddNewCustomerPressed({String? initialQuery}) async {
+    final newCustomer =
+        await AddNewPatientDialog.show(context, initialQuery: initialQuery);
     if (!mounted) return;
     if (newCustomer != null) {
       final cubit = context.read<BookingsCubit>();
@@ -398,60 +287,121 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
       return;
     }
 
-    if (form.bookingType == BookingTypeEnum.recurring) {
-      if (form.recurringSchedules.isEmpty) {
-        CustomToast(
-          context: context,
-          header: 'recurring_days_empty_error'.tr(),
-        ).showErrorToast();
-        return;
-      }
-      for (final sched in form.recurringSchedules) {
-        final dayOpt = DayOfWeekOption.fromKey(sched.day);
-        final startMin =
-            _parseTimeOfDay(sched.startTime).hour * 60 +
-            _parseTimeOfDay(sched.startTime).minute;
-        final endMin =
-            _parseTimeOfDay(sched.endTime).hour * 60 +
-            _parseTimeOfDay(sched.endTime).minute;
-        if (startMin >= endMin) {
-          CustomToast(
-            context: context,
-            header:
-                '${dayOpt.getName(context)}: وقت البدء يجب أن يكون قبل وقت الانتهاء',
-          ).showErrorToast();
-          return;
-        }
-      }
-    } else {
-      if (form.startTime.isEmpty || form.endTime.isEmpty) {
-        CustomToast(
-          context: context,
-          header: 'يرجى تحديد وقت البدء ووقت الانتهاء',
-        ).showErrorToast();
-        return;
-      }
-
-      final startMin =
-          _parseTimeOfDay(form.startTime).hour * 60 +
-          _parseTimeOfDay(form.startTime).minute;
-      final endMin =
-          _parseTimeOfDay(form.endTime).hour * 60 +
-          _parseTimeOfDay(form.endTime).minute;
-      if (startMin >= endMin) {
-        CustomToast(
-          context: context,
-          header: 'وقت البدء يجب أن يكون قبل وقت الانتهاء',
-        ).showErrorToast();
-        return;
-      }
+    if (form.technicians.isEmpty) {
+      CustomToast(
+        context: context,
+        header: 'select_doctor_first_hint'.tr(),
+      ).showErrorToast();
+      return;
     }
 
+    if (form.serviceId == null || form.serviceId!.isEmpty) {
+      CustomToast(
+        context: context,
+        header: 'select_service_first_hint'.tr(),
+      ).showErrorToast();
+      return;
+    }
+
+    if (form.startTime.isEmpty || form.endTime.isEmpty) {
+      CustomToast(
+        context: context,
+        header: 'slot_picker_required'.tr(),
+      ).showErrorToast();
+      return;
+    }
+
+    // فحص تعارض مواعيد المريض: إظهار حوار التأكيد في حال عدم التأكيد المسبق
+    if (cubit.state.hasPatientTimeConflict &&
+        !cubit.state.isPatientConflictConfirmed) {
+      final conflictingDoctor =
+          cubit.state.patientConflictingBooking?.doctorName ?? '';
+      final conflictingTime = cubit.state.patientConflictingBooking != null
+          ? '${BookingTimeFormatter.formatSingleTime(cubit.state.patientConflictingBooking!.startTime, context)} - ${BookingTimeFormatter.formatSingleTime(cubit.state.patientConflictingBooking!.endTime, context)}'
+          : '';
+
+      showDialog(
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+          title: Text(
+            'patient_time_conflict_warning'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            '${'patient_time_conflict_requires_confirmation'.tr()}\n($conflictingDoctor $conflictingTime)',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                cubit.confirmPatientTimeConflict();
+                _submit();
+              },
+              child: Text('confirm_conflict_and_proceed'.tr()),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final fee = num.tryParse(_hourlyRateController.text.trim()) ?? 0;
+    final total = num.tryParse(_totalPriceController.text.trim()) ?? fee;
+    final resolvedServiceName = _serviceSelectorController.text.trim().isNotEmpty
+        ? _serviceSelectorController.text.trim()
+        : _serviceController.text.trim();
+
     cubit.submitBookingForm(
-      serviceName: _serviceController.text.trim(),
-      hourlyRate: num.tryParse(_hourlyRateController.text.trim()) ?? 0,
-      totalPrice: num.tryParse(_totalPriceController.text.trim()) ?? 0,
+      serviceName: resolvedServiceName,
+      consultationFee: fee,
+      totalPrice: total,
       notes: _notesController.text.trim(),
+    );
+  }
+
+  Widget _buildMedicalServiceSelector(
+    BuildContext context,
+    BookingsState state,
+  ) {
+    final cubit = context.read<BookingsCubit>();
+    final form = state.formState;
+    final selectedDoctorId = form?.technician?.id;
+
+    final availableServices = state.medicalServices
+        .where((s) => s.isServiceActive)
+        .where((s) =>
+            s.assignedDoctorId == null ||
+            s.assignedDoctorId!.isEmpty ||
+            s.assignedDoctorId == selectedDoctorId)
+        .toList();
+
+    return CustomStackSelector<MedicalServiceModel>(
+      controller: _serviceSelectorController,
+      header: '${'select_medical_service'.tr()} *',
+      hintText: 'select_medical_service_hint'.tr(),
+      list: availableServices,
+      itemAsString: (srv) {
+        final fee = srv.consultationFee ?? 0;
+        final dur = srv.durationMinutes ?? 0;
+        return '${srv.name ?? ''} (${AppFormatterHelper.formatCurrency(fee)} - ${AppFormatterHelper.formatMinutes(dur, context: context)})';
+      },
+      changeValue: (selectedService) {
+        cubit.updateFormService(selectedService);
+        _serviceSelectorController.text = selectedService.name ?? '';
+        final fee = (selectedService.consultationFee ?? 0).toString();
+        _hourlyRateController.text = fee;
+        _totalPriceController.text = fee;
+        if (form?.startTime.isNotEmpty ?? false) {
+          _endTimeController.text = BookingTimeFormatter.formatSingleTime(
+            cubit.state.formState?.endTime ?? '',
+            context,
+          );
+        }
+      },
     );
   }
 
@@ -473,7 +423,6 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
       },
       builder: (context, state) {
         final isLoading = state.actionStatus == RequestStatusEnum.loading;
-        final form = state.formState;
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -497,23 +446,29 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // 1. Customer Selection & Add New Customer Button
-                          BookingFormCustomerSection(
+                          // 1. Patient Selection & Add New Patient Button
+                          BookingFormPatientSection(
                             controller: _customerSelectorController,
-                            onAddNewCustomer: _onAddNewCustomerPressed,
+                            onAddNewPatient: _onAddNewCustomerPressed,
                           ),
                           const SizedBox(height: 16),
 
-                          // 2. Service Name
-                          BookingFormServiceField(
-                            controller: _serviceController,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // 3. Technician Selection (Multi-technician Support)
+                          // 2. Technician Selection (Multi-technician Support)
                           BookingFormTechniciansSection(
                             controller: _technicianSelectorController,
                             onSyncController: _syncTechniciansController,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // 3. Medical Service Selection
+                          _buildMedicalServiceSelector(context, state),
+                          const SizedBox(height: 16),
+
+                          // 4. Chief Complaint / Visit Reason
+                          BookingFormServiceField(
+                            controller: _serviceController,
+                            isRequired: state.formState?.serviceId == null &&
+                                _serviceSelectorController.text.trim().isEmpty,
                           ),
                           const SizedBox(height: 16),
 
@@ -527,24 +482,8 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
                           ),
                           const SizedBox(height: 16),
 
-                          // 5. Date & Time Selection (One-Time vs Recurring)
-                          if (form?.bookingType ==
-                              BookingTypeEnum.recurring) ...[
-                            BookingFormRecurringSchedule(
-                              dateController: _dateController,
-                              onPickDate: _pickDate,
-                              onPickRecurringTime: _pickRecurringTime,
-                            ),
-                          ] else ...[
-                            BookingFormOneTimeSchedule(
-                              dateController: _dateController,
-                              startTimeController: _startTimeController,
-                              endTimeController: _endTimeController,
-                              onPickDate: _pickDate,
-                              onPickStartTime: _pickStartTime,
-                              onPickEndTime: _pickEndTime,
-                            ),
-                          ],
+                          // 5. Slot Picker Section (Phase 4B)
+                          const BookingFormSlotPickerSection(),
                           const SizedBox(height: 16),
 
                           // 6. Pricing (Hourly Rate & Total Price)

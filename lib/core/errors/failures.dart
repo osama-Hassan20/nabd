@@ -1,4 +1,4 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class Failures extends Equatable {
@@ -108,4 +108,70 @@ class CacheFailures extends Failures {
 
   @override
   List<Object?> get props => [];
+}
+
+class ValidationFailure extends Failures {
+  const ValidationFailure({required super.errMessage});
+
+  @override
+  List<Object?> get props => [errMessage];
+}
+
+class ConflictingBookingsFailure extends Failures {
+  final int conflictingCount;
+
+  const ConflictingBookingsFailure({
+    required super.errMessage,
+    required this.conflictingCount,
+  });
+
+  @override
+  List<Object?> get props => [errMessage, conflictingCount];
+}
+
+class DuplicatePhonePatientInfo extends Equatable {
+  final String? id;
+  final String? name;
+  final String? fileNumber;
+  final String? phone;
+
+  const DuplicatePhonePatientInfo({
+    this.id,
+    this.name,
+    this.fileNumber,
+    this.phone,
+  });
+
+  @override
+  List<Object?> get props => [id, name, fileNumber, phone];
+}
+
+class DuplicatePhoneWarningFailure extends Failures {
+  final List<DuplicatePhonePatientInfo> matchingPatients;
+
+  const DuplicatePhoneWarningFailure({
+    required super.errMessage,
+    required this.matchingPatients,
+  });
+
+  @override
+  List<Object?> get props => [errMessage, matchingPatients];
+}
+
+class SlotConflictFailure extends Failures {
+  final String? conflictingPatientName;
+  final String? conflictingBookingId;
+
+  const SlotConflictFailure({
+    required super.errMessage,
+    this.conflictingPatientName,
+    this.conflictingBookingId,
+  });
+
+  @override
+  List<Object?> get props => [
+        errMessage,
+        conflictingPatientName,
+        conflictingBookingId,
+      ];
 }

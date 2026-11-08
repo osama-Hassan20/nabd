@@ -161,7 +161,7 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                     child: CustomTextFormField(
                       controller: _rateController,
                       headerText: 'default_hourly_rate'.tr(),
-                      hintText: '100',
+                      hintText: '250',
                       textInputType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
@@ -174,7 +174,7 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                           vertical: 12,
                         ),
                         child: Text(
-                          'rate_per_hour_qar'.tr(),
+                          'currency'.tr(),
                           style: CustomAppFontStyle.semiBold14.copyWith(
                             color: AppColors.primary,
                           ),

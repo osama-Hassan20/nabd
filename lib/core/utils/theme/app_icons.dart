@@ -92,6 +92,7 @@ abstract class AppIcons {
   static const String cancelledBooking = 'assets/icons/cancelled_booking.svg';
   static const String comingBooking = 'assets/icons/coming_booking.svg';
   static const String qatar = 'assets/icons/qatar.svg';
+  static const String egypt = 'assets/icons/egypt.svg';
 
   static const String change = 'assets/icons/change.svg';
   static const String clock = 'assets/icons/clock.svg';

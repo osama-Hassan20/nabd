@@ -1,9 +1,11 @@
-import 'package:eyadty/features/customers/data/models/customer_model.dart';
-import 'package:eyadty/features/technicians/data/models/technician_model.dart';
+import 'package:eyadty/features/patients/data/models/patient_model.dart';
+import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
 import 'enums/booking_status_enum.dart';
 import 'enums/booking_type_enum.dart';
 import 'enums/payment_status_enum.dart';
-import 'recurrence_rule_model.dart';
+
+typedef CustomerModel = PatientModel;
+typedef TechnicianModel = DoctorModel;
 
 class BookingModel {
   final String? id;
@@ -28,8 +30,6 @@ class BookingModel {
   final String? notes;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final RecurrenceRuleModel? recurrence;
-  final num? hourlyRate;
   final int? durationMinutes;
 
   // Multi-branch & cancellation / postponement fields
@@ -42,9 +42,11 @@ class BookingModel {
   final DateTime? postponedAt;
   final String? postponeReason;
 
-  // Embedded legacy models & legacy parameters
+  // Embedded models & legacy parameters
+  final PatientModel? patient;
   final CustomerModel? customer;
   final List<TechnicianModel> technicians;
+  final String? serviceId;
   final String? serviceName;
   final BookingTypeEnum? bookingType;
   final DateTime? date;
@@ -79,8 +81,6 @@ class BookingModel {
     this.notes,
     this.createdAt,
     this.updatedAt,
-    this.recurrence,
-    this.hourlyRate,
     this.durationMinutes,
     this.branchId = 'branch_1',
     this.cancelReason,
@@ -90,8 +90,10 @@ class BookingModel {
     this.rescheduledTo,
     this.postponedAt,
     this.postponeReason,
+    this.patient,
     this.customer,
     this.technicians = const [],
+    this.serviceId,
     this.serviceName,
     this.bookingType,
     this.date,
@@ -105,13 +107,23 @@ class BookingModel {
   });
 
   // ─── Convenience Getters ──────────────────────────────────────────────────
-  String? get customerId => patientId ?? customer?.id;
-  String? get customerName => patientName ?? customer?.name;
-  String? get customerPhone => patientPhone ?? customer?.phone;
-  String? get customerAddress => customer?.address;
+  String? get customerId => patientId ?? patient?.id ?? customer?.id;
+  String? get customerName => patientName ?? patient?.name ?? customer?.name;
+  String? get customerPhone => patientPhone ?? patient?.phone ?? customer?.phone;
+  String? get customerAddress => patient?.address ?? customer?.address;
+  String? get patientAddress => patient?.address ?? customer?.address;
 
   factory BookingModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const BookingModel();
+
+    PatientModel? parsedPatient;
+    if (json['patient'] is Map<String, dynamic>) {
+      parsedPatient =
+          PatientModel.fromJson(json['patient'] as Map<String, dynamic>);
+    } else if (json['customer'] is Map<String, dynamic>) {
+      parsedPatient =
+          PatientModel.fromJson(json['customer'] as Map<String, dynamic>);
+    }
 
     CustomerModel? parsedCustomer;
     if (json['customer'] is Map<String, dynamic>) {
@@ -126,13 +138,8 @@ class BookingModel {
           .toList();
     }
 
-    RecurrenceRuleModel? parsedRecurrence;
-    if (json['recurrence'] is Map<String, dynamic>) {
-      parsedRecurrence = RecurrenceRuleModel.fromJson(json['recurrence'] as Map<String, dynamic>);
-    }
-
-    final pName = json['patientName'] as String? ?? json['customerName'] as String? ?? parsedCustomer?.name;
-    final pPhone = json['patientPhone'] as String? ?? json['customerPhone'] as String? ?? parsedCustomer?.phone;
+    final pName = json['patientName'] as String? ?? json['customerName'] as String? ?? parsedPatient?.name ?? parsedCustomer?.name;
+    final pPhone = json['patientPhone'] as String? ?? json['customerPhone'] as String? ?? parsedPatient?.phone ?? parsedCustomer?.phone;
     final dName = json['doctorName'] as String? ?? json['technicianName'] as String?;
     final cFee = json['consultationFee'] as num? ?? json['totalPrice'] as num?;
     final vType = BookingTypeEnum.fromValue(json['visitType']?.toString() ?? json['bookingType']?.toString());
@@ -175,8 +182,6 @@ class BookingModel {
       updatedAt: json['updatedAt'] != null
           ? DateTime.tryParse(json['updatedAt'].toString())
           : null,
-      recurrence: parsedRecurrence,
-      hourlyRate: json['hourlyRate'] as num?,
       durationMinutes: json['durationMinutes'] is int
           ? json['durationMinutes'] as int
           : int.tryParse(json['durationMinutes']?.toString() ?? ''),
@@ -196,8 +201,10 @@ class BookingModel {
           ? DateTime.tryParse(json['postponedAt'].toString())
           : null,
       postponeReason: json['postponeReason'] as String?,
+      patient: parsedPatient,
       customer: parsedCustomer,
       technicians: parsedTechs,
+      serviceId: json['serviceId']?.toString(),
       serviceName: json['serviceName'] as String? ?? json['specialty'] as String?,
       bookingType: vType,
       date: parsedDate,
@@ -235,8 +242,6 @@ class BookingModel {
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'createdAt': createdAt?.toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
-      if (recurrence != null) 'recurrence': recurrence?.toJson(),
-      if (hourlyRate != null) 'hourlyRate': hourlyRate,
       if (durationMinutes != null) 'durationMinutes': durationMinutes,
       if (branchId != null) 'branchId': branchId,
       if (cancelReason != null) 'cancelReason': cancelReason,
@@ -249,6 +254,7 @@ class BookingModel {
       if (postponedAt != null)
         'postponedAt': postponedAt?.toIso8601String(),
       if (postponeReason != null) 'postponeReason': postponeReason,
+      if (serviceId != null) 'serviceId': serviceId,
       if (serviceName != null) 'serviceName': serviceName,
       if (bookingType != null) 'bookingType': bookingType?.value,
       if (date != null) 'date': date?.toIso8601String(),
@@ -259,6 +265,7 @@ class BookingModel {
       if (technicianNames.isNotEmpty) 'technicianNames': technicianNames,
       if (technicianId != null) 'technicianId': technicianId,
       if (technicianName != null) 'technicianName': technicianName,
+      if (patient != null) 'patient': patient?.toJson(),
     };
   }
 
@@ -285,8 +292,6 @@ class BookingModel {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
-    RecurrenceRuleModel? recurrence,
-    num? hourlyRate,
     int? durationMinutes,
     String? branchId,
     String? cancelReason,
@@ -296,8 +301,10 @@ class BookingModel {
     DateTime? rescheduledTo,
     DateTime? postponedAt,
     String? postponeReason,
+    PatientModel? patient,
     CustomerModel? customer,
     List<TechnicianModel>? technicians,
+    String? serviceId,
     String? serviceName,
     BookingTypeEnum? bookingType,
     DateTime? date,
@@ -332,8 +339,6 @@ class BookingModel {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      recurrence: recurrence ?? this.recurrence,
-      hourlyRate: hourlyRate ?? this.hourlyRate,
       durationMinutes: durationMinutes ?? this.durationMinutes,
       branchId: branchId ?? this.branchId,
       cancelReason: cancelReason ?? this.cancelReason,
@@ -344,8 +349,10 @@ class BookingModel {
       rescheduledTo: rescheduledTo ?? this.rescheduledTo,
       postponedAt: postponedAt ?? this.postponedAt,
       postponeReason: postponeReason ?? this.postponeReason,
+      patient: patient ?? this.patient,
       customer: customer ?? this.customer,
       technicians: technicians ?? this.technicians,
+      serviceId: serviceId ?? this.serviceId,
       serviceName: serviceName ?? this.serviceName,
       bookingType: bookingType ?? this.bookingType,
       date: date ?? this.date,

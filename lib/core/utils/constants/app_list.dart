@@ -27,11 +27,11 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
       iconPath: AppIcons.users,
       id: 'patients',
       selectedIconPath: AppIcons.users,
-      routePath: AppRouter.customers,
+      routePath: AppRouter.patients,
       header: 'nav_patients_header'.tr(),
       subtitle: 'nav_patients_subtitle'.tr(),
       onTap: () {
-        context.go(AppRouter.customers);
+        context.go(AppRouter.patients);
       },
     ),
 
@@ -55,11 +55,11 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
       iconPath: AppIcons.team,
       id: 'doctors',
       selectedIconPath: AppIcons.team,
-      routePath: AppRouter.technicians,
+      routePath: AppRouter.doctors,
       header: 'nav_doctors_header'.tr(),
       subtitle: 'nav_doctors_subtitle'.tr(),
       onTap: () {
-        context.go(AppRouter.technicians);
+        context.go(AppRouter.doctors);
       },
     ),
 

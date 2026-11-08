@@ -11,6 +11,8 @@ import 'package:eyadty/features/settings/presentation/widgets/tabs/company_info_
 import 'package:eyadty/features/settings/presentation/widgets/tabs/default_pricing_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/special_holidays_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/working_schedule_tab.dart';
+import 'package:eyadty/features/settings/presentation/widgets/services/medical_services_tab.dart';
+import 'package:eyadty/features/settings/presentation/widgets/doctors_schedule/doctors_schedule_tab.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
@@ -48,6 +50,8 @@ class _SettingsViewState extends State<SettingsView>
     AppIcons.clock,
     AppIcons.money,
     AppIcons.calendar,
+    AppIcons.service,
+    AppIcons.calendar,
   ];
 
   List<String> get _tabs => [
@@ -55,6 +59,8 @@ class _SettingsViewState extends State<SettingsView>
     'tab_working_schedule'.tr(),
     'tab_pricing'.tr(),
     'tab_special_holidays'.tr(),
+    'tab_medical_services'.tr(),
+    'tab_doctors_schedule'.tr(),
     // 'tab_notifications'.tr(),
   ];
 
@@ -160,6 +166,8 @@ class _SettingsViewState extends State<SettingsView>
                     WorkingScheduleTab(settingsCubit: cubit),
                     DefaultPricingTab(settingsCubit: cubit),
                     SpecialHolidaysTab(settingsCubit: cubit),
+                    const MedicalServicesTab(),
+                    const DoctorsScheduleTab(),
                     // NotificationsTab(settingsCubit: cubit),
                   ],
                 ),

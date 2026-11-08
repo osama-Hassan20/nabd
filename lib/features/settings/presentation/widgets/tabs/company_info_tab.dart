@@ -62,12 +62,69 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
     super.dispose();
   }
 
+  /// Validates Egyptian phone numbers (Mobile or Landline with governorate code).
+  ///
+  /// Egyptian Phone Structure:
+  /// - Mobile: 11 digits starting with 010, 011, 012, or 015
+  /// - Landline Cairo/Giza: 10 digits starting with 02 (e.g. 0227508800)
+  /// - Landline Alexandria: 9 digits starting with 03 (e.g. 031234567)
+  /// - Landline Other Governorates: 10 digits starting with 013, 040, 050, 055, etc.
+  String? _validateEgyptianPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'field_required'.tr();
+    }
+    final clean = value.replaceAll(RegExp(r'\D'), '');
+    if (clean.isEmpty) {
+      return 'invalid_phone'.tr();
+    }
+
+    if (!clean.startsWith('0')) {
+      return 'يجب أن يبدأ الرقم بـ 0 (كود المحافظة للأرضي أو 01 للمحمول)';
+    }
+
+    if (clean.startsWith('01')) {
+      if (clean.length < 3 || !RegExp(r'^01[0125]').hasMatch(clean)) {
+        return 'رقم المحمول المصري يجب أن يبدأ بـ 010 أو 011 أو 012 أو 015';
+      }
+      if (clean.length != 11) {
+        return 'رقم المحمول المصري يجب أن يتكون من 11 رقماً بالضبط';
+      }
+      return null;
+    }
+
+    if (clean.startsWith('02')) {
+      if (clean.length != 10) {
+        return 'رقم أرضي القاهرة/الجيزة يتكون من 10 أرقام (مثال: 0227508800)';
+      }
+      return null;
+    }
+
+    if (clean.startsWith('03')) {
+      if (clean.length != 9) {
+        return 'رقم أرضي الإسكندرية يتكون من 9 أرقام (مثال: 031234567)';
+      }
+      return null;
+    }
+
+    if (clean.length != 10) {
+      return 'رقم الهاتف الأرضي مع كود المحافظة يجب أن يتكون من 10 أرقام';
+    }
+
+    return null;
+  }
+
+  bool get _isCurrentPhoneInvalid {
+    final text = _phoneController.text.trim();
+    if (text.isEmpty) return false;
+    return _validateEgyptianPhone(text) != null;
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
     final formattedPhone = CustomPhoneField.formatWithCountryCode(
       _phoneController.text,
-      countryCode: '+974',
+      countryCode: '+20',
     );
 
     final success = await widget.settingsCubit.updateCompanyInfo(
@@ -166,9 +223,47 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                       CustomPhoneField(
                         phoneController: _phoneController,
                         header: 'company_phone'.tr(),
-                        phoneCode: '+974',
-                        hintText: '44XX XXXX',
+                        phoneCode: '+20',
+                        hintText: '0227508800',
+                        validatorFun: _validateEgyptianPhone,
+                        onChanged: (_) => setState(() {}),
                       ),
+                      if (_isCurrentPhoneInvalid) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.warning.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                size: 18,
+                                color: AppColors.warning,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'clinic_phone_invalid_alert'.tr(),
+                                  style: CustomAppFontStyle.regular12.copyWith(
+                                    color: AppColors.darkText,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 18),
 
                       // Company Address

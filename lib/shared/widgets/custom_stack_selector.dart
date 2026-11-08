@@ -31,6 +31,7 @@ class CustomStackSelector<T> extends StatefulWidget {
     this.displayStringForController,
     this.actionHeaderWidget,
     this.closeOnSelect = true,
+    this.emptySearchBuilder,
   });
 
   final TextEditingController? controller;
@@ -51,6 +52,8 @@ class CustomStackSelector<T> extends StatefulWidget {
   final String Function(T)? displayStringForController;
   final Widget? actionHeaderWidget;
   final bool closeOnSelect;
+  final Widget Function(BuildContext context, String query, VoidCallback close)?
+      emptySearchBuilder;
 
   @override
   State<CustomStackSelector<T>> createState() => _CustomStackSelectorState<T>();
@@ -134,6 +137,7 @@ class _CustomStackSelectorState<T> extends State<CustomStackSelector<T>> {
           displayStringForController: widget.displayStringForController,
           actionHeaderWidget: widget.actionHeaderWidget,
           closeOnSelect: widget.closeOnSelect,
+          emptySearchBuilder: widget.emptySearchBuilder,
         );
       },
     );
@@ -181,6 +185,8 @@ class _PopoverContentBody<T> extends StatefulWidget {
   final String Function(T)? displayStringForController;
   final Widget? actionHeaderWidget;
   final bool closeOnSelect;
+  final Widget Function(BuildContext context, String query, VoidCallback close)?
+      emptySearchBuilder;
 
   const _PopoverContentBody({
     required this.list,
@@ -194,6 +200,7 @@ class _PopoverContentBody<T> extends StatefulWidget {
     this.displayStringForController,
     this.actionHeaderWidget,
     this.closeOnSelect = true,
+    this.emptySearchBuilder,
   });
 
   @override
@@ -276,59 +283,80 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
             color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
           ),
         ],
-        Expanded(
-          child: Scrollbar(
-            controller: widget.scrollController,
-            thumbVisibility: true,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              controller: widget.scrollController,
-              itemCount: _filteredList.length + (widget.isLoading ? 1 : 0),
-              separatorBuilder: (context, index) => Divider(
-                height: 1,
-                color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
-              ),
-              itemBuilder: (context, index) {
-                if (index == _filteredList.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: Center(child: CupertinoActivityIndicator()),
-                  );
-                }
-                final item = _filteredList[index];
-                return InkWell(
-                  onTap: () {
-                    if (widget.closeOnSelect) {
-                      final text = widget.displayStringForController != null
-                          ? widget.displayStringForController!(item)
-                          : widget.itemAsString(item);
-                      widget.controller?.text = text;
-                      widget.changeValue?.call(item);
-                      Navigator.of(context).pop();
-                    } else {
-                      widget.changeValue?.call(item);
-                      setState(() {});
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+        if (_filteredList.isEmpty && !widget.isLoading)
+          Expanded(
+            child: widget.emptySearchBuilder != null
+                ? widget.emptySearchBuilder!(
+                    context,
+                    _searchController.text,
+                    () => Navigator.of(context).pop(),
+                  )
+                : Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'no_search_results'.tr(),
+                        style: CustomAppFontStyle.regular13.copyWith(
+                          color: isDark ? AppColors.grayE2E8F0 : AppColors.gray71717A,
+                        ),
+                      ),
                     ),
-                    child: widget.itemBuilder != null
-                        ? widget.itemBuilder!(context, item)
-                        : Text(
-                            widget.itemAsString(item),
-                            style: CustomAppFontStyle.regular14.copyWith(
-                              color: isDark ? AppColors.white : AppColors.darkText,
-                            ),
-                          ),
                   ),
-                );
-              },
+          )
+        else
+          Expanded(
+            child: Scrollbar(
+              controller: widget.scrollController,
+              thumbVisibility: true,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                controller: widget.scrollController,
+                itemCount: _filteredList.length + (widget.isLoading ? 1 : 0),
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
+                ),
+                itemBuilder: (context, index) {
+                  if (index == _filteredList.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: Center(child: CupertinoActivityIndicator()),
+                    );
+                  }
+                  final item = _filteredList[index];
+                  return InkWell(
+                    onTap: () {
+                      if (widget.closeOnSelect) {
+                        final text = widget.displayStringForController != null
+                            ? widget.displayStringForController!(item)
+                            : widget.itemAsString(item);
+                        widget.controller?.text = text;
+                        widget.changeValue?.call(item);
+                        Navigator.of(context).pop();
+                      } else {
+                        widget.changeValue?.call(item);
+                        setState(() {});
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      child: widget.itemBuilder != null
+                          ? widget.itemBuilder!(context, item)
+                          : Text(
+                              widget.itemAsString(item),
+                              style: CustomAppFontStyle.regular14.copyWith(
+                                color: isDark ? AppColors.white : AppColors.darkText,
+                              ),
+                            ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-        ),
         if (!widget.closeOnSelect) ...[
           Divider(
             height: 1,

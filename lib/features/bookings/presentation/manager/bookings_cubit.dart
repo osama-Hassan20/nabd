@@ -9,8 +9,6 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
-import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
@@ -21,13 +19,27 @@ import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_
 import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
-import 'package:eyadty/features/customers/data/models/customer_model.dart';
-import 'package:eyadty/features/customers/domain/use_cases/get_customers_use_case.dart';
-import 'package:eyadty/features/technicians/data/models/technician_model.dart';
-import 'package:eyadty/features/technicians/domain/use_cases/get_technicians_use_case.dart';
+import 'package:eyadty/features/patients/domain/use_cases/get_patients_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctors_use_case.dart';
+import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/features/bookings/data/models/enums/slot_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/time_slot_model.dart';
+import 'package:eyadty/features/bookings/domain/helpers/slot_generator_helper.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/get_doctor_bookings_for_date_use_case.dart';
+import 'package:eyadty/features/doctors/data/models/doctor_leave_model.dart';
+import 'package:eyadty/features/doctors/data/models/doctor_schedule_model.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_leaves_use_case.dart';
+import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_schedule_use_case.dart';
+import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
+import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/get_medical_services_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/params/get_medical_services_params.dart';
 import 'package:eyadty/shared/services/app_branch_service.dart';
 
 import 'bookings_state.dart';
+
+typedef GetTechniciansUseCase = GetDoctorsUseCase;
 
 class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   final GetBookingSummaryUseCase getBookingSummaryUseCase;
@@ -38,8 +50,13 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   final ChangeBookingStatusUseCase changeBookingStatusUseCase;
   final ReassignTechnicianUseCase reassignTechnicianUseCase;
   final DeleteBookingUseCase deleteBookingUseCase;
-  final GetTechniciansUseCase? getTechniciansUseCase;
-  final GetCustomersUseCase? getCustomersUseCase;
+  final GetDoctorsUseCase? getDoctorsUseCase;
+  final GetPatientsUseCase? getPatientsUseCase;
+  final GetMedicalServicesUseCase? getMedicalServicesUseCase;
+  final GetDoctorScheduleUseCase? getDoctorScheduleUseCase;
+  final GetDoctorLeavesUseCase? getDoctorLeavesUseCase;
+  final GetCompanySettingsUseCase? getCompanySettingsUseCase;
+  final GetDoctorBookingsForDateUseCase? getDoctorBookingsForDateUseCase;
 
   Timer? _noShowTimer;
 
@@ -52,14 +69,24 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     required this.changeBookingStatusUseCase,
     required this.reassignTechnicianUseCase,
     required this.deleteBookingUseCase,
-    this.getTechniciansUseCase,
-    this.getCustomersUseCase,
-  }) : super(const BookingsState()) {
+    GetDoctorsUseCase? getDoctorsUseCase,
+    GetDoctorsUseCase? getTechniciansUseCase,
+    GetPatientsUseCase? getPatientsUseCase,
+    GetPatientsUseCase? getCustomersUseCase,
+    this.getMedicalServicesUseCase,
+    this.getDoctorScheduleUseCase,
+    this.getDoctorLeavesUseCase,
+    this.getCompanySettingsUseCase,
+    this.getDoctorBookingsForDateUseCase,
+  })  : getDoctorsUseCase = getDoctorsUseCase ?? getTechniciansUseCase,
+        getPatientsUseCase = getPatientsUseCase ?? getCustomersUseCase,
+        super(const BookingsState()) {
     _initBranchListener();
     _startPeriodicNoShowTimer();
     _initFormOptions();
     fetchTechnicians();
     fetchCustomers();
+    fetchMedicalServices();
   }
 
   String? _currentBookingId;
@@ -118,15 +145,16 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   Future<void> fetchTechnicians() async {
-    if (getTechniciansUseCase == null) return;
-    final result = await getTechniciansUseCase!(
+    if (getDoctorsUseCase == null) return;
+    final result = await getDoctorsUseCase!(
       const PaginationParams(page: 1, limit: 100),
     );
     result.fold(
       (_) {},
       (response) {
-        if (response.items.isNotEmpty) {
-          final options = response.items
+        final items = response.items ?? [];
+        if (items.isNotEmpty) {
+          final options = items
               .map(
                 (t) => BookingTechnicianOption(
                   id: t.id ?? '',
@@ -144,17 +172,18 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   Future<void> fetchCustomers() async {
-    if (getCustomersUseCase == null) return;
-    final result = await getCustomersUseCase!(
+    if (getPatientsUseCase == null) return;
+    final result = await getPatientsUseCase!(
       const PaginationParams(page: 1, limit: 100),
     );
     result.fold(
       (_) {},
       (response) {
-        if (response.items.isNotEmpty) {
-          final options = response.items
+        final items = response.items ?? [];
+        if (items.isNotEmpty) {
+          final options = items
               .map(
-                (c) => BookingCustomerOption(
+                (c) => BookingPatientOption(
                   id: c.id ?? '',
                   name: c.name ?? '',
                   phone: c.phone ?? '',
@@ -488,63 +517,58 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         );
       }
 
-      final recSchedules =
-          booking.recurrence?.daySchedules ??
-          (booking.recurrence?.daysOfWeek
-                  ?.map(
-                    (d) => RecurringDaySchedule(
-                      day: d,
-                      startTime: booking.startTime ?? '10:00',
-                      endTime: booking.endTime ?? '12:00',
-                    ),
-                  )
-                  .toList() ??
-              const <RecurringDaySchedule>[]);
-
       emit(
         state.copyWith(
           formState: BookingFormState(
             bookingId: booking.id,
             customer: cust,
             technicians: techs,
+            serviceId: booking.serviceId,
             serviceName: booking.serviceName ?? '',
             bookingType: booking.bookingType ?? BookingTypeEnum.oneTime,
             date: booking.date ?? DateTime.now(),
-            startTime: booking.startTime ?? '10:00',
-            endTime: booking.endTime ?? '12:00',
-            durationMinutes: booking.durationMinutes ?? 120,
-            hourlyRate: booking.hourlyRate ?? 80,
-            totalPrice: booking.totalPrice ?? 0,
-            status: booking.status ?? BookingStatusEnum.scheduled,
+            startTime: booking.startTime ?? '',
+            endTime: booking.endTime ?? '',
+            durationMinutes: booking.durationMinutes ?? 0,
+            consultationFee: booking.consultationFee ?? booking.totalPrice ?? 0,
+            totalPrice: booking.totalPrice ?? booking.consultationFee ?? 0,
+            status: booking.status ?? BookingStatusEnum.waiting,
             paymentStatus: booking.paymentStatus ?? PaymentStatusEnum.unpaid,
             notes: booking.notes ?? '',
-            recurringSchedules: recSchedules,
-            recurrenceEndDate: booking.recurrence?.endDate,
-            isOngoing: booking.recurrence?.isOngoing ?? true,
           ),
+          hasPatientTimeConflict: false,
+          hasPatientSameDayNotice: false,
+          isPatientConflictConfirmed: false,
         ),
       );
+      loadSlotsForCurrentForm();
     } else {
       emit(
         state.copyWith(
           formState: BookingFormState(
             customer: null,
             technicians: const [],
+            serviceId: null,
             serviceName: '',
             bookingType: state.activeBookingTypeTab,
             date: DateTime.now(),
             startTime: '',
             endTime: '',
             durationMinutes: 0,
-            hourlyRate: 0,
+            consultationFee: 0,
             totalPrice: 0,
-            status: BookingStatusEnum.scheduled,
+            status: BookingStatusEnum.waiting,
             paymentStatus: PaymentStatusEnum.unpaid,
             notes: '',
-            recurringSchedules: const [],
-            recurrenceEndDate: null,
-            isOngoing: true,
           ),
+          slotsStatus: RequestStatusEnum.initial,
+          availableSlots: const [],
+          clearSelectedDayAvailability: true,
+          hasPatientTimeConflict: false,
+          hasPatientSameDayNotice: false,
+          isPatientConflictConfirmed: false,
+          clearPatientConflictingBooking: true,
+          clearPatientSameDayBooking: true,
         ),
       );
     }
@@ -553,17 +577,28 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   void updateFormCustomer(BookingCustomerOption? customer) {
     if (state.formState == null) return;
     emit(
-      state.copyWith(formState: state.formState!.copyWith(customer: customer)),
+      state.copyWith(
+        formState: state.formState!.copyWith(customer: customer),
+        isPatientConflictConfirmed: false,
+      ),
     );
+    _checkPatientConflict();
   }
 
   void updateFormTechnicians(List<BookingTechnicianOption> technicians) {
     if (state.formState == null) return;
     emit(
       state.copyWith(
-        formState: state.formState!.copyWith(technicians: technicians),
+        formState: state.formState!.copyWith(
+          technicians: technicians,
+          startTime: '',
+          endTime: '',
+        ),
+        availableSlots: const [],
+        slotsStatus: RequestStatusEnum.initial,
       ),
     );
+    loadSlotsForCurrentForm();
   }
 
   void toggleFormTechnician(BookingTechnicianOption technician) {
@@ -579,9 +614,30 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     }
     emit(
       state.copyWith(
-        formState: state.formState!.copyWith(technicians: current),
+        formState: state.formState!.copyWith(
+          technicians: current,
+          startTime: '',
+          endTime: '',
+        ),
+        availableSlots: const [],
+        slotsStatus: RequestStatusEnum.initial,
       ),
     );
+
+    // If selected service is tied to a specific doctor and that doctor is no longer selected, clear service
+    if (state.formState?.serviceId != null) {
+      final currentService = state.medicalServices.firstWhere(
+        (s) => s.id == state.formState!.serviceId,
+        orElse: () => const MedicalServiceModel(),
+      );
+      if (currentService.assignedDoctorId != null &&
+          currentService.assignedDoctorId!.isNotEmpty &&
+          !current.any((t) => t.id == currentService.assignedDoctorId)) {
+        updateFormService(null);
+        return;
+      }
+    }
+    loadSlotsForCurrentForm();
   }
 
   void addFormTechnician(BookingTechnicianOption technician) {
@@ -593,9 +649,16 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
       current.add(technician);
       emit(
         state.copyWith(
-          formState: state.formState!.copyWith(technicians: current),
+          formState: state.formState!.copyWith(
+            technicians: current,
+            startTime: '',
+            endTime: '',
+          ),
+          availableSlots: const [],
+          slotsStatus: RequestStatusEnum.initial,
         ),
       );
+      loadSlotsForCurrentForm();
     }
   }
 
@@ -607,9 +670,30 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     current.removeWhere((t) => t.id == technicianId);
     emit(
       state.copyWith(
-        formState: state.formState!.copyWith(technicians: current),
+        formState: state.formState!.copyWith(
+          technicians: current,
+          startTime: '',
+          endTime: '',
+        ),
+        availableSlots: const [],
+        slotsStatus: RequestStatusEnum.initial,
       ),
     );
+
+    // If selected service is tied to a specific doctor and that doctor is no longer selected, clear service
+    if (state.formState?.serviceId != null) {
+      final currentService = state.medicalServices.firstWhere(
+        (s) => s.id == state.formState!.serviceId,
+        orElse: () => const MedicalServiceModel(),
+      );
+      if (currentService.assignedDoctorId != null &&
+          currentService.assignedDoctorId!.isNotEmpty &&
+          !current.any((t) => t.id == currentService.assignedDoctorId)) {
+        updateFormService(null);
+        return;
+      }
+    }
+    loadSlotsForCurrentForm();
   }
 
   void updateFormTechnician(BookingTechnicianOption? technician) {
@@ -617,7 +701,13 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     if (technician == null) {
       emit(
         state.copyWith(
-          formState: state.formState!.copyWith(clearTechnicians: true),
+          formState: state.formState!.copyWith(
+            clearTechnicians: true,
+            startTime: '',
+            endTime: '',
+          ),
+          availableSlots: const [],
+          slotsStatus: RequestStatusEnum.initial,
         ),
       );
     } else {
@@ -655,28 +745,342 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
 
   void updateFormDate(DateTime date) {
     if (state.formState == null) return;
-    emit(state.copyWith(formState: state.formState!.copyWith(date: date)));
+    emit(
+      state.copyWith(
+        formState: state.formState!.copyWith(
+          date: date,
+          startTime: '',
+          endTime: '',
+        ),
+      ),
+    );
+    loadSlotsForCurrentForm();
   }
 
   void updateFormStartTime(String startTime) {
     if (state.formState == null) return;
     final startMinutes = _timeToMinutes(startTime);
-    final hasEnd = state.formState!.endTime.isNotEmpty;
-    final endMinutes = hasEnd ? _timeToMinutes(state.formState!.endTime) : 0;
-    final diff = (hasEnd && endMinutes > startMinutes)
-        ? endMinutes - startMinutes
-        : 0;
-    final totalPrice = diff > 0
-        ? (state.formState!.hourlyRate * (diff / 60)).round()
-        : 0;
+    final duration = state.formState!.durationMinutes;
+
+    String newEndTime = state.formState!.endTime;
+    int diff = duration;
+
+    if (duration > 0) {
+      newEndTime = _minutesToTime(startMinutes + duration);
+      diff = duration;
+    } else {
+      final hasEnd = state.formState!.endTime.isNotEmpty;
+      final endMinutes = hasEnd ? _timeToMinutes(state.formState!.endTime) : 0;
+      diff = (hasEnd && endMinutes > startMinutes)
+          ? endMinutes - startMinutes
+          : 0;
+    }
 
     emit(
       state.copyWith(
         formState: state.formState!.copyWith(
           startTime: startTime,
+          endTime: newEndTime,
           durationMinutes: diff,
-          totalPrice: totalPrice,
         ),
+      ),
+    );
+    _checkPatientConflict();
+  }
+
+  String _minutesToTime(int totalMinutes) {
+    final h = (totalMinutes ~/ 60) % 24;
+    final m = totalMinutes % 60;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> fetchMedicalServices() async {
+    if (getMedicalServicesUseCase == null) return;
+    final res =
+        await getMedicalServicesUseCase!(const GetMedicalServicesParams());
+    res.fold(
+      (_) {},
+      (services) => emit(state.copyWith(medicalServices: services)),
+    );
+  }
+
+  void updateFormService(MedicalServiceModel? service) {
+    if (state.formState == null) return;
+    if (service == null) {
+      emit(
+        state.copyWith(
+          formState: state.formState!.copyWith(
+            clearServiceId: true,
+            serviceName: '',
+            startTime: '',
+            endTime: '',
+            durationMinutes: 0,
+          ),
+          availableSlots: const [],
+          slotsStatus: RequestStatusEnum.initial,
+        ),
+      );
+      return;
+    }
+
+    final duration = service.durationMinutes ?? 0;
+    final fee = service.consultationFee ?? 0;
+
+    emit(
+      state.copyWith(
+        formState: state.formState!.copyWith(
+          serviceId: service.id,
+          serviceName: service.name ?? '',
+          consultationFee: fee,
+          totalPrice: fee,
+          durationMinutes: duration,
+          startTime: '',
+          endTime: '',
+        ),
+      ),
+    );
+    loadSlotsForCurrentForm();
+  }
+
+  // ─── Phase 4B: Slot Picker & Conflict Detection ────────────────────────────
+
+  Future<void> loadSlotsForCurrentForm({
+    bool forceRefresh = false,
+    DateTime? customNow,
+  }) async {
+    final form = state.formState;
+    if (form == null) return;
+
+    final doctorId =
+        form.technicians.isNotEmpty ? form.technicians.first.id : null;
+    final serviceId = form.serviceId;
+    final date = form.date;
+
+    // تتطلب العملية تحديد الطبيب والخدمة واليوم
+    if (doctorId == null ||
+        doctorId.isEmpty ||
+        serviceId == null ||
+        serviceId.isEmpty) {
+      emit(
+        state.copyWith(
+          slotsStatus: RequestStatusEnum.initial,
+          availableSlots: const [],
+          clearSelectedDayAvailability: true,
+          clearSlotsErrMessage: true,
+        ),
+      );
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        slotsStatus: RequestStatusEnum.loading,
+        errMessage: state.errMessage,
+      ),
+    );
+
+    try {
+      final scheduleFuture = getDoctorScheduleUseCase != null
+          ? getDoctorScheduleUseCase!(doctorId)
+          : (getIt.isRegistered<GetDoctorScheduleUseCase>()
+              ? getIt<GetDoctorScheduleUseCase>()(doctorId)
+              : null);
+
+      final leavesFuture = getDoctorLeavesUseCase != null
+          ? getDoctorLeavesUseCase!(doctorId)
+          : (getIt.isRegistered<GetDoctorLeavesUseCase>()
+              ? getIt<GetDoctorLeavesUseCase>()(doctorId)
+              : null);
+
+      final holidaysFuture = getCompanySettingsUseCase != null
+          ? getCompanySettingsUseCase!(NoParams())
+          : (getIt.isRegistered<GetCompanySettingsUseCase>()
+              ? getIt<GetCompanySettingsUseCase>()(NoParams())
+              : null);
+
+      final bookingsFuture = getDoctorBookingsForDateUseCase != null
+          ? getDoctorBookingsForDateUseCase!(doctorId: doctorId, date: date)
+          : (getIt.isRegistered<GetDoctorBookingsForDateUseCase>()
+              ? getIt<GetDoctorBookingsForDateUseCase>()(
+                  doctorId: doctorId,
+                  date: date,
+                )
+              : null);
+
+      DoctorScheduleModel? schedule;
+      if (scheduleFuture != null) {
+        final res = await scheduleFuture;
+        schedule = res.fold((_) => null, (r) => r);
+      }
+
+      List<DoctorLeaveModel>? leaves;
+      if (leavesFuture != null) {
+        final res = await leavesFuture;
+        leaves = res.fold((_) => null, (r) => r);
+      }
+
+      List<SpecialHolidayModel>? holidays;
+      if (holidaysFuture != null) {
+        final res = await holidaysFuture;
+        holidays = res.fold((_) => null, (r) => r.specialHolidays);
+      }
+
+      List<BookingModel> doctorBookings = [];
+      if (bookingsFuture != null) {
+        final res = await bookingsFuture;
+        doctorBookings = res.fold((_) => [], (r) => r);
+      } else {
+        doctorBookings = state.bookings.where((b) {
+          final bDoc = b.doctorId ??
+              (b.technicians.isNotEmpty ? b.technicians.first.id : null);
+          return bDoc == doctorId &&
+              CairoTimeHelper.isSameDay(b.date ?? b.appointmentTime, date);
+        }).toList();
+      }
+
+      // 5. مدة الخدمة
+      final service = state.medicalServices.firstWhere(
+        (s) => s.id == serviceId,
+        orElse: () => const MedicalServiceModel(),
+      );
+      final duration =
+          (service.durationMinutes != null && service.durationMinutes! > 0)
+              ? service.durationMinutes!
+              : (form.durationMinutes > 0 ? form.durationMinutes : 20);
+
+      // 6. توليد الفترات عبر SlotGeneratorHelper
+      final result = SlotGeneratorHelper.generateSlots(
+        schedule: schedule,
+        leaves: leaves,
+        holidays: holidays,
+        doctorBookings: doctorBookings,
+        serviceDurationMinutes: duration,
+        date: date,
+        customNow: customNow,
+        excludeBookingId: form.bookingId,
+        currentBookingStartTime:
+            form.startTime.isNotEmpty ? form.startTime : null,
+        currentBookingEndTime:
+            form.endTime.isNotEmpty ? form.endTime : null,
+      );
+
+      final currentForm = state.formState;
+      if (currentForm == null) return;
+
+      // إذا كانت الفترة المحددة سابقاً أصبحت غير متاحة، نقوم بمسحها
+      String newStartTime = currentForm.startTime;
+      String newEndTime = currentForm.endTime;
+      if (newStartTime.isNotEmpty && !forceRefresh) {
+        final matchingSlot = result.slots.firstWhere(
+          (s) => s.startTime == newStartTime,
+          orElse: () => const TimeSlotModel(),
+        );
+        if (matchingSlot.startTime == null ||
+            matchingSlot.status != SlotStatusEnum.available) {
+          if (matchingSlot.isCurrentBookingSlot != true) {
+            newStartTime = '';
+            newEndTime = '';
+          }
+        }
+      }
+
+      emit(
+        state.copyWith(
+          slotsStatus: RequestStatusEnum.success,
+          errMessage: state.errMessage,
+          availableSlots: result.slots,
+          selectedDayAvailability: result.dayAvailability,
+          currentDoctorSchedule: schedule,
+          currentDoctorLeaves: leaves,
+          facilityHolidays: holidays,
+          formState: currentForm.copyWith(
+            startTime: newStartTime,
+            endTime: newEndTime,
+            durationMinutes: duration,
+          ),
+        ),
+      );
+
+      _checkPatientConflict();
+    } catch (e) {
+      emit(
+        state.copyWith(
+          slotsStatus: RequestStatusEnum.failure,
+          slotsErrMessage: e.toString(),
+          errMessage: state.errMessage,
+        ),
+      );
+    }
+  }
+
+  void selectTimeSlot(TimeSlotModel slot) {
+    if (state.formState == null) return;
+    if (slot.status != SlotStatusEnum.available &&
+        slot.isCurrentBookingSlot != true) {
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        formState: state.formState!.copyWith(
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          durationMinutes: slot.serviceDurationMinutes ??
+              state.formState!.durationMinutes,
+        ),
+        isPatientConflictConfirmed: false,
+      ),
+    );
+
+    _checkPatientConflict();
+  }
+
+  void _checkPatientConflict() {
+    final form = state.formState;
+    if (form == null ||
+        form.customer == null ||
+        form.startTime.isEmpty ||
+        form.endTime.isEmpty) {
+      emit(
+        state.copyWith(
+          hasPatientTimeConflict: false,
+          hasPatientSameDayNotice: false,
+          clearPatientConflictingBooking: true,
+          clearPatientSameDayBooking: true,
+        ),
+      );
+      return;
+    }
+
+    final conflictRes = SlotGeneratorHelper.checkPatientConflict(
+      allBookings: state.bookings,
+      patientId: form.customer!.id,
+      date: form.date,
+      startTime: form.startTime,
+      endTime: form.endTime,
+      excludeBookingId: form.bookingId,
+    );
+
+    emit(
+      state.copyWith(
+        hasPatientTimeConflict: conflictRes.hasTimeConflict,
+        hasPatientSameDayNotice: conflictRes.hasSameDayNotice,
+        patientConflictingBooking: conflictRes.conflictingBooking,
+        patientSameDayBooking: conflictRes.sameDayBooking,
+      ),
+    );
+  }
+
+  void confirmPatientTimeConflict() {
+    emit(state.copyWith(isPatientConflictConfirmed: true));
+  }
+
+  void clearPatientTimeConflict() {
+    emit(
+      state.copyWith(
+        hasPatientTimeConflict: false,
+        isPatientConflictConfirmed: false,
+        clearPatientConflictingBooking: true,
       ),
     );
   }
@@ -691,33 +1095,31 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     final diff = (hasStart && endMinutes > startMinutes)
         ? endMinutes - startMinutes
         : 0;
-    final totalPrice = diff > 0
-        ? (state.formState!.hourlyRate * (diff / 60)).round()
-        : 0;
 
     emit(
       state.copyWith(
         formState: state.formState!.copyWith(
           endTime: endTime,
           durationMinutes: diff,
-          totalPrice: totalPrice,
         ),
       ),
     );
   }
 
-  void updateFormHourlyRate(num rate) {
+  void updateFormConsultationFee(num fee) {
     if (state.formState == null) return;
-    final total = (rate * (state.formState!.durationMinutes / 60)).round();
     emit(
       state.copyWith(
         formState: state.formState!.copyWith(
-          hourlyRate: rate,
-          totalPrice: total,
+          consultationFee: fee,
+          totalPrice: fee > 0 ? fee : state.formState!.totalPrice,
         ),
       ),
     );
   }
+
+  /// Backward-compatibility alias
+  void updateFormHourlyRate(num rate) => updateFormConsultationFee(rate);
 
   void updateFormTotalPrice(num total) {
     if (state.formState == null) return;
@@ -731,82 +1133,6 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     emit(state.copyWith(formState: state.formState!.copyWith(notes: notes)));
   }
 
-  void toggleRecurringDay(String day) {
-    if (state.formState == null) return;
-    final current = List<RecurringDaySchedule>.from(
-      state.formState!.recurringSchedules,
-    );
-    final index = current.indexWhere((s) => s.day == day);
-    if (index >= 0) {
-      current.removeAt(index);
-    } else {
-      final defaultStart = state.formState!.startTime.isNotEmpty
-          ? state.formState!.startTime
-          : '10:00';
-      final defaultEnd = state.formState!.endTime.isNotEmpty
-          ? state.formState!.endTime
-          : '12:00';
-      current.add(
-        RecurringDaySchedule(
-          day: day,
-          startTime: defaultStart,
-          endTime: defaultEnd,
-        ),
-      );
-    }
-    emit(
-      state.copyWith(
-        formState: state.formState!.copyWith(recurringSchedules: current),
-      ),
-    );
-  }
-
-  void updateRecurringDayTime(
-    String day, {
-    String? startTime,
-    String? endTime,
-  }) {
-    if (state.formState == null) return;
-    final current = state.formState!.recurringSchedules.map((s) {
-      if (s.day == day) {
-        return s.copyWith(
-          startTime: startTime ?? s.startTime,
-          endTime: endTime ?? s.endTime,
-        );
-      }
-      return s;
-    }).toList();
-    emit(
-      state.copyWith(
-        formState: state.formState!.copyWith(recurringSchedules: current),
-      ),
-    );
-  }
-
-  void updateRecurrenceEndDate(DateTime? endDate) {
-    if (state.formState == null) return;
-    emit(
-      state.copyWith(
-        formState: state.formState!.copyWith(
-          recurrenceEndDate: endDate,
-          clearRecurrenceEndDate: endDate == null,
-        ),
-      ),
-    );
-  }
-
-  void updateRecurrenceOngoing(bool isOngoing) {
-    if (state.formState == null) return;
-    emit(
-      state.copyWith(
-        formState: state.formState!.copyWith(
-          isOngoing: isOngoing,
-          clearRecurrenceEndDate: isOngoing,
-        ),
-      ),
-    );
-  }
-
   int _timeToMinutes(String time) {
     final parts = time.split(':');
     if (parts.length < 2) return 0;
@@ -817,24 +1143,30 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
 
   Future<bool> submitBookingForm({
     String? serviceName,
+    num? consultationFee,
     num? hourlyRate,
     num? totalPrice,
     String? notes,
+    DateTime? customNow,
   }) async {
     final form = state.formState;
     if (form == null) return false;
 
-    final isRecurring = form.bookingType == BookingTypeEnum.recurring;
-    final recurrence = isRecurring && form.recurringSchedules.isNotEmpty
-        ? RecurrenceRuleModel(
-            frequency: 'weekly',
-            daysOfWeek: form.recurringSchedules.map((s) => s.day).toList(),
-            daySchedules: form.recurringSchedules,
-            startDate: form.date,
-            isOngoing: form.isOngoing,
-            endDate: form.isOngoing ? null : form.recurrenceEndDate,
-          )
-        : null;
+    // التحقق من تعارض مواعيد المريض: إذا وجد تقاطع زمني ولم يؤكد المستخدم صراحة
+    if (state.hasPatientTimeConflict && !state.isPatientConflictConfirmed) {
+      emit(
+        state.copyWith(
+          actionStatus: RequestStatusEnum.failure,
+          errMessage: 'patient_time_conflict_warning',
+        ),
+      );
+      return false;
+    }
+
+    final resolvedFee =
+        consultationFee ?? hourlyRate ?? form.consultationFee;
+    final resolvedTotal = totalPrice ??
+        (resolvedFee > 0 ? resolvedFee : form.totalPrice);
 
     final booking = BookingModel(
       id: form.bookingId,
@@ -843,44 +1175,55 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
               id: form.customer!.id,
               name: form.customer!.name,
               phone: form.customer!.phone,
-              address: form.customer!.address,
+              detailedAddress: form.customer!.address,
             )
           : null,
+      patientId: form.customer?.id,
+      patientName: form.customer?.name,
+      patientPhone: form.customer?.phone,
       technicians: form.technicians
           .map((t) => TechnicianModel(id: t.id, name: t.name))
           .toList(),
-      serviceName: serviceName ?? form.serviceName,
+      doctorId: form.technicians.isNotEmpty ? form.technicians.first.id : null,
+      doctorName:
+          form.technicians.isNotEmpty ? form.technicians.first.name : null,
+      serviceId: form.serviceId,
+      serviceName: form.serviceName.isNotEmpty ? form.serviceName : serviceName,
       bookingType: form.bookingType,
       date: form.date,
-      recurrence: recurrence,
       startTime: form.startTime,
       endTime: form.endTime,
       durationMinutes: form.durationMinutes,
-      hourlyRate: hourlyRate ?? form.hourlyRate,
-      totalPrice: totalPrice ?? form.totalPrice,
+      consultationFee: resolvedFee,
+      totalPrice: resolvedTotal,
       status: form.status,
       paymentStatus: form.paymentStatus,
       notes: notes ?? form.notes,
     );
 
     if (form.bookingId != null) {
-      return await updateBooking(booking);
+      return await updateBooking(booking, customNow: customNow);
     } else {
-      return await createBooking(booking);
+      return await createBooking(booking, customNow: customNow);
     }
   }
 
-  Future<bool> createBooking(BookingModel booking) async {
+  Future<bool> createBooking(BookingModel booking, {DateTime? customNow}) async {
     emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
-    final result = await createBookingUseCase(booking);
+    final result = await createBookingUseCase(booking, customNow: customNow);
     return result.fold(
       (failure) {
         emit(
           state.copyWith(
             actionStatus: RequestStatusEnum.failure,
             errMessage: failure.errMessage,
+            formState: state.formState?.copyWith(
+              startTime: '',
+              endTime: '',
+            ),
           ),
         );
+        loadSlotsForCurrentForm(forceRefresh: true);
         return false;
       },
       (created) {
@@ -936,17 +1279,22 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     }
   }
 
-  Future<bool> updateBooking(BookingModel booking) async {
+  Future<bool> updateBooking(BookingModel booking, {DateTime? customNow}) async {
     emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
-    final result = await updateBookingUseCase(booking);
+    final result = await updateBookingUseCase(booking, customNow: customNow);
     return result.fold(
       (failure) {
         emit(
           state.copyWith(
             actionStatus: RequestStatusEnum.failure,
             errMessage: failure.errMessage,
+            formState: state.formState?.copyWith(
+              startTime: '',
+              endTime: '',
+            ),
           ),
         );
+        loadSlotsForCurrentForm(forceRefresh: true);
         return false;
       },
       (updated) {

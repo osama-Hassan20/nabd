@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
 
-class BookingCustomerOption extends Equatable {
+class BookingPatientOption extends Equatable {
   final String id;
   final String name;
   final String phone;
   final String address;
 
-  const BookingCustomerOption({
+  const BookingPatientOption({
     required this.id,
     required this.name,
     required this.phone,
@@ -17,13 +17,15 @@ class BookingCustomerOption extends Equatable {
   List<Object?> get props => [id, name, phone, address];
 }
 
-class BookingTechnicianOption extends Equatable {
+typedef BookingCustomerOption = BookingPatientOption;
+
+class BookingDoctorOption extends Equatable {
   final String id;
   final String name;
   final bool isAvailable;
   final String? unavailableReason;
 
-  const BookingTechnicianOption({
+  const BookingDoctorOption({
     required this.id,
     required this.name,
     this.isAvailable = true,
@@ -33,3 +35,5 @@ class BookingTechnicianOption extends Equatable {
   @override
   List<Object?> get props => [id, name, isAvailable, unavailableReason];
 }
+
+typedef BookingTechnicianOption = BookingDoctorOption;

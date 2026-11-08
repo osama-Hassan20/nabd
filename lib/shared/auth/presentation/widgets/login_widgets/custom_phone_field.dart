@@ -68,6 +68,7 @@ class CustomPhoneField extends StatelessWidget {
     super.key,
     this.onFieldSubmitted,
     this.phoneController,
+    this.initialValue,
     this.fillColor,
     this.enableValidator = true,
     this.isReadOnly = false,
@@ -87,6 +88,7 @@ class CustomPhoneField extends StatelessWidget {
 
   final void Function(String? value)? onFieldSubmitted;
   final TextEditingController? phoneController;
+  final String? initialValue;
   final Color? fillColor;
   final bool isReadOnly;
   final bool enableValidator;
@@ -105,11 +107,11 @@ class CustomPhoneField extends StatelessWidget {
 
   /// Extracts only the local phone digits from a phone number string,
   /// stripping country codes and any spaces/dashes that cause RTL reversal.
-  /// Example: '+974 5512 3456' -> '55123456'
+  /// Example: '+20 1012 345678' -> '1012345678'
   /// Example: '5512 3456' -> '55123456'
   static String extractLocalDigits(
     String? phone, {
-    String countryCode = '974',
+    String countryCode = '20',
   }) {
     if (phone == null || phone.isEmpty) return '';
     var clean = phone.trim();
@@ -120,7 +122,7 @@ class CustomPhoneField extends StatelessWidget {
     }
     // Remove all non-digits (spaces, dashes, parens, etc.)
     clean = clean.replaceAll(RegExp(r'\D'), '');
-    if (clean.startsWith(countryCode) && clean.length > 8) {
+    if (clean.startsWith(countryCode) && clean.length > 10) {
       clean = clean.substring(countryCode.length);
     }
     return clean;
@@ -128,11 +130,11 @@ class CustomPhoneField extends StatelessWidget {
 
   /// Normalizes the phone number by removing non-digits and stripping any leading 0,
   /// then prepends the country code.
-  /// Example: '055123456' -> '+974 55123456'
-  /// Example: '55123456' -> '+974 55123456'
+  /// Example: '01012345678' -> '+20 1012345678'
+  /// Example: '1012345678' -> '+20 1012345678'
   static String formatWithCountryCode(
     String phone, {
-    String countryCode = '+974',
+    String countryCode = '+20',
   }) {
     var clean = phone.trim();
     if (clean.startsWith('+')) return clean;
@@ -166,9 +168,9 @@ class CustomPhoneField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectivePhoneCode = phoneCode ?? '+974';
+    final effectivePhoneCode = phoneCode ?? '+20';
     final int effectiveBaseLength =
-        maxLength ?? (effectivePhoneCode == '+974' ? 8 : 10);
+        maxLength ?? (effectivePhoneCode == '+20' ? 10 : 8);
 
     return CustomTextFormField(
       focusNode: phoneFocus,
@@ -195,6 +197,7 @@ class CustomPhoneField extends StatelessWidget {
                     _validatePhone(val, effectiveBaseLength, acceptLeadingZero))
           : null,
       controller: phoneController,
+      initialValue: phoneController == null ? initialValue : null,
       tempColor: tempColor,
       textInputType: TextInputType.phone,
       inputFormatters: [
@@ -214,7 +217,13 @@ class CustomPhoneField extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               spacing: 2,
               children: [
-                CustomAssetImage(path: AppIcons.qatar),
+                CustomAssetImage(
+                  path: effectivePhoneCode == '+20'
+                      ? AppIcons.egypt
+                      : (effectivePhoneCode == '+974'
+                          ? AppIcons.qatar
+                          : AppIcons.phone),
+                ),
                 Text(
                   effectivePhoneCode,
                   textDirection: TextDirection.ltr,
@@ -229,7 +238,7 @@ class CustomPhoneField extends StatelessWidget {
       ),
       hintText:
           hintText ??
-          (effectivePhoneCode == '+974' ? '33XX XXXX' : 'ادخل رقم الهاتف...'),
+          (effectivePhoneCode == '+20' ? '010 1234 5678' : 'ادخل رقم الهاتف...'),
     );
   }
 }

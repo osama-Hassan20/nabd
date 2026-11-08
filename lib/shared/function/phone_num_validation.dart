@@ -1,10 +1,10 @@
 String? validatePhone(String? value) {
   if (value == null || value.trim().isEmpty) {
-    return 'يا ريت تكتب رقم الموبايل';
+    return 'يرجى إدخال رقم الهاتف';
   }
   final clean = value.replaceAll(RegExp(r'\D'), '');
-  if (clean.length < 8) {
-    return 'رقم الموبايل يجب أن يتكون من 8 أرقام على الأقل';
+  if (clean.length < 10) {
+    return 'رقم الهاتف غير مكتمل';
   }
 
   return null;
@@ -12,23 +12,21 @@ String? validatePhone(String? value) {
 
 String? validateName(String? value) {
   if (value == null || value.trim().isEmpty) {
-    return 'يا ريت تكتب اسمك';
+    return 'يرجى إدخال الاسم';
   }
-  if (value.length < 2) {
-    return 'الاسم لازم يكون حرفين على الأقل';
+  if (value.trim().length < 2) {
+    return 'يجب أن يتكون الاسم من حرفين على الأقل';
   }
   return null;
 }
 
 String? validateEgyptPhone(String? value) {
   if (value == null || value.trim().isEmpty) {
-    return 'يا ريت تكتب رقم الموبايل';
+    return 'يرجى إدخال رقم الهاتف';
   }
-  if (!RegExp(r'^01[0125]').hasMatch(value)) {
-    return 'الرقم لازم يبدأ بـ 010 أو 011 أو 012 أو 015';
-  }
-  if (value.length != 11) {
-    return 'الرقم لازم يكون 11 رقم';
+  final clean = value.replaceAll(RegExp(r'\D'), '');
+  if (!RegExp(r'^(01[0125]\d{8}|1[0125]\d{8})$').hasMatch(clean)) {
+    return 'الرقم يجب أن يبدأ بـ 010 أو 011 أو 012 أو 015 ويتكون من 11 رقمًا';
   }
 
   return null;

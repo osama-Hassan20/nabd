@@ -9,15 +9,12 @@ import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
-import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_calendar_widget.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_card.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/bookings_table.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/compact_date_strip_widget.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/recurring_booking_card.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/recurring_bookings_table.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
 import 'package:eyadty/shared/widgets/shimmer/custom_shimmer_container.dart';
 
@@ -47,13 +44,8 @@ class AdaptiveBookingsView extends StatelessWidget {
       buildWhen: (prev, curr) =>
           prev.bookingsStatus != curr.bookingsStatus ||
           prev.bookings != curr.bookings ||
-          prev.selectedDate != curr.selectedDate ||
-          prev.activeBookingTypeTab != curr.activeBookingTypeTab ||
-          prev.selectedDayOfWeek != curr.selectedDayOfWeek,
+          prev.selectedDate != curr.selectedDate,
       builder: (context, state) {
-        final isRecurring =
-            state.activeBookingTypeTab == BookingTypeEnum.recurring;
-
         return LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth >= 1000;
@@ -64,24 +56,6 @@ class AdaptiveBookingsView extends StatelessWidget {
             if (state.bookingsStatus == RequestStatusEnum.loading &&
                 state.bookings.isEmpty) {
               if (isDesktop) {
-                if (isRecurring) {
-                  return CustomTableShimmer(
-                    headers: [
-                      '#',
-                      'customer_label'.tr(),
-                      'service_label'.tr(),
-                      'technician_label'.tr(),
-                      'recurring_days_schedule'.tr(),
-                      'subscription_period'.tr(),
-                      'price_label'.tr(),
-                      'status_label'.tr(),
-                      'actions_label'.tr(),
-                    ],
-                    columnWidths: RecurringBookingsTable.columnWidths,
-                    rowCount: 6,
-                  );
-                }
-
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -116,14 +90,12 @@ class AdaptiveBookingsView extends StatelessWidget {
 
               return Column(
                 children: [
-                  if (!isRecurring) ...[
-                    const CustomShimmerContainer(
-                      height: 72,
-                      width: double.infinity,
-                      borderRadius: 10,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                  const CustomShimmerContainer(
+                    height: 72,
+                    width: double.infinity,
+                    borderRadius: 10,
+                  ),
+                  const SizedBox(height: 16),
                   ...List.generate(
                     4,
                     (_) => const Padding(
@@ -145,19 +117,13 @@ class AdaptiveBookingsView extends StatelessWidget {
               final emptyWidget = _EmptyBookingsPlaceholder(
                 hasFilters: state.selectedDate != null ||
                     state.selectedStatus != null ||
-                    state.searchQuery.isNotEmpty ||
-                    state.selectedDayOfWeek != null,
+                    state.searchQuery.isNotEmpty,
                 onReset: () {
                   cubit.searchController.clear();
                   cubit.clearDateFilter();
                   cubit.onStatusFilterChanged(null);
-                  cubit.onDayOfWeekFilterChanged(null);
                 },
               );
-
-              if (isRecurring) {
-                return emptyWidget;
-              }
 
               if (isDesktop) {
                 return Row(
@@ -201,17 +167,6 @@ class AdaptiveBookingsView extends StatelessWidget {
 
             // 3. Desktop Layout
             if (isDesktop) {
-              if (isRecurring) {
-                return RecurringBookingsTable(
-                  bookings: state.bookings,
-                  onViewDetails: onViewDetails,
-                  onEdit: onEdit,
-                  onChangeStatus: onChangeStatus,
-                  onReassignTechnician: onReassignTechnician,
-                  onDelete: onDelete,
-                );
-              }
-
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -241,35 +196,6 @@ class AdaptiveBookingsView extends StatelessWidget {
 
             // 4. Tablet Layout: 2-Column Grid
             if (isTablet) {
-              if (isRecurring) {
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: state.bookings.length,
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                    mainAxisExtent: 250,
-                  ),
-                  itemBuilder: (context, index) {
-                    final item = state.bookings[index];
-                    return RecurringBookingCard(
-                      booking: item,
-                      onViewDetails: onViewDetails != null
-                          ? () => onViewDetails!(item)
-                          : null,
-                      onEdit: () => onEdit(item),
-                      onChangeStatus: () => onChangeStatus(item),
-                      onReassignTechnician: () =>
-                          onReassignTechnician(item),
-                      onDelete: () => onDelete(item),
-                    );
-                  },
-                );
-              }
-
               return Column(
                 children: [
                   CompactDateStripWidget(
@@ -321,29 +247,6 @@ class AdaptiveBookingsView extends StatelessWidget {
             }
 
             // 5. Mobile Layout: 1-Column List
-            if (isRecurring) {
-              return ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: state.bookings.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final item = state.bookings[index];
-                  return RecurringBookingCard(
-                    booking: item,
-                    onViewDetails: onViewDetails != null
-                        ? () => onViewDetails!(item)
-                        : null,
-                    onEdit: () => onEdit(item),
-                    onChangeStatus: () => onChangeStatus(item),
-                    onReassignTechnician: () =>
-                        onReassignTechnician(item),
-                    onDelete: () => onDelete(item),
-                  );
-                },
-              );
-            }
-
             return Column(
               children: [
                 CompactDateStripWidget(

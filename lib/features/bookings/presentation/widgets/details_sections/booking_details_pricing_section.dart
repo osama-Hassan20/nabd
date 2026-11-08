@@ -81,20 +81,21 @@ class BookingDetailsPricingSection extends StatelessWidget {
           const Divider(height: 1, color: AppColors.grayE2E8F0),
           const SizedBox(height: 16),
 
-          // Hourly Rate Row (if present)
-          if (booking.hourlyRate != null && booking.hourlyRate! > 0) ...[
+          // Consultation Fee Row (if present)
+          if (booking.consultationFee != null &&
+              booking.consultationFee! > 0) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'hourly_rate'.tr(),
+                  'consultation_fee_label'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
                     color: AppColors.gray71717A,
                   ),
                 ),
                 Text(
-                  '${MonyHelper.formatMoney(booking.hourlyRate!)} ${'qar_currency'.tr()} / ${'hour'.tr()}',
-                  style: CustomAppFontStyle.medium13.copyWith(
+                  '${MonyHelper.formatMoney(booking.consultationFee!)} ${'currency'.tr()}',
+                  style: CustomAppFontStyle.semiBold14.copyWith(
                     color: AppColors.darkText,
                   ),
                 ),
@@ -160,7 +161,7 @@ class BookingDetailsPricingSection extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  '${MonyHelper.formatMoney(booking.totalPrice ?? 0)} ${'qar_currency'.tr()}',
+                  '${MonyHelper.formatMoney(booking.totalPrice ?? 0)} ${'currency'.tr()}',
                   style: CustomAppFontStyle.bold18.copyWith(
                     color: AppColors.primaryDark,
                   ),

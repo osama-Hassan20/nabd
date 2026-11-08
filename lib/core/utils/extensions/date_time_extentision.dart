@@ -1,14 +1,15 @@
-import 'package:intl/intl.dart';
+import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 
 extension DateTimeExtension on DateTime? {
+  /// Formats to unified Latin digits: "2026/01/25"
   String toCustomFormat() {
     if (this == null) return "";
-    return DateFormat('yyyy/MM/dd', 'ar').format(this!);
+    return AppFormatterHelper.formatDate(this!);
   }
-  // make another show minutes :seconds beside
 
+  /// Formats to unified Latin digits with time: "2026/01/25 - 02:30 م"
   String toCustomFormatWithTime() {
     if (this == null) return "";
-    return DateFormat('yyyy/MM/dd - hh:mm a', 'ar').format(this!);
+    return AppFormatterHelper.formatDateTime(this!);
   }
 }

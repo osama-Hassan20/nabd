@@ -16,8 +16,8 @@ class BasicCubit extends SafeCubit<BasicState> {
     // Default single role admin profile
     profile = const ProfileModel(
       id: '1',
-      name: 'مدير بيوركسو',
-      email: 'admin@purexo.com',
+      name: 'مدير النظام',
+      email: 'admin@eyadty.com',
       roles: AdminRoles.admin,
     );
     emit(state.copyWith(

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -65,8 +66,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
   }
 
   String _displayTime(BuildContext context, String timeStr) {
-    final time = _parseTime(timeStr);
-    return time.format(context);
+    return AppFormatterHelper.formatTime(timeStr, context: context);
   }
 
   Future<void> _pickTime({

@@ -10,7 +10,10 @@ class UpdateBookingUseCase implements UseCase<BookingModel, BookingModel> {
   UpdateBookingUseCase({required this.repo});
 
   @override
-  Future<Either<Failures, BookingModel>> call(BookingModel booking) {
-    return repo.updateBooking(booking);
+  Future<Either<Failures, BookingModel>> call(
+    BookingModel booking, {
+    DateTime? customNow,
+  }) {
+    return repo.updateBooking(booking, customNow: customNow);
   }
 }

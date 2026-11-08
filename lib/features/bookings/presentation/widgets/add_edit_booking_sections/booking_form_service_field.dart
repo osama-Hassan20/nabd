@@ -5,10 +5,12 @@ import 'package:eyadty/shared/widgets/custom_text_field.dart';
 
 class BookingFormServiceField extends StatelessWidget {
   final TextEditingController controller;
+  final bool isRequired;
 
   const BookingFormServiceField({
     super.key,
     required this.controller,
+    this.isRequired = false,
   });
 
   @override
@@ -17,12 +19,12 @@ class BookingFormServiceField extends StatelessWidget {
       controller: controller,
       headerText: 'reason_for_visit_label'.tr(),
       hintText: 'reason_for_visit_hint'.tr(),
-      isRequired: true,
+      isRequired: isRequired,
       inputFormatters: [
         LengthLimitingTextInputFormatter(80),
       ],
       validator: (val) {
-        if (val == null || val.trim().isEmpty) {
+        if (isRequired && (val == null || val.trim().isEmpty)) {
           return 'field_required'.tr();
         }
         return null;

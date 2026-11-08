@@ -16,8 +16,18 @@ abstract class BookingsRepo {
     PaginationParams params,
   );
   Future<Either<Failures, BookingModel>> getBookingById(String id);
-  Future<Either<Failures, BookingModel>> createBooking(BookingModel booking);
-  Future<Either<Failures, BookingModel>> updateBooking(BookingModel booking);
+  Future<Either<Failures, BookingModel>> createBooking(
+    BookingModel booking, {
+    DateTime? customNow,
+  });
+  Future<Either<Failures, BookingModel>> updateBooking(
+    BookingModel booking, {
+    DateTime? customNow,
+  });
+  Future<Either<Failures, List<BookingModel>>> getDoctorBookingsForDate({
+    required String doctorId,
+    required DateTime date,
+  });
   Future<Either<Failures, Unit>> changeBookingStatus(
     ChangeBookingStatusParams params,
   );

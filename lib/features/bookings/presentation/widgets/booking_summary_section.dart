@@ -193,7 +193,7 @@ class BookingSummarySection extends StatelessWidget {
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     itemCount: items.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    separatorBuilder: (_, index) => const SizedBox(width: 10),
                     itemBuilder: (context, index) {
                       return SizedBox(
                         width: 185,
@@ -237,8 +237,8 @@ class BookingSummarySection extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 itemCount: 7,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (_, __) => const SizedBox(
+                separatorBuilder: (_, index) => const SizedBox(width: 10),
+                itemBuilder: (_, index) => const SizedBox(
                   width: 185,
                   child: SummaryCardShimmer(),
                 ),

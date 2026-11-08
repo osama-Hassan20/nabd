@@ -9,20 +9,20 @@ class AppRouter {
   static const String bookingDetails = '/bookings/:id';
 
   // 2. Patients & Medical EMR
-  static const String patients = '/customers';
-  static const String patientDetails = '/customers/:id';
-  static const String customers = '/customers';
-  static const String customerDetails = '/customers/:id';
+  static const String patients = '/patients';
+  static const String patientDetails = '/patients/:id';
+  static const String customers = '/patients';
+  static const String customerDetails = '/patients/:id';
 
   // 3. Clinical Visits & Prescriptions
   static const String visits = '/visits';
   static const String visitDetails = '/visits/:id';
 
   // 4. Doctors & Staff Schedules
-  static const String doctors = '/technicians';
-  static const String doctorDetails = '/technicians/:id';
-  static const String technicians = '/technicians';
-  static const String technicianDetails = '/technicians/:id';
+  static const String doctors = '/doctors';
+  static const String doctorDetails = '/doctors/:id';
+  static const String technicians = '/doctors';
+  static const String technicianDetails = '/doctors/:id';
 
   // 5. Cashier & Shift Drawer
   static const String cashier = '/cashier';

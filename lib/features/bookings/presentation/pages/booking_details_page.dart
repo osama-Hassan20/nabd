@@ -6,16 +6,14 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
-import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_dialog.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_action_dialogs.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_details_shimmer.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_customer_section.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_patient_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_notes_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_pricing_section.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_recurrence_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_schedule_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_technicians_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_top_bar.dart';
@@ -160,9 +158,6 @@ class _BookingDetailsView extends StatelessWidget {
           );
         }
 
-        final isRecurring =
-            booking.bookingType == BookingTypeEnum.recurring ||
-            booking.recurrence != null;
         final hasNotes =
             booking.notes != null && booking.notes!.trim().isNotEmpty;
 
@@ -197,13 +192,9 @@ class _BookingDetailsView extends StatelessWidget {
                         flex: 3,
                         child: Column(
                           children: [
-                            BookingDetailsCustomerSection(booking: booking),
+                            BookingDetailsPatientSection(booking: booking),
                             const SizedBox(height: 16),
                             BookingDetailsScheduleSection(booking: booking),
-                            if (isRecurring) ...[
-                              const SizedBox(height: 16),
-                              BookingDetailsRecurrenceSection(booking: booking),
-                            ],
                             if (hasNotes) ...[
                               const SizedBox(height: 16),
                               BookingDetailsNotesSection(notes: booking.notes!),
@@ -234,13 +225,9 @@ class _BookingDetailsView extends StatelessWidget {
                   // Tablet & Mobile Stacked Column
                   Column(
                     children: [
-                      BookingDetailsCustomerSection(booking: booking),
+                      BookingDetailsPatientSection(booking: booking),
                       const SizedBox(height: 16),
                       BookingDetailsScheduleSection(booking: booking),
-                      if (isRecurring) ...[
-                        const SizedBox(height: 16),
-                        BookingDetailsRecurrenceSection(booking: booking),
-                      ],
                       const SizedBox(height: 16),
                       BookingDetailsPricingSection(booking: booking),
                       const SizedBox(height: 16),

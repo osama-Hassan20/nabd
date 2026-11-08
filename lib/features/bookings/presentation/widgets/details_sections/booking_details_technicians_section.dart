@@ -6,7 +6,6 @@ import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
-import 'package:eyadty/features/technicians/data/models/technician_model.dart';
 
 class BookingDetailsTechniciansSection extends StatelessWidget {
   final BookingModel booking;

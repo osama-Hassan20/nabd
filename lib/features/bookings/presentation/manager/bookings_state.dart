@@ -7,26 +7,32 @@ import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart'
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/models/recurrence_rule_model.dart';
+import 'package:eyadty/features/bookings/data/models/time_slot_model.dart';
+import 'package:eyadty/features/doctors/data/models/doctor_leave_model.dart';
+import 'package:eyadty/features/doctors/data/models/doctor_schedule_model.dart';
+import 'package:eyadty/features/doctors/data/models/enums/doctor_availability_enum.dart';
+import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
+import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
 
 class BookingFormState extends Equatable {
   final String? bookingId;
   final BookingCustomerOption? customer;
   final List<BookingTechnicianOption> technicians;
+  final String? serviceId;
   final String serviceName;
   final BookingTypeEnum bookingType;
   final DateTime date;
   final String startTime;
   final String endTime;
   final int durationMinutes;
-  final num hourlyRate;
+  final num consultationFee;
   final num totalPrice;
   final BookingStatusEnum status;
   final PaymentStatusEnum paymentStatus;
   final String notes;
-  final List<RecurringDaySchedule> recurringSchedules;
-  final DateTime? recurrenceEndDate;
-  final bool isOngoing;
+
+  /// Backward-compatibility alias
+  num get hourlyRate => consultationFee;
 
   BookingTechnicianOption? get technician =>
       technicians.isNotEmpty ? technicians.first : null;
@@ -35,20 +41,19 @@ class BookingFormState extends Equatable {
     this.bookingId,
     this.customer,
     this.technicians = const [],
+    this.serviceId,
     this.serviceName = '',
     this.bookingType = BookingTypeEnum.oneTime,
     required this.date,
     this.startTime = '',
     this.endTime = '',
     this.durationMinutes = 0,
-    this.hourlyRate = 0,
+    this.consultationFee = 0,
+    num hourlyRate = 0,
     this.totalPrice = 0,
     this.status = BookingStatusEnum.scheduled,
     this.paymentStatus = PaymentStatusEnum.unpaid,
     this.notes = '',
-    this.recurringSchedules = const [],
-    this.recurrenceEndDate,
-    this.isOngoing = true,
   });
 
   BookingFormState copyWith({
@@ -60,21 +65,20 @@ class BookingFormState extends Equatable {
     BookingTechnicianOption? technician,
     bool clearTechnicians = false,
     bool clearTechnician = false,
+    String? serviceId,
+    bool clearServiceId = false,
     String? serviceName,
     BookingTypeEnum? bookingType,
     DateTime? date,
     String? startTime,
     String? endTime,
     int? durationMinutes,
+    num? consultationFee,
     num? hourlyRate,
     num? totalPrice,
     BookingStatusEnum? status,
     PaymentStatusEnum? paymentStatus,
     String? notes,
-    List<RecurringDaySchedule>? recurringSchedules,
-    DateTime? recurrenceEndDate,
-    bool clearRecurrenceEndDate = false,
-    bool? isOngoing,
   }) {
     List<BookingTechnicianOption> resolvedTechs;
     if (clearTechnicians || clearTechnician) {
@@ -91,22 +95,19 @@ class BookingFormState extends Equatable {
       bookingId: clearBookingId ? null : (bookingId ?? this.bookingId),
       customer: clearCustomer ? null : (customer ?? this.customer),
       technicians: resolvedTechs,
+      serviceId: clearServiceId ? null : (serviceId ?? this.serviceId),
       serviceName: serviceName ?? this.serviceName,
       bookingType: bookingType ?? this.bookingType,
       date: date ?? this.date,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       durationMinutes: durationMinutes ?? this.durationMinutes,
-      hourlyRate: hourlyRate ?? this.hourlyRate,
+      consultationFee:
+          consultationFee ?? hourlyRate ?? this.consultationFee,
       totalPrice: totalPrice ?? this.totalPrice,
       status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       notes: notes ?? this.notes,
-      recurringSchedules: recurringSchedules ?? this.recurringSchedules,
-      recurrenceEndDate: clearRecurrenceEndDate
-          ? null
-          : (recurrenceEndDate ?? this.recurrenceEndDate),
-      isOngoing: isOngoing ?? this.isOngoing,
     );
   }
 
@@ -115,20 +116,18 @@ class BookingFormState extends Equatable {
         bookingId,
         customer,
         technicians,
+        serviceId,
         serviceName,
         bookingType,
         date,
         startTime,
         endTime,
         durationMinutes,
-        hourlyRate,
+        consultationFee,
         totalPrice,
         status,
         paymentStatus,
         notes,
-        recurringSchedules,
-        recurrenceEndDate,
-        isOngoing,
       ];
 }
 
@@ -144,6 +143,7 @@ class BookingsState extends Equatable {
 
   final List<BookingCustomerOption> customers;
   final List<BookingTechnicianOption> technicians;
+  final List<MedicalServiceModel> medicalServices;
 
   final DateTime? selectedDate;
   final DateTime? selectedMonth;
@@ -219,6 +219,20 @@ class BookingsState extends Equatable {
   final String? dialogCancelReason;
   final String dialogCancelledBy;
 
+  // Phase 4B: Slot Picker & Conflict Detection
+  final RequestStatusEnum slotsStatus;
+  final List<TimeSlotModel> availableSlots;
+  final DoctorAvailabilityEnum? selectedDayAvailability;
+  final String? slotsErrMessage;
+  final DoctorScheduleModel? currentDoctorSchedule;
+  final List<DoctorLeaveModel>? currentDoctorLeaves;
+  final List<SpecialHolidayModel>? facilityHolidays;
+  final bool hasPatientTimeConflict;
+  final bool hasPatientSameDayNotice;
+  final BookingModel? patientConflictingBooking;
+  final BookingModel? patientSameDayBooking;
+  final bool isPatientConflictConfirmed;
+
   const BookingsState({
     this.summaryStatus = RequestStatusEnum.initial,
     this.bookingsStatus = RequestStatusEnum.initial,
@@ -229,6 +243,7 @@ class BookingsState extends Equatable {
     this.pagination,
     this.customers = initialCustomers,
     this.technicians = initialTechnicians,
+    this.medicalServices = const [],
     this.selectedBranchId = 'branch_1',
     this.selectedDate,
     this.selectedMonth,
@@ -250,6 +265,18 @@ class BookingsState extends Equatable {
     this.dialogPostponeReason,
     this.dialogCancelReason,
     this.dialogCancelledBy = 'patient',
+    this.slotsStatus = RequestStatusEnum.initial,
+    this.availableSlots = const [],
+    this.selectedDayAvailability,
+    this.slotsErrMessage,
+    this.currentDoctorSchedule,
+    this.currentDoctorLeaves,
+    this.facilityHolidays,
+    this.hasPatientTimeConflict = false,
+    this.hasPatientSameDayNotice = false,
+    this.patientConflictingBooking,
+    this.patientSameDayBooking,
+    this.isPatientConflictConfirmed = false,
   });
 
   BookingsState copyWith({
@@ -262,6 +289,7 @@ class BookingsState extends Equatable {
     PaginationModel? pagination,
     List<BookingCustomerOption>? customers,
     List<BookingTechnicianOption>? technicians,
+    List<MedicalServiceModel>? medicalServices,
     String? selectedBranchId,
     DateTime? selectedDate,
     bool clearSelectedDate = false,
@@ -294,6 +322,24 @@ class BookingsState extends Equatable {
     String? dialogCancelReason,
     bool clearDialogCancelReason = false,
     String? dialogCancelledBy,
+    RequestStatusEnum? slotsStatus,
+    List<TimeSlotModel>? availableSlots,
+    DoctorAvailabilityEnum? selectedDayAvailability,
+    bool clearSelectedDayAvailability = false,
+    String? slotsErrMessage,
+    bool clearSlotsErrMessage = false,
+    DoctorScheduleModel? currentDoctorSchedule,
+    bool clearCurrentDoctorSchedule = false,
+    List<DoctorLeaveModel>? currentDoctorLeaves,
+    bool clearCurrentDoctorLeaves = false,
+    List<SpecialHolidayModel>? facilityHolidays,
+    bool? hasPatientTimeConflict,
+    bool? hasPatientSameDayNotice,
+    BookingModel? patientConflictingBooking,
+    bool clearPatientConflictingBooking = false,
+    BookingModel? patientSameDayBooking,
+    bool clearPatientSameDayBooking = false,
+    bool? isPatientConflictConfirmed,
   }) {
     return BookingsState(
       summaryStatus: summaryStatus ?? this.summaryStatus,
@@ -305,6 +351,7 @@ class BookingsState extends Equatable {
       pagination: pagination ?? this.pagination,
       customers: customers ?? this.customers,
       technicians: technicians ?? this.technicians,
+      medicalServices: medicalServices ?? this.medicalServices,
       selectedBranchId: selectedBranchId ?? this.selectedBranchId,
       selectedDate:
           clearSelectedDate ? null : (selectedDate ?? this.selectedDate),
@@ -342,6 +389,33 @@ class BookingsState extends Equatable {
           ? null
           : (dialogCancelReason ?? this.dialogCancelReason),
       dialogCancelledBy: dialogCancelledBy ?? this.dialogCancelledBy,
+      slotsStatus: slotsStatus ?? this.slotsStatus,
+      availableSlots: availableSlots ?? this.availableSlots,
+      selectedDayAvailability: clearSelectedDayAvailability
+          ? null
+          : (selectedDayAvailability ?? this.selectedDayAvailability),
+      slotsErrMessage: clearSlotsErrMessage
+          ? null
+          : (slotsErrMessage ?? this.slotsErrMessage),
+      currentDoctorSchedule: clearCurrentDoctorSchedule
+          ? null
+          : (currentDoctorSchedule ?? this.currentDoctorSchedule),
+      currentDoctorLeaves: clearCurrentDoctorLeaves
+          ? null
+          : (currentDoctorLeaves ?? this.currentDoctorLeaves),
+      facilityHolidays: facilityHolidays ?? this.facilityHolidays,
+      hasPatientTimeConflict:
+          hasPatientTimeConflict ?? this.hasPatientTimeConflict,
+      hasPatientSameDayNotice:
+          hasPatientSameDayNotice ?? this.hasPatientSameDayNotice,
+      patientConflictingBooking: clearPatientConflictingBooking
+          ? null
+          : (patientConflictingBooking ?? this.patientConflictingBooking),
+      patientSameDayBooking: clearPatientSameDayBooking
+          ? null
+          : (patientSameDayBooking ?? this.patientSameDayBooking),
+      isPatientConflictConfirmed:
+          isPatientConflictConfirmed ?? this.isPatientConflictConfirmed,
     );
   }
 
@@ -356,6 +430,7 @@ class BookingsState extends Equatable {
         pagination,
         customers,
         technicians,
+        medicalServices,
         selectedBranchId,
         selectedDate,
         selectedMonth,
@@ -377,6 +452,18 @@ class BookingsState extends Equatable {
         dialogPostponeReason,
         dialogCancelReason,
         dialogCancelledBy,
+        slotsStatus,
+        availableSlots,
+        selectedDayAvailability,
+        slotsErrMessage,
+        currentDoctorSchedule,
+        currentDoctorLeaves,
+        facilityHolidays,
+        hasPatientTimeConflict,
+        hasPatientSameDayNotice,
+        patientConflictingBooking,
+        patientSameDayBooking,
+        isPatientConflictConfirmed,
       ];
 }
 
