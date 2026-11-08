@@ -2,9 +2,23 @@
 class CairoTimeHelper {
   CairoTimeHelper._();
 
+  static DateTime? _fixedClock;
+
+  /// Sets a fixed clock for reproducible testing and deterministic environments.
+  static void setFixedClock(DateTime? clock) {
+    _fixedClock = clock;
+  }
+
+  /// Resets fixed clock back to real-time wall clock.
+  static void resetFixedClock() {
+    _fixedClock = null;
+  }
+
   /// Returns current date and time in Africa/Cairo.
+  /// If a fixed clock is set (e.g. in tests), returns the fixed clock directly.
   /// (UTC+2 in winter, UTC+3 during DST between last Friday of April and last Thursday of October).
   static DateTime now({DateTime? customUtc}) {
+    if (_fixedClock != null) return _fixedClock!;
     final utc = customUtc ?? DateTime.now().toUtc();
     final isDst = _isCairoDst(utc);
     final offsetHours = isDst ? 3 : 2;

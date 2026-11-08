@@ -149,10 +149,14 @@ class CustomSideBarList extends StatelessWidget {
                       );
                     }
 
-                    return Container(
+                    final showGroupHeader = !isTablet &&
+                        item.groupTitle != null &&
+                        (index == 0 || items[index - 1].groupTitle != item.groupTitle);
+
+                    final itemTile = Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(2),
                           bottomLeft: Radius.circular(2),
                         ),
@@ -189,6 +193,32 @@ class CustomSideBarList extends StatelessWidget {
                         ),
                       ),
                     );
+
+                    if (showGroupHeader) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              start: 16,
+                              top: 14,
+                              bottom: 6,
+                            ),
+                            child: Text(
+                              item.groupTitle!,
+                              style: CustomAppFontStyle.semiBold11.copyWith(
+                                color: AppColors.gray7A828E,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          itemTile,
+                        ],
+                      );
+                    }
+
+                    return itemTile;
                   },
                 );
               },
@@ -264,6 +294,8 @@ class SideBarItemModel {
   final String? subtitle;
   final String? header;
   final List<Enum>? requiredPermissions;
+  final String? groupTitle;
+  final dynamic staffPermission;
 
   const SideBarItemModel({
     required this.title,
@@ -275,6 +307,8 @@ class SideBarItemModel {
     this.subtitle,
     this.header,
     this.requiredPermissions,
+    this.groupTitle,
+    this.staffPermission,
   });
 }
 

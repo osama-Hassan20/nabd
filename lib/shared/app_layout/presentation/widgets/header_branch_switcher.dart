@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/animation/hover_scale_animation.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -78,9 +80,22 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
     super.dispose();
   }
 
-  BranchItemInfo get _activeBranch => _branches.firstWhere(
+  List<BranchItemInfo> get _availableBranches {
+    if (!getIt.isRegistered<SessionCubit>()) return _branches;
+    final user = getIt<SessionCubit>().state.currentUser;
+    if (user == null || user.isOwner == true) return _branches;
+    final userBranchIds =
+        user.branchAssignments?.map((b) => b.branchId).toSet() ?? {};
+    final filtered =
+        _branches.where((b) => userBranchIds.contains(b.id)).toList();
+    return filtered.isNotEmpty ? filtered : _branches;
+  }
+
+  bool get _canSwitchBranches => _availableBranches.length > 1;
+
+  BranchItemInfo get _activeBranch => _availableBranches.firstWhere(
         (b) => b.id == _selectedBranchId,
-        orElse: () => _branches.first,
+        orElse: () => _availableBranches.first,
       );
 
   void _onSelectBranch(BranchItemInfo branch) {
@@ -88,6 +103,9 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
     setState(() {
       _selectedBranchId = branch.id;
     });
+    if (getIt.isRegistered<SessionCubit>()) {
+      getIt<SessionCubit>().switchBranch(branch.id);
+    }
     AppBranchService.instance.selectBranch(branch.id);
 
     CustomToast(
@@ -97,6 +115,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
   }
 
   void _showBranchPickerModal(BuildContext context) {
+    if (!_canSwitchBranches) return;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -152,7 +171,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
               const SizedBox(height: 20),
 
               // Branch options list
-              ..._branches.map((branch) {
+              ..._availableBranches.map((branch) {
                 final isSelected = branch.id == _selectedBranchId;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -263,12 +282,14 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 6),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: AppColors.gray7A828E,
-          ),
+          if (_canSwitchBranches) ...[
+            const SizedBox(width: 6),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: AppColors.gray7A828E,
+            ),
+          ],
         ],
       ),
     );
@@ -276,6 +297,10 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_canSwitchBranches) {
+      return _buildPillContent();
+    }
+
     final isDesktop = AdaptiveLayout.isDesktop(context);
 
     if (!isDesktop) {
@@ -301,7 +326,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
         color: AppColors.white,
         onSelected: _onSelectBranch,
         itemBuilder: (context) {
-          return _branches.map((branch) {
+          return _availableBranches.map((branch) {
             final isSelected = branch.id == _selectedBranchId;
             return PopupMenuItem<BranchItemInfo>(
               value: branch,

@@ -1,0 +1,49 @@
+enum StaffPermissionEnum {
+  // ─── 1. Queue & Reception (الحجوزات والاستقبال) ───────────────────────────
+  accessLiveQueue,
+  createBooking,
+  editBooking,
+  cancelBooking,
+  reorderQueue,
+
+  // ─── 2. Patients & Medical Records (المرضى والسجلات الطبية) ─────────────
+  accessPatients,
+  createPatient,
+  editPatient,
+  viewMedicalRecordDiagnostics,
+  viewAllDoctorsMedicalRecords,
+  editMedicalDiagnosis,
+  issuePrescription,
+
+  // ─── 3. Doctors & Clinical Staff (الأطباء والعيادات) ─────────────────────
+  accessDoctors,
+  manageDoctorSchedules,
+  manageDoctorLeaves,
+  approveLeavesAndReferrals,
+  viewClinicalPerformance,
+
+  // ─── 4. Cashier & Financial Transactions (الخزينة والماليات) ─────────────
+  accessCashier,
+  collectPayment,
+  refundPayment,
+  viewCashierShift,
+  applyManualDiscount,
+
+  // ─── 5. HR & Settlements (الموارد البشرية والمستحقات) ────────────────────
+  accessHr,
+  calculateDoctorSettlement,
+
+  // ─── 6. Analytics & Reports (التقارير والإحصائيات) ────────────────────────
+  accessAnalytics,
+  viewFinancialReports,
+
+  // ─── 7. Settings & Governance (الإعدادات والحوكمة) ───────────────────────
+  accessSettings,
+  manageMedicalServices,
+  manageRolesAndPermissions,
+  createStaffUser,
+  editStaffUser,
+  deleteStaffUser,
+  toggleStaffUserStatus,
+}
+

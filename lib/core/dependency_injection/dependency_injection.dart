@@ -84,6 +84,9 @@ import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 
 // Features
 import 'package:eyadty/features/home_dashboard/presentation/cubit/home_dashboard_cubit.dart';
+import 'package:eyadty/core/services/audit_logger.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -330,6 +333,17 @@ Future<void> setupGetIt() async {
       roleProvider: getIt<CurrentRoleProvider>(),
       bookingsRepo: getIt<BookingsRepo>(),
       settingsRepo: getIt<SettingsRepo>(),
+    ),
+  );
+
+  // ─── Users Management Feature & Security Audit ─────────────────────────────
+  getIt.registerLazySingleton<AuditLogger>(
+    () => InMemoryAuditLogger(),
+  );
+
+  getIt.registerLazySingleton<StaffUsersRepo>(
+    () => StaffUsersMockRepoImpl(
+      auditLogger: getIt<AuditLogger>(),
     ),
   );
 

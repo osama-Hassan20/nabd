@@ -731,5 +731,19 @@
   "relation_uncle": "عم / خال",
   "relation_legal_guardian": "وصي قانوني",
   "relation_other": "أخرى",
-  "select_date": "اختر التاريخ"
+  "select_date": "اختر التاريخ",
+  "nav_group_operations": "العمليات",
+  "nav_group_finance": "المال",
+  "nav_group_team": "الفريق",
+  "nav_group_reports": "التقارير",
+  "nav_group_settings": "الإعداد",
+  "users_nav_title": "المستخدمون والأدوار",
+  "users_nav_subtitle": "التحكم في حسابات الطاقم الطبي والإداري وتعيينات الفروع",
+  "forbidden_403_title": "غير مصرح لك بالدخول (403)",
+  "forbidden_403_subtitle": "عذراً، حسابك الحالي لا يمتلك الصلاحيات الكافية للوصول لهذه الصفحة أو العملية.",
+  "forbidden_403_back_home": "العودة للرئيسية",
+  "dev_switch_user": "تبديل المستخدم (وضع التطوير)",
+  "switched_to_user": "تم التبديل إلى: {}",
+  "dev_user_owner": "المالك",
+  "dev_mode_label": "تجريبي"
 }

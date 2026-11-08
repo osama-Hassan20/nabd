@@ -20,6 +20,10 @@ import 'package:eyadty/features/doctors/presentation/pages/doctors_page.dart';
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/shared/app_layout/presentation/pages/app_layout.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/enums/staff_permission_enum.dart';
+import 'package:eyadty/shared/presentation/pages/forbidden_403_page.dart';
 
 import 'routes.dart';
 
@@ -254,10 +258,70 @@ class _PageBasedPageRoute<T> extends PageRoute<T> {
   }
 }
 
+StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
+  if (location.startsWith(AppRouter.usersManagement)) {
+    return StaffPermissionEnum.manageRolesAndPermissions;
+  }
+  if (location.startsWith('/settings/medical-services')) {
+    return StaffPermissionEnum.manageMedicalServices;
+  }
+  if (location.startsWith(AppRouter.bookings)) {
+    return StaffPermissionEnum.accessLiveQueue;
+  }
+  if (location.startsWith(AppRouter.patients)) {
+    return StaffPermissionEnum.accessPatients;
+  }
+  if (location.startsWith(AppRouter.doctors)) {
+    return StaffPermissionEnum.accessDoctors;
+  }
+  if (location.startsWith(AppRouter.cashier)) {
+    return StaffPermissionEnum.accessCashier;
+  }
+  if (location.startsWith(AppRouter.hr)) {
+    return StaffPermissionEnum.accessHr;
+  }
+  if (location.startsWith(AppRouter.analytics)) {
+    return StaffPermissionEnum.accessAnalytics;
+  }
+  if (location.startsWith(AppRouter.settings)) {
+    return StaffPermissionEnum.accessSettings;
+  }
+  return null;
+}
+
 final GoRouter appRouter = GoRouter(
   observers: [routeObserver],
   initialLocation: AppRouter.bookings,
   redirect: (context, state) {
+    final location = state.uri.path;
+    final isLogin = location == AppRouter.login;
+    final isForbidden = location == AppRouter.forbidden;
+
+    if (isLogin || isForbidden) {
+      return null;
+    }
+
+    if (!getIt.isRegistered<SessionCubit>()) {
+      return null;
+    }
+
+    final sessionCubit = getIt<SessionCubit>();
+    final user = sessionCubit.state.currentUser;
+
+    if (user != null) {
+      if (user.canAuthenticate == false) {
+        return '${AppRouter.login}?from=${Uri.encodeComponent(location)}';
+      }
+
+      final requiredPermission = getRequiredPermissionForRoute(location);
+      if (requiredPermission != null) {
+        final hasPermission = sessionCubit.can(requiredPermission);
+        if (!hasPermission) {
+          return AppRouter.forbidden;
+        }
+      }
+    }
+
     return null;
   },
   routes: [
@@ -271,6 +335,18 @@ final GoRouter appRouter = GoRouter(
             ? AnimationType.cupertino
             : AnimationType.slideFromRight,
         duration: const Duration(milliseconds: 800),
+      ),
+    ),
+    GoRoute(
+      path: AppRouter.forbidden,
+      name: AppRouter.forbidden,
+      pageBuilder: (context, state) => buildAnimatedPage(
+        key: state.pageKey,
+        child: const Forbidden403Page(),
+        animationType: checkIsIOS()
+            ? AnimationType.cupertino
+            : AnimationType.fade,
+        duration: const Duration(milliseconds: 400),
       ),
     ),
     ShellRoute(
@@ -479,6 +555,20 @@ final GoRouter appRouter = GoRouter(
                 : AnimationType.slideFromLeft,
             duration: const Duration(milliseconds: 600),
           ),
+          routes: [
+            GoRoute(
+              path: 'users',
+              name: AppRouter.usersManagement,
+              pageBuilder: (context, state) => buildAnimatedPage(
+                key: state.pageKey,
+                child: const SettingsPage(),
+                animationType: checkIsIOS()
+                    ? AnimationType.cupertino
+                    : AnimationType.slideFromLeft,
+                duration: const Duration(milliseconds: 600),
+              ),
+            ),
+          ],
         ),
       ],
     ),

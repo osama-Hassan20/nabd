@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/errors/failures.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -37,6 +38,7 @@ void main() {
     final fixedNow = DateTime(2026, 11, 8, 8, 30); // 08:30 صباحاً
 
     setUp(() {
+      CairoTimeHelper.setFixedClock(fixedNow);
       settingsRepo = SettingsMockRepoImpl();
       medicalServicesRepo = MedicalServicesMockRepoImpl();
       bookingsRepo = BookingsMockRepoImpl(settingsRepo: settingsRepo);
@@ -70,6 +72,7 @@ void main() {
     });
 
     tearDown(() {
+      CairoTimeHelper.resetFixedClock();
       cubit.close();
     });
 

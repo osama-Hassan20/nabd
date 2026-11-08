@@ -7,6 +7,9 @@ abstract class Failures extends Equatable {
   const Failures({required this.errMessage});
 
   @override
+  List<Object?> get props => [errMessage];
+
+  @override
   String toString() => '$runtimeType: $errMessage';
 }
 
@@ -175,3 +178,46 @@ class SlotConflictFailure extends Failures {
         conflictingBookingId,
       ];
 }
+
+typedef Failure = Failures;
+
+class LastActiveOwnerFailure extends Failures {
+  const LastActiveOwnerFailure({required super.errMessage});
+}
+
+class PrivilegeEscalationFailure extends Failures {
+  const PrivilegeEscalationFailure({required super.errMessage});
+}
+
+class SelfDeactivationFailure extends Failures {
+  const SelfDeactivationFailure({required super.errMessage});
+}
+
+class SelfDeletionFailure extends Failures {
+  const SelfDeletionFailure({required super.errMessage});
+}
+
+class LinkedDoctorMissingFailure extends Failures {
+  const LinkedDoctorMissingFailure({required super.errMessage});
+}
+
+class ActiveBookingsWarningFailure extends Failures {
+  final int activeBookingsCount;
+
+  const ActiveBookingsWarningFailure({
+    required super.errMessage,
+    required this.activeBookingsCount,
+  });
+
+  @override
+  List<Object?> get props => [errMessage, activeBookingsCount];
+}
+
+class InvalidCredentialsFailure extends Failures {
+  const InvalidCredentialsFailure({required super.errMessage});
+}
+
+class MustChangePasswordFailure extends Failures {
+  const MustChangePasswordFailure({required super.errMessage});
+}
+

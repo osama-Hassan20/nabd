@@ -35,4 +35,8 @@ class AppRouter {
 
   // 8. Settings & Multi-Branch Management
   static const String settings = '/settings';
+  static const String usersManagement = '/settings/users';
+
+  // 9. Security & Access Errors
+  static const String forbidden = '/forbidden';
 }

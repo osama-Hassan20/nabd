@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
@@ -58,6 +59,7 @@ void main() {
     late BookingsCubit cubit;
 
     setUp(() {
+      CairoTimeHelper.setFixedClock(DateTime(2026, 11, 8, 8, 30));
       settingsRepo = SettingsMockRepoImpl();
       medicalServicesRepo = MedicalServicesMockRepoImpl();
       bookingsRepo = BookingsMockRepoImpl(settingsRepo: settingsRepo);
@@ -85,6 +87,7 @@ void main() {
     });
 
     tearDown(() {
+      CairoTimeHelper.resetFixedClock();
       cubit.close();
     });
 

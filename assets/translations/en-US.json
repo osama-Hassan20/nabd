@@ -741,5 +741,19 @@
   "relation_uncle": "Uncle / Aunt",
   "relation_legal_guardian": "Legal Guardian",
   "relation_other": "Other",
-  "select_date": "Select Date"
+  "select_date": "Select Date",
+  "nav_group_operations": "Operations",
+  "nav_group_finance": "Finance",
+  "nav_group_team": "Team",
+  "nav_group_reports": "Reports",
+  "nav_group_settings": "Settings",
+  "users_nav_title": "Users & Roles",
+  "users_nav_subtitle": "Manage staff accounts and branch assignments",
+  "forbidden_403_title": "Access Forbidden (403)",
+  "forbidden_403_subtitle": "Sorry, your current account does not have sufficient permissions to access this page.",
+  "forbidden_403_back_home": "Back to Home",
+  "dev_switch_user": "Switch User (Dev Mode)",
+  "switched_to_user": "Switched to: {}",
+  "dev_user_owner": "Owner",
+  "dev_mode_label": "DEV"
 }
