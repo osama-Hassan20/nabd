@@ -6,6 +6,8 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/branches/data/models/branch_model.dart';
+import 'package:eyadty/features/branches/domain/repo/branches_repo.dart';
 import 'package:eyadty/shared/services/app_branch_service.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
@@ -13,16 +15,21 @@ import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 
 class BranchItemInfo {
   final String id;
-  final String nameKey;
+  final String? name;
+  final String? nameKey;
   final String roomsInfo;
   final bool isOpen;
 
   const BranchItemInfo({
     required this.id,
-    required this.nameKey,
+    this.name,
+    this.nameKey,
     required this.roomsInfo,
     this.isOpen = true,
   });
+
+  String get displayName =>
+      (nameKey != null && nameKey!.isNotEmpty) ? nameKey!.tr() : (name ?? id);
 }
 
 class HeaderBranchSwitcher extends StatefulWidget {
@@ -55,6 +62,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
   ];
 
   String _selectedBranchId = 'branch_1';
+  List<BranchItemInfo> _dynamicBranches = [];
 
   @override
   void initState() {
@@ -62,6 +70,35 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
     _selectedBranchId = AppBranchService.instance.currentBranchId;
     AppBranchService.instance.selectedBranchNotifier
         .addListener(_onServiceBranchChanged);
+    _loadBranches();
+  }
+
+  Future<void> _loadBranches() async {
+    if (getIt.isRegistered<BranchesRepo>()) {
+      final result = await getIt<BranchesRepo>().getBranches();
+      result.fold((_) {}, (branches) {
+        if (mounted) {
+          setState(() {
+            _dynamicBranches = branches.map(_fromModel).toList();
+          });
+        }
+      });
+    }
+  }
+
+  BranchItemInfo _fromModel(BranchModel b) {
+    final rooms = b.activeRoomsCount ?? 0;
+    final staff = b.staffMembersCount ?? 0;
+    final roomsInfo = rooms > 0
+        ? '$rooms عيادات نشطة • $staff أعضاء طاقم'
+        : (b.isBranchActive ? 'متاح للعمل' : 'معطل مؤقتاً');
+    return BranchItemInfo(
+      id: b.id ?? '',
+      name: b.name,
+      nameKey: b.nameKey,
+      roomsInfo: roomsInfo,
+      isOpen: b.isBranchActive,
+    );
   }
 
   void _onServiceBranchChanged() {
@@ -81,14 +118,16 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
   }
 
   List<BranchItemInfo> get _availableBranches {
-    if (!getIt.isRegistered<SessionCubit>()) return _branches;
+    final source =
+        _dynamicBranches.isNotEmpty ? _dynamicBranches : _branches;
+    if (!getIt.isRegistered<SessionCubit>()) return source;
     final user = getIt<SessionCubit>().state.currentUser;
-    if (user == null || user.isOwner == true) return _branches;
+    if (user == null || user.isOwner == true) return source;
     final userBranchIds =
         user.branchAssignments?.map((b) => b.branchId).toSet() ?? {};
     final filtered =
-        _branches.where((b) => userBranchIds.contains(b.id)).toList();
-    return filtered.isNotEmpty ? filtered : _branches;
+        source.where((b) => userBranchIds.contains(b.id)).toList();
+    return filtered.isNotEmpty ? filtered : source;
   }
 
   bool get _canSwitchBranches => _availableBranches.length > 1;
@@ -110,7 +149,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
 
     CustomToast(
       context: context,
-      header: '${'switch_branch'.tr()}: ${branch.nameKey.tr()}',
+      header: '${'switch_branch'.tr()}: ${branch.displayName}',
     ).showTopToast();
   }
 
@@ -118,17 +157,20 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
     if (!_canSwitchBranches) return;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Modal Header
               Row(
@@ -216,7 +258,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  branch.nameKey.tr(),
+                                  branch.displayName,
                                   style: CustomAppFontStyle.semiBold15.copyWith(
                                     color: isSelected
                                         ? AppColors.primary
@@ -247,7 +289,9 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
               }),
             ],
           ),
-        );
+        ),
+      ),
+    );
       },
     );
   }
@@ -275,7 +319,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 180),
             child: Text(
-              _activeBranch.nameKey.tr(),
+              _activeBranch.displayName,
               style: CustomAppFontStyle.medium13.copyWith(
                 color: AppColors.darkText,
               ),
@@ -349,7 +393,7 @@ class _HeaderBranchSwitcherState extends State<HeaderBranchSwitcher> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          branch.nameKey.tr(),
+                          branch.displayName,
                           style: CustomAppFontStyle.semiBold14.copyWith(
                             color: isSelected
                                 ? AppColors.primary
