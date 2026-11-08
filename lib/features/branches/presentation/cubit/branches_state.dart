@@ -80,3 +80,4 @@ class BranchesState extends Equatable {
         successMessage,
       ];
 }
+
