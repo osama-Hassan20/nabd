@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/base/safe_cubit.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/mixins/search_mixin.dart';
+import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
@@ -811,6 +813,22 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
       statusFilter: state.selectedBookingStatusFilter,
       search: state.patientBookingSearchQuery,
     );
+
+    if (getIt.isRegistered<AuditLogger>()) {
+      final session = getIt.isRegistered<SessionCubit>() ? getIt<SessionCubit>() : null;
+      final currentUser = session?.currentUser;
+      final activeBranch = session?.activeBranchId;
+
+      getIt<AuditLogger>().log(
+        eventType: 'view_patient_profile',
+        targetUserId: patient?.id,
+        targetUserName: patient?.name,
+        performedByUserId: currentUser?.id,
+        performedByUserName: currentUser?.fullName,
+        branchId: activeBranch,
+        details: 'استعراض ملف المريض: ${patient?.name ?? ''} (${patient?.id ?? ''})',
+      );
+    }
 
     emit(
       state.copyWith(

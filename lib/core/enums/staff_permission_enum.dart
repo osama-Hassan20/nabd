@@ -46,5 +46,6 @@ enum StaffPermissionEnum {
   editStaffUser,
   deleteStaffUser,
   toggleStaffUserStatus,
+  viewAuditLogs,
 }
 
