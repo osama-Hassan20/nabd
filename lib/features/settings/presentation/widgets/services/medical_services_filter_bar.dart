@@ -131,27 +131,30 @@ class MedicalServicesFilterBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.borderSubtle),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildFilterChip(
-            key: 'all',
-            label: 'service_status_all'.tr(),
-            isSelected: current == 'all',
-          ),
-          const SizedBox(width: 4),
-          _buildFilterChip(
-            key: 'active',
-            label: 'service_status_active'.tr(),
-            isSelected: current == 'active',
-          ),
-          const SizedBox(width: 4),
-          _buildFilterChip(
-            key: 'inactive',
-            label: 'service_status_inactive'.tr(),
-            isSelected: current == 'inactive',
-          ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildFilterChip(
+              key: 'all',
+              label: 'service_status_all'.tr(),
+              isSelected: current == 'all',
+            ),
+            const SizedBox(width: 4),
+            _buildFilterChip(
+              key: 'active',
+              label: 'service_status_active'.tr(),
+              isSelected: current == 'active',
+            ),
+            const SizedBox(width: 4),
+            _buildFilterChip(
+              key: 'inactive',
+              label: 'service_status_inactive'.tr(),
+              isSelected: current == 'inactive',
+            ),
+          ],
+        ),
       ),
     );
   }

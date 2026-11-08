@@ -211,31 +211,36 @@ class _AddEditMedicalServiceDialogState
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryLight,
-                                shape: BoxShape.circle,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: const CustomAssetImage(
+                                  path: AppIcons.service,
+                                  color: AppColors.primary,
+                                ),
                               ),
-                              padding: const EdgeInsets.all(8),
-                              child: const CustomAssetImage(
-                                path: AppIcons.service,
-                                color: AppColors.primary,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  isEdit
+                                      ? 'edit_medical_service'.tr()
+                                      : 'add_medical_service'.tr(),
+                                  style: CustomAppFontStyle.semiBold18.copyWith(
+                                    color: AppColors.darkText,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              isEdit
-                                  ? 'edit_medical_service'.tr()
-                                  : 'add_medical_service'.tr(),
-                              style: CustomAppFontStyle.semiBold18.copyWith(
-                                color: AppColors.darkText,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         IconButton(
                           onPressed: () => context.pop(),

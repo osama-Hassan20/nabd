@@ -113,7 +113,9 @@ class DoctorScheduleCardSection extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'edit_schedule'.tr(),
+                            hasSchedule
+                                ? 'edit_schedule'.tr()
+                                : 'set_schedule'.tr(),
                             style: CustomAppFontStyle.semiBold12.copyWith(
                               color: AppColors.primary,
                             ),
@@ -130,6 +132,9 @@ class DoctorScheduleCardSection extends StatelessWidget {
 
               if (hasSchedule) ...[
                 _buildScheduleOverview(context, schedule),
+                const SizedBox(height: 16),
+              ] else ...[
+                _buildNoScheduleBanner(context, cubit, doctor, isAdmin),
                 const SizedBox(height: 16),
               ],
 
@@ -242,6 +247,80 @@ class DoctorScheduleCardSection extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildNoScheduleBanner(
+    BuildContext context,
+    DoctorsCubit cubit,
+    dynamic doctor,
+    bool isAdmin,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.grayE2E8F0),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const CustomAssetImage(
+              path: AppIcons.clock,
+              width: 24,
+              height: 24,
+              color: AppColors.warning,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'doctor_no_schedule_hint'.tr(),
+            style: CustomAppFontStyle.semiBold14.copyWith(
+              color: AppColors.darkText,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (isAdmin) ...[
+            const SizedBox(height: 16),
+            CustomPushButton(
+              height: 38,
+              backgroundColor: AppColors.primary,
+              borderRadius: BorderRadius.circular(8),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              onTap: () => DoctorScheduleEditorDialog.show(
+                context: context,
+                doctorId: doctor.id ?? '',
+                doctorName: doctor.name ?? '',
+                doctorsCubit: cubit,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CustomAssetImage(
+                    path: AppIcons.edit,
+                    width: 14,
+                    height: 14,
+                    color: AppColors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'set_schedule'.tr(),
+                    style: CustomAppFontStyle.semiBold13.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

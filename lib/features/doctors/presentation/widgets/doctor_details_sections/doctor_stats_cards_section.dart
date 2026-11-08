@@ -8,6 +8,7 @@ import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_state.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/screen_width_breakpoints.dart';
+import '../dialogs/doctor_upcoming_leaves_dialog.dart';
 
 class DoctorStatsCardsSection extends StatelessWidget {
   const DoctorStatsCardsSection({super.key});
@@ -46,11 +47,17 @@ class DoctorStatsCardsSection extends StatelessWidget {
             bgColor: AppColors.secondaryLight,
           ),
           _StatCardItem(
-            title: 'leaves'.tr(),
+            title: 'upcoming_leaves'.tr(),
             value: '$leavesCount',
             icon: AppIcons.cancelledBooking,
             color: AppColors.warning,
             bgColor: AppColors.yellowLight,
+            onTap: doc != null
+                ? () => DoctorUpcomingLeavesDialog.show(
+                      context: context,
+                      doctor: doc,
+                    )
+                : null,
           ),
         ];
 
@@ -77,7 +84,7 @@ class DoctorStatsCardsSection extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 final item = cards[index];
-                return Container(
+                final cardChild = Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.white,
@@ -128,6 +135,18 @@ class DoctorStatsCardsSection extends StatelessWidget {
                     ],
                   ),
                 );
+
+                if (item.onTap != null) {
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: item.onTap,
+                      borderRadius: BorderRadius.circular(12),
+                      child: cardChild,
+                    ),
+                  );
+                }
+                return cardChild;
               },
             );
           },
@@ -143,6 +162,7 @@ class _StatCardItem {
   final String icon;
   final Color color;
   final Color bgColor;
+  final VoidCallback? onTap;
 
   const _StatCardItem({
     required this.title,
@@ -150,6 +170,7 @@ class _StatCardItem {
     required this.icon,
     required this.color,
     required this.bgColor,
+    this.onTap,
   });
 }
 

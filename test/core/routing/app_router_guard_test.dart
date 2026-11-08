@@ -18,7 +18,7 @@ Widget wrapWithTestApp(Widget child) {
     fallbackLocale: const Locale('ar', 'EG'),
     startLocale: const Locale('ar', 'EG'),
     saveLocale: false,
-    useOnlyLangCode: true,
+    useOnlyLangCode: false,
     child: child,
   );
 }

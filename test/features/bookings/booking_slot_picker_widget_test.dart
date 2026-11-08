@@ -35,7 +35,7 @@ Widget wrapWithTestApp(Widget child) {
     fallbackLocale: const Locale('ar', 'EG'),
     startLocale: const Locale('ar', 'EG'),
     saveLocale: false,
-    useOnlyLangCode: true,
+    useOnlyLangCode: false,
     child: MaterialApp(
       locale: const Locale('ar', 'EG'),
       home: Scaffold(body: SingleChildScrollView(child: child)),
