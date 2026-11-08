@@ -155,6 +155,20 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
         context.go(AppRouter.usersManagement);
       },
     ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_settings'.tr(),
+      staffPermission: StaffPermissionEnum.viewAuditLogs,
+      title: 'audit_logs_nav_title'.tr(),
+      iconPath: AppIcons.lock,
+      id: 'audit_logs',
+      selectedIconPath: AppIcons.lock,
+      routePath: AppRouter.auditLogs,
+      header: 'audit_logs_nav_title'.tr(),
+      subtitle: 'audit_logs_nav_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.auditLogs);
+      },
+    ),
   ];
 
   // Dynamic Filtering based on Session Permissions

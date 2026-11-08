@@ -20,6 +20,7 @@ import 'package:eyadty/features/doctors/presentation/pages/doctor_details_page.d
 import 'package:eyadty/features/doctors/presentation/pages/doctors_page.dart';
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/features/users_management/presentation/pages/users_management_page.dart';
+import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
 import 'package:eyadty/shared/app_layout/presentation/pages/app_layout.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
@@ -261,6 +262,9 @@ class _PageBasedPageRoute<T> extends PageRoute<T> {
 }
 
 StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
+  if (location.startsWith(AppRouter.auditLogs)) {
+    return StaffPermissionEnum.viewAuditLogs;
+  }
   if (location.startsWith(AppRouter.usersManagement)) {
     return StaffPermissionEnum.manageRolesAndPermissions;
   }
@@ -546,6 +550,18 @@ List<RouteBase> getAppRoutes() => [
               pageBuilder: (context, state) => buildAnimatedPage(
                 key: state.pageKey,
                 child: const UsersManagementPage(),
+                animationType: checkIsIOS()
+                    ? AnimationType.cupertino
+                    : AnimationType.slideFromLeft,
+                duration: const Duration(milliseconds: 600),
+              ),
+            ),
+            GoRoute(
+              path: 'audit-logs',
+              name: AppRouter.auditLogs,
+              pageBuilder: (context, state) => buildAnimatedPage(
+                key: state.pageKey,
+                child: const AuditLogsPage(),
                 animationType: checkIsIOS()
                     ? AnimationType.cupertino
                     : AnimationType.slideFromLeft,
