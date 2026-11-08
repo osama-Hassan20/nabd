@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/animation/slide_transition_animation.dart';
 import 'package:eyadty/core/animation/scale_transition_animation.dart';
@@ -10,17 +11,17 @@ import 'package:eyadty/core/utils/theme/app_animations.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_check_box.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../data/models/login/login_param_model.dart';
 import '../../cubits/login/login_cubit.dart';
-import 'custom_password_field.dart';
-import 'custom_phone_field.dart';
+import '../must_change_password_dialog.dart';
 
 class LoginBody extends StatefulWidget {
   const LoginBody({super.key});
@@ -30,28 +31,113 @@ class LoginBody extends StatefulWidget {
 }
 
 class _LoginBodyState extends State<LoginBody> {
-  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController identifierController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final FocusNode password = FocusNode();
+  final FocusNode passwordFocus = FocusNode();
   final formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    phoneController.dispose();
+    identifierController.dispose();
     passwordController.dispose();
-    password.dispose();
+    passwordFocus.dispose();
     super.dispose();
   }
 
   void _submitLogin() {
     if (formKey.currentState!.validate()) {
       context.read<LoginCubit>().loginInto(
-        model: LoginParamModel(
-          password: passwordController.text,
-          userName: phoneController.text,
-        ),
-      );
+            identifier: identifierController.text,
+            password: passwordController.text,
+          );
     }
+  }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.grayE2E8F0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 32,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'forgot_password_title'.tr(),
+                        style: CustomAppFontStyle.bold16.copyWith(
+                          color: AppColors.darkText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                const SizedBox(height: 16),
+                Text(
+                  'forgot_password_desc'.tr(),
+                  style: CustomAppFontStyle.regular13.copyWith(
+                    color: AppColors.gray71717A,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                CustomPushButton(
+                  height: 44,
+                  radius: 12,
+                  backgroundColor: AppColors.primary,
+                  onTap: () => Navigator.of(ctx).pop(),
+                  child: Center(
+                    child: Text(
+                      'understood'.tr(),
+                      style: CustomAppFontStyle.semiBold14.copyWith(
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -66,32 +152,51 @@ class _LoginBodyState extends State<LoginBody> {
             context: context,
             header: 'login_welcome_message'.tr(),
           ).showTopToast();
-          context.go(AppRouter.bookings);
+          final from = GoRouterState.of(context).uri.queryParameters['from'];
+          context.go((from != null && from.isNotEmpty) ? from : AppRouter.bookings);
         } else if (state is FailedLoginPushState) {
           CustomToast(
             context: context,
             header: state.errMessage.tr(),
             type: ToastificationType.error,
           ).showTopToast();
+        } else if (state is MustChangePasswordLoginState) {
+          MustChangePasswordDialog.show(
+            context,
+            userId: state.userId,
+            temporaryPassword: state.temporaryPassword,
+            onPasswordChangedSuccess: () async {
+              final userRes =
+                  await getIt<StaffUsersRepo>().getStaffUserById(state.userId);
+              if (!context.mounted) return;
+              userRes.fold(
+                (_) => context.go(AppRouter.bookings),
+                (user) => context
+                    .read<LoginCubit>()
+                    .handlePasswordChangedSuccess(user),
+              );
+            },
+          );
         } else if (state is FillRemeberMeDataState) {
-          phoneController.text = state.userName;
-          passwordController.text = state.password;
+          identifierController.text = state.userName;
         }
       },
       child: isDesktop
           ? _DesktopSplitLoginLayout(
-              phoneController: phoneController,
+              identifierController: identifierController,
               passwordController: passwordController,
-              passwordFocus: password,
+              passwordFocus: passwordFocus,
               formKey: formKey,
               onSubmit: _submitLogin,
+              onForgotPassword: () => _showForgotPasswordDialog(context),
             )
           : _MobileStackedLoginLayout(
-              phoneController: phoneController,
+              identifierController: identifierController,
               passwordController: passwordController,
-              passwordFocus: password,
+              passwordFocus: passwordFocus,
               formKey: formKey,
               onSubmit: _submitLogin,
+              onForgotPassword: () => _showForgotPasswordDialog(context),
             ),
     );
   }
@@ -99,18 +204,20 @@ class _LoginBodyState extends State<LoginBody> {
 
 /// ─── Desktop Layout: Side-by-Side Split Screen ──────────────────────────────
 class _DesktopSplitLoginLayout extends StatelessWidget {
-  final TextEditingController phoneController;
+  final TextEditingController identifierController;
   final TextEditingController passwordController;
   final FocusNode passwordFocus;
   final GlobalKey<FormState> formKey;
   final VoidCallback onSubmit;
+  final VoidCallback onForgotPassword;
 
   const _DesktopSplitLoginLayout({
-    required this.phoneController,
+    required this.identifierController,
     required this.passwordController,
     required this.passwordFocus,
     required this.formKey,
     required this.onSubmit,
+    required this.onForgotPassword,
   });
 
   @override
@@ -143,7 +250,7 @@ class _DesktopSplitLoginLayout extends StatelessWidget {
                     vertical: 36,
                   ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 600),
+                    constraints: const BoxConstraints(maxWidth: 560),
                     child: SlideTransitionAnimation(
                       duration: AppAnimations.slow,
                       begin: const Offset(0.0, 0.04),
@@ -163,7 +270,7 @@ class _DesktopSplitLoginLayout extends StatelessWidget {
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
+                              color: Colors.black.withValues(alpha: 0.03),
                               blurRadius: 30,
                               offset: const Offset(0, 10),
                             ),
@@ -197,11 +304,12 @@ class _DesktopSplitLoginLayout extends StatelessWidget {
                               ),
                               const SizedBox(height: 32),
                               _LoginFormFields(
-                                phoneController: phoneController,
+                                identifierController: identifierController,
                                 passwordController: passwordController,
                                 passwordFocus: passwordFocus,
                                 formKey: formKey,
                                 onSubmit: onSubmit,
+                                onForgotPassword: onForgotPassword,
                                 isMobile: false,
                               ),
                             ],
@@ -237,7 +345,6 @@ class _BrandShowcaseSide extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Soft ambient circular glow 1
           Positioned(
             top: -80,
             right: -80,
@@ -250,7 +357,6 @@ class _BrandShowcaseSide extends StatelessWidget {
               ),
             ),
           ),
-          // Soft ambient circular glow 2
           Positioned(
             bottom: -60,
             left: -60,
@@ -259,138 +365,85 @@ class _BrandShowcaseSide extends StatelessWidget {
               height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.03),
+                color: AppColors.primary.withValues(alpha: 0.08),
               ),
             ),
           ),
-
-          // Main Showcase Content
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 48),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Spacer(flex: 2),
-
-                // Logo with subtle scale animation
-                ScaleTransitionAnimation(
-                  duration: AppAnimations.medium,
-                  begin: 0.88,
-                  end: 1.0,
-                  curve: AppAnimations.defaultCurve,
-                  child: Container(
-                    width: 280,
-                    height: 280,
-                    padding: const EdgeInsets.all(18),
-                    child: const CustomAssetImage(
+                Row(
+                  children: [
+                    CustomAssetImage(
                       path: AppIcons.appLogo,
-                      fit: BoxFit.contain,
+                      width: 48,
+                      height: 48,
                       color: AppColors.white,
                     ),
-                  ),
-                ),
-
-                // Subtitle Badge with entrance animation
-                SlideTransitionAnimation(
-                  duration: AppAnimations.medium,
-                  delay: AppAnimations.staggerShort,
-                  begin: const Offset(0.0, -0.1),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'app_name'.tr(),
+                          style: CustomAppFontStyle.bold22.copyWith(
+                            color: AppColors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(
+                          'clinic_management_system'.tr(),
+                          style: CustomAppFontStyle.regular12.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
                     ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.35),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'smart_clinic_revolution'.tr(),
+                      style: CustomAppFontStyle.bold26.copyWith(
+                        fontSize: 32,
+                        color: AppColors.white,
+                        height: 1.3,
                       ),
                     ),
-                    child: Text(
-                      'purexo_dashboard_tag'.tr(),
-                      style: CustomAppFontStyle.medium14.copyWith(
-                        color: AppColors.primaryLight,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Tagline with fade entrance
-                SlideTransitionAnimation(
-                  duration: AppAnimations.medium,
-                  delay: AppAnimations.staggerMedium,
-                  begin: const Offset(0.0, 0.08),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'brand_tagline'.tr(),
-                      textAlign: TextAlign.center,
+                    const SizedBox(height: 16),
+                    Text(
+                      'brand_showcase_description'.tr(),
                       style: CustomAppFontStyle.regular15.copyWith(
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: Colors.white.withValues(alpha: 0.75),
                         height: 1.6,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 36),
+                    _FeatureHighlightRow(
+                      iconPath: AppIcons.clock,
+                      text: 'feature_live_queue'.tr(),
+                    ),
+                    const SizedBox(height: 16),
+                    _FeatureHighlightRow(
+                      iconPath: AppIcons.checkmarkCircle,
+                      text: 'feature_smart_booking'.tr(),
+                    ),
+                    const SizedBox(height: 16),
+                    _FeatureHighlightRow(
+                      iconPath: AppIcons.appLogo,
+                      text: 'feature_analytics'.tr(),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 36),
-
-                // Feature Highlights List with staggered reveals
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 380),
-                  child: Column(
-                    children: [
-                      SlideTransitionAnimation(
-                        duration: AppAnimations.medium,
-                        delay: AppAnimations.staggerMedium,
-                        begin: const Offset(0.0, 0.12),
-                        child: HoverScaleAnimation(
-                          hoverScale: 1.02,
-                          child: _buildFeatureItem(
-                            iconPath: AppIcons.calendar,
-                            text: 'feature_smart_bookings'.tr(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SlideTransitionAnimation(
-                        duration: AppAnimations.medium,
-                        delay: AppAnimations.staggerLong,
-                        begin: const Offset(0.0, 0.12),
-                        child: HoverScaleAnimation(
-                          hoverScale: 1.02,
-                          child: _buildFeatureItem(
-                            iconPath: AppIcons.team,
-                            text: 'feature_technicians_tracking'.tr(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SlideTransitionAnimation(
-                        duration: AppAnimations.medium,
-                        delay: AppAnimations.staggerExtraLong,
-                        begin: const Offset(0.0, 0.12),
-                        child: HoverScaleAnimation(
-                          hoverScale: 1.02,
-                          child: _buildFeatureItem(
-                            iconPath: AppIcons.dashboard,
-                            text: 'feature_advanced_analytics'.tr(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const Spacer(flex: 3),
-
-                // Footer version tag
                 Text(
-                  'Eyadty Clinic SaaS Platform © 2026',
+                  'all_rights_reserved'.tr(),
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withValues(alpha: 0.4),
                   ),
                 ),
               ],
@@ -400,59 +453,64 @@ class _BrandShowcaseSide extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildFeatureItem({required String iconPath, required String text}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.09)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(9),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: CustomAssetImage(
-              path: iconPath,
-              color: AppColors.primaryLight,
-              width: 18,
-              height: 18,
+class _FeatureHighlightRow extends StatelessWidget {
+  final String iconPath;
+  final String text;
+
+  const _FeatureHighlightRow({required this.iconPath, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          alignment: Alignment.center,
+          child: CustomAssetImage(
+            path: iconPath,
+            color: AppColors.primaryLight,
+            width: 18,
+            height: 18,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            text,
+            style: CustomAppFontStyle.medium14.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              text,
-              style: CustomAppFontStyle.medium14.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 /// ─── Mobile Layout: Stacked Single-Column Screen ────────────────────────────
 class _MobileStackedLoginLayout extends StatelessWidget {
-  final TextEditingController phoneController;
+  final TextEditingController identifierController;
   final TextEditingController passwordController;
   final FocusNode passwordFocus;
   final GlobalKey<FormState> formKey;
   final VoidCallback onSubmit;
+  final VoidCallback onForgotPassword;
 
   const _MobileStackedLoginLayout({
-    required this.phoneController,
+    required this.identifierController,
     required this.passwordController,
     required this.passwordFocus,
     required this.formKey,
     required this.onSubmit,
+    required this.onForgotPassword,
   });
 
   @override
@@ -463,12 +521,11 @@ class _MobileStackedLoginLayout extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
+            constraints: const BoxConstraints(maxWidth: 520),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // ─── Upper Section: Brand Header ─────────────────────────────
                 SlideTransitionAnimation(
                   duration: AppAnimations.medium,
                   begin: const Offset(0.0, -0.08),
@@ -481,8 +538,8 @@ class _MobileStackedLoginLayout extends StatelessWidget {
                         CustomAssetImage(
                           path: AppIcons.appLogo,
                           fit: BoxFit.fitWidth,
-                          width: 160,
-                          height: 160,
+                          width: 120,
+                          height: 120,
                         ),
                         Text(
                           'welcome_to_dashboard'.tr(),
@@ -505,8 +562,6 @@ class _MobileStackedLoginLayout extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 22),
-
-                // ─── Lower Section: Form Card ────────────────────────────────
                 SlideTransitionAnimation(
                   duration: AppAnimations.medium,
                   delay: AppAnimations.staggerShort,
@@ -532,11 +587,12 @@ class _MobileStackedLoginLayout extends StatelessWidget {
                         ),
                       ],
                       child: _LoginFormFields(
-                        phoneController: phoneController,
+                        identifierController: identifierController,
                         passwordController: passwordController,
                         passwordFocus: passwordFocus,
                         formKey: formKey,
                         onSubmit: onSubmit,
+                        onForgotPassword: onForgotPassword,
                         isMobile: true,
                       ),
                     ),
@@ -553,19 +609,21 @@ class _MobileStackedLoginLayout extends StatelessWidget {
 
 /// ─── Shared Form Fields Component (Used in both Desktop & Mobile) ───────────
 class _LoginFormFields extends StatelessWidget {
-  final TextEditingController phoneController;
+  final TextEditingController identifierController;
   final TextEditingController passwordController;
   final FocusNode passwordFocus;
   final GlobalKey<FormState> formKey;
   final VoidCallback onSubmit;
+  final VoidCallback onForgotPassword;
   final bool isMobile;
 
   const _LoginFormFields({
-    required this.phoneController,
+    required this.identifierController,
     required this.passwordController,
     required this.passwordFocus,
     required this.formKey,
     required this.onSubmit,
+    required this.onForgotPassword,
     required this.isMobile,
   });
 
@@ -577,26 +635,29 @@ class _LoginFormFields extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Username Field
+          // Identifier Field
           SlideTransitionAnimation(
             duration: AppAnimations.medium,
             delay: AppAnimations.staggerShort,
             begin: const Offset(0.0, 0.06),
-            child: CustomUserNameField(
-              hintText: 'username_hint'.tr(),
-              validatorFun: (value) {
+            child: CustomTextFormField(
+              controller: identifierController,
+              headerText: 'email_or_phone_label'.tr(),
+              hintText: 'email_or_phone_hint'.tr(),
+              prefixWidget: const Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.gray71717A,
+                size: 20,
+              ),
+              textInputAction: TextInputAction.next,
+              onFieldSubmitted: (_) =>
+                  FocusScope.of(context).requestFocus(passwordFocus),
+              validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'please_enter_username'.tr();
+                  return 'please_enter_email_or_phone'.tr();
                 }
                 return null;
               },
-              tempColor: AppColors.white,
-              onFieldSubmitted: (value) {
-                if (value != null && value.trim().isNotEmpty) {
-                  FocusScope.of(context).requestFocus(passwordFocus);
-                }
-              },
-              nameController: phoneController,
             ),
           ),
           SizedBox(height: isMobile ? 14 : 16),
@@ -613,17 +674,36 @@ class _LoginFormFields extends StatelessWidget {
                 if (state is ChangeVisibilityState) {
                   isHidden = state.value;
                 }
-                return CustomPasswordField(
-                  tempColor: AppColors.white,
-                  isHidden: isHidden,
+                return CustomTextFormField(
+                  controller: passwordController,
+                  focusNode: passwordFocus,
+                  headerText: 'password'.tr(),
                   hintText: 'password_hint'.tr(),
-                  validationError: 'please_enter_password'.tr(),
-                  passwordController: passwordController,
-                  passwordFocus: passwordFocus,
-                  formKey: formKey,
-                  onFiledSumbitted: onSubmit,
-                  changeVisibilty: () {
-                    context.read<LoginCubit>().changeVisibility(isHidden);
+                  isObeseureText: isHidden,
+                  prefixWidget: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: AppColors.gray71717A,
+                    size: 20,
+                  ),
+                  suffixWidget: IconButton(
+                    icon: Icon(
+                      isHidden
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: AppColors.gray71717A,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      context.read<LoginCubit>().changeVisibility(isHidden);
+                    },
+                  ),
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => onSubmit(),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'please_enter_password'.tr();
+                    }
+                    return null;
                   },
                 );
               },
@@ -631,41 +711,61 @@ class _LoginFormFields extends StatelessWidget {
           ),
           SizedBox(height: isMobile ? 16 : 20),
 
-          // Remember Me Option
+          // Options Row: Remember Me & Forgot Password
           SlideTransitionAnimation(
             duration: AppAnimations.medium,
             delay: AppAnimations.staggerLong,
             begin: const Offset(0.0, 0.06),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                BlocBuilder<LoginCubit, LoginState>(
-                  buildWhen: (prev, curr) => curr is RememberMeState,
-                  builder: (context, state) {
-                    bool isChecked = false;
-                    if (state is RememberMeState) {
-                      isChecked = state.value;
-                    }
-                    return CustomCheckBox(
-                      value: isChecked,
-                      onChanged: (value) {
-                        context.read<LoginCubit>().rememberMe(value);
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BlocBuilder<LoginCubit, LoginState>(
+                      buildWhen: (prev, curr) => curr is RememberMeState,
+                      builder: (context, state) {
+                        bool isChecked = false;
+                        if (state is RememberMeState) {
+                          isChecked = state.value;
+                        }
+                        return CustomCheckBox(
+                          value: isChecked,
+                          onChanged: (value) {
+                            context.read<LoginCubit>().rememberMe(value);
+                          },
+                        );
                       },
-                    );
-                  },
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        final cubit = context.read<LoginCubit>();
+                        final current = (cubit.state is RememberMeState)
+                            ? !(cubit.state as RememberMeState).value
+                            : true;
+                        cubit.rememberMe(current);
+                      },
+                      child: Text(
+                        'remember_me'.tr(),
+                        style: CustomAppFontStyle.medium14.copyWith(
+                          color: AppColors.gray334155,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    final cubit = context.read<LoginCubit>();
-                    final current = (cubit.state is RememberMeState)
-                        ? !(cubit.state as RememberMeState).value
-                        : true;
-                    cubit.rememberMe(current);
-                  },
+                TextButton(
+                  onPressed: onForgotPassword,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: Text(
-                    'remember_me'.tr(),
-                    style: CustomAppFontStyle.medium14.copyWith(
-                      color: AppColors.gray334155,
+                    'forgot_password'.tr(),
+                    style: CustomAppFontStyle.medium13.copyWith(
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -687,7 +787,7 @@ class _LoginFormFields extends StatelessWidget {
                   tapScale: 0.98,
                   child: CustomPushButton(
                     height: isMobile ? 48 : 52,
-                    radius: 100,
+                    radius: 12,
                     backgroundColor: AppColors.primary,
                     isLoading: state is LoadingLoginPushState,
                     onTap: onSubmit,

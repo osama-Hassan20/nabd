@@ -218,6 +218,14 @@ class InvalidCredentialsFailure extends Failures {
 }
 
 class MustChangePasswordFailure extends Failures {
-  const MustChangePasswordFailure({required super.errMessage});
+  final String? userId;
+
+  const MustChangePasswordFailure({
+    required super.errMessage,
+    this.userId,
+  });
+
+  @override
+  List<Object?> get props => [errMessage, userId];
 }
 

@@ -20,7 +20,21 @@ final class FailedLoginPushState extends LoginPushState {
   FailedLoginPushState({required this.errMessage});
 }
 
-final class SuccessLoginPushState extends LoginPushState {}
+final class SuccessLoginPushState extends LoginPushState {
+  final StaffUserModel? user;
+
+  SuccessLoginPushState({this.user});
+}
+
+final class MustChangePasswordLoginState extends LoginPushState {
+  final String userId;
+  final String temporaryPassword;
+
+  MustChangePasswordLoginState({
+    required this.userId,
+    required this.temporaryPassword,
+  });
+}
 
 final class RememberMeState extends LoginState {
   final bool value;
@@ -30,7 +44,6 @@ final class RememberMeState extends LoginState {
 
 final class FillRemeberMeDataState extends LoginState {
   final String userName;
-  final String password;
 
-  FillRemeberMeDataState({required this.userName, required this.password});
+  FillRemeberMeDataState({required this.userName});
 }

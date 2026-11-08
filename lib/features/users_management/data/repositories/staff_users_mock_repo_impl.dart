@@ -374,8 +374,11 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
         targetUserId: user.id,
         details: 'User authenticated but must change temporary password',
       );
-      return const Left(
-        MustChangePasswordFailure(errMessage: 'auth_must_change_password'),
+      return Left(
+        MustChangePasswordFailure(
+          errMessage: 'auth_must_change_password',
+          userId: user.id,
+        ),
       );
     }
 
