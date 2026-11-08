@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../enums/staff_permission_enum.dart';
 import '../enums/user_role_enum.dart';
 import '../services/permission_evaluator.dart';
+import '../../features/users_management/data/models/branch_assignment_model.dart';
 import '../../features/users_management/data/models/role_definition_model.dart';
 import '../../features/users_management/data/models/staff_user_model.dart';
 
@@ -24,6 +25,41 @@ class SessionState extends Equatable {
     this.activeBranchId,
     this.availableBranchIds,
   });
+
+  factory SessionState.initial() {
+    return const SessionState(
+      currentUser: StaffUserModel(
+        id: 'USER-OWNER',
+        fullName: 'د. طارق المنشاوي (المالك)',
+        email: 'owner@eyadty.com',
+        phone: '01000000001',
+        jobTitle: 'المدير التنفيذي وصاحب المنشأة',
+        isOwner: true,
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            isPrimary: true,
+            roleIds: [RoleIds.branchManager],
+          ),
+          BranchAssignmentModel(
+            branchId: 'branch_2',
+            isPrimary: false,
+            roleIds: [RoleIds.branchManager],
+          ),
+          BranchAssignmentModel(
+            branchId: 'branch_3',
+            isPrimary: false,
+            roleIds: [RoleIds.branchManager],
+          ),
+        ],
+      ),
+      userId: 'USER-OWNER',
+      userName: 'د. طارق المنشاوي (المالك)',
+      activeBranchId: 'branch_1',
+      availableBranchIds: ['branch_1', 'branch_2', 'branch_3'],
+    );
+  }
 
   bool get isAuthenticated =>
       currentUser != null && currentUser!.canAuthenticate;

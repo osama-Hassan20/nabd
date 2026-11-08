@@ -6,7 +6,6 @@ import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
-import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/services/notification_service.dart';
 import 'package:eyadty/shared/app_layout/data/repositories/layout_repo_impl.dart';
 import 'package:eyadty/shared/app_layout/domain/repositories/layout_repo.dart';
@@ -128,13 +127,7 @@ Future<void> setupGetIt() async {
 
   // ─── Session & Role Provider ──────────────────────────────────────────────
   getIt.registerLazySingleton<SessionCubit>(
-    () => SessionCubit(
-      const SessionState(
-        currentRole: UserRoleEnum.admin,
-        userId: 'USR-001',
-        userName: 'Admin User',
-      ),
-    ),
+    () => SessionCubit(SessionState.initial()),
   );
   getIt.registerLazySingleton<CurrentRoleProvider>(() => getIt<SessionCubit>());
 

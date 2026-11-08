@@ -8,7 +8,7 @@
 - **إعدادات التشغيل:** `CHECKPOINT_MODE = wave` | `START_AT = R-1` | `STOP_BEFORE = Wave 7`
 - **الفرع الحالي:** `v1.0.0`
 - **آخر فحص برمجي:** `flutter analyze --no-pub` -> 0 issues found.
-- **آخر اختبار للمشروع:** `flutter test` -> 128/128 passed (100%).
+- **آخر اختبار للمشروع:** `flutter test` -> 132/132 passed (100%).
 
 ---
 
@@ -23,6 +23,11 @@
 - **الحالة:** 🟢 مكتملة (100%)
 - **التفاصيل:** تم نشر وتوثيق `CairoTimeHelper.setFixedClock` و`resetFixedClock` بوسم `@visibleForTesting`. وتم استبدال الاستدعاء المباشر لـ `DateTime.now()` بـ `CairoTimeHelper.now()` عبر طبقات الحجوزات، الأطباء، التقويم، والإجازات.
 - **الاختبار المضاف:** `test/core/helpers/cairo_time_helper_test.dart` (4/4 passed).
+
+### R-3: اختبارات GoRouter الحية (Live Widget/Router Tests)
+- **الحالة:** 🟢 مكتملة (100%)
+- **التفاصيل:** تم ربط `GoRouter` بـ `refreshListenable: GoRouterRefreshStream(session.stream)` لضمان إعادة التقييم الحي فور تغيير الأدوار، وتفعيل إعادة التوجيه التلقائي للمستخدم غير المسجل إلى `/login?from=...`، وإعادة توجيه من لا يملك صلاحية إلى `/forbidden?from=...`، والعودة التلقائية للصفحة المستهدفة عند تصعيد الدور.
+- **الاختبار المضاف:** `test/core/routing/app_router_guard_test.dart` (4/4 passed).
 
 ---
 

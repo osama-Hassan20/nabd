@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -289,42 +290,24 @@ StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
   return null;
 }
 
-final GoRouter appRouter = GoRouter(
-  observers: [routeObserver],
-  initialLocation: AppRouter.bookings,
-  redirect: (context, state) {
-    final location = state.uri.path;
-    final isLogin = location == AppRouter.login;
-    final isForbidden = location == AppRouter.forbidden;
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+      (dynamic _) => notifyListeners(),
+    );
+  }
 
-    if (isLogin || isForbidden) {
-      return null;
-    }
+  late final StreamSubscription<dynamic> _subscription;
 
-    if (!getIt.isRegistered<SessionCubit>()) {
-      return null;
-    }
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
 
-    final sessionCubit = getIt<SessionCubit>();
-    final user = sessionCubit.state.currentUser;
-
-    if (user != null) {
-      if (user.canAuthenticate == false) {
-        return '${AppRouter.login}?from=${Uri.encodeComponent(location)}';
-      }
-
-      final requiredPermission = getRequiredPermissionForRoute(location);
-      if (requiredPermission != null) {
-        final hasPermission = sessionCubit.can(requiredPermission);
-        if (!hasPermission) {
-          return AppRouter.forbidden;
-        }
-      }
-    }
-
-    return null;
-  },
-  routes: [
+List<RouteBase> getAppRoutes() => [
     GoRoute(
       path: AppRouter.login,
       name: AppRouter.login,
@@ -572,8 +555,81 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
-  ],
-);
+  ];
+
+GoRouter createAppRouter({
+  SessionCubit? sessionCubit,
+  String initialLocation = AppRouter.bookings,
+  List<NavigatorObserver>? observers,
+  List<RouteBase>? routes,
+}) {
+  final session = sessionCubit ??
+      (getIt.isRegistered<SessionCubit>() ? getIt<SessionCubit>() : null);
+
+  return GoRouter(
+    observers: observers ?? [routeObserver],
+    initialLocation: initialLocation,
+    refreshListenable:
+        session != null ? GoRouterRefreshStream(session.stream) : null,
+    redirect: (context, state) {
+      final location = state.uri.path;
+      final isLogin = location == AppRouter.login;
+      final isForbidden = location == AppRouter.forbidden;
+
+      final currentSession = session ??
+          (getIt.isRegistered<SessionCubit>() ? getIt<SessionCubit>() : null);
+      if (currentSession == null) {
+        return null;
+      }
+
+      final isAuthenticated = currentSession.state.isAuthenticated;
+
+      // 1. Unauthenticated users redirected to /login
+      if (!isAuthenticated) {
+        if (isLogin) return null;
+        return '${AppRouter.login}?from=${Uri.encodeComponent(location)}';
+      }
+
+      // 2. Authenticated users on /login redirected to destination or bookings
+      if (isLogin) {
+        final from = state.uri.queryParameters['from'];
+        return (from != null && from.isNotEmpty) ? from : AppRouter.bookings;
+      }
+
+      // 3. User on /forbidden: re-evaluate if their permissions changed (e.g. role switch)
+      if (isForbidden) {
+        final from = state.uri.queryParameters['from'];
+        if (from != null && from.isNotEmpty) {
+          final reqPerm = getRequiredPermissionForRoute(from);
+          if (reqPerm == null || currentSession.can(reqPerm)) {
+            return from;
+          }
+        }
+        return null;
+      }
+
+      // 4. Role/permission enforcement
+      final requiredPermission = getRequiredPermissionForRoute(location);
+      if (requiredPermission != null) {
+        final hasPermission = currentSession.can(requiredPermission);
+        if (!hasPermission) {
+          return '${AppRouter.forbidden}?from=${Uri.encodeComponent(location)}';
+        }
+      }
+
+      return null;
+    },
+    routes: routes ?? getAppRoutes(),
+  );
+}
+
+GoRouter? _globalRouterInstance;
+GoRouter get appRouter => _globalRouterInstance ??= createAppRouter();
+
+void resetAppRouter() {
+  _globalRouterInstance?.dispose();
+  _globalRouterInstance = null;
+}
 
 String getInitialRoute() {
   final bool hasToken =
