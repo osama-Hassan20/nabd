@@ -86,6 +86,7 @@ import 'package:eyadty/features/home_dashboard/presentation/cubit/home_dashboard
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/presentation/cubit/staff_users_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -337,6 +338,12 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<StaffUsersRepo>(
     () => StaffUsersMockRepoImpl(
       auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerFactory<StaffUsersCubit>(
+    () => StaffUsersCubit(
+      staffUsersRepo: getIt<StaffUsersRepo>(),
     ),
   );
 

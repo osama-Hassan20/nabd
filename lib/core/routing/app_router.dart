@@ -19,6 +19,7 @@ import 'package:eyadty/features/settings/presentation/pages/settings_page.dart';
 import 'package:eyadty/features/doctors/presentation/pages/doctor_details_page.dart';
 import 'package:eyadty/features/doctors/presentation/pages/doctors_page.dart';
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
+import 'package:eyadty/features/users_management/presentation/pages/users_management_page.dart';
 import 'package:eyadty/shared/app_layout/presentation/pages/app_layout.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
@@ -544,7 +545,7 @@ List<RouteBase> getAppRoutes() => [
               name: AppRouter.usersManagement,
               pageBuilder: (context, state) => buildAnimatedPage(
                 key: state.pageKey,
-                child: const SettingsPage(),
+                child: const UsersManagementPage(),
                 animationType: checkIsIOS()
                     ? AnimationType.cupertino
                     : AnimationType.slideFromLeft,
