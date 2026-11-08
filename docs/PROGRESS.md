@@ -8,7 +8,7 @@
 - **إعدادات التشغيل:** `CHECKPOINT_MODE = wave` | `START_AT = R-1` | `STOP_BEFORE = Wave 7`
 - **الفرع الحالي:** `v1.0.0`
 - **آخر فحص برمجي:** `flutter analyze --no-pub` -> 0 issues found.
-- **آخر اختبار للمشروع:** `flutter test` -> 124/124 passed (100%).
+- **آخر اختبار للمشروع:** `flutter test` -> 128/128 passed (100%).
 
 ---
 
@@ -18,6 +18,11 @@
 - **الحالة:** 🟢 مكتملة (100%)
 - **التفاصيل:** تم توحيد كتالوج الأطباء على مستوى التطبيق بالكامل بالاعتماد على الأطباء الـ 6 الرسميين في `DoctorsRepo` (`DOC-01` إلى `DOC-06`). تم إزالة الطبيب الوهمي `DOC-07` وتحديث الأسماء القديمة في الحجوزات والخدمات الطبية وعناصر الواجهة والاختبارات.
 - **الاختبار المضاف:** `test/features/doctors/doctor_catalog_unification_test.dart` (5/5 passed).
+
+### R-2: توقيت قابل للحقن واختبارات لا تعتمد على الساعة (Clock Rigor & @visibleForTesting)
+- **الحالة:** 🟢 مكتملة (100%)
+- **التفاصيل:** تم نشر وتوثيق `CairoTimeHelper.setFixedClock` و`resetFixedClock` بوسم `@visibleForTesting`. وتم استبدال الاستدعاء المباشر لـ `DateTime.now()` بـ `CairoTimeHelper.now()` عبر طبقات الحجوزات، الأطباء، التقويم، والإجازات.
+- **الاختبار المضاف:** `test/core/helpers/cairo_time_helper_test.dart` (4/4 passed).
 
 ---
 

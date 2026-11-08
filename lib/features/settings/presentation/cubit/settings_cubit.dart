@@ -1,6 +1,7 @@
 import 'package:eyadty/core/base/safe_cubit.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import '../../data/models/company_settings_model.dart';
 import '../../data/models/special_holiday_model.dart';
 import '../../domain/use_cases/add_special_holiday_use_case.dart';
@@ -268,7 +269,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
   }
 
   void initHolidayForm([SpecialHolidayModel? holiday]) {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     emit(
       state.copyWith(
         holidayFormState: HolidayFormState(
@@ -302,7 +303,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
     DateTime? endDate,
   }) async {
     final form = state.holidayFormState;
-    final effectiveStart = startDate ?? form?.startDate ?? DateTime.now();
+    final effectiveStart = startDate ?? form?.startDate ?? CairoTimeHelper.now();
     final effectiveEnd = endDate ?? form?.endDate ?? effectiveStart;
 
     emit(

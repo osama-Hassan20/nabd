@@ -1,3 +1,5 @@
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
+
 class DoctorLeaveModel {
   final String? id;
   final String? doctorId;
@@ -24,7 +26,7 @@ class DoctorLeaveModel {
   }
 
   bool isCurrentlyActive([DateTime? now]) {
-    final current = now ?? DateTime.now();
+    final current = now ?? CairoTimeHelper.now();
     if (startDate == null || endDate == null) return false;
     final start = DateTime(startDate!.year, startDate!.month, startDate!.day);
     final end = DateTime(

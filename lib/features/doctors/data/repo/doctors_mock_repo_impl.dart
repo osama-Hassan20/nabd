@@ -9,6 +9,7 @@ import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart'
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import '../../domain/helpers/doctor_availability_helper.dart';
 import '../../domain/helpers/doctor_schedule_validator.dart';
 import '../../domain/repo/doctors_repo.dart';
@@ -49,7 +50,7 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
   }
 
   void _initMockData() {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
 
     // ─── Initial Leaves ────────────────────────────────────────────────────────
     _leaves.addAll([
@@ -420,8 +421,8 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
         upcomingBookingsCount: 0,
         completedBookingsCount: 0,
         status: doctor.status ?? DoctorStatusEnum.available,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: CairoTimeHelper.now(),
+        updatedAt: CairoTimeHelper.now(),
       );
 
       _doctors.insert(0, newDoctor);
@@ -451,7 +452,7 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
         specialty: doctor.specialty ?? existing.specialty,
         gender: doctor.gender ?? existing.gender,
         status: doctor.status ?? existing.status,
-        updatedAt: DateTime.now(),
+        updatedAt: CairoTimeHelper.now(),
       );
 
       _doctors[index] = updated;
@@ -623,7 +624,7 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
           'LEAVE-${(_leaves.length + 1).toString().padLeft(2, '0')}';
       final created = leave.copyWith(
         id: newId,
-        createdAt: DateTime.now(),
+        createdAt: CairoTimeHelper.now(),
       );
 
       _leaves.insert(0, created);
@@ -635,7 +636,7 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
         if (docIndex != -1) {
           _doctors[docIndex] = _doctors[docIndex].copyWith(
             status: DoctorStatusEnum.onLeave,
-            updatedAt: DateTime.now(),
+            updatedAt: CairoTimeHelper.now(),
           );
         }
       }
@@ -675,7 +676,7 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
         if (docIndex != -1) {
           _doctors[docIndex] = _doctors[docIndex].copyWith(
             status: DoctorStatusEnum.available,
-            updatedAt: DateTime.now(),
+            updatedAt: CairoTimeHelper.now(),
           );
         }
       }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/calendar_year_dropdown.dart';
@@ -26,7 +27,7 @@ class BookingCalendarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<BookingsCubit>();
     final locale = context.locale.languageCode;
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
 
     final List<String> weekDayNames = locale == 'ar'

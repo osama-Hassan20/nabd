@@ -11,6 +11,7 @@ import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dar
 import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/change_booking_status_dialog.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/delete_booking_dialog.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/reassign_technician_dialog.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class BookingActionDialogs {
@@ -118,10 +119,10 @@ class BookingActionDialogs {
                   cancelReason: state.dialogCancelReason,
                   cancelledBy: state.dialogCancelledBy,
                   cancelledAt: selected == BookingStatusEnum.cancelled
-                      ? DateTime.now()
+                      ? CairoTimeHelper.now()
                       : null,
                   arrivalTime: selected == BookingStatusEnum.waiting
-                      ? (booking.arrivalTime ?? DateTime.now())
+                      ? (booking.arrivalTime ?? CairoTimeHelper.now())
                       : null,
                 );
               }

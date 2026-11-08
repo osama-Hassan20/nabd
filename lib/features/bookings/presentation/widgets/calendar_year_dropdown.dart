@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 
 class CalendarYearDropdown extends StatelessWidget {
   final int selectedYear;
@@ -19,7 +20,7 @@ class CalendarYearDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final effectiveStartYear = startYear ?? (now.year - 5);
     final effectiveEndYear = endYear ?? (now.year + 5);
 

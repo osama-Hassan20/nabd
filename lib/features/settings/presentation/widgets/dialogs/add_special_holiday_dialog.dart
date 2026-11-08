@@ -7,6 +7,7 @@ import 'package:eyadty/core/utils/extensions/date_time_extentision.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_state.dart';
@@ -170,8 +171,8 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
       builder: (context, state) {
         final isLoading = state.actionStatus == RequestStatusEnum.loading;
         final formState = state.holidayFormState;
-        final startDate = formState?.startDate ?? DateTime.now();
-        final endDate = formState?.endDate ?? DateTime.now();
+        final startDate = formState?.startDate ?? CairoTimeHelper.now();
+        final endDate = formState?.endDate ?? CairoTimeHelper.now();
 
         final content = Container(
           decoration: BoxDecoration(

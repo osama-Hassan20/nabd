@@ -64,7 +64,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
   }
 
   void _initMockData() {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
 
     _bookings.addAll([
@@ -849,8 +849,8 @@ class BookingsMockRepoImpl implements BookingsRepo {
       final newId = 'BK-${1000 + _bookings.length + 1}';
       final createdBooking = booking.copyWith(
         id: newId,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: CairoTimeHelper.now(),
+        updatedAt: CairoTimeHelper.now(),
       );
       _bookings.insert(0, createdBooking);
       return right(createdBooking);
@@ -890,7 +890,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
         }
       }
 
-      final updated = booking.copyWith(updatedAt: DateTime.now());
+      final updated = booking.copyWith(updatedAt: CairoTimeHelper.now());
       _bookings[index] = updated;
       return right(updated);
     } catch (e) {
@@ -973,7 +973,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
           technicianName: params.newTechnicianNames.isNotEmpty
               ? params.newTechnicianNames.join('، ')
               : params.newTechnicianName,
-          updatedAt: DateTime.now(),
+          updatedAt: CairoTimeHelper.now(),
         );
         return right(unit);
       }

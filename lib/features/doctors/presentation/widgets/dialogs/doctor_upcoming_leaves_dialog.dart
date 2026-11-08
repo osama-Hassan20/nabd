@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -80,7 +81,7 @@ class _DoctorUpcomingLeavesDialogState
 
     if (!mounted) return;
 
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final todayStart = DateTime(now.year, now.month, now.day);
 
     result.fold(
@@ -99,8 +100,8 @@ class _DoctorUpcomingLeavesDialogState
           return end.isAfter(todayStart);
         }).toList()
           ..sort((a, b) =>
-              (a.startDate ?? DateTime.now())
-                  .compareTo(b.startDate ?? DateTime.now()));
+              (a.startDate ?? CairoTimeHelper.now())
+                  .compareTo(b.startDate ?? CairoTimeHelper.now()));
 
         setState(() {
           _upcomingLeaves = filtered;

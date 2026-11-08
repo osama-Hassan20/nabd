@@ -379,7 +379,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   void nextCalendarMonth() {
-    final current = state.selectedMonth ?? state.selectedDate ?? DateTime.now();
+    final current = state.selectedMonth ?? state.selectedDate ?? CairoTimeHelper.now();
     final nextMonth = DateTime(current.year, current.month + 1, 1);
     final firstDay = DateTime(nextMonth.year, nextMonth.month, 1);
     emit(
@@ -394,7 +394,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   void previousCalendarMonth() {
-    final current = state.selectedMonth ?? state.selectedDate ?? DateTime.now();
+    final current = state.selectedMonth ?? state.selectedDate ?? CairoTimeHelper.now();
     final prevMonth = DateTime(current.year, current.month - 1, 1);
     final firstDay = DateTime(prevMonth.year, prevMonth.month, 1);
     emit(
@@ -409,7 +409,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   void setCalendarYear(int year) {
-    final current = state.selectedMonth ?? state.selectedDate ?? DateTime.now();
+    final current = state.selectedMonth ?? state.selectedDate ?? CairoTimeHelper.now();
     final newMonth = DateTime(year, current.month, 1);
     final firstDay = DateTime(year, current.month, 1);
 
@@ -425,7 +425,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   void nextCalendarDay() {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final current =
         state.selectedDate ??
         state.selectedMonth ??
@@ -435,7 +435,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   }
 
   void previousCalendarDay() {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final current =
         state.selectedDate ??
         state.selectedMonth ??
@@ -526,7 +526,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
             serviceId: booking.serviceId,
             serviceName: booking.serviceName ?? '',
             bookingType: booking.bookingType ?? BookingTypeEnum.oneTime,
-            date: booking.date ?? DateTime.now(),
+            date: booking.date ?? CairoTimeHelper.now(),
             startTime: booking.startTime ?? '',
             endTime: booking.endTime ?? '',
             durationMinutes: booking.durationMinutes ?? 0,
@@ -551,7 +551,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
             serviceId: null,
             serviceName: '',
             bookingType: state.activeBookingTypeTab,
-            date: DateTime.now(),
+            date: CairoTimeHelper.now(),
             startTime: '',
             endTime: '',
             durationMinutes: 0,
@@ -1432,7 +1432,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
                 technicianName: technicianNames.isNotEmpty
                     ? technicianNames.join('، ')
                     : null,
-                updatedAt: DateTime.now(),
+                updatedAt: CairoTimeHelper.now(),
               )
             : currentSelected;
         emit(

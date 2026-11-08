@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Helper to handle Africa/Cairo local timezone calculations accurately.
 class CairoTimeHelper {
   CairoTimeHelper._();
@@ -5,11 +7,13 @@ class CairoTimeHelper {
   static DateTime? _fixedClock;
 
   /// Sets a fixed clock for reproducible testing and deterministic environments.
+  @visibleForTesting
   static void setFixedClock(DateTime? clock) {
     _fixedClock = clock;
   }
 
   /// Resets fixed clock back to real-time wall clock.
+  @visibleForTesting
   static void resetFixedClock() {
     _fixedClock = null;
   }

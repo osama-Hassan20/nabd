@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -55,7 +56,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
     if (widget.selectedDate != null) {
       return DateTime(widget.selectedDate!.year, widget.selectedDate!.month, 1);
     }
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     return DateTime(now.year, now.month, 1);
   }
 
@@ -139,7 +140,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
       widget.onPrevDay!();
       return;
     }
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final focused = _getFocusedMonth();
     final base =
         widget.selectedDate ??
@@ -161,7 +162,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
       widget.onNextDay!();
       return;
     }
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final focused = _getFocusedMonth();
     final base =
         widget.selectedDate ??
@@ -198,7 +199,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
       widget.onGoToToday!();
       return;
     }
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
     widget.onDateSelected(today);
     widget.onMonthSelected(
@@ -210,7 +211,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
 
     final focusedMonth = _getFocusedMonth();

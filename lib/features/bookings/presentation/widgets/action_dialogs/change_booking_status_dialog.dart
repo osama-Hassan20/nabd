@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/presentation/helpers/booking_time_formatter.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
@@ -74,7 +75,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
   }
 
   Future<void> _pickPostponeDate(BuildContext context) async {
-    final now = DateTime.now();
+    final now = CairoTimeHelper.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: widget.postponeDate ?? now.add(const Duration(days: 1)),

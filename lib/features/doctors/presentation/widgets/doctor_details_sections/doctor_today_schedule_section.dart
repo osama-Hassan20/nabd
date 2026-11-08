@@ -10,6 +10,7 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_state.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
 class DoctorTodayScheduleSection extends StatelessWidget {
@@ -21,7 +22,7 @@ class DoctorTodayScheduleSection extends StatelessWidget {
       buildWhen: (prev, curr) =>
           prev.doctorBookings != curr.doctorBookings,
       builder: (context, state) {
-        final now = DateTime.now();
+        final now = CairoTimeHelper.now();
         final todayStart = DateTime(now.year, now.month, now.day);
         final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
