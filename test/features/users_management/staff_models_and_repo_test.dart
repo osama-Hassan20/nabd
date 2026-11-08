@@ -16,6 +16,11 @@ class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
   Future<int> countActiveFutureBookingsForDoctor(String doctorId) async {
     return counts[doctorId] ?? 0;
   }
+
+  @override
+  Future<int> countActiveFutureBookingsForBranch(String branchId) async {
+    return counts[branchId] ?? 0;
+  }
 }
 
 void main() {

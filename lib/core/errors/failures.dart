@@ -229,3 +229,19 @@ class MustChangePasswordFailure extends Failures {
   List<Object?> get props => [errMessage, userId];
 }
 
+class CannotDeactivateMainBranchFailure extends Failures {
+  const CannotDeactivateMainBranchFailure({required super.errMessage});
+}
+
+class CannotDeactivateLastActiveBranchFailure extends Failures {
+  const CannotDeactivateLastActiveBranchFailure({required super.errMessage});
+}
+
+class BranchNotFoundFailure extends Failures {
+  const BranchNotFoundFailure({required super.errMessage});
+}
+
+class InvalidBranchOperationFailure extends Failures {
+  const InvalidBranchOperationFailure({required super.errMessage});
+}
+

@@ -8,6 +8,7 @@ import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_state.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/company_info_tab.dart';
+import 'package:eyadty/features/settings/presentation/widgets/tabs/branches_management_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/default_pricing_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/special_holidays_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/working_schedule_tab.dart';
@@ -47,6 +48,7 @@ class _SettingsViewState extends State<SettingsView>
 
   static const List<String> _tabIcons = [
     AppIcons.company,
+    AppIcons.location,
     AppIcons.clock,
     AppIcons.money,
     AppIcons.calendar,
@@ -56,6 +58,7 @@ class _SettingsViewState extends State<SettingsView>
 
   List<String> get _tabs => [
     'tab_company_info'.tr(),
+    'tab_branches'.tr(),
     'tab_working_schedule'.tr(),
     'tab_pricing'.tr(),
     'tab_special_holidays'.tr(),
@@ -163,6 +166,7 @@ class _SettingsViewState extends State<SettingsView>
                   controller: _tabController,
                   children: [
                     CompanyInfoTab(settingsCubit: cubit),
+                    const BranchesManagementTab(),
                     WorkingScheduleTab(settingsCubit: cubit),
                     DefaultPricingTab(settingsCubit: cubit),
                     SpecialHolidaysTab(settingsCubit: cubit),

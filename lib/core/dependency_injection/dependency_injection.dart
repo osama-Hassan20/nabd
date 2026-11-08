@@ -84,6 +84,9 @@ import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 // Features
 import 'package:eyadty/features/home_dashboard/presentation/cubit/home_dashboard_cubit.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
+import 'package:eyadty/features/branches/domain/repo/branches_repo.dart';
+import 'package:eyadty/features/branches/data/repo/branches_mock_repo_impl.dart';
+import 'package:eyadty/features/branches/presentation/cubit/branches_cubit.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
 import 'package:eyadty/features/users_management/presentation/cubit/staff_users_cubit.dart';
@@ -338,6 +341,18 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<StaffUsersRepo>(
     () => StaffUsersMockRepoImpl(
       auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<BranchesRepo>(
+    () => BranchesMockRepoImpl(
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerFactory<BranchesCubit>(
+    () => BranchesCubit(
+      branchesRepo: getIt<BranchesRepo>(),
     ),
   );
 

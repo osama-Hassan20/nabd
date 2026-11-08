@@ -39,6 +39,7 @@ enum StaffPermissionEnum {
 
   // ─── 7. Settings & Governance (الإعدادات والحوكمة) ───────────────────────
   accessSettings,
+  manageBranches,
   manageMedicalServices,
   manageRolesAndPermissions,
   createStaffUser,
