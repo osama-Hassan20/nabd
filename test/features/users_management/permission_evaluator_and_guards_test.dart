@@ -125,6 +125,7 @@ void main() {
           StaffPermissionEnum.editPatient,
           StaffPermissionEnum.viewVisitsQueue,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
+          StaffPermissionEnum.viewConsultationNotes,
           StaffPermissionEnum.accessDoctors,
           StaffPermissionEnum.manageDoctorSchedules,
           StaffPermissionEnum.manageDoctorLeaves,
@@ -153,6 +154,7 @@ void main() {
           StaffPermissionEnum.accessPatients,
           StaffPermissionEnum.viewVisitsQueue,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
+          StaffPermissionEnum.viewConsultationNotes,
           StaffPermissionEnum.accessDoctors,
           StaffPermissionEnum.approveLeavesAndReferrals,
           StaffPermissionEnum.viewClinicalPerformance,
@@ -172,6 +174,7 @@ void main() {
           StaffPermissionEnum.startConsultation,
           StaffPermissionEnum.recordVitals,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
+          StaffPermissionEnum.viewConsultationNotes,
           StaffPermissionEnum.editMedicalDiagnosis,
           StaffPermissionEnum.issuePrescription,
           StaffPermissionEnum.accessDoctors,
@@ -492,6 +495,83 @@ void main() {
         getRequiredPermissionForRoute(AppRouter.forbidden),
         isNull,
       );
+      expect(
+        getRequiredPermissionForRoute(AppRouter.visits),
+        equals(StaffPermissionEnum.viewVisitsQueue),
+      );
+      expect(
+        getRequiredPermissionForRoute('/visits/VIS-101'),
+        equals(StaffPermissionEnum.viewConsultationNotes),
+      );
+    });
+
+    test('viewConsultationNotes RBAC & Nurse route guard', () {
+      // 1. Nurse: viewMedicalRecordDiagnostics = true, but viewConsultationNotes = false
+      userProvider.user = const StaffUserModel(
+        id: 'USER-NURSE',
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.nurse]),
+        ],
+      );
+      expect(evaluator.can(StaffPermissionEnum.viewMedicalRecordDiagnostics), isTrue);
+      expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isFalse);
+      expect(evaluator.can(StaffPermissionEnum.viewVisitsQueue), isTrue);
+
+      // Nurse navigating to /visits/:id requires viewConsultationNotes -> denied (403)
+      final reqPerm = getRequiredPermissionForRoute('/visits/VIS-101');
+      expect(reqPerm, equals(StaffPermissionEnum.viewConsultationNotes));
+      expect(evaluator.can(reqPerm!), isFalse);
+
+      // 2. Doctor: viewConsultationNotes = true
+      userProvider.user = const StaffUserModel(
+        id: 'USER-DOC',
+        isActive: true,
+        linkedDoctorId: 'DOC-01',
+        branchAssignments: [
+          BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.doctor]),
+        ],
+      );
+      expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isTrue);
+
+      // 3. Medical Director: viewConsultationNotes = true
+      userProvider.user = const StaffUserModel(
+        id: 'USER-MED-DIR',
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.medicalDirector]),
+        ],
+      );
+      expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isTrue);
+
+      // 4. Branch Manager: viewConsultationNotes = true
+      userProvider.user = const StaffUserModel(
+        id: 'USER-BM',
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.branchManager]),
+        ],
+      );
+      expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isTrue);
+
+      // 5. Reception & Accountant: viewConsultationNotes = false
+      userProvider.user = const StaffUserModel(
+        id: 'USER-REC',
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.reception]),
+        ],
+      );
+      expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isFalse);
+
+      userProvider.user = const StaffUserModel(
+        id: 'USER-ACC',
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.accountant]),
+        ],
+      );
+      expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isFalse);
     });
   });
 }

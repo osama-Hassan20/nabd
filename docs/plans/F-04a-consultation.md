@@ -39,7 +39,7 @@
 | `CairoTimeHelper.now()` | بدلاً من `DateTime.now()` في كل الأوقات |
 | `StaffPermissionEnum` | ستضاف إليه صلاحيات جديدة (§6) |
 | `PatientModel.allergies` | الحقل الفعلي `List<String>? allergies` — لعرض لافتة الحساسية |
-| `PatientModel.chronicDiseases` | للدكتور فقط (يتطلب `viewMedicalRecordDiagnostics`) |
+| `PatientModel.chronicDiseases` | للدكتور فقط (يتطلب `viewConsultationNotes`) |
 | `PatientsRepo.getPatientById()` | الـ Cubit يستدعيه ويستخرج `allergies` فقط أو `chronicDiseases` حسب الصلاحية |
 | `AdaptiveLayout`, `CustomTextFormField`, `CustomPushButton`, `CustomStackSelector`, `CustomToast`, `CustomShimmerContainer`, `CustomEmptyWidget` | مكونات الـ UI المشتركة |
 | `SafeCubit`, `SearchMixin`, `RequestStatusEnum` | قاعدة الـ Cubit والحالة |
@@ -51,9 +51,9 @@
 | الملف | التغيير |
 |:---|:---|
 | `lib/features/visits/presentation/pages/visits_page.dart` | استبدال Placeholder بـ `VisitsPage` كاملة |
-| `lib/core/enums/staff_permission_enum.dart` | إضافة `viewVisitsQueue`, `startConsultation`, `recordVitals` |
+| `lib/core/enums/staff_permission_enum.dart` | إضافة `viewVisitsQueue`, `startConsultation`, `recordVitals`, `viewConsultationNotes` |
 | `lib/core/dependency_injection/dependency_injection.dart` | تسجيل `VisitsRepo`, UseCases, `VisitsCubit`, وتسجيل `VisitsMockRepoImpl` كـ `ActiveVisitLookup` |
-| `lib/core/routing/app_router.dart` | إضافة route لـ `/visits/:id` بـ guard `viewMedicalRecordDiagnostics` |
+| `lib/core/routing/app_router.dart` | إضافة route لـ `/visits/:id` بـ guard `viewConsultationNotes` |
 | `lib/features/bookings/domain/contracts/active_visit_lookup.dart` | جديد — عقد فك الارتباط: دالة فحص حالة Visit الحجز لمنع الاعتماد المتبادل |
 | `lib/features/bookings/domain/use_cases/change_booking_status_use_case.dart` | إضافة guard عبر `ActiveVisitLookup`: رفض تعديل الحجز إن له Visit بحالة in_progress (§3.4) |
 | `lib/features/bookings/domain/use_cases/reassign_technician_use_case.dart` | إضافة guard عبر `ActiveVisitLookup`: رفض التحويل إن للحجز Visit بحالة in_progress (مسموح مع triage) (§3.4) |
@@ -309,7 +309,7 @@ class VisitsState extends Equatable {
 
   // بيانات الحساسية (مجلوبة منفصلة)
   final List<String> patientAllergies;        // لمن يملك viewVisitsQueue
-  final List<String> patientChronicDiseases;  // لمن يملك viewMedicalRecordDiagnostics فقط
+  final List<String> patientChronicDiseases;  // لمن يملك viewConsultationNotes فقط
 
   final RequestStatusEnum actionStatus;
   final String? actionError;
@@ -468,23 +468,24 @@ GoRouter.push('/visits/${visit.id}') → DoctorConsultationScreen
 ### 5.2 تدفق الدكتور — DoctorConsultationScreen
 
 ```
-Route محمي بـ: viewMedicalRecordDiagnostics (§6.1)
+Route محمي بـ: viewConsultationNotes (§6.1)
+(السبب: دور التمريض يملك viewMedicalRecordDiagnostics أصلاً في seed النظام؛ حماية شاشة الكشف عبر viewConsultationNotes تضمن منع الممرض من دخول الشاشة بالرابط)
 الممرض لا يصل لهذه الشاشة عبر الـ route
 
 DoctorConsultationScreen يُبنى بـ visitId من URL params
     ↓
 VisitsCubit.loadActiveVisit(visitId):
-  تحقق: PermissionEvaluator.can(viewMedicalRecordDiagnostics, patientDoctorIds) → false → pop + CustomToast(error)
+  تحقق: PermissionEvaluator.can(viewConsultationNotes, patientDoctorIds) → false → pop + CustomToast(error)
   تحقق: PermissionEvaluator.can(editMedicalDiagnosis, patientDoctorIds) → يحدد قابلية التعديل
   AuditLogger.log('view_patient_medical_record')
-  جلب PatientModel → يستخرج allergies + chronicDiseases (للدكتور)
+  جلب PatientModel → يستخرج allergies + chronicDiseases (للطبيب ومن يملك viewConsultationNotes)
   startAutoSave() → Timer.periodic(30s)
 
 الشاشة:
   PatientAllergyBanner (allergies فقط — للدكتور والممرض عبر viewVisitsQueue)
   VitalsInputPanel (للدكتور + validate نطاقات)
-  ConsultationNotesPanel (للدكتور فقط — محجوب إن !viewMedicalRecordDiagnostics)
-  PatientChronicDiseasesPanel (للدكتور فقط — محجوب إن !viewMedicalRecordDiagnostics)
+  ConsultationNotesPanel (للطبيب فقط — محجوب إن !viewConsultationNotes)
+  PatientChronicDiseasesPanel (للطبيب فقط — محجوب إن !viewConsultationNotes)
   إن status = finalized: 🔒 "هذا الكشف منتهٍ — قراءة فقط"
   أزرار [حفظ مسودة] [إنهاء الكشف] — مخفيان إن finalized
 
@@ -522,7 +523,7 @@ Auto-Save (كل 30 ثانية):
 
 ```
 الممرض يفتح /visits (viewVisitsQueue = true)
-الممرض لا يملك viewMedicalRecordDiagnostics → لا يصل لـ /visits/:id أبداً
+الممرض لا يملك viewConsultationNotes → لا يصل لـ /visits/:id أبداً (Guard يرفض الدخول 403)
 
 الممرض يضغط "تسجيل علامات" على حجز بحالة waiting
     ↓
@@ -534,7 +535,7 @@ RecordVitalsDialog يظهر (Dialog وليس route):
   PatientAllergyBanner (allergies المريض — من VisitsState.patientAllergies)
   VitalsInputPanel (كل الحقول بتحذيرات نطاق)
   NO ConsultationNotesPanel
-  NO chronic diseases (تتطلب viewMedicalRecordDiagnostics)
+  NO chronic diseases (تتطلب viewConsultationNotes)
     ↓
 VisitsCubit.recordVitals(bookingId, vitals, recordedByUserId) →
   PermissionEvaluator.can(recordVitals) → false → Left(Failure)
@@ -576,9 +577,10 @@ BookingDetailsPage: بطاقة "إجراءات سريرية" تحتوي نفس �
 
 ```dart
 // تُضاف في مجموعة "2. Patients & Medical Records":
-viewVisitsQueue,       // فتح /visits وعرض الطابور (الممرض والدكتور)
-startConsultation,     // بدء الكشف (للطبيب فقط، مقيد بـ linkedDoctorId)
-recordVitals,          // تسجيل العلامات الحيوية (للتمريض والطبيب)
+viewVisitsQueue,           // فتح /visits وعرض الطابور (الممرض والدكتور والإداري)
+startConsultation,         // بدء الكشف (للطبيب فقط، مقيد بـ linkedDoctorId)
+recordVitals,              // تسجيل العلامات الحيوية (للتمريض والطبيب)
+viewConsultationNotes,     // فتح /visits/:id واستعراض ملاحظات وتشخيص الكشف السريري والأمراض المزمنة
 ```
 
 ### 6.2 Route Guard
@@ -586,23 +588,24 @@ recordVitals,          // تسجيل العلامات الحيوية (للتمر
 | Route | الصلاحية المطلوبة |
 |:---|:---|
 | `/visits` | `viewVisitsQueue` |
-| `/visits/:id` | `viewMedicalRecordDiagnostics` |
+| `/visits/:id` | `viewConsultationNotes` |
 
 ### 6.3 جدول زراعة الصلاحيات (Seed)
-> **فحص الكود الفعلي:** تم فحص `RoleDefinitionModel.defaultSystemRoles()` و `StaffUsersMockRepoImpl`. القيم الموجودة لم تُمسّ؛ الصلاحيات الثلاث الجديدة (`viewVisitsQueue`, `startConsultation`, `recordVitals`) ستُضاف فقط للأدوار المستحقة.
+> **حوكمة أمان السجلات الطبية:** دور التمريض (Nurse) يملك `viewMedicalRecordDiagnostics` أصلاً في الـ seed الأصلي للنظام. لمنع التمريض من الوصول إلى شاشة الكشف السريرية `/visits/:id` أو قراءة التشخيصات والملاحظات السريرية، تم استحداث صلاحية مستقلة `viewConsultationNotes` ومُنحت للأدوار السريرية والإشرافية فقط دون التمريض.
 
 | الصلاحية | مالك* | مدير فرع | مدير طبي | طبيب | ممرض | استقبال | محاسب |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | `viewVisitsQueue` *(جديدة)* | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | `startConsultation` *(جديدة)* | ✅† | ❌ | ❌ | ✅† | ❌ | ❌ | ❌ |
 | `recordVitals` *(جديدة)* | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| `viewConsultationNotes` *(جديدة)* | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
 | `viewMedicalRecordDiagnostics` *(موجودة)* | ✅ | ✅ | ✅ | ✅ | ✅‡ | ❌ | ❌ |
 | `editMedicalDiagnosis` *(موجودة)* | ✅† | ❌ | ❌ | ✅† | ❌ | ❌ | ❌ |
 
 > * **المالك:** كل الصلاحيات مفعلة ضمنياً عبر `PermissionEvaluator.can()` (لا يحتاج فحص قائمة الصلاحيات).
 > † **مقيدة بالربط بالطبيب:** `linkedDoctorId == booking.doctorId`.
-> **مدير الفرع والمدير الطبي:** يملكان `viewMedicalRecordDiagnostics` بالفعل في الـ seed الأصلي، ولكن لا يملكان `editMedicalDiagnosis`؛ وبناءً عليه تُفتح شاشة الكشف لهما **للقراءة والمتابعة فقط** دون أي إمكانية لحفظ تشخيص أو إنهاء كشف.
-> ‡ **الممرض:** يملك `viewMedicalRecordDiagnostics` في الـ seed الأصلي لنظام الأدوار، إلا أن مسار التمريض المعتمد في F-04a هو العمل عبر `RecordVitalsDialog` من صفحة الطابور مباشرة.
+> **مدير الفرع والمدير الطبي:** يملكان `viewConsultationNotes`، ولكن لا يملكان `editMedicalDiagnosis`؛ وبناءً عليه تُفتح شاشة الكشف لهما **للقراءة والمتابعة فقط** دون أي إمكانية لحفظ تشخيص أو إنهاء كشف.
+> ‡ **الممرض:** يملك `viewMedicalRecordDiagnostics` في الـ seed الأصلي لنظام الأدوار، إلا أنه **لا يملك `viewConsultationNotes`**، ومسار التمريض المعتمد في F-04a هو العمل عبر `RecordVitalsDialog` من صفحة الطابور مباشرة، ومحاولة فتحه لـ `/visits/:id` ترجع `403 Forbidden`.
 
 ### 6.4 أحداث الـ Audit
 
@@ -883,7 +886,7 @@ T15: RecordVitalsUseCase يرفض لو الحجز ليس بحالة waiting
 ```
 T1: PatientAllergyBanner يظهر بالأحمر لو المريض عنده حساسية
 T2: PatientAllergyBanner لا يظهر لو لا توجد حساسية
-T3: ConsultationNotesPanel لا يظهر لو المستخدم لا يملك viewMedicalRecordDiagnostics
+T3: ConsultationNotesPanel لا يظهر لو المستخدم لا يملك viewConsultationNotes
 T4: VitalsInputPanel يظهر للممرض الذي يملك recordVitals
 T5: VitalsInputPanel يعرض تحذير أصفر لو SpO2 > 100
 T6: BMI يُحسب ويُعرض بشكل صحيح لما يُدخل الوزن والطول
@@ -927,7 +930,7 @@ T15: RecordVitalsDialog لا يعرض ConsultationNotesPanel
 ### M-4: واجهة الطابور (يوم 3-4)
 1. إنشاء `ConsultationQueueTable`, `ConsultationQueueCard`, `AdaptiveVisitsView`, `VisitsFilterBar`, `VisitsShimmer`, `VisitStatusBadge`.
 2. استبدال `VisitsPage` Placeholder.
-3. إضافة route `/visits/:id` في `app_router.dart` بـ guard `viewMedicalRecordDiagnostics`.
+3. إضافة route `/visits/:id` في `app_router.dart` بـ guard `viewConsultationNotes`.
 4. إضافة كل مفاتيح الترجمة ar-EG و en-US.
 5. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M4): visits queue UI and routing`
 

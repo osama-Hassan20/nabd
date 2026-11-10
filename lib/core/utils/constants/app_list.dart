@@ -43,7 +43,7 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
     ),
     SideBarItemModel(
       groupTitle: 'nav_group_operations'.tr(),
-      staffPermission: StaffPermissionEnum.viewMedicalRecordDiagnostics,
+      staffPermission: StaffPermissionEnum.viewVisitsQueue,
       title: 'nav_visits'.tr(),
       iconPath: AppIcons.file,
       id: 'visits',

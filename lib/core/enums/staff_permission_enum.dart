@@ -14,6 +14,7 @@ enum StaffPermissionEnum {
   startConsultation,
   recordVitals,
   viewMedicalRecordDiagnostics,
+  viewConsultationNotes,
   viewAllDoctorsMedicalRecords,
   editMedicalDiagnosis,
   issuePrescription,

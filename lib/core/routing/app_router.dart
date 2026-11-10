@@ -274,6 +274,12 @@ StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
   if (location.startsWith(AppRouter.bookings)) {
     return StaffPermissionEnum.accessLiveQueue;
   }
+  if (location.startsWith('/visits/') && location != AppRouter.visits) {
+    return StaffPermissionEnum.viewConsultationNotes;
+  }
+  if (location == AppRouter.visits || location.startsWith(AppRouter.visits)) {
+    return StaffPermissionEnum.viewVisitsQueue;
+  }
   if (location.startsWith(AppRouter.patients)) {
     return StaffPermissionEnum.accessPatients;
   }

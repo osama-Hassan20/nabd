@@ -53,6 +53,7 @@ class _RolePermissionsMatrixDialogState
       StaffPermissionEnum.startConsultation,
       StaffPermissionEnum.recordVitals,
       StaffPermissionEnum.viewMedicalRecordDiagnostics,
+      StaffPermissionEnum.viewConsultationNotes,
       StaffPermissionEnum.viewAllDoctorsMedicalRecords,
       StaffPermissionEnum.editMedicalDiagnosis,
       StaffPermissionEnum.issuePrescription,
