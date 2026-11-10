@@ -468,6 +468,39 @@ class VisitsCubit extends SafeCubit<VisitsState> {
 
   // ─── Actions ──────────────────────────────────────────────────────────────
 
+  void initRecordVitals(ConsultationQueueItemModel item) {
+    final existingVitals = item.visit?.vitals ?? const VitalsModel();
+    emit(
+      state.copyWith(
+        formState: state.formState.copyWith(
+          vitals: existingVitals,
+          isDirty: false,
+        ),
+        patientAllergies: const [],
+      ),
+    );
+    if (item.booking?.patientId != null) {
+      loadPatientAllergies(item.booking!.patientId!);
+    }
+  }
+
+  Future<bool> saveRecordedVitals(ConsultationQueueItemModel item) async {
+    final booking = item.booking;
+    if (booking == null) return false;
+
+    return recordVitals(
+      bookingId: booking.id ?? '',
+      patientId: booking.patientId ?? '',
+      branchId: booking.branchId ?? 'branch_1',
+      patientName: booking.patientName ?? '',
+      patientPhone: booking.patientPhone,
+      doctorId: booking.doctorId ?? '',
+      doctorName: booking.doctorName ?? '',
+      specialty: booking.specialty,
+      vitals: state.formState.vitals,
+    );
+  }
+
   Future<VisitModel?> startConsultation(ConsultationQueueItemModel item) async {
     final booking = item.booking;
     if (booking == null) return null;

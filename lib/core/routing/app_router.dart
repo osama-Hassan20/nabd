@@ -18,6 +18,7 @@ import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
 import 'package:eyadty/features/settings/presentation/pages/settings_page.dart';
 import 'package:eyadty/features/doctors/presentation/pages/doctor_details_page.dart';
 import 'package:eyadty/features/doctors/presentation/pages/doctors_page.dart';
+import 'package:eyadty/features/visits/presentation/pages/doctor_consultation_placeholder_page.dart';
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/features/users_management/presentation/pages/users_management_page.dart';
 import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
@@ -462,6 +463,23 @@ List<RouteBase> getAppRoutes() => [
                 : AnimationType.slideFromLeft,
             duration: const Duration(milliseconds: 600),
           ),
+          routes: [
+            GoRoute(
+              path: ':id',
+              name: 'consultationDetails',
+              pageBuilder: (context, state) {
+                final id = state.pathParameters['id'] ?? '';
+                return buildAnimatedPage(
+                  key: state.pageKey,
+                  child: DoctorConsultationPlaceholderPage(visitId: id),
+                  animationType: checkIsIOS()
+                      ? AnimationType.cupertino
+                      : AnimationType.slideFromRight,
+                  duration: const Duration(milliseconds: 350),
+                );
+              },
+            ),
+          ],
         ),
 
         // 4. Doctors & Staff Schedules
