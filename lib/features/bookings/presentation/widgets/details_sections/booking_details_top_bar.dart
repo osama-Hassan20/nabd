@@ -13,6 +13,7 @@ import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.d
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/free_booking_badge.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
@@ -411,8 +412,10 @@ class BookingDetailsTopBar extends StatelessWidget {
             ),
           ),
 
-        // Payment Status Badge
-        if (paymentStatus != null)
+        // Payment Status / Free Badge
+        if (booking.isFreeConsultation)
+          const FreeBookingBadge()
+        else if (paymentStatus != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(

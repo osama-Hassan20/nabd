@@ -13,6 +13,8 @@ import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.d
 import 'package:eyadty/features/bookings/presentation/helpers/booking_time_formatter.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
+import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/booking_discount_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_patient_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_footer_actions.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_sections/booking_form_header.dart';
@@ -103,6 +105,9 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
   late final TextEditingController _notesController;
   late final TextEditingController _hourlyRateController;
   late final TextEditingController _totalPriceController;
+  late final TextEditingController _discountTypeController;
+  late final TextEditingController _discountValueController;
+  late final TextEditingController _discountReasonController;
 
   bool _initializedDateTimeFields = false;
 
@@ -165,6 +170,19 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
           ? form.totalPrice.toString()
           : '',
     );
+    _discountTypeController = TextEditingController(
+      text: isEdit && form != null && form.discountType != DiscountTypeEnum.none
+          ? form.discountType.localizedName
+          : '',
+    );
+    _discountValueController = TextEditingController(
+      text: isEdit && form != null && form.discountValue > 0
+          ? form.discountValue.toString()
+          : '',
+    );
+    _discountReasonController = TextEditingController(
+      text: isEdit && form != null ? form.discountReason : '',
+    );
 
     _hourlyRateController.addListener(_onHourlyRateChanged);
   }
@@ -176,6 +194,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
           _totalPriceController.text == '0') {
         _totalPriceController.text = fee.toString();
       }
+      context.read<BookingsCubit>().updateFormConsultationFee(fee);
     }
   }
 
@@ -228,6 +247,9 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     _notesController.dispose();
     _hourlyRateController.dispose();
     _totalPriceController.dispose();
+    _discountTypeController.dispose();
+    _discountValueController.dispose();
+    _discountReasonController.dispose();
     super.dispose();
   }
 
@@ -490,6 +512,14 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
                           BookingFormPricingSection(
                             hourlyRateController: _hourlyRateController,
                             totalPriceController: _totalPriceController,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // 6.1 Discount Section
+                          BookingDiscountSection(
+                            discountTypeController: _discountTypeController,
+                            discountValueController: _discountValueController,
+                            discountReasonController: _discountReasonController,
                           ),
                           const SizedBox(height: 16),
 

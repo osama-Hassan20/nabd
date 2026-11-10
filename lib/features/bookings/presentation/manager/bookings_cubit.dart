@@ -8,6 +8,7 @@ import 'package:eyadty/features/bookings/data/models/booking_form_options_model.
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
@@ -543,6 +544,9 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
             status: booking.status ?? BookingStatusEnum.waiting,
             paymentStatus: booking.paymentStatus ?? PaymentStatusEnum.unpaid,
             notes: booking.notes ?? '',
+            discountType: booking.discountType ?? DiscountTypeEnum.none,
+            discountValue: booking.discountValue ?? 0,
+            discountReason: booking.discountReason ?? '',
           ),
           hasPatientTimeConflict: false,
           hasPatientSameDayNotice: false,
@@ -1141,6 +1145,23 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     emit(state.copyWith(formState: state.formState!.copyWith(notes: notes)));
   }
 
+  void updateFormDiscount({
+    DiscountTypeEnum? discountType,
+    num? discountValue,
+    String? discountReason,
+  }) {
+    if (state.formState == null) return;
+    emit(
+      state.copyWith(
+        formState: state.formState!.copyWith(
+          discountType: discountType,
+          discountValue: discountValue,
+          discountReason: discountReason,
+        ),
+      ),
+    );
+  }
+
   int _timeToMinutes(String time) {
     final parts = time.split(':');
     if (parts.length < 2) return 0;
@@ -1207,6 +1228,9 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
       status: form.status,
       paymentStatus: form.paymentStatus,
       notes: notes ?? form.notes,
+      discountType: form.discountType,
+      discountValue: form.discountValue,
+      discountReason: form.discountReason.isNotEmpty ? form.discountReason : null,
     );
 
     if (form.bookingId != null) {

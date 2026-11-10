@@ -8,11 +8,11 @@ import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
-import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/free_booking_badge.dart';
 
 class BookingsTable extends StatelessWidget {
   final List<BookingModel> bookings;
@@ -251,25 +251,33 @@ class BookingsTable extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          '${MonyHelper.formatMoney(item.consultationFee ?? item.totalPrice ?? 0)} ${'currency'.tr()}',
+          item.isFreeConsultation
+              ? '0 ${'currency'.tr()}'
+              : '${MonyHelper.formatMoney(item.netAmount)} ${'currency'.tr()}',
           style: CustomAppFontStyle.semiBold14.copyWith(
             color: AppColors.darkText,
           ),
         ),
         const SizedBox(height: 2),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-          decoration: BoxDecoration(
-            color: (item.paymentStatus ?? PaymentStatusEnum.unpaid).backgroundColor,
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Text(
-            (item.paymentStatus ?? PaymentStatusEnum.unpaid).label,
-            style: CustomAppFontStyle.medium10.copyWith(
-              color: (item.paymentStatus ?? PaymentStatusEnum.unpaid).color,
+        if (item.isFreeConsultation)
+          const FreeBookingBadge(
+            fontSize: 10,
+            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+            decoration: BoxDecoration(
+              color: (item.effectivePaymentStatus).backgroundColor,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Text(
+              (item.effectivePaymentStatus).label,
+              style: CustomAppFontStyle.medium10.copyWith(
+                color: (item.effectivePaymentStatus).color,
+              ),
             ),
           ),
-        ),
       ],
     );
 

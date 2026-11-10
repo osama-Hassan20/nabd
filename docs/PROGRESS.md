@@ -9,7 +9,7 @@
 - **الموجة الحالية:** Wave 1 (F-02 ✅ | F-01 ✅ | F-03 ⏳ التالي | F-04)
 - **الفرع الحالي:** `v1.0.0`
 - **آخر فحص برمجي:** `flutter analyze --no-pub` -> 0 issues found.
-- **آخر اختبار للمشروع:** `flutter test` -> 343/343 passed (100%).
+- **آخر اختبار للمشروع:** `flutter test` -> 408/408 passed (100%).
 
 ---
 
@@ -150,4 +150,42 @@
   - الحفظ التلقائي الدوري كل 30 ثانية للبيانات المعدلة فقط (`isDirty`) والتفريغ الإجباري (`flushDraftOnExit`) عند المغادرة.
   - عزل حظر تسجيل العلامات الحيوية للمالك غير الممارس على طبقة الـ UI (`ConsultationActionHelper`) دون المساس بمركزية `PermissionEvaluator`.
 - **سجل الدين الفني (Technical Debt):** ملف `visits_cubit.dart` (698 سطراً) يحتاج تقسيماً لـ Mixins (على نمط `SearchMixin`) بعد إنجاز F-04b (انظر TD-001 في `docs/DECISIONS.md`).
-- **الخطوة الجاية:** البدء في **F-04b — الروشتة ومعايرة الطباعة (Prescriptions & Print Calibration)** أو **B-DISC (نظام الخصومات التلقائية واليدوية)** حسب توجيه المستخدم.
+### B-DISC: سياسة الخصومات والكشوفات المجانية (Booking Discounts & Free Consultations)
+- **الحالة:** 🟢 مكتملة ومختبرة وموثقة (100%)
+- **الـ Commits:**
+  - `feat(B-DISC): data layer — DiscountTypeEnum, policy fields on RoleDefinitionModel, BookingModel extension, and 100% translation parity`
+  - `feat(B-DISC): domain layer — validation, policy enforcement, audited use cases, and cancellation rules`
+  - `5a7357a`: `fix(B-DISC-M2): domain-level enforcement, session-derived approver, audited fee reset`
+  - `feat(B-DISC): booking discount UI — section, summary card, free badge, role policy`
+- **الملفات الأساسية المضافة والمعدلة:**
+  - `lib/features/bookings/data/models/enums/discount_type_enum.dart`
+  - `lib/features/bookings/data/models/booking_model.dart`
+  - `lib/features/users_management/data/models/role_definition_model.dart`
+  - `lib/features/bookings/domain/helpers/booking_discount_validator.dart`
+  - `lib/features/bookings/domain/helpers/booking_discount_policy_resolver.dart`
+  - `lib/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart`
+  - `lib/features/bookings/domain/use_cases/remove_booking_discount_use_case.dart`
+  - `lib/features/bookings/domain/use_cases/create_booking_use_case.dart`
+  - `lib/features/bookings/domain/use_cases/update_booking_use_case.dart`
+  - `lib/features/users_management/domain/use_cases/save_role_use_case.dart`
+  - `lib/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart`
+  - `lib/features/bookings/presentation/widgets/free_booking_badge.dart`
+  - `lib/features/bookings/presentation/widgets/booking_discount_section.dart`
+  - `lib/features/bookings/presentation/widgets/booking_price_summary_card.dart`
+  - `lib/features/users_management/presentation/pages/dialogs/role_permissions_matrix_dialog.dart`
+- **نتيجة الفحص (flutter analyze):** 0 issues found (خالٍ تماماً من أي أخطاء أو تحذيرات).
+- **نتيجة الاختبارات (flutter test):**
+  - اختبارات B-DISC الكاملة: 65 اختباراً (100% pass)
+    - `discount_model_test.dart`: 14 tests
+    - `discount_validation_test.dart`: 26 tests
+    - `discount_repo_test.dart`: 8 tests
+    - `role_discount_policy_test.dart`: 8 tests
+    - `discount_translations_test.dart`: 1 test (100% parity)
+    - `discount_ui_test.dart`: 8 tests
+  - كامل المشروع: 408/408 passed (100%).
+- **القرارات المعمارية المنفذة:**
+  - سقف المالك غير مقيد (100%) وتماثل الكشف المجاني حسابياً مع خصم 100% وصافٍ = 0 مع حالة دفع تلقائية paid.
+  - اشتقاق هوية المعتمد والمزيل حصرياً من الجلسة النشطة `CurrentUserProvider`.
+  - حوكمة سياسات الخصم للأدوار دومينياً عبر `SaveRoleUseCase` وقصر تعديلها على المالك فقط.
+  - إعادة التحقق الدوميني عند تغيير سعر الكشف وتصفير الخصم غير الصالح مع تسجيل حدث `booking_discount_removed` بسبب `fee_changed`.
+- **الخطوة الجاية:** التوقف وانتظار توجيه المستخدم للبدء في F-04b أو الانتقال للموجة التالية (ممنوع البدء في F-05 تلقائياً).

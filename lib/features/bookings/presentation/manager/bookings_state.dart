@@ -6,6 +6,7 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/time_slot_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_leave_model.dart';
@@ -30,6 +31,22 @@ class BookingFormState extends Equatable {
   final BookingStatusEnum status;
   final PaymentStatusEnum paymentStatus;
   final String notes;
+  final DiscountTypeEnum discountType;
+  final num discountValue;
+  final String discountReason;
+
+  num get discountAmount {
+    if (discountType == DiscountTypeEnum.free) return consultationFee;
+    if (discountType == DiscountTypeEnum.percentage) {
+      return (consultationFee * (discountValue.clamp(0, 100)) / 100);
+    }
+    if (discountType == DiscountTypeEnum.fixedAmount) {
+      return discountValue.clamp(0, consultationFee);
+    }
+    return 0;
+  }
+
+  num get netAmount => (consultationFee - discountAmount).clamp(0, double.infinity);
 
   /// Backward-compatibility alias
   num get hourlyRate => consultationFee;
@@ -54,6 +71,9 @@ class BookingFormState extends Equatable {
     this.status = BookingStatusEnum.scheduled,
     this.paymentStatus = PaymentStatusEnum.unpaid,
     this.notes = '',
+    this.discountType = DiscountTypeEnum.none,
+    this.discountValue = 0,
+    this.discountReason = '',
   });
 
   BookingFormState copyWith({
@@ -79,6 +99,9 @@ class BookingFormState extends Equatable {
     BookingStatusEnum? status,
     PaymentStatusEnum? paymentStatus,
     String? notes,
+    DiscountTypeEnum? discountType,
+    num? discountValue,
+    String? discountReason,
   }) {
     List<BookingTechnicianOption> resolvedTechs;
     if (clearTechnicians || clearTechnician) {
@@ -108,6 +131,9 @@ class BookingFormState extends Equatable {
       status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       notes: notes ?? this.notes,
+      discountType: discountType ?? this.discountType,
+      discountValue: discountValue ?? this.discountValue,
+      discountReason: discountReason ?? this.discountReason,
     );
   }
 
@@ -128,6 +154,9 @@ class BookingFormState extends Equatable {
         status,
         paymentStatus,
         notes,
+        discountType,
+        discountValue,
+        discountReason,
       ];
 }
 

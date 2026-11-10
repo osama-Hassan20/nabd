@@ -13,7 +13,7 @@
 | **التقنية** | Flutter 3.x, Dart SDK ^3.13.1 |
 | **الحالة** | Mock data (بدون backend حقيقي بعد) |
 | **الإصدار الحالي** | v1.0.3+4 |
-| **الاختبارات** | 343/343 passed (100%) |
+| **الاختبارات** | 408/408 passed (100%) |
 | **التحليل** | `flutter analyze` → 0 issues |
 
 ---
@@ -351,9 +351,22 @@ hugeicons: ^1.1.6               # Icon set
 
 ---
 
+### B-DISC: نظام الخصومات والكشوفات المجانية (Booking Discounts & Free Consultations)
+- **الحالة:** مكتمل ومختبر 100%
+- **المكونات:**
+  - `DiscountTypeEnum` (`none`, `percentage`, `fixedAmount`, `free`) مع getter `labelKey` و`localizedName`.
+  - امتداد `BookingModel` بخصائص `isFreeConsultation`, `discountAmount`, `netAmount`, `effectivePaymentStatus`.
+  - مصفوفة أدوار الطاقم `RoleDefinitionModel` مع `maxDiscountPercent` و`canGrantFreeConsultation`.
+  - حوكمة دومينية كاملة عبر `SaveRoleUseCase` و`UpdateRoleDiscountPolicyUseCase` و`BookingDiscountValidator`.
+  - اشتقاق معتمد ومزيل الخصم حصرياً من الجلسة النشطة `CurrentUserProvider`.
+  - إعادة التحقق عند تغيير سعر الكشف وتصفير الخصم غير الصالح مع تدقيق مسجل (`fee_changed`).
+  - شارة `FreeBookingBadge` وبطاقة `BookingPriceSummaryCard` وقسم `BookingDiscountSection` ونافذة حوار `RolePermissionsMatrixDialog`.
+
+---
+
 ## 🧪 نتيجة الاختبارات الحالية
 ```
-flutter test → 186/186 passed (100%)
+flutter test → 408/408 passed (100%)
 flutter analyze → 0 issues found
 ```
 

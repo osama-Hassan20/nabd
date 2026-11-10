@@ -11,9 +11,9 @@ import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dar
 import 'package:eyadty/features/bookings/presentation/widgets/add_edit_booking_dialog.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_action_dialogs.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_details_shimmer.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/booking_price_summary_card.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_patient_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_notes_section.dart';
-import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_pricing_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_schedule_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_technicians_section.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/details_sections/booking_details_top_bar.dart';
@@ -235,7 +235,7 @@ class _BookingDetailsView extends StatelessWidget {
                         flex: 2,
                         child: Column(
                           children: [
-                            BookingDetailsPricingSection(booking: booking),
+                            BookingPriceSummaryCard(booking: booking),
                             const SizedBox(height: 16),
                             BookingDetailsTechniciansSection(
                               booking: booking,
@@ -255,7 +255,7 @@ class _BookingDetailsView extends StatelessWidget {
                       const SizedBox(height: 16),
                       BookingDetailsScheduleSection(booking: booking),
                       const SizedBox(height: 16),
-                      BookingDetailsPricingSection(booking: booking),
+                      BookingPriceSummaryCard(booking: booking),
                       const SizedBox(height: 16),
                       BookingDetailsTechniciansSection(
                         booking: booking,

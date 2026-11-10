@@ -12,6 +12,11 @@ import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/cha
 import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/delete_booking_dialog.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/action_dialogs/reassign_technician_dialog.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/remove_discount_params.dart';
+import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class BookingActionDialogs {
@@ -257,6 +262,159 @@ class BookingActionDialogs {
               }
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  /// 4. Remove Discount Dialog (100% Cubit-driven)
+  static Future<bool?> showRemoveDiscountDialog({
+    required BuildContext context,
+    required BookingModel booking,
+    BookingsCubit? bookingsCubit,
+  }) {
+    final cubit = _resolveCubit(context, bookingsCubit);
+    final controller = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<bool>(
+      context: context,
+      useSafeArea: true,
+      builder: (dialogCtx) => BlocProvider.value(
+        value: cubit,
+        child: BlocConsumer<BookingsCubit, BookingsState>(
+          listenWhen: (prev, curr) => prev.actionStatus != curr.actionStatus,
+          listener: (ctx, state) {
+            if (state.actionStatus == RequestStatusEnum.success) {
+              Navigator.of(ctx).pop(true);
+              CustomToast(
+                context: ctx,
+                header: 'disc_removed_success'.tr(),
+              ).showTopToast();
+            } else if (state.actionStatus == RequestStatusEnum.failure) {
+              CustomToast(
+                context: ctx,
+                header: state.errMessage ?? 'error_occurred'.tr(),
+              ).showErrorToast();
+            }
+          },
+          builder: (ctx, state) {
+            final isLoading = state.actionStatus == RequestStatusEnum.loading;
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.grayE2E8F0),
+                  ),
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: const BoxDecoration(
+                                color: AppColors.red1A,
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(10),
+                              child: const Icon(
+                                Icons.warning_amber_rounded,
+                                color: AppColors.error,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'disc_remove_confirm_title'.tr(),
+                                style: CustomAppFontStyle.bold16.copyWith(
+                                  color: AppColors.darkText,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'disc_remove_confirm_body'.tr(),
+                          style: CustomAppFontStyle.regular13.copyWith(
+                            color: AppColors.gray71717A,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextFormField(
+                          controller: controller,
+                          headerText: 'disc_remove_reason_label'.tr(),
+                          hintText: 'disc_remove_reason_hint'.tr(),
+                          maxLine: 2,
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'disc_validation_reason_required'.tr();
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Wrap(
+                          alignment: WrapAlignment.end,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            TextButton(
+                              onPressed: isLoading
+                                  ? null
+                                  : () => Navigator.of(ctx).pop(false),
+                              child: Text(
+                                'cancel'.tr(),
+                                style: CustomAppFontStyle.medium14.copyWith(
+                                  color: AppColors.gray71717A,
+                                ),
+                              ),
+                            ),
+                            CustomPushButton(
+                              isLoading: isLoading,
+                              backgroundColor: AppColors.error,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () {
+                                if (!formKey.currentState!.validate()) return;
+                                cubit.removeDiscount(
+                                  RemoveDiscountParams(
+                                    bookingId: booking.id,
+                                    reason: controller.text.trim(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'disc_confirm_remove'.tr(),
+                                style: CustomAppFontStyle.medium14.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

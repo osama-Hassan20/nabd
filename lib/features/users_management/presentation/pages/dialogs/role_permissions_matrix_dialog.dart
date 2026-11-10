@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
@@ -7,7 +8,10 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/users_management/domain/use_cases/params/update_role_discount_policy_params.dart';
+import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/presentation/cubit/staff_users_cubit.dart';
 
@@ -23,18 +27,33 @@ class _RolePermissionsMatrixDialogState
     extends State<RolePermissionsMatrixDialog> {
   String _selectedRoleId = RoleIds.branchManager;
   final Map<String, Set<StaffPermissionEnum>> _editedPermissions = {};
+  final Map<String, num?> _roleMaxDiscounts = {};
+  final Map<String, bool> _roleCanFreeConsultations = {};
+  late final TextEditingController _maxDiscountController;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _maxDiscountController = TextEditingController();
     final cubit = context.read<StaffUsersCubit>();
     for (final role in cubit.state.roles) {
       if (role.id != null) {
         _editedPermissions[role.id!] =
             Set<StaffPermissionEnum>.from(role.permissions ?? []);
+        _roleMaxDiscounts[role.id!] = role.maxDiscountPercent;
+        _roleCanFreeConsultations[role.id!] =
+            role.canGrantFreeConsultation ?? false;
       }
     }
+    _maxDiscountController.text =
+        _roleMaxDiscounts[_selectedRoleId]?.toString() ?? '';
+  }
+
+  @override
+  void dispose() {
+    _maxDiscountController.dispose();
+    super.dispose();
   }
 
   static const Map<String, List<StaffPermissionEnum>> _categories = {
@@ -44,6 +63,7 @@ class _RolePermissionsMatrixDialogState
       StaffPermissionEnum.editBooking,
       StaffPermissionEnum.cancelBooking,
       StaffPermissionEnum.reorderQueue,
+      StaffPermissionEnum.applyBookingDiscount,
     ],
     'المرضى والسجلات الطبية': [
       StaffPermissionEnum.accessPatients,
@@ -198,7 +218,13 @@ class _RolePermissionsMatrixDialogState
                         ),
                         onSelected: (selected) {
                           if (selected && r.id != null) {
-                            setState(() => _selectedRoleId = r.id!);
+                            setState(() {
+                              _selectedRoleId = r.id!;
+                              _maxDiscountController.text =
+                                  _roleMaxDiscounts[_selectedRoleId]
+                                          ?.toString() ??
+                                      '';
+                            });
                           }
                         },
                       ),
@@ -211,85 +237,173 @@ class _RolePermissionsMatrixDialogState
               // ─── Permissions List by Category ────────────────────────
               Expanded(
                 child: ListView(
-                  children: _categories.entries.map((entry) {
-                    final categoryName = entry.key;
-                    final perms = entry.value;
+                  children: [
+                    ..._categories.entries.map((entry) {
+                      final categoryName = entry.key;
+                      final perms = entry.value;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.lightBackground,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.grayE2E8F0),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                            decoration: const BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(12)),
-                              border: Border(
-                                bottom: BorderSide(color: AppColors.grayE2E8F0),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightBackground,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.grayE2E8F0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              decoration: const BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(12)),
+                                border: Border(
+                                  bottom: BorderSide(color: AppColors.grayE2E8F0),
+                                ),
+                              ),
+                              child: Text(
+                                categoryName,
+                                style: CustomAppFontStyle.semiBold13.copyWith(
+                                  color: AppColors.darkText,
+                                ),
                               ),
                             ),
-                            child: Text(
-                              categoryName,
-                              style: CustomAppFontStyle.semiBold13.copyWith(
-                                color: AppColors.darkText,
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: perms.map((perm) {
+                                  final isChecked =
+                                      selectedPerms.contains(perm);
+                                  return FilterChip(
+                                    label: Text(perm.name),
+                                    selected: isChecked,
+                                    selectedColor: const Color(0xFFEFF6FF),
+                                    checkmarkColor: const Color(0xFF2563EB),
+                                    labelStyle:
+                                        CustomAppFontStyle.regular12.copyWith(
+                                      color: isChecked
+                                          ? const Color(0xFF1D4ED8)
+                                          : AppColors.darkText,
+                                      fontWeight: isChecked
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                    ),
+                                    backgroundColor: AppColors.white,
+                                    side: BorderSide(
+                                      color: isChecked
+                                          ? const Color(0xFF3B82F6)
+                                          : AppColors.grayE2E8F0,
+                                    ),
+                                    onSelected: (val) {
+                                      setState(() {
+                                        if (val) {
+                                          selectedPerms.add(perm);
+                                        } else {
+                                          selectedPerms.remove(perm);
+                                        }
+                                        _editedPermissions[_selectedRoleId] =
+                                            selectedPerms;
+                                      });
+                                    },
+                                  );
+                                }).toList(),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: perms.map((perm) {
-                                final isChecked =
-                                    selectedPerms.contains(perm);
-                                return FilterChip(
-                                  label: Text(perm.name),
-                                  selected: isChecked,
-                                  selectedColor: const Color(0xFFEFF6FF),
-                                  checkmarkColor: const Color(0xFF2563EB),
-                                  labelStyle:
-                                      CustomAppFontStyle.regular12.copyWith(
-                                    color: isChecked
-                                        ? const Color(0xFF1D4ED8)
-                                        : AppColors.darkText,
-                                    fontWeight: isChecked
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
+                          ],
+                        ),
+                      );
+                    }),
+
+                    // ─── Discount Policy Section (Owner only) ─────────────
+                    if (sessionCubit?.currentUser?.isOwner == true)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightBackground,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.grayE2E8F0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              decoration: const BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(12)),
+                                border: Border(
+                                  bottom: BorderSide(color: AppColors.grayE2E8F0),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.local_offer_outlined,
+                                    size: 16,
+                                    color: AppColors.primaryViolet,
                                   ),
-                                  backgroundColor: AppColors.white,
-                                  side: BorderSide(
-                                    color: isChecked
-                                        ? const Color(0xFF3B82F6)
-                                        : AppColors.grayE2E8F0,
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'disc_policy_title'.tr(),
+                                    style: CustomAppFontStyle.semiBold13.copyWith(
+                                      color: AppColors.darkText,
+                                    ),
                                   ),
-                                  onSelected: (val) {
-                                    setState(() {
-                                      if (val) {
-                                        selectedPerms.add(perm);
-                                      } else {
-                                        selectedPerms.remove(perm);
-                                      }
-                                      _editedPermissions[_selectedRoleId] =
-                                          selectedPerms;
-                                    });
-                                  },
-                                );
-                              }).toList(),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CustomTextFormField(
+                                    controller: _maxDiscountController,
+                                    headerText: 'disc_policy_max_pct'.tr(),
+                                    hintText: '100',
+                                    textInputType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    onChanged: (val) {
+                                      final trimmed = val?.trim() ?? '';
+                                      _roleMaxDiscounts[_selectedRoleId] =
+                                          num.tryParse(trimmed);
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: SwitchListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        'disc_policy_can_free'.tr(),
+                                        style: CustomAppFontStyle.medium13.copyWith(
+                                          color: AppColors.darkText,
+                                        ),
+                                      ),
+                                      value: _roleCanFreeConsultations[_selectedRoleId] ?? false,
+                                      activeThumbColor: AppColors.primaryViolet,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _roleCanFreeConsultations[_selectedRoleId] = val;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  }).toList(),
+                  ],
                 ),
               ),
 
@@ -324,7 +438,7 @@ class _RolePermissionsMatrixDialogState
                       backgroundColor: const Color(0xFF6366F1),
                       borderRadius: BorderRadius.circular(10),
                       isLoading: _isLoading,
-                      onTap: _isLoading
+                      onTap: (_isLoading || sessionCubit?.currentUser?.isOwner != true)
                           ? null
                           : () async {
                               setState(() => _isLoading = true);
@@ -343,6 +457,26 @@ class _RolePermissionsMatrixDialogState
                                 role: updatedRole,
                                 currentUserId: currentUserId,
                               );
+
+                              if (sessionCubit?.currentUser?.isOwner == true &&
+                                  ok &&
+                                  getIt.isRegistered<
+                                      UpdateRoleDiscountPolicyUseCase>()) {
+                                final updatePolicyUseCase =
+                                    getIt<UpdateRoleDiscountPolicyUseCase>();
+                                await updatePolicyUseCase(
+                                  UpdateRoleDiscountPolicyParams(
+                                    roleId: _selectedRoleId,
+                                    maxDiscountPercent:
+                                        _roleMaxDiscounts[_selectedRoleId],
+                                    canGrantFreeConsultation:
+                                        _roleCanFreeConsultations[
+                                            _selectedRoleId],
+                                    currentUserId: currentUserId,
+                                  ),
+                                );
+                                await cubit.loadData(showLoading: false);
+                              }
 
                               if (!mounted) return;
                               setState(() => _isLoading = false);

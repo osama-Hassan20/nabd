@@ -118,4 +118,6 @@ class AppColors {
   static const Color red1A = Color.fromRGBO(229, 72, 72, 0.1);
   static const Color pink = Color(0xFFD94876);
   static const Color taupe = Color(0xFF8E8E93);
+  static const Color primaryViolet = Color(0xFF6366F1);
+  static const Color violet = Color(0xFF6366F1);
 }
