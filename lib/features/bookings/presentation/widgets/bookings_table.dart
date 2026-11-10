@@ -9,6 +9,9 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
 
 class BookingsTable extends StatelessWidget {
@@ -19,6 +22,7 @@ class BookingsTable extends StatelessWidget {
   final void Function(BookingModel booking) onReassignTechnician;
   final void Function(BookingModel booking) onDelete;
   final void Function(BookingModel booking)? onCallPatient;
+  final void Function(BookingModel booking)? onStartConsultation;
 
   const BookingsTable({
     super.key,
@@ -29,6 +33,7 @@ class BookingsTable extends StatelessWidget {
     required this.onReassignTechnician,
     required this.onDelete,
     this.onCallPatient,
+    this.onStartConsultation,
   });
 
   static const Map<int, TableColumnWidth> columnWidths = {
@@ -304,6 +309,32 @@ class BookingsTable extends StatelessWidget {
     );
 
     // 7: Actions Popup Menu
+    PermissionEvaluator? evaluator;
+    try {
+      evaluator = getIt<PermissionEvaluator>();
+    } catch (_) {
+      evaluator = null;
+    }
+
+    final canStart = evaluator != null &&
+        ConsultationActionHelper.canStartConsultation(
+          booking: item,
+          visit: null,
+          evaluator: evaluator,
+        );
+    final canContinue = evaluator != null &&
+        ConsultationActionHelper.canContinueConsultation(
+          booking: item,
+          visit: null,
+          evaluator: evaluator,
+        );
+    final showConsultation =
+        (canStart || canContinue) && onStartConsultation != null;
+    final consultationKey = ConsultationActionHelper.getConsultationButtonKey(
+      booking: item,
+      visit: null,
+    );
+
     final cell7 = Center(
       child: BookingActionsMenu(
         onViewDetails: onViewDetails != null
@@ -314,6 +345,9 @@ class BookingsTable extends StatelessWidget {
         onReassignTechnician: () => onReassignTechnician(item),
         onDelete: () => onDelete(item),
         onCallPatient: onCallPatient != null ? () => onCallPatient!(item) : null,
+        onStartConsultation:
+            showConsultation ? () => onStartConsultation!(item) : null,
+        consultationButtonKey: consultationKey,
       ),
     );
 

@@ -21,6 +21,8 @@ import 'package:eyadty/shared/widgets/custom_empty_widget.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/error_page.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
+import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
 
 class BookingDetailsPage extends StatelessWidget {
   final String bookingId;
@@ -87,6 +89,28 @@ class _BookingDetailsView extends StatelessWidget {
       } else {
         context.go(AppRouter.bookings);
       }
+    }
+  }
+
+  void _onStartConsultation(BuildContext context, BookingModel booking) async {
+    final visitsCubit = getIt<VisitsCubit>();
+    final visitsRepo = getIt<VisitsRepo>();
+
+    final bookingId = booking.id ?? '';
+    final existingRes =
+        await visitsRepo.getVisitByBookingId(bookingId: bookingId);
+    final existingVisit = existingRes.fold((_) => null, (v) => v);
+
+    if (existingVisit != null) {
+      if (context.mounted) {
+        context.go('${AppRouter.visits}/${existingVisit.id}');
+      }
+      return;
+    }
+
+    final started = await visitsCubit.startConsultationForBooking(booking);
+    if (started != null && context.mounted) {
+      context.go('${AppRouter.visits}/${started.id}');
     }
   }
 
@@ -179,6 +203,8 @@ class _BookingDetailsView extends StatelessWidget {
                   onChangeStatus: () => _onChangeStatus(context, booking),
                   onReassign: () => _onReassignTechnician(context, booking),
                   onDelete: () => _onDelete(context, booking),
+                  onStartConsultation: () =>
+                      _onStartConsultation(context, booking),
                 ),
                 const SizedBox(height: 20),
 

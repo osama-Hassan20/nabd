@@ -8,6 +8,9 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
 
 class BookingCard extends StatelessWidget {
@@ -18,6 +21,7 @@ class BookingCard extends StatelessWidget {
   final VoidCallback onReassignTechnician;
   final VoidCallback onDelete;
   final VoidCallback? onCallPatient;
+  final VoidCallback? onStartConsultation;
 
   const BookingCard({
     super.key,
@@ -28,6 +32,7 @@ class BookingCard extends StatelessWidget {
     required this.onReassignTechnician,
     required this.onDelete,
     this.onCallPatient,
+    this.onStartConsultation,
   });
 
   @override
@@ -147,13 +152,47 @@ class BookingCard extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(width: 4),
-                  BookingActionsMenu(
-                    onViewDetails: onViewDetails,
-                    onEdit: onEdit,
-                    onChangeStatus: onChangeStatus,
-                    onReassignTechnician: onReassignTechnician,
-                    onDelete: onDelete,
-                    onCallPatient: onCallPatient,
+                  Builder(
+                    builder: (context) {
+                      PermissionEvaluator? evaluator;
+                      try {
+                        evaluator = getIt<PermissionEvaluator>();
+                      } catch (_) {
+                        evaluator = null;
+                      }
+
+                      final canStart = evaluator != null &&
+                          ConsultationActionHelper.canStartConsultation(
+                            booking: booking,
+                            visit: null,
+                            evaluator: evaluator,
+                          );
+                      final canContinue = evaluator != null &&
+                          ConsultationActionHelper.canContinueConsultation(
+                            booking: booking,
+                            visit: null,
+                            evaluator: evaluator,
+                          );
+                      final showConsultation = (canStart || canContinue) &&
+                          onStartConsultation != null;
+                      final consultationKey =
+                          ConsultationActionHelper.getConsultationButtonKey(
+                        booking: booking,
+                        visit: null,
+                      );
+
+                      return BookingActionsMenu(
+                        onViewDetails: onViewDetails,
+                        onEdit: onEdit,
+                        onChangeStatus: onChangeStatus,
+                        onReassignTechnician: onReassignTechnician,
+                        onDelete: onDelete,
+                        onCallPatient: onCallPatient,
+                        onStartConsultation:
+                            showConsultation ? onStartConsultation : null,
+                        consultationButtonKey: consultationKey,
+                      );
+                    },
                   ),
                 ],
               ),

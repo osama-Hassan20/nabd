@@ -10,6 +10,9 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
@@ -21,6 +24,7 @@ class BookingDetailsTopBar extends StatelessWidget {
   final VoidCallback onChangeStatus;
   final VoidCallback onReassign;
   final VoidCallback onDelete;
+  final VoidCallback? onStartConsultation;
 
   const BookingDetailsTopBar({
     super.key,
@@ -29,6 +33,7 @@ class BookingDetailsTopBar extends StatelessWidget {
     required this.onChangeStatus,
     required this.onReassign,
     required this.onDelete,
+    this.onStartConsultation,
   });
 
   void _onBack(BuildContext context) {
@@ -163,11 +168,66 @@ class BookingDetailsTopBar extends StatelessWidget {
           const SizedBox(height: 14),
 
           // Action Buttons Bar
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            alignment: WrapAlignment.end,
-            children: [
+          Builder(
+            builder: (context) {
+              PermissionEvaluator? evaluator;
+              try {
+                evaluator = getIt<PermissionEvaluator>();
+              } catch (_) {
+                evaluator = null;
+              }
+
+              final canStart = evaluator != null &&
+                  ConsultationActionHelper.canStartConsultation(
+                    booking: booking,
+                    visit: null,
+                    evaluator: evaluator,
+                  );
+              final canContinue = evaluator != null &&
+                  ConsultationActionHelper.canContinueConsultation(
+                    booking: booking,
+                    visit: null,
+                    evaluator: evaluator,
+                  );
+              final showConsultation =
+                  (canStart || canContinue) && onStartConsultation != null;
+              final consultationKey =
+                  ConsultationActionHelper.getConsultationButtonKey(
+                booking: booking,
+                visit: null,
+              );
+
+              return Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
+                children: [
+                  // Start/Continue Consultation Button
+                  if (showConsultation)
+                    CustomPushButton(
+                      height: 42,
+                      width: isMobile ? double.infinity : 160,
+                      backgroundColor: AppColors.primary,
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: onStartConsultation,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.medical_services_outlined,
+                            size: 16,
+                            color: AppColors.white,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            consultationKey.tr(),
+                            style: CustomAppFontStyle.semiBold13.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
               // Change Status Button
               CustomPushButton(
                 height: 42,
@@ -281,10 +341,12 @@ class BookingDetailsTopBar extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
-    );
+    ],
+  ),
+);
   }
 
   Widget _buildBadges(

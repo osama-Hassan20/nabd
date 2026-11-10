@@ -18,7 +18,7 @@ import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
 import 'package:eyadty/features/settings/presentation/pages/settings_page.dart';
 import 'package:eyadty/features/doctors/presentation/pages/doctor_details_page.dart';
 import 'package:eyadty/features/doctors/presentation/pages/doctors_page.dart';
-import 'package:eyadty/features/visits/presentation/pages/doctor_consultation_placeholder_page.dart';
+import 'package:eyadty/features/visits/presentation/pages/doctor_consultation_screen.dart';
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/features/users_management/presentation/pages/users_management_page.dart';
 import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
@@ -471,7 +471,7 @@ List<RouteBase> getAppRoutes() => [
                 final id = state.pathParameters['id'] ?? '';
                 return buildAnimatedPage(
                   key: state.pageKey,
-                  child: DoctorConsultationPlaceholderPage(visitId: id),
+                  child: DoctorConsultationScreen(visitId: id),
                   animationType: checkIsIOS()
                       ? AnimationType.cupertino
                       : AnimationType.slideFromRight,

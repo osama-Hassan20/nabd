@@ -287,7 +287,10 @@ class _VitalsInputPanelState extends State<VitalsInputPanel> {
               width: 0.8,
             ),
           ),
-          child: Row(
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 6,
+            runSpacing: 4,
             children: [
               Text(
                 '${'visits_bmi'.tr()}: ',
@@ -302,7 +305,6 @@ class _VitalsInputPanelState extends State<VitalsInputPanel> {
                 ),
               ),
               if (bmiCategory != null) ...[
-                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(

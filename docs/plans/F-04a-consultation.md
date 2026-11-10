@@ -521,8 +521,15 @@ Auto-Save (كل 30 ثانية):
   بعد نجاح: isDirty = false
 
 عند الخروج من الشاشة (dispose / pop):
-  إن formState.isDirty → حفظ أخير (fire-and-forget)
+  إن formState.isDirty → حفظ أخير (flushDraftOnExit)
   stopAutoSave()
+
+> [!IMPORTANT] حدود بيئة الويب (Flutter Web Limitation) وسلوك الحفظ:
+> إغلاق المتصفح أو التاب فجأة في بيئة Flutter Web ينهي الـ JavaScript execution context فوراً دون إتاحة استدعاء دورة حياة الودجات المعتادة، مما قد يفقد آخر تغييرات لم يمر عليها 30 ثانية.
+> المعالجة المتاحة والمطبقة بالمشروع:
+> 1. الـ Auto-Save الدوري كل 30 ثانية مع شارة مؤشر مرئية لحالة الحفظ (`visits_auto_saved` مع وقت الحفظ).
+> 2. معالج الخروج `PopScope` و`dispose()` يستدعيان `flushDraftOnExit()` فوراً لحفظ التعديلات المعلقة قبل إغلاق الصفحة داخل التطبيق.
+> 3. زر يدوي صريح [حفظ مسودة] (`visits_save_draft`) متاح للطبيب في أي لحظة.
 
 عند "إنهاء الكشف":
   FinalizeVisitDialog → تأكيد
@@ -1015,13 +1022,13 @@ T15: RecordVitalsDialog لا يعرض ConsultationNotesPanel
 7. كتابة اختبارات الـ Widget لـ M-4 (`consultation_queue_ui_test.dart`, `record_vitals_dialog_test.dart`).
 8. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M4): visits queue UI, vitals dialog, routing`
 
-### M-5: شاشة الكشف + زر الحجوزات (يوم 4-5)
-1. إنشاء `ConsultationNotesPanel` وقائمة الأمراض المزمنة.
-2. إنشاء `DoctorConsultationScreen` مع Auto-Save lifecycle وربط المسار `/visits/:id` بها.
-3. إنشاء `FinalizeVisitDialog` لتأكيد إنهاء الكشف وإقفال السجل.
-4. إضافة زر "بدء الكشف" في `BookingsPage` و`BookingDetailsPage`.
-5. كتابة اختبارات M-5 (`visits_consultation_screen_test.dart`, `booking_start_consultation_test.dart`).
-6. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M5): DoctorConsultationScreen, finalize dialog, booking entry points`
+### [x] M-5: شاشة الكشف + زر الحجوزات (يوم 4-5) - مكتملة
+1. [x] إنشاء `ConsultationNotesPanel` (شكوى رئيسية، تاريخ مرضي، فحص سريري، تشخيص، خطة علاج، متابعة) وقائمة الأمراض المزمنة.
+2. [x] إنشاء `DoctorConsultationScreen` مع Auto-Save lifecycle وربط المسار `/visits/:id` بها (مع PopScope و flushDraftOnExit).
+3. [x] إنشاء `FinalizeVisitDialog` لتأكيد إنهاء الكشف وإقفال السجل مع التحقق الإلزامي من الشكوى والتشخيص (`visits_finalize_missing_fields`).
+4. [x] إضافة زر "بدء/متابعة الكشف" في `BookingsTable` و`BookingCard` و`BookingDetailsTopBar` مستخدماً `ConsultationActionHelper`.
+5. [x] كتابة اختبارات M-5 (`doctor_consultation_screen_test.dart`) وتغطية الـ RBAC والـ Finalization والـ PopScope flush بنسبة 100%.
+6. [x] `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M5): DoctorConsultationScreen, finalize flow, booking entry points`
 
 ### M-6: التحقق النهائي والإقفال
 1. مراجعة كل أحداث AuditLogger.

@@ -6,6 +6,7 @@ import '../../../../core/services/audit_logger.dart';
 import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
+import '../../../bookings/data/models/booking_model.dart';
 import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../../patients/domain/repo/patients_repo.dart';
 import '../../data/models/consultation_queue_item_model.dart';
@@ -471,6 +472,49 @@ class VisitsCubit extends SafeCubit<VisitsState> {
     );
   }
 
+  Future<bool> saveDraft() async {
+    final active = state.activeVisit;
+    if (active == null) return false;
+    if (active.status == VisitStatusEnum.finalized) return false;
+
+    final canEdit = permissionEvaluator.can(
+      StaffPermissionEnum.editMedicalDiagnosis,
+      branchId: active.branchId,
+      patientDoctorIds: active.doctorId != null ? {active.doctorId!} : null,
+    );
+    if (!canEdit) return false;
+
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+
+    final draft = state.formState.toVisitModel(active);
+    final res = await saveVisitDraftUseCase(draft);
+
+    return res.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            errorMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (saved) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            activeVisit: saved,
+            formState: state.formState.copyWith(
+              isDirty: false,
+              lastSavedAt: saved.lastSavedAt,
+            ),
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
   Future<void> flushDraftOnExit() async {
     stopAutoSave();
     final active = state.activeVisit;
@@ -525,6 +569,10 @@ class VisitsCubit extends SafeCubit<VisitsState> {
       specialty: booking.specialty,
       vitals: state.formState.vitals,
     );
+  }
+
+  Future<VisitModel?> startConsultationForBooking(BookingModel booking) {
+    return startConsultation(ConsultationQueueItemModel(booking: booking));
   }
 
   Future<VisitModel?> startConsultation(ConsultationQueueItemModel item) async {

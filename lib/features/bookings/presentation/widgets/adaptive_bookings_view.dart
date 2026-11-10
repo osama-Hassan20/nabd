@@ -25,6 +25,7 @@ class AdaptiveBookingsView extends StatelessWidget {
   final void Function(BookingModel booking) onReassignTechnician;
   final void Function(BookingModel booking) onDelete;
   final void Function(BookingModel booking)? onCallPatient;
+  final void Function(BookingModel booking)? onStartConsultation;
 
   const AdaptiveBookingsView({
     super.key,
@@ -34,6 +35,7 @@ class AdaptiveBookingsView extends StatelessWidget {
     required this.onReassignTechnician,
     required this.onDelete,
     this.onCallPatient,
+    this.onStartConsultation,
   });
 
   @override
@@ -188,6 +190,7 @@ class AdaptiveBookingsView extends StatelessWidget {
                       onReassignTechnician: onReassignTechnician,
                       onDelete: onDelete,
                       onCallPatient: onCallPatient,
+                      onStartConsultation: onStartConsultation,
                     ),
                   ),
                 ],
@@ -239,6 +242,9 @@ class AdaptiveBookingsView extends StatelessWidget {
                         onCallPatient: onCallPatient != null
                             ? () => onCallPatient!(item)
                             : null,
+                        onStartConsultation: onStartConsultation != null
+                            ? () => onStartConsultation!(item)
+                            : null,
                       );
                     },
                   ),
@@ -283,6 +289,9 @@ class AdaptiveBookingsView extends StatelessWidget {
                       onDelete: () => onDelete(item),
                       onCallPatient: onCallPatient != null
                           ? () => onCallPatient!(item)
+                          : null,
+                      onStartConsultation: onStartConsultation != null
+                          ? () => onStartConsultation!(item)
                           : null,
                     );
                   },

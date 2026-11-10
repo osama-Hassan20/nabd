@@ -18,6 +18,8 @@ import 'package:eyadty/features/bookings/presentation/widgets/booking_summary_se
 import 'package:eyadty/features/bookings/presentation/widgets/booking_type_tab_bar.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
+import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
 
 class BookingsPage extends StatelessWidget {
   const BookingsPage({super.key});
@@ -80,6 +82,30 @@ class _BookingsPageView extends StatelessWidget {
       context: context,
       header: 'call_patient_success'.tr(),
     ).showTopToast();
+  }
+
+  void _onStartConsultation(BuildContext context, BookingModel booking) async {
+    final visitsCubit = getIt<VisitsCubit>();
+    final visitsRepo = getIt<VisitsRepo>();
+
+    // 1. Check if visit already exists
+    final bookingId = booking.id ?? '';
+    final existingRes =
+        await visitsRepo.getVisitByBookingId(bookingId: bookingId);
+    final existingVisit = existingRes.fold((_) => null, (v) => v);
+
+    if (existingVisit != null) {
+      if (context.mounted) {
+        context.go('${AppRouter.visits}/${existingVisit.id}');
+      }
+      return;
+    }
+
+    // 2. Otherwise start consultation
+    final started = await visitsCubit.startConsultationForBooking(booking);
+    if (started != null && context.mounted) {
+      context.go('${AppRouter.visits}/${started.id}');
+    }
   }
 
   @override
@@ -151,6 +177,8 @@ class _BookingsPageView extends StatelessWidget {
                           _onReassignTechnician(context, b),
                       onDelete: (b) => _onDeleteBooking(context, b),
                       onCallPatient: (b) => _onCallPatient(context, b),
+                      onStartConsultation: (b) =>
+                          _onStartConsultation(context, b),
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),

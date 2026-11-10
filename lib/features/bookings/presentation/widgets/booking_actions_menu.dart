@@ -12,6 +12,8 @@ class BookingActionsMenu extends StatelessWidget {
   final VoidCallback? onReassignTechnician;
   final VoidCallback? onDelete;
   final VoidCallback? onCallPatient;
+  final VoidCallback? onStartConsultation;
+  final String? consultationButtonKey;
   final Color iconColor;
   final double iconSize;
 
@@ -23,6 +25,8 @@ class BookingActionsMenu extends StatelessWidget {
     this.onReassignTechnician,
     this.onDelete,
     this.onCallPatient,
+    this.onStartConsultation,
+    this.consultationButtonKey,
     this.iconColor = AppColors.gray71717A,
     this.iconSize = 20,
   });
@@ -36,6 +40,9 @@ class BookingActionsMenu extends StatelessWidget {
       icon: Icon(Icons.more_vert, size: iconSize, color: iconColor),
       onSelected: (value) {
         switch (value) {
+          case 'start_consultation':
+            onStartConsultation?.call();
+            break;
           case 'call_patient':
             onCallPatient?.call();
             break;
@@ -57,6 +64,26 @@ class BookingActionsMenu extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
+        if (onStartConsultation != null)
+          PopupMenuItem(
+            value: 'start_consultation',
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.medical_services_outlined,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  (consultationButtonKey ?? 'visits_start_consultation').tr(),
+                  style: CustomAppFontStyle.semiBold13.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (onCallPatient != null)
           PopupMenuItem(
             value: 'call_patient',
