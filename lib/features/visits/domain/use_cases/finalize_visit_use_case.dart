@@ -47,6 +47,18 @@ class FinalizeVisitUseCase implements UseCase<VisitModel, VisitModel> {
       );
     }
 
+    // Validation: Chief complaint and diagnosis are mandatory to finalize
+    final chiefComplaint = finalContent.chiefComplaint?.trim();
+    final diagnosis = finalContent.diagnosis?.trim();
+    if (chiefComplaint == null ||
+        chiefComplaint.isEmpty ||
+        diagnosis == null ||
+        diagnosis.isEmpty) {
+      return const Left(
+        ValidationFailure(errMessage: 'visits_finalize_missing_fields'),
+      );
+    }
+
     // 2. Step 1: Change booking status to completed directly via BookingsRepo
     final changeRes = await bookingsRepo.changeBookingStatus(
       ChangeBookingStatusParams(

@@ -4,6 +4,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/services/audit_logger.dart';
 import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/uses_cases/use_cases.dart';
+import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../bookings/data/models/enums/booking_status_enum.dart';
 import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../../bookings/domain/use_cases/params/change_booking_status_params.dart';
@@ -60,7 +61,20 @@ class StartConsultationUseCase
     final bookingDoctorId = booking.doctorId ?? params.doctorId;
     final previousStatus = booking.status ?? BookingStatusEnum.waiting;
 
-    // 2. Strict Permission Evaluation:
+    // 2. Date and Branch Guards (CairoTimeHelper)
+    if (booking.appointmentTime != null && !CairoTimeHelper.isToday(booking.appointmentTime)) {
+      return const Left(ValidationFailure(errMessage: 'booking_not_today'));
+    }
+
+    final activeBranchId = permissionEvaluator?.userProvider.activeBranchId;
+    if (activeBranchId != null) {
+      if (params.branchId != activeBranchId ||
+          (booking.branchId != null && booking.branchId != activeBranchId)) {
+        return const Left(ValidationFailure(errMessage: 'branch_mismatch'));
+      }
+    }
+
+    // 3. Strict Permission Evaluation:
     // Requires: startConsultation permission + user.linkedDoctorId == booking.doctorId
     // - Non-practicing owner: REJECTED
     // - Practicing owner for another doctor: REJECTED

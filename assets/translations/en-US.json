@@ -914,6 +914,7 @@
   "visits_finalize_confirm_body": "After finalization, the medical record will be locked for read-only access. Continue?",
   "visits_finalize_confirm_title": "Finalize Visit",
   "visits_finalize_error": "Failed to finalize visit, please try again",
+  "visits_finalize_missing_fields": "Chief complaint and diagnosis are required to finalize the visit",
   "visits_finalize_success": "Visit finalized successfully. Patient sent to reception.",
   "visits_finalize_visit": "Finalize Visit",
   "visits_finalized_read_only": "This consultation is finalized and locked — Read Only",

@@ -11,6 +11,7 @@ import 'consultation_queue_table.dart';
 class AdaptiveVisitsView extends StatelessWidget {
   final List<ConsultationQueueItemModel> items;
   final PermissionEvaluator evaluator;
+  final bool isLoading;
   final ValueChanged<ConsultationQueueItemModel>? onStartConsultation;
   final ValueChanged<ConsultationQueueItemModel>? onContinueConsultation;
   final ValueChanged<ConsultationQueueItemModel>? onRecordVitals;
@@ -20,6 +21,7 @@ class AdaptiveVisitsView extends StatelessWidget {
     super.key,
     required this.items,
     required this.evaluator,
+    this.isLoading = false,
     this.onStartConsultation,
     this.onContinueConsultation,
     this.onRecordVitals,
@@ -62,6 +64,7 @@ class AdaptiveVisitsView extends StatelessWidget {
           return ConsultationQueueTable(
             items: items,
             evaluator: evaluator,
+            isLoading: isLoading,
             onStartConsultation: onStartConsultation,
             onContinueConsultation: onContinueConsultation,
             onRecordVitals: onRecordVitals,
@@ -77,6 +80,7 @@ class AdaptiveVisitsView extends StatelessWidget {
             return ConsultationQueueCard(
               item: items[index],
               evaluator: evaluator,
+              isLoading: isLoading,
               onStartConsultation: onStartConsultation,
               onContinueConsultation: onContinueConsultation,
               onRecordVitals: onRecordVitals,

@@ -1,17 +1,17 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
-import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
-import '../../../bookings/data/models/enums/booking_status_enum.dart';
 import '../../data/models/consultation_queue_item_model.dart';
 import '../../data/models/enums/visit_status_enum.dart';
+import '../helpers/consultation_action_helper.dart';
 import 'visit_status_badge.dart';
 
 class ConsultationQueueCard extends StatelessWidget {
   final ConsultationQueueItemModel item;
   final PermissionEvaluator evaluator;
+  final bool isLoading;
   final ValueChanged<ConsultationQueueItemModel>? onStartConsultation;
   final ValueChanged<ConsultationQueueItemModel>? onContinueConsultation;
   final ValueChanged<ConsultationQueueItemModel>? onRecordVitals;
@@ -21,6 +21,7 @@ class ConsultationQueueCard extends StatelessWidget {
     super.key,
     required this.item,
     required this.evaluator,
+    this.isLoading = false,
     this.onStartConsultation,
     this.onContinueConsultation,
     this.onRecordVitals,
@@ -145,104 +146,99 @@ class ConsultationQueueCard extends StatelessWidget {
   Widget _buildCardAction(BuildContext context) {
     final booking = item.booking;
     final visit = item.visit;
-    final user = evaluator.userProvider.currentUser;
-    final isAssignedDoctor = user != null &&
-        user.isPracticingDoctor &&
-        user.linkedDoctorId == booking?.doctorId;
 
-    final canStartConsultation = isAssignedDoctor &&
-        evaluator.can(
-          StaffPermissionEnum.startConsultation,
-          branchId: booking?.branchId,
-          patientDoctorIds:
-              booking?.doctorId != null ? {booking!.doctorId!} : null,
-        );
-
-    final canNurseRecord = evaluator.can(
-      StaffPermissionEnum.recordVitals,
-      branchId: booking?.branchId,
+    final canStart = ConsultationActionHelper.canStartConsultation(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
     );
 
-    final canViewNotes = evaluator.can(
-      StaffPermissionEnum.viewConsultationNotes,
-      branchId: booking?.branchId,
+    final canContinue = ConsultationActionHelper.canContinueConsultation(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
     );
 
-    final isWaiting = booking?.status == BookingStatusEnum.waiting;
-    final isFinalized = visit?.status == VisitStatusEnum.finalized ||
-        booking?.status == BookingStatusEnum.completed;
-    final isInProgress = visit?.status == VisitStatusEnum.inProgress ||
-        booking?.status == BookingStatusEnum.inConsultation;
-    final isTriage = visit?.status == VisitStatusEnum.triage;
+    final canVitals = ConsultationActionHelper.canRecordVitals(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
+    );
 
-    if (isFinalized) {
-      if (canViewNotes) {
-        return OutlinedButton.icon(
-          onPressed: () => onViewConsultation?.call(item),
-          icon: const Icon(Icons.visibility_outlined, size: 16),
-          label: Text('visits_action_view'.tr()),
-        );
-      }
-      return const SizedBox.shrink();
+    final canView = ConsultationActionHelper.canViewConsultation(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
+    );
+
+    if (canView) {
+      return OutlinedButton.icon(
+        onPressed: isLoading ? null : () => onViewConsultation?.call(item),
+        icon: const Icon(Icons.visibility_outlined, size: 16),
+        label: Text('visits_action_view'.tr()),
+      );
     }
 
-    if (isInProgress) {
-      if (canStartConsultation) {
-        return ElevatedButton.icon(
-          onPressed: () => onContinueConsultation?.call(item),
-          icon: const Icon(Icons.play_arrow_rounded, size: 18),
-          label: Text('visits_continue_consultation'.tr()),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1D4ED8),
-            foregroundColor: Colors.white,
-          ),
-        );
-      }
-      return const SizedBox.shrink();
+    if (canContinue) {
+      return ElevatedButton.icon(
+        onPressed: isLoading ? null : () => onContinueConsultation?.call(item),
+        icon: const Icon(Icons.play_arrow_rounded, size: 18),
+        label: Text('visits_continue_consultation'.tr()),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1D4ED8),
+          foregroundColor: Colors.white,
+        ),
+      );
     }
 
-    if (isWaiting && isTriage) {
-      if (canStartConsultation) {
-        return ElevatedButton.icon(
-          onPressed: () => onStartConsultation?.call(item),
-          icon: const Icon(Icons.check_circle_outline, size: 16),
-          label: Text('visits_complete_vitals'.tr()),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFB45309),
-            foregroundColor: Colors.white,
+    final buttons = <Widget>[];
+
+    if (canStart) {
+      final isTriage = visit?.status == VisitStatusEnum.triage;
+      final labelKey = ConsultationActionHelper.getConsultationButtonKey(
+        booking: booking,
+        visit: visit,
+      );
+      buttons.add(
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: isLoading ? null : () => onStartConsultation?.call(item),
+            icon: Icon(
+              isTriage ? Icons.check_circle_outline : Icons.play_arrow_rounded,
+              size: 16,
+            ),
+            label: Text(labelKey.tr()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isTriage ? const Color(0xFFB45309) : AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
           ),
-        );
-      }
-      if (canNurseRecord) {
-        return OutlinedButton.icon(
-          onPressed: () => onRecordVitals?.call(item),
-          icon: const Icon(Icons.edit_outlined, size: 16),
-          label: Text('visits_record_vitals'.tr()),
-        );
-      }
-      return const SizedBox.shrink();
+        ),
+      );
     }
 
-    if (isWaiting) {
-      if (canStartConsultation) {
-        return ElevatedButton.icon(
-          onPressed: () => onStartConsultation?.call(item),
-          icon: const Icon(Icons.play_arrow_rounded, size: 18),
-          label: Text('visits_start_consultation'.tr()),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+    if (canVitals) {
+      if (buttons.isNotEmpty) {
+        buttons.add(const SizedBox(width: 8));
+      }
+      final isTriage = visit?.status == VisitStatusEnum.triage;
+      buttons.add(
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: isLoading ? null : () => onRecordVitals?.call(item),
+            icon: Icon(
+              isTriage ? Icons.edit_outlined : Icons.monitor_heart_outlined,
+              size: 16,
+            ),
+            label: Text('visits_record_vitals'.tr()),
           ),
-        );
-      }
-      if (canNurseRecord) {
-        return OutlinedButton.icon(
-          onPressed: () => onRecordVitals?.call(item),
-          icon: const Icon(Icons.monitor_heart_outlined, size: 16),
-          label: Text('visits_record_vitals'.tr()),
-        );
-      }
-      return const SizedBox.shrink();
+        ),
+      );
+    }
+
+    if (buttons.isNotEmpty) {
+      return Row(children: buttons);
     }
 
     return const SizedBox.shrink();

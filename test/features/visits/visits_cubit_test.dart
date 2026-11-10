@@ -207,6 +207,7 @@ void main() {
           ],
         ),
       );
+      await Future<void>.delayed(Duration.zero);
 
       await cubit.loadActiveVisit('VIS-001');
 
@@ -259,6 +260,7 @@ void main() {
           ],
         ),
       );
+      await Future<void>.delayed(Duration.zero);
 
       await cubit.loadActiveVisit('VIS-001');
       expect(cubit.state.activeVisitStatus, RequestStatusEnum.failure);
@@ -370,6 +372,7 @@ void main() {
     test('T15: finalizeVisit stops autoSave, updates status to finalized, and updates queue', () async {
       await cubit.loadActiveVisit('VIS-001');
       expect(cubit.hasActiveTimer, isTrue);
+      cubit.updateDiagnosis('ارتفاع ضغط دم أولي');
 
       final success = await cubit.finalizeVisit();
       expect(success, isTrue);
@@ -421,6 +424,52 @@ void main() {
         visit.getOrElse(() => null)?.diagnosis,
         'تشخيص جديد محفوظ عند الإغلاق',
       );
+    });
+
+    test('T18: Singleton Security: switching user resets all patient data and cancels timer', () async {
+      await cubit.loadActiveVisit('VIS-001');
+      expect(cubit.state.activeVisit, isNotNull);
+      expect(cubit.hasActiveTimer, isTrue);
+
+      // Switch to another doctor
+      sessionCubit.switchMockUser(
+        const StaffUserModel(
+          id: 'USR-DOC-99',
+          fullName: 'د. مستخدم آخر',
+          isActive: true,
+          linkedDoctorId: 'DOC-99',
+          branchAssignments: [
+            BranchAssignmentModel(
+              branchId: 'branch_1',
+              roleIds: [RoleIds.doctor],
+            ),
+          ],
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.activeVisit, isNull);
+      expect(cubit.state.queue, isEmpty);
+      expect(cubit.state.patientAllergies, isEmpty);
+      expect(cubit.state.patientChronicDiseases, isEmpty);
+      expect(cubit.state.formState.isDirty, isFalse);
+      expect(cubit.hasActiveTimer, isFalse);
+    });
+
+    test('T19: Singleton Security: user logout resets all patient data and stops autoSave timer', () async {
+      await cubit.loadActiveVisit('VIS-001');
+      expect(cubit.state.activeVisit, isNotNull);
+      expect(cubit.hasActiveTimer, isTrue);
+
+      // Trigger logout
+      sessionCubit.logout();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.activeVisit, isNull);
+      expect(cubit.state.queue, isEmpty);
+      expect(cubit.state.patientAllergies, isEmpty);
+      expect(cubit.state.patientChronicDiseases, isEmpty);
+      expect(cubit.hasActiveTimer, isFalse);
     });
   });
 

@@ -904,6 +904,7 @@
   "visits_finalize_confirm_body": "بعد الإنهاء، يصبح السجل الطبي مقفولاً للقراءة فقط. هل تريد المتابعة؟",
   "visits_finalize_confirm_title": "إنهاء الكشف",
   "visits_finalize_error": "فشل في إنهاء الكشف، يُرجى المحاولة مجدداً",
+  "visits_finalize_missing_fields": "يجب إدخال الشكوى الرئيسية والتشخيص قبل إنهاء الكشف",
   "visits_finalize_success": "تم إنهاء الكشف بنجاح وتحويل المريض لقسم الاستقبال",
   "visits_finalize_visit": "إنهاء الكشف",
   "visits_finalized_read_only": "هذا الكشف منتهٍ ومقفل — للعرض فقط",

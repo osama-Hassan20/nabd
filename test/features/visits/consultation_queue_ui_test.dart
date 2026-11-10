@@ -8,6 +8,7 @@ import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
@@ -74,6 +75,7 @@ void main() {
   });
 
   setUp(() async {
+    CairoTimeHelper.setFixedClock(DateTime(2026, 11, 10, 10, 0));
     await getIt.reset();
 
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
@@ -144,6 +146,7 @@ void main() {
   });
 
   tearDown(() async {
+    CairoTimeHelper.resetFixedClock();
     await visitsCubit.close();
     await sessionCubit.close();
   });
@@ -154,10 +157,11 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
+      final now = CairoTimeHelper.now();
       final items = [
         // 1. Waiting without visit
         ConsultationQueueItemModel(
-          booking: const BookingModel(
+          booking: BookingModel(
             id: 'BK-1',
             queueNumber: 1,
             patientName: 'مريض 1',
@@ -165,12 +169,13 @@ void main() {
             doctorName: 'د. حسام',
             status: BookingStatusEnum.waiting,
             branchId: 'branch_1',
+            appointmentTime: now,
           ),
           visit: null,
         ),
         // 2. Waiting with triage visit
         ConsultationQueueItemModel(
-          booking: const BookingModel(
+          booking: BookingModel(
             id: 'BK-2',
             queueNumber: 2,
             patientName: 'مريض 2',
@@ -178,6 +183,7 @@ void main() {
             doctorName: 'د. حسام',
             status: BookingStatusEnum.waiting,
             branchId: 'branch_1',
+            appointmentTime: now,
           ),
           visit: const VisitModel(
             id: 'VIS-2',
@@ -189,7 +195,7 @@ void main() {
         ),
         // 3. In Progress visit
         ConsultationQueueItemModel(
-          booking: const BookingModel(
+          booking: BookingModel(
             id: 'BK-3',
             queueNumber: 3,
             patientName: 'مريض 3',
@@ -197,6 +203,7 @@ void main() {
             doctorName: 'د. حسام',
             status: BookingStatusEnum.inConsultation,
             branchId: 'branch_1',
+            appointmentTime: now,
           ),
           visit: const VisitModel(
             id: 'VIS-3',
@@ -207,7 +214,7 @@ void main() {
         ),
         // 4. Finalized visit
         ConsultationQueueItemModel(
-          booking: const BookingModel(
+          booking: BookingModel(
             id: 'BK-4',
             queueNumber: 4,
             patientName: 'مريض 4',
@@ -215,6 +222,7 @@ void main() {
             doctorName: 'د. حسام',
             status: BookingStatusEnum.completed,
             branchId: 'branch_1',
+            appointmentTime: now,
           ),
           visit: const VisitModel(
             id: 'VIS-4',
@@ -265,27 +273,31 @@ void main() {
           ],
         ),
       );
+      await tester.pump();
 
+      final now = CairoTimeHelper.now();
       final items = [
         ConsultationQueueItemModel(
-          booking: const BookingModel(
+          booking: BookingModel(
             id: 'BK-1',
             queueNumber: 1,
             patientName: 'مريض 1',
             doctorId: 'DOC-01',
             status: BookingStatusEnum.waiting,
             branchId: 'branch_1',
+            appointmentTime: now,
           ),
           visit: null,
         ),
         ConsultationQueueItemModel(
-          booking: const BookingModel(
+          booking: BookingModel(
             id: 'BK-2',
             queueNumber: 2,
             patientName: 'مريض 2',
             doctorId: 'DOC-01',
             status: BookingStatusEnum.inConsultation,
             branchId: 'branch_1',
+            appointmentTime: now,
           ),
           visit: const VisitModel(status: VisitStatusEnum.inProgress),
         ),

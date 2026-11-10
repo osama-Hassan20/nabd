@@ -108,6 +108,7 @@ void main() {
         'visits_booking_locked_error',
         'visits_save_error',
         'visits_finalize_error',
+        'visits_finalize_missing_fields',
         'visits_vitals_error',
         'visits_vitals_finalized_error',
         'visits_vitals_wrong_status_error',

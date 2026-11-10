@@ -163,6 +163,8 @@ class _VisitsPageState extends State<VisitsPage> {
                       AdaptiveVisitsView(
                         items: state.queue,
                         evaluator: evaluator,
+                        isLoading:
+                            state.actionStatus == RequestStatusEnum.loading,
                         onStartConsultation: _handleStartConsultation,
                         onContinueConsultation: _handleContinueConsultation,
                         onRecordVitals: _handleRecordVitals,

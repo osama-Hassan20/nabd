@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
@@ -331,6 +332,85 @@ void main() {
       );
 
       expect(resGranted.isRight(), isTrue);
+    });
+
+    test('Domain Guard: rejects starting consultation for booking not today', () async {
+      userProvider.user = const StaffUserModel(
+        id: 'USR-DOC-01',
+        fullName: 'د. حسام',
+        isActive: true,
+        linkedDoctorId: 'DOC-01',
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: [RoleIds.doctor],
+          ),
+        ],
+      );
+
+      final yesterday = CairoTimeHelper.now().subtract(const Duration(days: 1));
+      final createdRes = await bookingsRepo.createBooking(
+        BookingModel(
+          patientId: 'PAT-000101',
+          patientName: 'مريض قديم',
+          doctorId: 'DOC-01',
+          doctorName: 'د. حسام',
+          branchId: 'branch_1',
+          status: BookingStatusEnum.waiting,
+          appointmentTime: yesterday,
+        ),
+      );
+      final createdBooking = createdRes.getOrElse(() => throw StateError('fail'));
+
+      final res = await startConsultationUseCase(
+        StartConsultationParams(
+          bookingId: createdBooking.id!,
+          patientId: 'PAT-000101',
+          branchId: 'branch_1',
+          patientName: 'مريض قديم',
+          doctorId: 'DOC-01',
+          doctorName: 'د. حسام',
+        ),
+      );
+
+      expect(res.isLeft(), isTrue);
+      res.fold(
+        (f) => expect(f.errMessage, 'booking_not_today'),
+        (_) => fail('should fail'),
+      );
+    });
+
+    test('Domain Guard: rejects starting consultation when branch mismatches user branch', () async {
+      userProvider.user = const StaffUserModel(
+        id: 'USR-DOC-01',
+        fullName: 'د. حسام',
+        isActive: true,
+        linkedDoctorId: 'DOC-01',
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_2',
+            roleIds: [RoleIds.doctor],
+          ),
+        ],
+      );
+      userProvider.branch = 'branch_2';
+
+      final res = await startConsultationUseCase(
+        const StartConsultationParams(
+          bookingId: 'MED-101',
+          patientId: 'PAT-000101',
+          branchId: 'branch_1',
+          patientName: 'سارة',
+          doctorId: 'DOC-01',
+          doctorName: 'د. حسام',
+        ),
+      );
+
+      expect(res.isLeft(), isTrue);
+      res.fold(
+        (f) => expect(f.errMessage, 'branch_mismatch'),
+        (_) => fail('should fail'),
+      );
     });
 
     test('fails when booking does not exist and logs nothing', () async {
@@ -705,6 +785,7 @@ void main() {
           bookingId: 'MED-101',
           doctorId: 'DOC-01',
           branchId: 'branch_1',
+          chiefComplaint: 'صداع مستمر',
           diagnosis: 'تشخيص نهائي سليم',
           treatmentPlan: 'علاج مستمر',
         ),
@@ -815,6 +896,7 @@ void main() {
           bookingId: 'MED-104',
           doctorId: 'DOC-01',
           branchId: 'branch_1',
+          chiefComplaint: 'شكوى سابقة',
           diagnosis: 'إعادة إغلاق',
         ),
       );
@@ -832,6 +914,55 @@ void main() {
         BookingStatusEnum.inConsultation,
       );
       expect(auditLogger.getLogs(eventType: 'visit_finalized'), isEmpty);
+    });
+
+    test('Domain Guard: FinalizeVisitUseCase rejects when chief complaint or diagnosis is empty', () async {
+      userProvider.user = const StaffUserModel(
+        id: 'USR-DOC-01',
+        fullName: 'د. حسام',
+        isActive: true,
+        linkedDoctorId: 'DOC-01',
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: [RoleIds.doctor],
+          ),
+        ],
+      );
+
+      // 1. Missing chief complaint
+      final resMissingChief = await finalizeVisitUseCase(
+        const VisitModel(
+          id: 'VIS-001',
+          bookingId: 'MED-101',
+          doctorId: 'DOC-01',
+          branchId: 'branch_1',
+          chiefComplaint: '', // Empty
+          diagnosis: 'تشخيص موجود',
+        ),
+      );
+      expect(resMissingChief.isLeft(), isTrue);
+      resMissingChief.fold(
+        (f) => expect(f.errMessage, 'visits_finalize_missing_fields'),
+        (_) => fail('should fail'),
+      );
+
+      // 2. Missing diagnosis
+      final resMissingDiag = await finalizeVisitUseCase(
+        const VisitModel(
+          id: 'VIS-001',
+          bookingId: 'MED-101',
+          doctorId: 'DOC-01',
+          branchId: 'branch_1',
+          chiefComplaint: 'شكوى موجودة',
+          diagnosis: '   ', // Whitespace only
+        ),
+      );
+      expect(resMissingDiag.isLeft(), isTrue);
+      resMissingDiag.fold(
+        (f) => expect(f.errMessage, 'visits_finalize_missing_fields'),
+        (_) => fail('should fail'),
+      );
     });
   });
 }

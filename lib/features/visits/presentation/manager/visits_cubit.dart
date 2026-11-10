@@ -42,6 +42,8 @@ class VisitsCubit extends SafeCubit<VisitsState> {
   Timer? _autoSaveTimer;
   StreamSubscription<SessionState>? _sessionSubscription;
   String? _lastAuditedVisitId;
+  String? _lastUserId;
+  String? _lastBranchId;
 
   VisitsCubit({
     required this.visitsRepo,
@@ -58,8 +60,31 @@ class VisitsCubit extends SafeCubit<VisitsState> {
     this.sessionCubit,
     this.timerFactory,
   }) : super(VisitsState.initial()) {
-    _sessionSubscription = sessionCubit?.stream.listen((_) {
-      refreshPermissions();
+    _lastUserId = sessionCubit?.currentUser?.id;
+    _lastBranchId = sessionCubit?.activeBranchId;
+
+    _sessionSubscription = sessionCubit?.stream.listen((sessionState) {
+      final newUser = sessionState.currentUser;
+      final newBranch = sessionState.activeBranchId;
+
+      final isLogout = newUser == null;
+      final isUserSwitched = newUser?.id != _lastUserId;
+      final isBranchSwitched = newBranch != _lastBranchId;
+
+      _lastUserId = newUser?.id;
+      _lastBranchId = newBranch;
+
+      if (isLogout || isUserSwitched || isBranchSwitched) {
+        // Singleton Security Wipe:
+        // Clear all patient clinical data, queue, active visit, and stop timer
+        stopAutoSave();
+        _lastAuditedVisitId = null;
+        emit(VisitsState.initial());
+      }
+
+      if (!isLogout) {
+        refreshPermissions();
+      }
     });
   }
 
@@ -112,6 +137,7 @@ class VisitsCubit extends SafeCubit<VisitsState> {
   Future<void> close() {
     stopAutoSave();
     _sessionSubscription?.cancel();
+    _sessionSubscription = null;
     return super.close();
   }
 
