@@ -930,6 +930,9 @@ void main() {
         ],
       );
 
+      final statusBefore =
+          bookingsRepo.bookings.firstWhere((b) => b.id == 'MED-101').status;
+
       // 1. Missing chief complaint
       final resMissingChief = await finalizeVisitUseCase(
         const VisitModel(
@@ -945,6 +948,10 @@ void main() {
       resMissingChief.fold(
         (f) => expect(f.errMessage, 'visits_finalize_missing_fields'),
         (_) => fail('should fail'),
+      );
+      expect(
+        bookingsRepo.bookings.firstWhere((b) => b.id == 'MED-101').status,
+        statusBefore,
       );
 
       // 2. Missing diagnosis
@@ -962,6 +969,10 @@ void main() {
       resMissingDiag.fold(
         (f) => expect(f.errMessage, 'visits_finalize_missing_fields'),
         (_) => fail('should fail'),
+      );
+      expect(
+        bookingsRepo.bookings.firstWhere((b) => b.id == 'MED-101').status,
+        statusBefore,
       );
     });
   });

@@ -262,5 +262,14 @@ void main() {
       );
       expect(evaluator.can(StaffPermissionEnum.viewConsultationNotes), isTrue);
     });
+
+    test('T13: PermissionEvaluator.can(recordVitals) is true for Owner (unmodified evaluator permission)', () {
+      userProvider.user = const StaffUserModel(
+        id: 'USR-OWNER',
+        isActive: true,
+        isOwner: true,
+      );
+      expect(evaluator.can(StaffPermissionEnum.recordVitals), isTrue);
+    });
   });
 }

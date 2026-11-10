@@ -413,13 +413,16 @@ class BookingCard extends StatelessWidget {
                     color: AppColors.gray71717A,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    '${'arrival_time'.tr()}: ${booking.startTime ?? '--:--'}',
-                    style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                  Expanded(
+                    child: Text(
+                      '${'arrival_time'.tr()}: ${booking.startTime ?? '--:--'}',
+                      overflow: TextOverflow.ellipsis,
+                      style: CustomAppFontStyle.regular12.copyWith(
+                        color: AppColors.gray71717A,
+                      ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   detailWidget,
                 ],
               );

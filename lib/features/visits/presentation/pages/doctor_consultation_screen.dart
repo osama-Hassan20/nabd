@@ -95,6 +95,7 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
     return BlocProvider.value(
       value: _cubit,
       child: BlocConsumer<VisitsCubit, VisitsState>(
+        bloc: _cubit,
         listenWhen: (prev, curr) =>
             prev.actionStatus != curr.actionStatus ||
             prev.errorMessage != curr.errorMessage,

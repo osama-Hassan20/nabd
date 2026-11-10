@@ -39,13 +39,11 @@ class PermissionEvaluator {
       // Clinical write actions require valid linked doctor profile and patient assignment
       if (permission == StaffPermissionEnum.editMedicalDiagnosis ||
           permission == StaffPermissionEnum.issuePrescription ||
-          permission == StaffPermissionEnum.startConsultation ||
-          permission == StaffPermissionEnum.recordVitals) {
+          permission == StaffPermissionEnum.startConsultation) {
         if (!user.isPracticingDoctor) {
-          return false; // Non-practicing owner cannot write diagnosis, record vitals, or start consultation
+          return false; // Non-practicing owner cannot write diagnosis or start consultation
         }
-        if (permission != StaffPermissionEnum.recordVitals &&
-            patientDoctorIds != null &&
+        if (patientDoctorIds != null &&
             !patientDoctorIds.contains(user.linkedDoctorId)) {
           return false; // Cannot start consultation or prescribe for a patient not assigned to them
         }

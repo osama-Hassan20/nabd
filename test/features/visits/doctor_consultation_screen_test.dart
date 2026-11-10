@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,9 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
@@ -254,6 +258,121 @@ void main() {
       // Buttons for editing/finalizing are hidden
       expect(find.text('visits_save_draft'.tr()), findsNothing);
       expect(find.text('visits_finalize_visit'.tr()), findsNothing);
+    });
+
+    testWidgets('Branch Manager sees read-only notes and no action buttons',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      const branchManagerUser = StaffUserModel(
+        id: 'USR-BM-01',
+        fullName: 'أ. مدير الفرع',
+        isActive: true,
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            isPrimary: true,
+            roleIds: [RoleIds.branchManager],
+          ),
+        ],
+      );
+
+      sessionCubit.emit(
+        sessionCubit.state.copyWith(
+          currentUser: branchManagerUser,
+          activeBranchId: 'branch_1',
+        ),
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedApp(
+          sessionCubit: sessionCubit,
+          child: DoctorConsultationScreen(
+            visitId: 'VIS-001',
+            cubit: visitsCubit,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ConsultationNotesPanel), findsOneWidget);
+      final notesPanel = tester.widget<ConsultationNotesPanel>(
+        find.byType(ConsultationNotesPanel),
+      );
+      expect(notesPanel.isReadOnly, isTrue);
+      expect(find.text('visits_save_draft'.tr()), findsNothing);
+      expect(find.text('visits_finalize_visit'.tr()), findsNothing);
+    });
+
+    testWidgets('typing in consultation notes updates formState without cursor jump',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        _buildLocalizedApp(
+          sessionCubit: sessionCubit,
+          child: DoctorConsultationScreen(
+            visitId: 'VIS-001',
+            cubit: visitsCubit,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final complaintField = find.descendant(
+        of: find.byType(ConsultationNotesPanel),
+        matching: find.byType(TextFormField),
+      ).first;
+      await tester.enterText(complaintField, 'صداع مستمر منذ يومين');
+      await tester.pump();
+
+      expect(visitsCubit.state.formState.chiefComplaint, 'صداع مستمر منذ يومين');
+
+      final editableText = tester.widget<EditableText>(
+        find.descendant(of: complaintField, matching: find.byType(EditableText)),
+      );
+      expect(
+        editableText.controller.selection.baseOffset,
+        'صداع مستمر منذ يومين'.length,
+      );
+    });
+
+    testWidgets('actionStatus loading renders progress indicator and disables finalize button',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        _buildLocalizedApp(
+          sessionCubit: sessionCubit,
+          child: DoctorConsultationScreen(
+            visitId: 'VIS-001',
+            cubit: visitsCubit,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      visitsCubit.emit(
+        visitsCubit.state.copyWith(
+          actionStatus: RequestStatusEnum.loading,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+
+      final buttons = tester.widgetList<CustomPushButton>(
+        find.byType(CustomPushButton),
+      );
+      final finalizeBtn = buttons.firstWhere(
+        (b) => b.backgroundColor == AppColors.primary,
+      );
+      expect(finalizeBtn.isLoading, isTrue);
+      expect(find.byType(CupertinoActivityIndicator), findsWidgets);
     });
 
     testWidgets('finalize with empty chief complaint or diagnosis shows missing fields error',

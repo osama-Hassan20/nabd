@@ -75,10 +75,12 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.primary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  (consultationButtonKey ?? 'visits_start_consultation').tr(),
-                  style: CustomAppFontStyle.semiBold13.copyWith(
-                    color: AppColors.primary,
+                Expanded(
+                  child: Text(
+                    (consultationButtonKey ?? 'visits_start_consultation').tr(),
+                    style: CustomAppFontStyle.semiBold13.copyWith(
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -96,10 +98,12 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.primary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'call_patient'.tr(),
-                  style: CustomAppFontStyle.semiBold13.copyWith(
-                    color: AppColors.primary,
+                Expanded(
+                  child: Text(
+                    'call_patient'.tr(),
+                    style: CustomAppFontStyle.semiBold13.copyWith(
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -117,7 +121,9 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.gray71717A,
                 ),
                 const SizedBox(width: 8),
-                Text('view_details'.tr(), style: CustomAppFontStyle.regular13),
+                Expanded(
+                  child: Text('view_details'.tr(), style: CustomAppFontStyle.regular13),
+                ),
               ],
             ),
           ),
@@ -133,7 +139,9 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.secondary,
                 ),
                 const SizedBox(width: 8),
-                Text('change_status'.tr(), style: CustomAppFontStyle.regular13),
+                Expanded(
+                  child: Text('change_status'.tr(), style: CustomAppFontStyle.regular13),
+                ),
               ],
             ),
           ),
@@ -149,7 +157,9 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.gray71717A,
                 ),
                 const SizedBox(width: 8),
-                Text('edit_medical_appointment'.tr(), style: CustomAppFontStyle.regular13),
+                Expanded(
+                  child: Text('edit_medical_appointment'.tr(), style: CustomAppFontStyle.regular13),
+                ),
               ],
             ),
           ),
@@ -165,9 +175,11 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.secondary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'transfer_doctor'.tr(),
-                  style: CustomAppFontStyle.regular13,
+                Expanded(
+                  child: Text(
+                    'transfer_doctor'.tr(),
+                    style: CustomAppFontStyle.regular13,
+                  ),
                 ),
               ],
             ),
@@ -185,10 +197,12 @@ class BookingActionsMenu extends StatelessWidget {
                   color: AppColors.error,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'cancel_appointment'.tr(),
-                  style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.error,
+                Expanded(
+                  child: Text(
+                    'cancel_appointment'.tr(),
+                    style: CustomAppFontStyle.regular13.copyWith(
+                      color: AppColors.error,
+                    ),
                   ),
                 ),
               ],

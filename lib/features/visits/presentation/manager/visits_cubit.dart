@@ -517,6 +517,7 @@ class VisitsCubit extends SafeCubit<VisitsState> {
 
   Future<void> flushDraftOnExit() async {
     stopAutoSave();
+    _lastAuditedVisitId = null; // Reset per-open audit tracker on exit
     final active = state.activeVisit;
     if (active != null &&
         state.formState.isDirty &&

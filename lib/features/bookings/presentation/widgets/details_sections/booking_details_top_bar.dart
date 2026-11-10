@@ -206,12 +206,14 @@ class BookingDetailsTopBar extends StatelessWidget {
                   if (showConsultation)
                     CustomPushButton(
                       height: 42,
-                      width: isMobile ? double.infinity : 160,
+                      width: isMobile ? double.infinity : null,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       backgroundColor: AppColors.primary,
                       borderRadius: BorderRadius.circular(8),
                       onTap: onStartConsultation,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
                             Icons.medical_services_outlined,
@@ -231,13 +233,15 @@ class BookingDetailsTopBar extends StatelessWidget {
               // Change Status Button
               CustomPushButton(
                 height: 42,
-                width: isMobile ? double.infinity : 150,
+                width: isMobile ? double.infinity : null,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 backgroundColor: AppColors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: BorderSide(color: AppColors.grayE2E8F0),
                 onTap: onChangeStatus,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const CustomAssetImage(
                       path: AppIcons.change,
@@ -259,13 +263,15 @@ class BookingDetailsTopBar extends StatelessWidget {
               // Reassign Technician Button
               CustomPushButton(
                 height: 42,
-                width: isMobile ? double.infinity : 160,
+                width: isMobile ? double.infinity : null,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 backgroundColor: AppColors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: BorderSide(color: AppColors.grayE2E8F0),
                 onTap: onReassign,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const CustomAssetImage(
                       path: AppIcons.team,
@@ -287,12 +293,14 @@ class BookingDetailsTopBar extends StatelessWidget {
               // Edit Booking Button
               CustomPushButton(
                 height: 42,
-                width: isMobile ? double.infinity : 130,
+                width: isMobile ? double.infinity : null,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 backgroundColor: AppColors.primary,
                 borderRadius: BorderRadius.circular(8),
                 onTap: onEdit,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const CustomAssetImage(
                       path: AppIcons.edit,
@@ -314,7 +322,8 @@ class BookingDetailsTopBar extends StatelessWidget {
               // Delete Booking Button
               CustomPushButton(
                 height: 42,
-                width: isMobile ? double.infinity : 120,
+                width: isMobile ? double.infinity : null,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 backgroundColor: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: BorderSide(
@@ -323,6 +332,7 @@ class BookingDetailsTopBar extends StatelessWidget {
                 onTap: onDelete,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const CustomAssetImage(
                       path: AppIcons.delete,

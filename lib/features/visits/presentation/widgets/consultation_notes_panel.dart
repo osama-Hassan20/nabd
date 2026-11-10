@@ -107,7 +107,13 @@ class _ConsultationNotesPanelState extends State<ConsultationNotesPanel> {
   void _syncTextIfDifferent(TextEditingController controller, String? value) {
     final target = value ?? '';
     if (controller.text != target && !controller.value.isComposingRangeValid) {
-      controller.text = target;
+      final oldSelection = controller.selection;
+      final newOffset =
+          oldSelection.end <= target.length ? oldSelection.end : target.length;
+      controller.value = TextEditingValue(
+        text: target,
+        selection: TextSelection.collapsed(offset: newOffset),
+      );
     }
   }
 

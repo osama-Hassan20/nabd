@@ -246,6 +246,18 @@ void main() {
       expect(auditLogger.getLogs(eventType: 'view_patient_medical_record').length, 1);
     });
 
+    test('T6c: flushDraftOnExit on screen exit allows new audit log when screen is reopened', () async {
+      await cubit.loadActiveVisit('VIS-001');
+      expect(auditLogger.getLogs(eventType: 'view_patient_medical_record').length, 1);
+
+      // User exits consultation screen
+      await cubit.flushDraftOnExit();
+
+      // User opens the consultation screen again later
+      await cubit.loadActiveVisit('VIS-001');
+      expect(auditLogger.getLogs(eventType: 'view_patient_medical_record').length, 2);
+    });
+
     test('T6b: loadActiveVisit when permission denied never emits audit log', () async {
       sessionCubit.switchMockUser(
         const StaffUserModel(

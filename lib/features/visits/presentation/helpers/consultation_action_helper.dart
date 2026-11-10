@@ -119,6 +119,11 @@ class ConsultationActionHelper {
       return false;
     }
 
+    final user = evaluator.userProvider.currentUser;
+    if (user != null && user.isOwner == true && !user.isPracticingDoctor) {
+      return false; // Non-practicing owner does not record vitals in UI
+    }
+
     return evaluator.can(
       StaffPermissionEnum.recordVitals,
       branchId: booking.branchId,
@@ -160,3 +165,4 @@ class ConsultationActionHelper {
     return 'visits_start_consultation';
   }
 }
+
