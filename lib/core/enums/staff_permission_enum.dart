@@ -32,6 +32,7 @@ enum StaffPermissionEnum {
   refundPayment,
   viewCashierShift,
   applyManualDiscount,
+  applyBookingDiscount,
 
   // ─── 5. HR & Settlements (الموارد البشرية والمستحقات) ────────────────────
   accessHr,

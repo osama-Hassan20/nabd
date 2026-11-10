@@ -18,6 +18,8 @@ class RoleDefinitionModel extends Equatable {
   final String? description;
   final bool? isSystemRole;
   final List<StaffPermissionEnum>? permissions;
+  final num? maxDiscountPercent;
+  final bool? canGrantFreeConsultation;
 
   const RoleDefinitionModel({
     this.id,
@@ -26,6 +28,8 @@ class RoleDefinitionModel extends Equatable {
     this.description,
     this.isSystemRole,
     this.permissions,
+    this.maxDiscountPercent,
+    this.canGrantFreeConsultation,
   });
 
   RoleDefinitionModel copyWith({
@@ -35,6 +39,8 @@ class RoleDefinitionModel extends Equatable {
     String? description,
     bool? isSystemRole,
     List<StaffPermissionEnum>? permissions,
+    num? maxDiscountPercent,
+    bool? canGrantFreeConsultation,
   }) {
     return RoleDefinitionModel(
       id: id ?? this.id,
@@ -43,6 +49,9 @@ class RoleDefinitionModel extends Equatable {
       description: description ?? this.description,
       isSystemRole: isSystemRole ?? this.isSystemRole,
       permissions: permissions ?? this.permissions,
+      maxDiscountPercent: maxDiscountPercent ?? this.maxDiscountPercent,
+      canGrantFreeConsultation:
+          canGrantFreeConsultation ?? this.canGrantFreeConsultation,
     );
   }
 
@@ -60,6 +69,8 @@ class RoleDefinitionModel extends Equatable {
                 orElse: () => StaffPermissionEnum.accessLiveQueue,
               ))
           .toList(),
+      maxDiscountPercent: json['maxDiscountPercent'] as num?,
+      canGrantFreeConsultation: json['canGrantFreeConsultation'] as bool?,
     );
   }
 
@@ -71,6 +82,9 @@ class RoleDefinitionModel extends Equatable {
       'description': description,
       'isSystemRole': isSystemRole,
       'permissions': permissions?.map((p) => p.name).toList(),
+      if (maxDiscountPercent != null) 'maxDiscountPercent': maxDiscountPercent,
+      if (canGrantFreeConsultation != null)
+        'canGrantFreeConsultation': canGrantFreeConsultation,
     };
   }
 
@@ -82,6 +96,8 @@ class RoleDefinitionModel extends Equatable {
         description,
         isSystemRole,
         permissions,
+        maxDiscountPercent,
+        canGrantFreeConsultation,
       ];
 
   static List<RoleDefinitionModel> defaultSystemRoles() {
@@ -93,6 +109,8 @@ class RoleDefinitionModel extends Equatable {
         nameEn: 'Branch Manager',
         description: 'إشراف تشغيلي وإداري ومالي شامل على مستوى الفرع المعين',
         isSystemRole: true,
+        maxDiscountPercent: 100,
+        canGrantFreeConsultation: true,
         permissions: [
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.createBooking,
@@ -115,6 +133,7 @@ class RoleDefinitionModel extends Equatable {
           StaffPermissionEnum.refundPayment,
           StaffPermissionEnum.viewCashierShift,
           StaffPermissionEnum.applyManualDiscount,
+          StaffPermissionEnum.applyBookingDiscount,
           StaffPermissionEnum.accessHr,
           StaffPermissionEnum.calculateDoctorSettlement,
           StaffPermissionEnum.accessAnalytics,
@@ -191,6 +210,8 @@ class RoleDefinitionModel extends Equatable {
         nameEn: 'Receptionist',
         description: 'إدارة الحجوزات والدور، تسجيل المرضى، وتحصيل كشوفات الخزينة',
         isSystemRole: true,
+        maxDiscountPercent: 20,
+        canGrantFreeConsultation: false,
         permissions: [
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.createBooking,
@@ -204,6 +225,7 @@ class RoleDefinitionModel extends Equatable {
           StaffPermissionEnum.accessCashier,
           StaffPermissionEnum.collectPayment,
           StaffPermissionEnum.viewCashierShift,
+          StaffPermissionEnum.applyBookingDiscount,
         ],
       ),
 

@@ -2,6 +2,7 @@ import 'package:eyadty/features/patients/data/models/patient_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
 import 'enums/booking_status_enum.dart';
 import 'enums/booking_type_enum.dart';
+import 'enums/discount_type_enum.dart';
 import 'enums/payment_status_enum.dart';
 
 typedef CustomerModel = PatientModel;
@@ -58,6 +59,14 @@ class BookingModel {
   final String? technicianId;
   final String? technicianName;
 
+  // Discount fields (all nullable)
+  final DiscountTypeEnum? discountType;
+  final num? discountValue;
+  final String? discountReason;
+  final String? discountApprovedByUserId;
+  final DateTime? discountApprovedAt;
+  final String? discountRemovedReason;
+
   const BookingModel({
     this.id,
     this.queueNumber,
@@ -104,6 +113,12 @@ class BookingModel {
     this.technicianNames = const [],
     this.technicianId,
     this.technicianName,
+    this.discountType,
+    this.discountValue,
+    this.discountReason,
+    this.discountApprovedByUserId,
+    this.discountApprovedAt,
+    this.discountRemovedReason,
   });
 
   // ─── Convenience Getters ──────────────────────────────────────────────────
@@ -112,6 +127,48 @@ class BookingModel {
   String? get customerPhone => patientPhone ?? patient?.phone ?? customer?.phone;
   String? get customerAddress => patient?.address ?? customer?.address;
   String? get patientAddress => patient?.address ?? customer?.address;
+
+  // ─── Computed Getters (Discount & Effective Payment) ──────────────────────
+  num get discountAmount {
+    final fee = consultationFee ?? 0;
+    final type = discountType ?? DiscountTypeEnum.none;
+    if (type == DiscountTypeEnum.none) return 0;
+    if (type == DiscountTypeEnum.free) return fee;
+    if (type == DiscountTypeEnum.percentage) {
+      final pct = (discountValue ?? 0).clamp(0, 100);
+      return (fee * pct / 100);
+    }
+    if (type == DiscountTypeEnum.fixedAmount) {
+      return (discountValue ?? 0).clamp(0, fee);
+    }
+    return 0;
+  }
+
+  num get netAmount =>
+      ((consultationFee ?? 0) - discountAmount).clamp(0, double.infinity);
+
+  bool get isFreeConsultation {
+    final type = discountType ?? DiscountTypeEnum.none;
+    if (type == DiscountTypeEnum.free) {
+      return true;
+    }
+    if (type == DiscountTypeEnum.percentage && (discountValue ?? 0) >= 100) {
+      return true;
+    }
+    if (type == DiscountTypeEnum.fixedAmount &&
+        (discountValue ?? 0) >= (consultationFee ?? 0) &&
+        (consultationFee ?? 0) > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  PaymentStatusEnum get effectivePaymentStatus {
+    if (isFreeConsultation && netAmount <= 0) {
+      return PaymentStatusEnum.paid;
+    }
+    return paymentStatus ?? PaymentStatusEnum.unpaid;
+  }
 
   factory BookingModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const BookingModel();
@@ -215,6 +272,14 @@ class BookingModel {
       technicianNames: (json['technicianNames'] as List?)?.map((e) => e.toString()).toList() ?? [],
       technicianId: json['technicianId']?.toString() ?? json['doctorId']?.toString(),
       technicianName: dName,
+      discountType: DiscountTypeEnum.fromValue(json['discountType']?.toString()),
+      discountValue: json['discountValue'] as num?,
+      discountReason: json['discountReason'] as String?,
+      discountApprovedByUserId: json['discountApprovedByUserId'] as String?,
+      discountApprovedAt: json['discountApprovedAt'] != null
+          ? DateTime.tryParse(json['discountApprovedAt'].toString())
+          : null,
+      discountRemovedReason: json['discountRemovedReason'] as String?,
     );
   }
 
@@ -266,6 +331,15 @@ class BookingModel {
       if (technicianId != null) 'technicianId': technicianId,
       if (technicianName != null) 'technicianName': technicianName,
       if (patient != null) 'patient': patient?.toJson(),
+      if (discountType != null) 'discountType': discountType?.value,
+      if (discountValue != null) 'discountValue': discountValue,
+      if (discountReason != null) 'discountReason': discountReason,
+      if (discountApprovedByUserId != null)
+        'discountApprovedByUserId': discountApprovedByUserId,
+      if (discountApprovedAt != null)
+        'discountApprovedAt': discountApprovedAt?.toIso8601String(),
+      if (discountRemovedReason != null)
+        'discountRemovedReason': discountRemovedReason,
     };
   }
 
@@ -315,6 +389,12 @@ class BookingModel {
     List<String>? technicianNames,
     String? technicianId,
     String? technicianName,
+    DiscountTypeEnum? discountType,
+    num? discountValue,
+    String? discountReason,
+    String? discountApprovedByUserId,
+    DateTime? discountApprovedAt,
+    String? discountRemovedReason,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -363,6 +443,14 @@ class BookingModel {
       technicianNames: technicianNames ?? this.technicianNames,
       technicianId: technicianId ?? this.technicianId,
       technicianName: technicianName ?? this.technicianName,
+      discountType: discountType ?? this.discountType,
+      discountValue: discountValue ?? this.discountValue,
+      discountReason: discountReason ?? this.discountReason,
+      discountApprovedByUserId:
+          discountApprovedByUserId ?? this.discountApprovedByUserId,
+      discountApprovedAt: discountApprovedAt ?? this.discountApprovedAt,
+      discountRemovedReason:
+          discountRemovedReason ?? this.discountRemovedReason,
     );
   }
 }

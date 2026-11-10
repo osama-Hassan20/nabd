@@ -802,19 +802,37 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
     }
 
     final existingIndex = _roles.indexWhere((r) => r.id == role.id);
+    RoleDefinitionModel roleToSave = role;
+
+    // Non-owners cannot modify discount policy fields
+    if (actor?.isOwner != true) {
+      if (existingIndex != -1) {
+        final existingRole = _roles[existingIndex];
+        roleToSave = role.copyWith(
+          maxDiscountPercent: existingRole.maxDiscountPercent,
+          canGrantFreeConsultation: existingRole.canGrantFreeConsultation,
+        );
+      } else {
+        roleToSave = role.copyWith(
+          maxDiscountPercent: null,
+          canGrantFreeConsultation: null,
+        );
+      }
+    }
+
     if (existingIndex != -1) {
-      _roles[existingIndex] = role;
+      _roles[existingIndex] = roleToSave;
     } else {
-      _roles.add(role);
+      _roles.add(roleToSave);
     }
 
     auditLogger.log(
       eventType: 'role_saved',
       performedByUserId: currentUserId,
-      details: 'Role saved/updated: ${role.nameAr} (${role.id})',
+      details: 'Role saved/updated: ${roleToSave.nameAr} (${roleToSave.id})',
     );
 
-    return Right(role);
+    return Right(roleToSave);
   }
 
   StaffUserModel? _findUserById(String id) {

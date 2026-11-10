@@ -9,12 +9,15 @@ import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart'
 import 'package:eyadty/features/bookings/data/models/bookings_response_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 import 'package:eyadty/features/bookings/domain/helpers/slot_generator_helper.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/apply_discount_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/remove_discount_params.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_leave_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_schedule_model.dart';
 import 'package:eyadty/features/doctors/domain/helpers/doctor_availability_helper.dart';
@@ -846,11 +849,11 @@ class BookingsMockRepoImpl implements BookingsRepo {
         );
       }
 
-      final newId = 'BK-${1000 + _bookings.length + 1}';
+      final newId = booking.id ?? 'BK-${1000 + _bookings.length + 1}';
       final createdBooking = booking.copyWith(
         id: newId,
-        createdAt: CairoTimeHelper.now(),
-        updatedAt: CairoTimeHelper.now(),
+        createdAt: booking.createdAt ?? CairoTimeHelper.now(),
+        updatedAt: booking.updatedAt ?? CairoTimeHelper.now(),
       );
       _bookings.insert(0, createdBooking);
       return right(createdBooking);
@@ -890,7 +893,83 @@ class BookingsMockRepoImpl implements BookingsRepo {
         }
       }
 
-      final updated = booking.copyWith(updatedAt: CairoTimeHelper.now());
+      var toUpdate = booking;
+      // Re-validate discount if consultationFee changed on a discounted booking
+      if (existing.consultationFee != booking.consultationFee &&
+          booking.discountType != null &&
+          booking.discountType != DiscountTypeEnum.none) {
+        final fee = booking.consultationFee ?? 0;
+        final val = booking.discountValue ?? 0;
+        bool isInvalid = false;
+        if (booking.discountType == DiscountTypeEnum.fixedAmount && val > fee) {
+          isInvalid = true;
+        }
+        if (booking.netAmount < (booking.paidAmount ?? 0)) {
+          isInvalid = true;
+        }
+        if (isInvalid) {
+          toUpdate = booking.copyWith(
+            discountType: DiscountTypeEnum.none,
+            discountValue: 0,
+            discountReason: null,
+            discountRemovedReason: 'invalid_after_fee_change',
+          );
+        }
+      }
+
+      final updated = toUpdate.copyWith(updatedAt: CairoTimeHelper.now());
+      _bookings[index] = updated;
+      return right(updated);
+    } catch (e) {
+      return left(ServerFailure(errMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failures, BookingModel>> applyDiscount(
+    ApplyDiscountParams params,
+  ) async {
+    try {
+      final index = _bookings.indexWhere((b) => b.id == params.bookingId);
+      if (index == -1) {
+        return left(const ServerFailure(errMessage: 'Booking not found'));
+      }
+      final existing = _bookings[index];
+      final now = CairoTimeHelper.now();
+      final updated = existing.copyWith(
+        discountType: params.discountType,
+        discountValue: params.discountValue,
+        discountReason: params.reason,
+        discountApprovedByUserId: params.approvedByUserId,
+        discountApprovedAt: now,
+        discountRemovedReason: null,
+        updatedAt: now,
+      );
+      _bookings[index] = updated;
+      return right(updated);
+    } catch (e) {
+      return left(ServerFailure(errMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failures, BookingModel>> removeDiscount(
+    RemoveDiscountParams params,
+  ) async {
+    try {
+      final index = _bookings.indexWhere((b) => b.id == params.bookingId);
+      if (index == -1) {
+        return left(const ServerFailure(errMessage: 'Booking not found'));
+      }
+      final existing = _bookings[index];
+      final now = CairoTimeHelper.now();
+      final updated = existing.copyWith(
+        discountType: DiscountTypeEnum.none,
+        discountValue: 0,
+        discountReason: null,
+        discountRemovedReason: params.reason,
+        updatedAt: now,
+      );
       _bookings[index] = updated;
       return right(updated);
     } catch (e) {

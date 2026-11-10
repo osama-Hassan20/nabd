@@ -136,6 +136,7 @@ void main() {
           StaffPermissionEnum.refundPayment,
           StaffPermissionEnum.viewCashierShift,
           StaffPermissionEnum.applyManualDiscount,
+          StaffPermissionEnum.applyBookingDiscount,
           StaffPermissionEnum.accessHr,
           StaffPermissionEnum.calculateDoctorSettlement,
           StaffPermissionEnum.accessAnalytics,
@@ -213,6 +214,7 @@ void main() {
           StaffPermissionEnum.accessCashier,
           StaffPermissionEnum.collectPayment,
           StaffPermissionEnum.viewCashierShift,
+          StaffPermissionEnum.applyBookingDiscount,
         },
       );
     });

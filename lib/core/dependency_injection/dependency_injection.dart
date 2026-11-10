@@ -20,6 +20,7 @@ import 'package:eyadty/shared/cubit/basic_cubit.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/contracts/active_visit_lookup.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
@@ -28,7 +29,9 @@ import 'package:eyadty/features/bookings/domain/use_cases/get_booking_summary_us
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_doctor_bookings_for_date_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/remove_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
+import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 
 // Visits Feature
@@ -217,6 +220,28 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<GetDoctorBookingsForDateUseCase>(
     () => GetDoctorBookingsForDateUseCase(repo: getIt<BookingsRepo>()),
+  );
+  getIt.registerLazySingleton<ApplyBookingDiscountUseCase>(
+    () => ApplyBookingDiscountUseCase(
+      bookingsRepo: getIt<BookingsRepo>(),
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<RemoveBookingDiscountUseCase>(
+    () => RemoveBookingDiscountUseCase(
+      bookingsRepo: getIt<BookingsRepo>(),
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<UpdateRoleDiscountPolicyUseCase>(
+    () => UpdateRoleDiscountPolicyUseCase(
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
   );
 
   // ─── Visits Feature ────────────────────────────────────────────────────────

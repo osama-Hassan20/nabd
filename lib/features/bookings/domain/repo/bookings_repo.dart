@@ -4,8 +4,10 @@ import '../../../../core/uses_cases/params.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/booking_summary_model.dart';
 import '../../data/models/bookings_response_model.dart';
+import '../use_cases/params/apply_discount_params.dart';
 import '../use_cases/params/change_booking_status_params.dart';
 import '../use_cases/params/reassign_technician_params.dart';
+import '../use_cases/params/remove_discount_params.dart';
 
 abstract class BookingsRepo {
   Future<Either<Failures, BookingSummaryModel>> getBookingSummary({
@@ -24,6 +26,12 @@ abstract class BookingsRepo {
     BookingModel booking, {
     DateTime? customNow,
   });
+  Future<Either<Failures, BookingModel>> applyDiscount(
+    ApplyDiscountParams params,
+  );
+  Future<Either<Failures, BookingModel>> removeDiscount(
+    RemoveDiscountParams params,
+  );
   Future<Either<Failures, List<BookingModel>>> getDoctorBookingsForDate({
     required String doctorId,
     required DateTime date,
