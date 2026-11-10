@@ -13,7 +13,7 @@
 | **التقنية** | Flutter 3.x, Dart SDK ^3.13.1 |
 | **الحالة** | Mock data (بدون backend حقيقي بعد) |
 | **الإصدار الحالي** | v1.0.3+4 |
-| **الاختبارات** | 186/186 passed (100%) |
+| **الاختبارات** | 343/343 passed (100%) |
 | **التحليل** | `flutter analyze` → 0 issues |
 
 ---
@@ -60,7 +60,7 @@ lib/
 │   ├── settings/                      # إعدادات المنشأة والخدمات الطبية
 │   ├── cashier/                       # الخزينة والورديات (skeleton فقط)
 │   ├── hr/                            # الموارد البشرية (skeleton فقط)
-│   ├── visits/                        # الكشف والروشتة (skeleton فقط)
+│   ├── visits/                        # الكشف الطبي F-04a (مكتمل) + الروشتة F-04b
 │   └── analytics/                     # التقارير والإحصائيات (skeleton فقط)
 │
 └── shared/                            # مكونات مشتركة بين الفيتشرز
@@ -233,6 +233,39 @@ lib/
 
 **الاختبارات:**
 - `medical_services_catalog_test.dart`: passed
+
+---
+
+### 🩺 F-04a: محرك الكشف الطبي ومتابعة الزيارات (Doctor Consultation Engine)
+**الحالة:** ✅ مكتملة ومختبرة بالكامل (100%)
+
+**ما تم بناؤه:**
+- **Layer البيانات:**
+  - `VisitModel` — نموذج الكشف الكامل (100% nullable) يشمل الحقول السريرية (chiefComplaint, diagnosis, physicalExam, treatmentPlan...) وحالة الزيارة (triage, in_progress, finalized) وقفل الكشف.
+  - `VitalsModel` — تسجيل العلامات الحيوية وحساب مؤشر كتلة الجسم (BMI) التلقائي وتحذيرات الضغط والنبض والأكسجين والحرارة والوزن مع عتبات سريرية دقيقة (`VitalsThresholds`).
+  - `ConsultationQueueItemModel` — عنصر طابور الكشف المدمج بين الحجز وحالة الزيارة الحية.
+  - `VisitsRepo` (Interface) + `VisitsMockRepoImpl` — مستودع بيانات بالذاكرة مع seed لـ 3 زيارات تمثل حالات مختلفة وتزامن الحجوزات.
+- **Layer الدومين (Use Cases):**
+  - `StartConsultationUseCase` — بدء الكشف، تحديث حالة الحجز لـ inConsultation، إنشاء الزيارة، وفرض صلاحية `startConsultation` وقيد الطبيب المسند وتدقيق `visit_started`.
+  - `RecordVitalsUseCase` — تسجيل العلامات الحيوية من قبل التمريض أو الطبيب، تحويل حالة الزيارة لـ triage/in_progress، وتدقيق `vitals_recorded`.
+  - `SaveVisitDraftUseCase` — حفظ مسودة الملاحظات السريرية مع فحص الصلاحية وسجل التدقيق.
+  - `FinalizeVisitUseCase` — التحقق السريري الإلزامي للشكوى والتشخيص، إنهاء الزيارة، تحديث الحجز لـ completed عبر Saga آمنة بدون Rollback، وتدقيق `visit_finalized`.
+  - `GetDoctorQueueUseCase` — جلب طابور الكشف حسب الفرع والتاريخ والطبيب.
+- **Layer العرض (Presentation):**
+  - `VisitsCubit` + `VisitsState` + `VisitFormState` — إدارة حالة متكاملة بنمط SafeCubit، تشمل الحفظ التلقائي كل 30 ثانية للبيانات المعدلة فقط (`isDirty`) والتفريغ عند المغادرة (`flushDraftOnExit`).
+  - `VisitsPage` — دليل طابور الكشوفات المتجاوب (`AdaptiveVisitsView`) يدعم العرض المكتبي (جدول `ConsultationQueueTable`) واللوحي/المحمول (بطاقات `ConsultationQueueCard`).
+  - `DoctorConsultationScreen` — مساحة عمل الطبيب السريرية المتجاوبة (Desktop عمودين، Mobile عمود متدفق مع شريط سفلي)، بانر الحساسيات والأمراض المزمنة، ولوحة الملاحظات ولوحة العلامات الحيوية.
+  - **الحوارات:** `RecordVitalsDialog` (تسجيل العلامات مع مؤشرات الخطر)، `FinalizeVisitDialog` (تأكيد الإنهاء مع ملخص سريري).
+  - **نقاط الدخول من الحجوزات:** أزرار "بدء الكشف / استكمال الكشف" في جدول الحجوزات وبطاقة الحجز وشريط التفاصيل العلوي مقيدة بـ RBAC وتاريخ اليوم.
+- **الأمان والخصوصية (Security & RBAC):**
+  - صلاحية مستقلة `viewConsultationNotes` لمنع استراق النظر للسجلات الطبية.
+  - تدقيق أمني للأحداث بالمعرفات فقط (Zero Clinical/Vitals Data in Audit Log).
+  - حماية مسار `/visits/:id` بـ `AppRouter` عبر فحص الصلاحيات الحي وربط الطبيب المسند.
+
+**الاختبارات:**
+- موديول الزيارات: 129/129 passed (100%)
+- أزرار الكشف في الحجوزات: 5/5 passed (100%)
+- إجمالي اختبارات المشروع: 343/343 passed (100%)
 
 ---
 

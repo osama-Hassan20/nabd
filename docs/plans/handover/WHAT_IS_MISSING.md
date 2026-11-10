@@ -19,12 +19,13 @@ flowchart LR
     C --> D["✅ F-00 Doctors"]
     D --> E["✅ Bookings UI"]
     E --> F["✅ Patients UI"]
-    F --> G["⏳ F-04 Visits & Rx"]
-    G --> H["⏳ F-05 Cashier"]
-    H --> I["⏳ F-06 HR & Settlements"]
-    I --> J["⏳ F-07 Analytics"]
-    J --> K["⏳ F-08 Multi-Branch Settings"]
-    K --> L["🔴 Backend Integration"]
+    F --> G["✅ F-04a Consultation"]
+    G --> H["⏳ F-04b Prescription & Calibration"]
+    H --> I["⏳ F-05 Cashier"]
+    I --> J["⏳ F-06 HR & Settlements"]
+    J --> K["⏳ F-07 Analytics"]
+    K --> L["⏳ F-08 Multi-Branch Settings"]
+    L --> M["🔴 Backend Integration"]
 ```
 
 | الفيتشر | الحالة | الأولوية |
@@ -35,7 +36,8 @@ flowchart LR
 | ✅ F-00: الأطباء والجداول | مكتمل | — |
 | ✅ الحجوزات (UI) | مكتمل | — |
 | ✅ المرضى (UI) | مكتمل | — |
-| ⏳ F-04: الكشف والروشتة | Skeleton فقط | 🔴 عالية |
+| ✅ F-04a: الكشف الطبي ومتابعة الزيارات | مكتمل (100%) | — |
+| ⏳ F-04b: الروشتة ومعايرة الطباعة والأدوية | لم يبدأ بعد | 🔴 عالية |
 | ⏳ F-05: الخزينة والورديات | Skeleton فقط | 🔴 عالية |
 | ⏳ F-06: HR والمرتبات | Skeleton فقط | 🟡 متوسطة |
 | ⏳ F-07: التقارير والإحصائيات | Skeleton فقط | 🟡 متوسطة |
@@ -46,53 +48,22 @@ flowchart LR
 
 ## 🔴 الأولوية القصوى: الفيتشرز الناقصة بالكامل
 
-### 1️⃣ F-04: الكشف والروشتة ومعايرة الطباعة
-**الملف الموجود حالياً:** `lib/features/visits/presentation/pages/visits_page.dart` (skeleton فارغ)
+### 1️⃣ F-04b: الروشتة ومعايرة الطباعة وكتالوج الأدوية (Prescription & Print Calibration)
+> **ملاحظة:** تم إنجاز **F-04a (محرك الكشف الطبي، العلامات الحيوية، طابور الكشوفات، الحفظ التلقائي، وإغلاق الزيارة)** بالكامل مع 129 اختباراً ناجحاً. ما تبقى من F-04 هو الشق الدوائي والطباعي أدناه.
 
-**ما يجب بناؤه كاملاً:**
+**ما يجب بناؤه في F-04b:**
 
-#### Layer البيانات
-```
-lib/features/visits/
-├── data/models/
-│   ├── visit_model.dart               # symptoms, diagnosis, vitals, notes (100% nullable)
-│   ├── prescription_model.dart        # medications, dosage, frequency, duration
-│   └── prescription_template_model.dart  # Bounding box calibrations
-├── data/repo/
-│   └── visits_mock_repo_impl.dart     # Mock CRUD للزيارات
-├── domain/repo/visits_repo.dart
-└── domain/use_cases/
-    ├── get_visit_details_use_case.dart
-    ├── save_consultation_notes_use_case.dart
-    ├── save_prescription_use_case.dart
-    └── calibrate_print_template_use_case.dart
-```
+#### Layer البيانات والدومين
+- `prescription_model.dart` — نموذج الروشتة (medications, dosage, frequency, duration, instructions).
+- `prescription_template_model.dart` — إحداثيات وهوامش المعايرة (Canvas Bounding Box).
+- `drug_model.dart` — كتالوج الأدوية والأسماء العلمية والتجارية وأشكال الجرعات.
+- `save_prescription_use_case.dart` و `calibrate_print_template_use_case.dart`.
 
 #### Layer العرض
-```
-├── presentation/
-│   ├── manager/visits_cubit.dart      # Single Cubit (اللازم!)
-│   ├── manager/visits_state.dart
-│   ├── pages/
-│   │   ├── visits_page.dart           # Active Consultations Directory
-│   │   ├── doctor_consultation_screen.dart   # Doctor Workspace
-│   │   └── prescription_calibration_page.dart # Canvas Bounding Box
-│   └── widgets/
-│       ├── patient_vitals_banner.dart # BP, Pulse, Temp, Weight, BMI
-│       ├── diagnosis_selector_widget.dart
-│       ├── prescription_rx_table.dart
-│       ├── prescription_pdf_preview.dart
-│       └── print_action_button.dart
-```
-
-#### ⭐ الميزة التنافسية الكبرى: Canvas Calibration Engine
-الدكتور يرفع صورة ورقة روشتته المطبوعة مسبقاً، والنظام يتيح له Drag & Drop لتحديد:
-- `headerMarginTop` — مساحة اللوجو والهيدر
-- `patientInfoBox` — إحداثيات اسم المريض والتاريخ
-- `medicationsBox` — إحداثيات الأدوية والجرعات
-- `footerMarginBottom` — مساحة الفوتر والتوقيع
-
-ثم يولد PDF يطبع فقط النص في المكان الصحيح على الورق الفعلي!
+- `PrescriptionBuilderPanel` داخل شاشة الكشف لإضافة وحذف الأدوية بالجرعات وتكرار الروشتات السابقة.
+- `PrescriptionCalibrationPage` — صفحة معايرة Canvas مع Drag & Drop لتحديد هوامش الهيدر والفوتر والجدول.
+- `PrescriptionPdfPreview` + زر الطباعة الفورية الصامتة.
+- قوالب التشخيص والروشتات الجاهزة لتسريع عمل الطبيب.
 
 > **مرجع التفاصيل الكاملة:** [`docs/plans/PKG-B-visit-prescription-drugs.md`](../PKG-B-visit-prescription-drugs.md)
 

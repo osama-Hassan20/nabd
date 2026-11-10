@@ -9,7 +9,7 @@
 - **الموجة الحالية:** Wave 1 (F-02 ✅ | F-01 ✅ | F-03 ⏳ التالي | F-04)
 - **الفرع الحالي:** `v1.0.0`
 - **آخر فحص برمجي:** `flutter analyze --no-pub` -> 0 issues found.
-- **آخر اختبار للمشروع:** `flutter test` -> 186/186 passed (100%).
+- **آخر اختبار للمشروع:** `flutter test` -> 343/343 passed (100%).
 
 ---
 
@@ -100,4 +100,53 @@
   - تحديث ديناميكي للمفتاح العلوي للفروع `HeaderBranchSwitcher` بالاعتماد على الفروع المسندة للمستخدم في `SessionCubit` وللمالك كافة الفروع.
   - إتاحة نسخ إعدادات الفروع (ساعات العمل، العطل الرسمية) ومزامنتها لحظياً مع `SettingsRepo`.
   - عزل إعدادات المنشأة وساعات العمل والعطل الرسمية حسب الفرع النشط في الجلسة `activeBranchId`.
-- **الخطوة الجاية:** البدء في **F-03 — سجل النشاط والأمان (Security Audit Log)** استمراراً للموجة 1.
+
+---
+
+### F-04a: محرك الكشف الطبي ومتابعة الزيارات (Doctor Consultation Engine)
+- **الحالة:** 🟢 مكتملة ومختبرة (100%)
+- **الـ Commits:**
+  - `182edc3`: `feat(F-04a-M1): add visits permissions to StaffPermissionEnum`
+  - `8fe2823`: `feat(F-04a-M1b): add viewConsultationNotes permission and update router guard`
+  - `1180da4`: `feat(F-04a-M2): data layer, domain, saga, and booking lock guard`
+  - `f268e50`: `fix(F-04a-M2): enforce visit permissions in domain, audit coverage`
+  - `d815bb6`: `feat(F-04a-M3): VisitsCubit with auto-save and permissions`
+  - `35b1e76`: `fix(F-04a-M3): vitals thresholds, start permission, audit, provider, ui permissions`
+  - `eb368f1`: `feat(F-04a-M4): visits queue UI, vitals dialog, routing`
+  - `e2b3f85`: `fix(F-04a-M4): permission-driven row actions, session cleanup, date/branch guards`
+  - `d01e70d`: `feat(F-04a-M5): DoctorConsultationScreen, finalize flow, booking entry points`
+  - `03eb5a5`: `fix(F-04a-M5): domain finalize validation, audit per-open, booking button tests`
+- **الملفات الرئيسية:**
+  - `lib/features/visits/data/models/visit_model.dart`
+  - `lib/features/visits/data/models/vitals_model.dart`
+  - `lib/features/visits/data/models/consultation_queue_item_model.dart`
+  - `lib/features/visits/data/repo/visits_mock_repo_impl.dart`
+  - `lib/features/visits/domain/use_cases/start_consultation_use_case.dart`
+  - `lib/features/visits/domain/use_cases/record_vitals_use_case.dart`
+  - `lib/features/visits/domain/use_cases/save_visit_draft_use_case.dart`
+  - `lib/features/visits/domain/use_cases/finalize_visit_use_case.dart`
+  - `lib/features/visits/domain/use_cases/get_doctor_queue_use_case.dart`
+  - `lib/features/visits/presentation/manager/visits_cubit.dart`
+  - `lib/features/visits/presentation/pages/visits_page.dart`
+  - `lib/features/visits/presentation/pages/doctor_consultation_screen.dart`
+  - `lib/features/visits/presentation/widgets/consultation_queue_table.dart`
+  - `lib/features/visits/presentation/widgets/consultation_queue_card.dart`
+  - `lib/features/visits/presentation/widgets/dialogs/record_vitals_dialog.dart`
+  - `lib/features/visits/presentation/widgets/dialogs/finalize_visit_dialog.dart`
+  - `lib/features/visits/presentation/widgets/consultation_notes_panel.dart`
+  - `lib/features/visits/presentation/widgets/vitals_input_panel.dart`
+  - `lib/features/visits/presentation/widgets/patient_allergy_banner.dart`
+  - `lib/features/visits/presentation/helpers/consultation_action_helper.dart`
+- **نتيجة الفحص (flutter analyze):** 0 issues found (خالٍ تماماً من الأخطاء والتحذيرات)
+- **نتيجة الاختبارات (flutter test):**
+  - موديول الزيارات (`test/features/visits/`): 129/129 passed (100%)
+  - موديول الحجوزات (`test/features/bookings/`): 35/35 passed (100%)
+  - كامل المشروع: 343/343 passed (100%)
+- **القرارات المعمارية المنفذة:**
+  - قفل الحجز عند الكشف فقط لحالة `in_progress`، مع السماح بالإلغاء وعدم الحضور وإعادة الجدولة لحالة `triage`.
+  - التحقق الدوميني الصارم لإلزامية الشكوى الرئيسية والتشخيص قبل الشروع في أي تغيير لحالة الحجز لتفادي الحاجة للـ Saga Rollback.
+  - تدقيق أمني بمعرفات الزيارة فقط (Zero Clinical/Vitals Data) امتثالاً للخصوصية الطبية.
+  - استحداث صلاحية مستقلة `viewConsultationNotes` لعزل وتأمين فتح السجلات الطبية.
+  - الحفظ التلقائي الدوري كل 30 ثانية للبيانات المعدلة فقط (`isDirty`) والتفريغ الإجباري (`flushDraftOnExit`) عند المغادرة.
+  - عزل حظر تسجيل العلامات الحيوية للمالك غير الممارس على طبقة الـ UI (`ConsultationActionHelper`) دون المساس بمركزية `PermissionEvaluator`.
+- **الخطوة الجاية:** البدء في **F-04b — الروشتة ومعايرة الطباعة (Prescriptions & Print Calibration)** أو **B-DISC (نظام الخصومات التلقائية واليدوية)** حسب توجيه المستخدم.
