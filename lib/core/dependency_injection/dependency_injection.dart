@@ -40,6 +40,7 @@ import 'package:eyadty/features/visits/domain/use_cases/get_visit_by_booking_id_
 import 'package:eyadty/features/visits/domain/use_cases/record_vitals_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/save_visit_draft_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/start_consultation_use_case.dart';
+import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 
 // Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
@@ -522,6 +523,22 @@ Future<void> setupGetIt() async {
       toggleMedicalServiceStatusUseCase:
           getIt<ToggleMedicalServiceStatusUseCase>(),
       deleteMedicalServiceUseCase: getIt<DeleteMedicalServiceUseCase>(),
+    ),
+  );
+
+  getIt.registerFactory<VisitsCubit>(
+    () => VisitsCubit(
+      visitsRepo: getIt<VisitsRepo>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+      patientsRepo: getIt<PatientsRepo>(),
+      getDoctorQueueUseCase: getIt<GetDoctorQueueUseCase>(),
+      getVisitByBookingIdUseCase: getIt<GetVisitByBookingIdUseCase>(),
+      startConsultationUseCase: getIt<StartConsultationUseCase>(),
+      saveVisitDraftUseCase: getIt<SaveVisitDraftUseCase>(),
+      recordVitalsUseCase: getIt<RecordVitalsUseCase>(),
+      finalizeVisitUseCase: getIt<FinalizeVisitUseCase>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
     ),
   );
 }
