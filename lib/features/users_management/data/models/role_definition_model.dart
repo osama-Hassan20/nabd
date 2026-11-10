@@ -102,6 +102,7 @@ class RoleDefinitionModel extends Equatable {
           StaffPermissionEnum.accessPatients,
           StaffPermissionEnum.createPatient,
           StaffPermissionEnum.editPatient,
+          StaffPermissionEnum.viewVisitsQueue,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
           StaffPermissionEnum.accessDoctors,
           StaffPermissionEnum.manageDoctorSchedules,
@@ -132,6 +133,7 @@ class RoleDefinitionModel extends Equatable {
         permissions: [
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.accessPatients,
+          StaffPermissionEnum.viewVisitsQueue,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
           StaffPermissionEnum.accessDoctors,
           StaffPermissionEnum.approveLeavesAndReferrals,
@@ -151,6 +153,9 @@ class RoleDefinitionModel extends Equatable {
         permissions: [
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.accessPatients,
+          StaffPermissionEnum.viewVisitsQueue,
+          StaffPermissionEnum.startConsultation,
+          StaffPermissionEnum.recordVitals,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
           StaffPermissionEnum.editMedicalDiagnosis,
           StaffPermissionEnum.issuePrescription,
@@ -170,6 +175,8 @@ class RoleDefinitionModel extends Equatable {
         permissions: [
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.accessPatients,
+          StaffPermissionEnum.viewVisitsQueue,
+          StaffPermissionEnum.recordVitals,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
         ],
       ),

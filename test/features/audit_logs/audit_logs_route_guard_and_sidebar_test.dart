@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,9 @@ import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/constants/app_list.dart';
+import 'package:eyadty/features/audit_logs/data/repo/audit_logs_mock_repo_impl.dart';
+import 'package:eyadty/features/audit_logs/domain/repo/audit_logs_repo.dart';
+import 'package:eyadty/features/audit_logs/presentation/cubit/audit_logs_cubit.dart';
 import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
@@ -44,6 +48,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await AppSharedPreferences.initialSharedPreference();
     await EasyLocalization.ensureInitialized();
+    await initializeDateFormatting('ar', null);
   });
 
   setUp(() async {
@@ -51,8 +56,12 @@ void main() {
 
     auditLogger = InMemoryAuditLogger(seedInitialLogs: true);
     sessionCubit = SessionCubit(SessionState.initial());
+    final repo = AuditLogsMockRepoImpl(auditLogger: auditLogger);
+    final cubit = AuditLogsCubit(repo: repo);
 
     getIt.registerSingleton<AuditLogger>(auditLogger);
+    getIt.registerSingleton<AuditLogsRepo>(repo);
+    getIt.registerSingleton<AuditLogsCubit>(cubit);
     getIt.registerSingleton<SessionCubit>(sessionCubit);
   });
 

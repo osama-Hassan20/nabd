@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
@@ -41,7 +42,7 @@ void main() {
         serviceName: 'كشف باطنة عامة',
         consultationFee: 250,
         totalPrice: 250,
-        date: DateTime(2026, 11, 10),
+        date: CairoTimeHelper.now().add(const Duration(days: 1)),
         startTime: '10:00',
         endTime: '10:30',
         durationMinutes: 30,
@@ -72,7 +73,7 @@ void main() {
         patientName: 'منى خليل',
         consultationFee: 200,
         totalPrice: 200,
-        date: DateTime(2026, 11, 10),
+        date: CairoTimeHelper.now().add(const Duration(days: 1)),
         status: BookingStatusEnum.scheduled,
       );
 

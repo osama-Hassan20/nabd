@@ -123,6 +123,7 @@ void main() {
           StaffPermissionEnum.accessPatients,
           StaffPermissionEnum.createPatient,
           StaffPermissionEnum.editPatient,
+          StaffPermissionEnum.viewVisitsQueue,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
           StaffPermissionEnum.accessDoctors,
           StaffPermissionEnum.manageDoctorSchedules,
@@ -150,6 +151,7 @@ void main() {
         {
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.accessPatients,
+          StaffPermissionEnum.viewVisitsQueue,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
           StaffPermissionEnum.accessDoctors,
           StaffPermissionEnum.approveLeavesAndReferrals,
@@ -166,6 +168,9 @@ void main() {
         {
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.accessPatients,
+          StaffPermissionEnum.viewVisitsQueue,
+          StaffPermissionEnum.startConsultation,
+          StaffPermissionEnum.recordVitals,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
           StaffPermissionEnum.editMedicalDiagnosis,
           StaffPermissionEnum.issuePrescription,
@@ -182,6 +187,8 @@ void main() {
         {
           StaffPermissionEnum.accessLiveQueue,
           StaffPermissionEnum.accessPatients,
+          StaffPermissionEnum.viewVisitsQueue,
+          StaffPermissionEnum.recordVitals,
           StaffPermissionEnum.viewMedicalRecordDiagnostics,
         },
       );

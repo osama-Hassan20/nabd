@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
@@ -15,7 +16,6 @@ import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.da
 import 'package:eyadty/features/audit_logs/presentation/pages/dialogs/audit_log_details_dialog.dart';
 import 'package:eyadty/features/audit_logs/presentation/widgets/audit_logs_filter_bar.dart';
 import 'package:eyadty/features/audit_logs/presentation/widgets/audit_logs_table.dart';
-import 'package:eyadty/features/users_management/data/models/security_audit_log_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/shared/widgets/custom_empty_widget.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
@@ -53,6 +53,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await AppSharedPreferences.initialSharedPreference();
     await EasyLocalization.ensureInitialized();
+    await initializeDateFormatting('ar', null);
   });
 
   setUp(() async {
