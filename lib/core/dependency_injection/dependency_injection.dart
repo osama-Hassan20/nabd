@@ -6,7 +6,9 @@ import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/notification_service.dart';
+import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/shared/app_layout/data/repositories/layout_repo_impl.dart';
 import 'package:eyadty/shared/app_layout/domain/repositories/layout_repo.dart';
 import 'package:eyadty/shared/app_layout/domain/use_cases/get_profile_use_case.dart';
@@ -94,7 +96,6 @@ import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 
 // Features
 import 'package:eyadty/features/home_dashboard/presentation/cubit/home_dashboard_cubit.dart';
-import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/branches/domain/repo/branches_repo.dart';
 import 'package:eyadty/features/branches/data/repo/branches_mock_repo_impl.dart';
 import 'package:eyadty/features/branches/presentation/cubit/branches_cubit.dart';
@@ -148,6 +149,9 @@ Future<void> setupGetIt() async {
     () => SessionCubit(SessionState.initial()),
   );
   getIt.registerLazySingleton<CurrentRoleProvider>(() => getIt<SessionCubit>());
+  getIt.registerLazySingleton<PermissionEvaluator>(
+    () => getIt<SessionCubit>().permissionEvaluator,
+  );
 
   // ─── Shared & Auth ─────────────────────────────────────────────────────────
   getIt.registerLazySingleton<LoginRepo>(
@@ -235,21 +239,30 @@ Future<void> setupGetIt() async {
     () => StartConsultationUseCase(
       visitsRepo: getIt<VisitsRepo>(),
       bookingsRepo: getIt<BookingsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
     ),
   );
   getIt.registerLazySingleton<SaveVisitDraftUseCase>(
-    () => SaveVisitDraftUseCase(repo: getIt<VisitsRepo>()),
+    () => SaveVisitDraftUseCase(
+      repo: getIt<VisitsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+    ),
   );
   getIt.registerLazySingleton<RecordVitalsUseCase>(
     () => RecordVitalsUseCase(
       visitsRepo: getIt<VisitsRepo>(),
       bookingsRepo: getIt<BookingsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
     ),
   );
   getIt.registerLazySingleton<FinalizeVisitUseCase>(
     () => FinalizeVisitUseCase(
       visitsRepo: getIt<VisitsRepo>(),
       bookingsRepo: getIt<BookingsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
     ),
   );
 

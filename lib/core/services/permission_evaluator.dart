@@ -38,13 +38,14 @@ class PermissionEvaluator {
     if (user.isOwner == true) {
       // Clinical write actions require valid linked doctor profile and patient assignment
       if (permission == StaffPermissionEnum.editMedicalDiagnosis ||
-          permission == StaffPermissionEnum.issuePrescription) {
+          permission == StaffPermissionEnum.issuePrescription ||
+          permission == StaffPermissionEnum.startConsultation) {
         if (!user.isPracticingDoctor) {
-          return false; // Non-practicing owner cannot write diagnosis or prescription
+          return false; // Non-practicing owner cannot write diagnosis or start consultation
         }
         if (patientDoctorIds != null &&
             !patientDoctorIds.contains(user.linkedDoctorId)) {
-          return false; // Cannot prescribe for a patient not assigned to them
+          return false; // Cannot start consultation or prescribe for a patient not assigned to them
         }
       }
       return true; // Owner has all other facility and view permissions
@@ -83,9 +84,10 @@ class PermissionEvaluator {
     }
 
     // ─── 4. Clinical Context & Fail-Closed Guard Rules ────────────────────────
-    // 4.1 Diagnosis & Prescription Writing: Strict requirement for practicing doctor assigned to patient
+    // 4.1 Diagnosis & Prescription Writing & Start Consultation: Strict requirement for practicing doctor assigned to patient
     if (permission == StaffPermissionEnum.editMedicalDiagnosis ||
-        permission == StaffPermissionEnum.issuePrescription) {
+        permission == StaffPermissionEnum.issuePrescription ||
+        permission == StaffPermissionEnum.startConsultation) {
       if (!user.isPracticingDoctor) {
         return false;
       }

@@ -1,5 +1,8 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/services/audit_logger.dart';
+import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/uses_cases/use_cases.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../bookings/data/models/enums/booking_status_enum.dart';
@@ -35,14 +38,31 @@ class RecordVitalsParams {
 class RecordVitalsUseCase implements UseCase<VisitModel, RecordVitalsParams> {
   final VisitsRepo visitsRepo;
   final BookingsRepo bookingsRepo;
+  final PermissionEvaluator? permissionEvaluator;
+  final AuditLogger? auditLogger;
 
   RecordVitalsUseCase({
     required this.visitsRepo,
     required this.bookingsRepo,
+    this.permissionEvaluator,
+    this.auditLogger,
   });
 
   @override
   Future<Either<Failures, VisitModel>> call(RecordVitalsParams params) async {
+    // 1. Permission Evaluation: Requires recordVitals
+    if (permissionEvaluator != null) {
+      final canRecord = permissionEvaluator!.can(
+        StaffPermissionEnum.recordVitals,
+        branchId: params.branchId,
+      );
+      if (!canRecord) {
+        return const Left(
+          ValidationFailure(errMessage: 'permission_denied_record_vitals'),
+        );
+      }
+    }
+
     final bookingRes = await bookingsRepo.getBookingById(params.bookingId);
     BookingStatusEnum? status;
     String? bBranchId;
@@ -80,7 +100,7 @@ class RecordVitalsUseCase implements UseCase<VisitModel, RecordVitalsParams> {
       );
     }
 
-    return visitsRepo.recordVitals(
+    final recordRes = await visitsRepo.recordVitals(
       bookingId: params.bookingId,
       patientId: params.patientId,
       branchId: params.branchId,
@@ -91,5 +111,27 @@ class RecordVitalsUseCase implements UseCase<VisitModel, RecordVitalsParams> {
       specialty: params.specialty,
       vitals: params.vitals,
     );
+
+    if (recordRes.isLeft()) {
+      return recordRes;
+    }
+
+    final savedVisit =
+        recordRes.getOrElse(() => throw StateError('unreachable'));
+
+    // Security Audit Log (Identifiers only, zero clinical content or measurements)
+    auditLogger?.log(
+      eventType: 'vitals_recorded',
+      performedByUserId:
+          permissionEvaluator?.userProvider.currentUser?.id ??
+              params.vitals.recordedByUserId,
+      performedByUserName:
+          permissionEvaluator?.userProvider.currentUser?.fullName,
+      branchId: params.branchId,
+      details:
+          'visitId=${savedVisit.id}, bookingId=${params.bookingId}, patientId=${params.patientId}, branchId=${params.branchId}',
+    );
+
+    return recordRes;
   }
 }

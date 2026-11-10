@@ -76,7 +76,7 @@ class VisitsPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
-                    'قيد التطوير: محرك الكشف وطباعة الروشتة الذكية',
+                    'visits_under_development'.tr(),
                     style: CustomAppFontStyle.medium13.copyWith(
                       color: AppColors.secondary,
                     ),

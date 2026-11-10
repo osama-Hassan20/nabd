@@ -134,6 +134,16 @@ void main() {
       // Low SpO2
       const lowO2 = VitalsModel(oxygenSaturation: 92);
       expect(lowO2.oxygenSaturationWarning, isTrue);
+
+      // Explicit Plan §8 T13-T15 cases
+      const extremeSys = VitalsModel(systolicBp: 205);
+      expect(extremeSys.systolicBpWarning, isTrue);
+
+      const normalO2 = VitalsModel(oxygenSaturation: 98);
+      expect(normalO2.oxygenSaturationWarning, isFalse);
+
+      const criticalO2 = VitalsModel(oxygenSaturation: 88);
+      expect(criticalO2.oxygenSaturationWarning, isTrue);
     });
 
     test('copyWith updates specified fields only', () {
@@ -272,3 +282,4 @@ void main() {
     });
   });
 }
+

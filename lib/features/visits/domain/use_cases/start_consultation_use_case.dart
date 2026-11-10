@@ -1,5 +1,8 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/services/audit_logger.dart';
+import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/uses_cases/use_cases.dart';
 import '../../../bookings/data/models/enums/booking_status_enum.dart';
 import '../../../bookings/domain/repo/bookings_repo.dart';
@@ -33,17 +36,35 @@ class StartConsultationUseCase
     implements UseCase<VisitModel, StartConsultationParams> {
   final VisitsRepo visitsRepo;
   final BookingsRepo bookingsRepo;
+  final PermissionEvaluator? permissionEvaluator;
+  final AuditLogger? auditLogger;
 
   StartConsultationUseCase({
     required this.visitsRepo,
     required this.bookingsRepo,
+    this.permissionEvaluator,
+    this.auditLogger,
   });
 
   @override
   Future<Either<Failures, VisitModel>> call(
     StartConsultationParams params,
   ) async {
-    // 1. Fetch current booking to know previous status for rollback
+    // 1. Permission Evaluation: Requires startConsultation + doctor matches booking.doctorId
+    if (permissionEvaluator != null) {
+      final canStart = permissionEvaluator!.can(
+        StaffPermissionEnum.startConsultation,
+        branchId: params.branchId,
+        patientDoctorIds: {params.doctorId},
+      );
+      if (!canStart) {
+        return const Left(
+          ValidationFailure(errMessage: 'permission_denied_start_consultation'),
+        );
+      }
+    }
+
+    // 2. Fetch current booking to know previous status for rollback
     final bookingRes = await bookingsRepo.getBookingById(params.bookingId);
     if (bookingRes.isLeft()) {
       return const Left(ValidationFailure(errMessage: 'booking_not_found'));
@@ -52,7 +73,7 @@ class StartConsultationUseCase
     final booking = bookingRes.getOrElse(() => throw StateError('unreachable'));
     final previousStatus = booking.status ?? BookingStatusEnum.waiting;
 
-    // 2. Step 1: Change booking status to inConsultation directly via BookingsRepo
+    // 3. Step 1: Change booking status to inConsultation directly via BookingsRepo
     final changeRes = await bookingsRepo.changeBookingStatus(
       ChangeBookingStatusParams(
         bookingId: params.bookingId,
@@ -67,7 +88,7 @@ class StartConsultationUseCase
       );
     }
 
-    // 3. Step 2: Upsert consultation start in visits repo
+    // 4. Step 2: Upsert consultation start in visits repo
     final visitRes = await visitsRepo.upsertConsultationStart(
       bookingId: params.bookingId,
       patientId: params.patientId,
@@ -79,7 +100,7 @@ class StartConsultationUseCase
       specialty: params.specialty,
     );
 
-    // 4. Compensation on failure of step 2
+    // 5. Compensation on failure of step 2
     if (visitRes.isLeft()) {
       await bookingsRepo.changeBookingStatus(
         ChangeBookingStatusParams(
@@ -89,6 +110,22 @@ class StartConsultationUseCase
       );
       return visitRes;
     }
+
+    final startedVisit =
+        visitRes.getOrElse(() => throw StateError('unreachable'));
+
+    // 6. Security Audit Log (Identifiers only, zero clinical content)
+    auditLogger?.log(
+      eventType: 'visit_started',
+      performedByUserId:
+          permissionEvaluator?.userProvider.currentUser?.id ?? params.doctorId,
+      performedByUserName:
+          permissionEvaluator?.userProvider.currentUser?.fullName ??
+              params.doctorName,
+      branchId: params.branchId,
+      details:
+          'visitId=${startedVisit.id}, bookingId=${params.bookingId}, patientId=${params.patientId}, doctorId=${params.doctorId}, branchId=${params.branchId}',
+    );
 
     return visitRes;
   }
