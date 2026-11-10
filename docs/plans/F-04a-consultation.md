@@ -385,6 +385,28 @@ abstract class VisitsRepo {
 
 ---
 
+### 3.7 توفير VisitsCubit (Lifecycle & Scoping)
+1. **تسجيل الـ Cubit في DI:**
+   - يُسجَّل `VisitsCubit` في `dependency_injection.dart` كـ `registerLazySingleton<VisitsCubit>`.
+   - **السبب:** اشتراك ثلاث شاشات ونقاط تفاعل في نفس الحالة:
+     1. شاشة طابور الكشف (`/visits`).
+     2. شاشة الكشف الطبي النشط (`/visits/:id`).
+     3. زر "بدء الكشف" وأزرار الإجراءات داخل شاشة الحجوزات (`BookingsPage` و `BookingDetailsPage`).
+2. **عمر الـ Auto-Save Timer:**
+   - الـ Timer (كل 30 ثانية) **لا يعمل طوال الوقت**؛ يبدأ فقط عند فتح كشف نشط (`loadActiveVisit`) عبر `startAutoSave()`.
+   - يتوقف الـ Timer فوراً عبر `stopAutoSave()` عند:
+     - الخروج من شاشة الكشف (`flushDraftOnExit()`).
+     - إنهاء الكشف (`finalizeVisit()`).
+     - إفراغ الكشف النشط (`clearActiveVisit()`).
+     - إغلاق الـ Cubit (`close()`).
+3. **حفظ المسودة الآمن عند الخروج (`flushDraftOnExit`):**
+   - ينفذ `await saveVisitDraftUseCase(draft)` في المستودع.
+   - محمي بفحص `if (!isClosed)` لمنع أي `emit` بعد الإغلاق، مما يضمن حفظ التعديلات في الذاكرة دون رمي أي `StateError`.
+4. **تحديث صلاحيات الـ UI ديناميكياً:**
+   - يشترك `VisitsCubit` في `SessionCubit.stream` ويعيد تقييم `canViewNotes` و `canEditDiagnosis` فور تغيير المستخدم أو تبديل الدور (`refreshPermissions()`)، مما ينعكس لحظياً على عناصر واجهة المستخدم.
+
+---
+
 ## 4. سيناريوهات الـ Saga (ترتيب العمليات والتعويض)
 
 > **تجاوز مقصود لقفل §3.4:** كلا من `StartConsultationUseCase` و `FinalizeVisitUseCase` يستدعيان `BookingsRepo.changeBookingStatus` مباشرة (عبر Repo Interface) لتغيير حالة الحجز دون المرور بـ `ChangeBookingStatusUseCase`، وهو تجاوز مقصود ومصمم لحركات الـ Saga المشروعة.
@@ -927,20 +949,23 @@ T15: RecordVitalsDialog لا يعرض ConsultationNotesPanel
 4. كتابة اختبارات M-3 (visit_permission_test, visits_cubit_test).
 5. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M3): VisitsCubit with auto-save and permissions`
 
-### M-4: واجهة الطابور (يوم 3-4)
+### M-4: واجهة الطابور وتسجيل العلامات الحيوية (يوم 3-4)
 1. إنشاء `ConsultationQueueTable`, `ConsultationQueueCard`, `AdaptiveVisitsView`, `VisitsFilterBar`, `VisitsShimmer`, `VisitStatusBadge`.
-2. استبدال `VisitsPage` Placeholder.
-3. إضافة route `/visits/:id` في `app_router.dart` بـ guard `viewConsultationNotes`.
-4. إضافة كل مفاتيح الترجمة ar-EG و en-US.
-5. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M4): visits queue UI and routing`
+2. إنشاء عناصر حساسية المريض والعلامات الحيوية: `PatientAllergyBanner`, `VitalsInputPanel`.
+3. إنشاء حوار تسجيل العلامات للممرض: `RecordVitalsDialog` (تسجيل العلامات فقط دون ملاحظات طبية).
+4. استبدال `VisitsPage` Placeholder بالواجهة التفاعلية الكاملة.
+5. إضافة route `/visits/:id` في `app_router.dart` بـ guard `viewConsultationNotes` يوجّه لصفحة Placeholder مؤقتة حتى M-5.
+6. إضافة كل مفاتيح الترجمة ar-EG و en-US واختبار اتساقها (`visits_translations_test.dart`).
+7. كتابة اختبارات الـ Widget لـ M-4 (`consultation_queue_ui_test.dart`, `record_vitals_dialog_test.dart`).
+8. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M4): visits queue UI, vitals dialog, routing`
 
 ### M-5: شاشة الكشف + زر الحجوزات (يوم 4-5)
-1. إنشاء `PatientAllergyBanner`, `VitalsInputPanel`, `ConsultationNotesPanel`.
-2. إنشاء `DoctorConsultationScreen` مع Auto-Save lifecycle.
-3. إنشاء `FinalizeVisitDialog`, `RecordVitalsDialog`.
+1. إنشاء `ConsultationNotesPanel` وقائمة الأمراض المزمنة.
+2. إنشاء `DoctorConsultationScreen` مع Auto-Save lifecycle وربط المسار `/visits/:id` بها.
+3. إنشاء `FinalizeVisitDialog` لتأكيد إنهاء الكشف وإقفال السجل.
 4. إضافة زر "بدء الكشف" في `BookingsPage` و`BookingDetailsPage`.
-5. كتابة اختبارات M-5 (visits_ui_test).
-6. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M5): DoctorConsultationScreen, vitals dialog, booking entry points`
+5. كتابة اختبارات M-5 (`visits_consultation_screen_test.dart`, `booking_start_consultation_test.dart`).
+6. `flutter analyze` = 0 | `flutter test` = 100%. Commit: `feat(F-04a-M5): DoctorConsultationScreen, finalize dialog, booking entry points`
 
 ### M-6: التحقق النهائي والإقفال
 1. مراجعة كل أحداث AuditLogger.

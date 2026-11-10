@@ -526,7 +526,7 @@ Future<void> setupGetIt() async {
     ),
   );
 
-  getIt.registerFactory<VisitsCubit>(
+  getIt.registerLazySingleton<VisitsCubit>(
     () => VisitsCubit(
       visitsRepo: getIt<VisitsRepo>(),
       bookingsRepo: getIt<BookingsRepo>(),
@@ -539,6 +539,9 @@ Future<void> setupGetIt() async {
       finalizeVisitUseCase: getIt<FinalizeVisitUseCase>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       auditLogger: getIt<AuditLogger>(),
+      sessionCubit: getIt.isRegistered<SessionCubit>()
+          ? getIt<SessionCubit>()
+          : null,
     ),
   );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
@@ -47,6 +48,7 @@ void main() {
   late MockUserSessionProvider userProvider;
   late MockRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
+  late SessionCubit sessionCubit;
 
   late GetDoctorQueueUseCase getDoctorQueueUseCase;
   late GetVisitByBookingIdUseCase getVisitByBookingIdUseCase;
@@ -67,8 +69,32 @@ void main() {
       roles: RoleDefinitionModel.defaultSystemRoles(),
     );
     userProvider = MockUserSessionProvider();
+
+    // Default: Doctor DOC-01
+    const docUser = StaffUserModel(
+      id: 'USR-DOC-01',
+      fullName: 'د. حسام الدين مصطفى',
+      isActive: true,
+      linkedDoctorId: 'DOC-01',
+      branchAssignments: [
+        BranchAssignmentModel(
+          branchId: 'branch_1',
+          isPrimary: true,
+          roleIds: [RoleIds.doctor],
+        ),
+      ],
+    );
+    userProvider.user = docUser;
+
+    sessionCubit = SessionCubit(
+      const SessionState(
+        currentUser: docUser,
+        activeBranchId: 'branch_1',
+      ),
+    );
+
     permissionEvaluator = PermissionEvaluator(
-      userProvider: userProvider,
+      userProvider: sessionCubit,
       rolesProvider: rolesProvider,
     );
 
@@ -97,21 +123,6 @@ void main() {
       auditLogger: auditLogger,
     );
 
-    // Default: Doctor DOC-01
-    userProvider.user = const StaffUserModel(
-      id: 'USR-DOC-01',
-      fullName: 'د. حسام الدين مصطفى',
-      isActive: true,
-      linkedDoctorId: 'DOC-01',
-      branchAssignments: [
-        BranchAssignmentModel(
-          branchId: 'branch_1',
-          isPrimary: true,
-          roleIds: [RoleIds.doctor],
-        ),
-      ],
-    );
-
     cubit = VisitsCubit(
       visitsRepo: visitsRepo,
       bookingsRepo: bookingsRepo,
@@ -124,11 +135,13 @@ void main() {
       finalizeVisitUseCase: finalizeVisitUseCase,
       permissionEvaluator: permissionEvaluator,
       auditLogger: auditLogger,
+      sessionCubit: sessionCubit,
     );
   });
 
-  tearDown(() {
-    cubit.close();
+  tearDown(() async {
+    await cubit.close();
+    await sessionCubit.close();
   });
 
   group('VisitsCubit Queue & Role Loading Tests', () {
@@ -145,11 +158,13 @@ void main() {
     });
 
     test('T2: loadDoctorQueue for Admin / Owner returns all doctors in branch', () async {
-      userProvider.user = const StaffUserModel(
-        id: 'USR-OWNER',
-        fullName: 'المالك',
-        isActive: true,
-        isOwner: true,
+      sessionCubit.switchMockUser(
+        const StaffUserModel(
+          id: 'USR-OWNER',
+          fullName: 'المالك',
+          isActive: true,
+          isOwner: true,
+        ),
       );
 
       await cubit.loadDoctorQueue();
@@ -179,16 +194,18 @@ void main() {
     });
 
     test('T4: loadActiveVisit for Nurse rejects loading (requires viewConsultationNotes)', () async {
-      userProvider.user = const StaffUserModel(
-        id: 'USR-NURSE-01',
-        fullName: 'ممرضة فاطمة',
-        isActive: true,
-        branchAssignments: [
-          BranchAssignmentModel(
-            branchId: 'branch_1',
-            roleIds: [RoleIds.nurse],
-          ),
-        ],
+      sessionCubit.switchMockUser(
+        const StaffUserModel(
+          id: 'USR-NURSE-01',
+          fullName: 'ممرضة فاطمة',
+          isActive: true,
+          branchAssignments: [
+            BranchAssignmentModel(
+              branchId: 'branch_1',
+              roleIds: [RoleIds.nurse],
+            ),
+          ],
+        ),
       );
 
       await cubit.loadActiveVisit('VIS-001');
@@ -209,15 +226,43 @@ void main() {
     test('T6: loadActiveVisit emits view_patient_medical_record and NOT view_patient_profile', () async {
       await cubit.loadActiveVisit('VIS-001');
 
-      // view_patient_medical_record was emitted
+      // view_patient_medical_record was emitted with visitId, patientId ONLY
       final medRecordLogs = auditLogger.getLogs(eventType: 'view_patient_medical_record');
       expect(medRecordLogs.length, 1);
-      expect(medRecordLogs.first.details, contains('visitId=VIS-001'));
-      expect(medRecordLogs.first.details, contains('patientId=PAT-000101'));
+      expect(medRecordLogs.first.details, 'visitId=VIS-001, patientId=PAT-000101');
 
       // STRICT: view_patient_profile was NOT emitted
       final profileLogs = auditLogger.getLogs(eventType: 'view_patient_profile');
       expect(profileLogs, isEmpty);
+    });
+
+    test('T6a: reload or refresh does NOT duplicate view_patient_medical_record audit log', () async {
+      await cubit.loadActiveVisit('VIS-001');
+      expect(auditLogger.getLogs(eventType: 'view_patient_medical_record').length, 1);
+
+      // Re-load / refresh same visit
+      await cubit.loadActiveVisit('VIS-001');
+      expect(auditLogger.getLogs(eventType: 'view_patient_medical_record').length, 1);
+    });
+
+    test('T6b: loadActiveVisit when permission denied never emits audit log', () async {
+      sessionCubit.switchMockUser(
+        const StaffUserModel(
+          id: 'USR-NURSE-01',
+          fullName: 'ممرضة فاطمة',
+          isActive: true,
+          branchAssignments: [
+            BranchAssignmentModel(
+              branchId: 'branch_1',
+              roleIds: [RoleIds.nurse],
+            ),
+          ],
+        ),
+      );
+
+      await cubit.loadActiveVisit('VIS-001');
+      expect(cubit.state.activeVisitStatus, RequestStatusEnum.failure);
+      expect(auditLogger.getLogs(eventType: 'view_patient_medical_record'), isEmpty);
     });
 
     test('T7: loadPatientAllergies for Nurse loads only allergies without chronic diseases', () async {
@@ -331,6 +376,51 @@ void main() {
       expect(cubit.state.actionStatus, RequestStatusEnum.success);
       expect(cubit.state.activeVisit?.status, VisitStatusEnum.finalized);
       expect(cubit.hasActiveTimer, isFalse);
+    });
+
+    test('T16: switching user role updates canViewNotes and canEditDiagnosis dynamically', () async {
+      await cubit.loadActiveVisit('VIS-001');
+      expect(cubit.state.canViewNotes, isTrue);
+      expect(cubit.state.canEditDiagnosis, isTrue);
+
+      // Switch to Nurse role
+      sessionCubit.switchMockUser(
+        const StaffUserModel(
+          id: 'USR-NURSE-01',
+          fullName: 'ممرضة فاطمة',
+          isActive: true,
+          branchAssignments: [
+            BranchAssignmentModel(
+              branchId: 'branch_1',
+              roleIds: [RoleIds.nurse],
+            ),
+          ],
+        ),
+      );
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.canViewNotes, isFalse);
+      expect(cubit.state.canEditDiagnosis, isFalse);
+    });
+
+    test('T17: flushDraftOnExit saves draft to repo even when cubit is closing/closed and does not throw', () async {
+      await cubit.loadActiveVisit('VIS-001');
+      cubit.updateDiagnosis('تشخيص جديد محفوظ عند الإغلاق');
+      expect(cubit.state.formState.isDirty, isTrue);
+
+      await cubit.close();
+      expect(cubit.isClosed, isTrue);
+
+      // Must complete without throwing StateError
+      await expectLater(cubit.flushDraftOnExit(), completes);
+
+      // Draft must be safely persisted in repo
+      final visit = await visitsRepo.getVisitByBookingId(bookingId: 'MED-101');
+      expect(
+        visit.getOrElse(() => null)?.diagnosis,
+        'تشخيص جديد محفوظ عند الإغلاق',
+      );
     });
   });
 

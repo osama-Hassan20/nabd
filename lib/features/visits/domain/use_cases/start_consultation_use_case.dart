@@ -50,28 +50,39 @@ class StartConsultationUseCase
   Future<Either<Failures, VisitModel>> call(
     StartConsultationParams params,
   ) async {
-    // 1. Permission Evaluation: Requires startConsultation + doctor matches booking.doctorId
-    if (permissionEvaluator != null) {
-      final canStart = permissionEvaluator!.can(
-        StaffPermissionEnum.startConsultation,
-        branchId: params.branchId,
-        patientDoctorIds: {params.doctorId},
-      );
-      if (!canStart) {
-        return const Left(
-          ValidationFailure(errMessage: 'permission_denied_start_consultation'),
-        );
-      }
-    }
-
-    // 2. Fetch current booking to know previous status for rollback
+    // 1. Fetch current booking to verify existence and assigned doctor
     final bookingRes = await bookingsRepo.getBookingById(params.bookingId);
     if (bookingRes.isLeft()) {
       return const Left(ValidationFailure(errMessage: 'booking_not_found'));
     }
 
     final booking = bookingRes.getOrElse(() => throw StateError('unreachable'));
+    final bookingDoctorId = booking.doctorId ?? params.doctorId;
     final previousStatus = booking.status ?? BookingStatusEnum.waiting;
+
+    // 2. Strict Permission Evaluation:
+    // Requires: startConsultation permission + user.linkedDoctorId == booking.doctorId
+    // - Non-practicing owner: REJECTED
+    // - Practicing owner for another doctor: REJECTED
+    // - Medical director / other roles: REJECTED unless assigned doctor (linkedDoctorId == booking.doctorId)
+    if (permissionEvaluator != null) {
+      final user = permissionEvaluator!.userProvider.currentUser;
+      final hasPermission = permissionEvaluator!.can(
+        StaffPermissionEnum.startConsultation,
+        branchId: params.branchId,
+        patientDoctorIds: {bookingDoctorId},
+      );
+      final isAssignedDoctor = user != null &&
+          user.canAuthenticate == true &&
+          user.isPracticingDoctor &&
+          user.linkedDoctorId == bookingDoctorId;
+
+      if (!hasPermission || !isAssignedDoctor) {
+        return const Left(
+          ValidationFailure(errMessage: 'permission_denied_start_consultation'),
+        );
+      }
+    }
 
     // 3. Step 1: Change booking status to inConsultation directly via BookingsRepo
     final changeRes = await bookingsRepo.changeBookingStatus(

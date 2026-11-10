@@ -90,60 +90,67 @@ void main() {
         heartRate: 75,
         temperature: 37.0,
         oxygenSaturation: 98,
+        weightKg: 70,
+        heightCm: 175,
       );
-      expect(normal.systolicBpWarning, isFalse);
-      expect(normal.diastolicBpWarning, isFalse);
-      expect(normal.heartRateWarning, isFalse);
-      expect(normal.temperatureWarning, isFalse);
-      expect(normal.oxygenSaturationWarning, isFalse);
+      expect(normal.systolicBpWarning, isNull);
+      expect(normal.diastolicBpWarning, isNull);
+      expect(normal.heartRateWarning, isNull);
+      expect(normal.temperatureWarning, isNull);
+      expect(normal.oxygenSaturationWarning, isNull);
+      expect(normal.weightWarning, isNull);
+      expect(normal.heightWarning, isNull);
       expect(normal.hasAnyWarning, isFalse);
 
-      // High systolic
-      const highSys = VitalsModel(systolicBp: 145);
-      expect(highSys.systolicBpWarning, isTrue);
+      // Systolic BP: min 60, max 200
+      const highSys = VitalsModel(systolicBp: 205);
+      expect(highSys.systolicBpWarning, 'visits_vitals_warn_bp_high');
       expect(highSys.hasAnyWarning, isTrue);
 
-      // Low systolic
-      const lowSys = VitalsModel(systolicBp: 85);
-      expect(lowSys.systolicBpWarning, isTrue);
+      const lowSys = VitalsModel(systolicBp: 55);
+      expect(lowSys.systolicBpWarning, 'visits_vitals_warn_bp_low');
 
-      // High diastolic
-      const highDia = VitalsModel(diastolicBp: 95);
-      expect(highDia.diastolicBpWarning, isTrue);
+      // Diastolic BP: min 40, max 130
+      const highDia = VitalsModel(diastolicBp: 135);
+      expect(highDia.diastolicBpWarning, 'visits_vitals_warn_bp_high');
 
-      // Low diastolic
-      const lowDia = VitalsModel(diastolicBp: 55);
-      expect(lowDia.diastolicBpWarning, isTrue);
+      const lowDia = VitalsModel(diastolicBp: 35);
+      expect(lowDia.diastolicBpWarning, 'visits_vitals_warn_bp_low');
 
-      // High heart rate
-      const tachy = VitalsModel(heartRate: 105);
-      expect(tachy.heartRateWarning, isTrue);
+      // Heart rate: min 30, max 200
+      const tachy = VitalsModel(heartRate: 205);
+      expect(tachy.heartRateWarning, 'visits_vitals_warn_hr_high');
 
-      // Low heart rate
-      const brady = VitalsModel(heartRate: 55);
-      expect(brady.heartRateWarning, isTrue);
+      const brady = VitalsModel(heartRate: 25);
+      expect(brady.heartRateWarning, 'visits_vitals_warn_hr_low');
 
-      // High temp
-      const fever = VitalsModel(temperature: 38.5);
-      expect(fever.temperatureWarning, isTrue);
+      // Temperature: min 34.0, max 42.0
+      const fever = VitalsModel(temperature: 42.5);
+      expect(fever.temperatureWarning, 'visits_vitals_warn_temp_high');
 
-      // Low temp
-      const hypo = VitalsModel(temperature: 35.5);
-      expect(hypo.temperatureWarning, isTrue);
+      const hypo = VitalsModel(temperature: 33.5);
+      expect(hypo.temperatureWarning, 'visits_vitals_warn_temp_low');
 
-      // Low SpO2
-      const lowO2 = VitalsModel(oxygenSaturation: 92);
-      expect(lowO2.oxygenSaturationWarning, isTrue);
+      // SpO2: min 90, max 100
+      const lowO2 = VitalsModel(oxygenSaturation: 88);
+      expect(lowO2.oxygenSaturationWarning, 'visits_vitals_warn_spo2_low');
 
-      // Explicit Plan §8 T13-T15 cases
-      const extremeSys = VitalsModel(systolicBp: 205);
-      expect(extremeSys.systolicBpWarning, isTrue);
+      const overO2 = VitalsModel(oxygenSaturation: 102);
+      expect(overO2.oxygenSaturationWarning, 'visits_vitals_warn_spo2_high');
 
-      const normalO2 = VitalsModel(oxygenSaturation: 98);
-      expect(normalO2.oxygenSaturationWarning, isFalse);
+      // Weight: min 1, max 300
+      const lowWeight = VitalsModel(weightKg: 0.5);
+      expect(lowWeight.weightWarning, 'visits_vitals_warn_weight_low');
 
-      const criticalO2 = VitalsModel(oxygenSaturation: 88);
-      expect(criticalO2.oxygenSaturationWarning, isTrue);
+      const highWeight = VitalsModel(weightKg: 310);
+      expect(highWeight.weightWarning, 'visits_vitals_warn_weight_high');
+
+      // Height: min 30, max 250
+      const lowHeight = VitalsModel(heightCm: 25);
+      expect(lowHeight.heightWarning, 'visits_vitals_warn_height_low');
+
+      const highHeight = VitalsModel(heightCm: 260);
+      expect(highHeight.heightWarning, 'visits_vitals_warn_height_high');
     });
 
     test('copyWith updates specified fields only', () {

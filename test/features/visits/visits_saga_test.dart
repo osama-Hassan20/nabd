@@ -216,6 +216,123 @@ void main() {
       expect(auditLogger.getLogs(eventType: 'visit_started'), isEmpty);
     });
 
+    test('RBAC: non-practicing owner is rejected from startConsultation', () async {
+      userProvider.user = const StaffUserModel(
+        id: 'USR-OWNER-01',
+        fullName: 'المالك غير الممارس',
+        isActive: true,
+        isOwner: true,
+        linkedDoctorId: null, // non-practicing
+      );
+
+      final res = await startConsultationUseCase(
+        const StartConsultationParams(
+          bookingId: 'MED-101',
+          patientId: 'PAT-000101',
+          branchId: 'branch_1',
+          patientName: 'سارة',
+          doctorId: 'DOC-01',
+          doctorName: 'د. حسام',
+        ),
+      );
+
+      expect(res.isLeft(), isTrue);
+      res.fold(
+        (f) => expect(f.errMessage, 'permission_denied_start_consultation'),
+        (_) => fail('should fail'),
+      );
+      expect(auditLogger.getLogs(eventType: 'visit_started'), isEmpty);
+    });
+
+    test('RBAC: practicing owner is rejected when starting consultation for another doctor', () async {
+      userProvider.user = const StaffUserModel(
+        id: 'USR-OWNER-DOC-02',
+        fullName: 'المالك الممارس',
+        isActive: true,
+        isOwner: true,
+        linkedDoctorId: 'DOC-02', // practicing as DOC-02
+      );
+
+      // Attempting to start consultation for MED-101 which is assigned to DOC-01
+      final res = await startConsultationUseCase(
+        const StartConsultationParams(
+          bookingId: 'MED-101',
+          patientId: 'PAT-000101',
+          branchId: 'branch_1',
+          patientName: 'سارة',
+          doctorId: 'DOC-01',
+          doctorName: 'د. حسام',
+        ),
+      );
+
+      expect(res.isLeft(), isTrue);
+      res.fold(
+        (f) => expect(f.errMessage, 'permission_denied_start_consultation'),
+        (_) => fail('should fail'),
+      );
+      expect(auditLogger.getLogs(eventType: 'visit_started'), isEmpty);
+    });
+
+    test('RBAC: medical director is rejected unless assigned doctor for the booking', () async {
+      // 1. Medical director with linkedDoctorId == 'DOC-02' trying to start for MED-101 (assigned to DOC-01) -> rejected
+      userProvider.user = const StaffUserModel(
+        id: 'USR-MED-DIR',
+        fullName: 'المدير الطبي',
+        isActive: true,
+        linkedDoctorId: 'DOC-02',
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: [RoleIds.medicalDirector],
+          ),
+        ],
+      );
+
+      final resDenied = await startConsultationUseCase(
+        const StartConsultationParams(
+          bookingId: 'MED-101',
+          patientId: 'PAT-000101',
+          branchId: 'branch_1',
+          patientName: 'سارة',
+          doctorId: 'DOC-01',
+          doctorName: 'د. حسام',
+        ),
+      );
+
+      expect(resDenied.isLeft(), isTrue);
+      resDenied.fold(
+        (f) => expect(f.errMessage, 'permission_denied_start_consultation'),
+        (_) => fail('should fail'),
+      );
+
+      // 2. Medical director who is ALSO assigned doctor role and is the assigned doctor for MED-102 -> accepted
+      userProvider.user = const StaffUserModel(
+        id: 'USR-MED-DIR-PRACTICING',
+        fullName: 'د. أحمد الشافعي - مدير طبي وممارس',
+        isActive: true,
+        linkedDoctorId: 'DOC-02',
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: [RoleIds.medicalDirector, RoleIds.doctor],
+          ),
+        ],
+      );
+
+      final resGranted = await startConsultationUseCase(
+        const StartConsultationParams(
+          bookingId: 'MED-102',
+          patientId: 'PAT-000102',
+          branchId: 'branch_1',
+          patientName: 'يوسف',
+          doctorId: 'DOC-02',
+          doctorName: 'د. أحمد الشافعي',
+        ),
+      );
+
+      expect(resGranted.isRight(), isTrue);
+    });
+
     test('fails when booking does not exist and logs nothing', () async {
       userProvider.user = const StaffUserModel(
         id: 'USR-DOC-01',

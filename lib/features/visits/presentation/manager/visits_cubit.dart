@@ -1,5 +1,6 @@
 import 'dart:async';
 import '../../../../core/base/safe_cubit.dart';
+import '../../../../core/cubits/session_cubit.dart';
 import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/services/audit_logger.dart';
 import '../../../../core/services/permission_evaluator.dart';
@@ -34,10 +35,13 @@ class VisitsCubit extends SafeCubit<VisitsState> {
   final FinalizeVisitUseCase finalizeVisitUseCase;
   final PermissionEvaluator permissionEvaluator;
   final AuditLogger? auditLogger;
+  final SessionCubit? sessionCubit;
   final Timer Function(Duration duration, void Function() callback)?
       timerFactory;
 
   Timer? _autoSaveTimer;
+  StreamSubscription<SessionState>? _sessionSubscription;
+  String? _lastAuditedVisitId;
 
   VisitsCubit({
     required this.visitsRepo,
@@ -51,8 +55,13 @@ class VisitsCubit extends SafeCubit<VisitsState> {
     required this.finalizeVisitUseCase,
     required this.permissionEvaluator,
     this.auditLogger,
+    this.sessionCubit,
     this.timerFactory,
-  }) : super(VisitsState.initial());
+  }) : super(VisitsState.initial()) {
+    _sessionSubscription = sessionCubit?.stream.listen((_) {
+      refreshPermissions();
+    });
+  }
 
   bool get hasActiveTimer => _autoSaveTimer != null && _autoSaveTimer!.isActive;
 
@@ -70,9 +79,39 @@ class VisitsCubit extends SafeCubit<VisitsState> {
     _autoSaveTimer = null;
   }
 
+  void refreshPermissions() {
+    final visit = state.activeVisit;
+    final canViewNotes = permissionEvaluator.can(
+      StaffPermissionEnum.viewConsultationNotes,
+    );
+    final canEditDiagnosis = visit != null &&
+        visit.status != VisitStatusEnum.finalized &&
+        permissionEvaluator.can(
+          StaffPermissionEnum.editMedicalDiagnosis,
+          branchId: visit.branchId,
+          patientDoctorIds: visit.doctorId != null ? {visit.doctorId!} : null,
+        );
+    emit(state.copyWith(
+      canViewNotes: canViewNotes,
+      canEditDiagnosis: canEditDiagnosis,
+    ));
+  }
+
+  void clearActiveVisit() {
+    stopAutoSave();
+    _lastAuditedVisitId = null;
+    emit(state.copyWith(
+      clearActiveVisit: true,
+      formState: const VisitFormState(),
+      patientAllergies: const [],
+      patientChronicDiseases: const [],
+    ));
+  }
+
   @override
   Future<void> close() {
     stopAutoSave();
+    _sessionSubscription?.cancel();
     return super.close();
   }
 
@@ -212,16 +251,19 @@ class VisitsCubit extends SafeCubit<VisitsState> {
       );
     }
 
-    // 5. Audit Logging for Opening Consultation Record (IDs only)
-    auditLogger?.log(
-      eventType: 'view_patient_medical_record',
-      performedByUserId: permissionEvaluator.userProvider.currentUser?.id,
-      performedByUserName:
-          permissionEvaluator.userProvider.currentUser?.fullName,
-      branchId: visit.branchId,
-      details:
-          'visitId=${visit.id}, patientId=${visit.patientId}, viewedByUserId=${permissionEvaluator.userProvider.currentUser?.id}',
-    );
+    // 5. Audit Logging for Opening Consultation Record (IDs only: visitId, patientId)
+    // Only log once per open (do not duplicate on refresh/rebuild with same visitId)
+    if (_lastAuditedVisitId != visit.id) {
+      _lastAuditedVisitId = visit.id;
+      auditLogger?.log(
+        eventType: 'view_patient_medical_record',
+        performedByUserId: permissionEvaluator.userProvider.currentUser?.id,
+        performedByUserName:
+            permissionEvaluator.userProvider.currentUser?.fullName,
+        branchId: visit.branchId,
+        details: 'visitId=${visit.id}, patientId=${visit.patientId}',
+      );
+    }
 
     // 6. Check Clinical Edit Permission
     final canEdit = permissionEvaluator.can(
@@ -411,6 +453,16 @@ class VisitsCubit extends SafeCubit<VisitsState> {
         active.status != VisitStatusEnum.finalized) {
       final draft = state.formState.toVisitModel(active);
       await saveVisitDraftUseCase(draft);
+      if (!isClosed) {
+        emit(
+          state.copyWith(
+            formState: state.formState.copyWith(
+              isDirty: false,
+              lastSavedAt: CairoTimeHelper.now(),
+            ),
+          ),
+        );
+      }
     }
   }
 

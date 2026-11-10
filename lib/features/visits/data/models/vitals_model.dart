@@ -1,5 +1,28 @@
 import 'package:equatable/equatable.dart';
 
+abstract class VitalsThresholds {
+  static const int minSystolicBp = 60;
+  static const int maxSystolicBp = 200;
+
+  static const int minDiastolicBp = 40;
+  static const int maxDiastolicBp = 130;
+
+  static const int minHeartRate = 30;
+  static const int maxHeartRate = 200;
+
+  static const double minTemperature = 34.0;
+  static const double maxTemperature = 42.0;
+
+  static const int minOxygenSaturation = 90;
+  static const int maxOxygenSaturation = 100;
+
+  static const double minWeightKg = 1.0;
+  static const double maxWeightKg = 300.0;
+
+  static const double minHeightCm = 30.0;
+  static const double maxHeightCm = 250.0;
+}
+
 class VitalsModel extends Equatable {
   final int? systolicBp;
   final int? diastolicBp;
@@ -32,27 +55,91 @@ class VitalsModel extends Equatable {
     return null;
   }
 
-  bool get systolicBpWarning =>
-      systolicBp != null && (systolicBp! > 140 || systolicBp! < 90);
+  String? get systolicBpWarning {
+    if (systolicBp == null) return null;
+    if (systolicBp! < VitalsThresholds.minSystolicBp) {
+      return 'visits_vitals_warn_bp_low';
+    }
+    if (systolicBp! > VitalsThresholds.maxSystolicBp) {
+      return 'visits_vitals_warn_bp_high';
+    }
+    return null;
+  }
 
-  bool get diastolicBpWarning =>
-      diastolicBp != null && (diastolicBp! > 90 || diastolicBp! < 60);
+  String? get diastolicBpWarning {
+    if (diastolicBp == null) return null;
+    if (diastolicBp! < VitalsThresholds.minDiastolicBp) {
+      return 'visits_vitals_warn_bp_low';
+    }
+    if (diastolicBp! > VitalsThresholds.maxDiastolicBp) {
+      return 'visits_vitals_warn_bp_high';
+    }
+    return null;
+  }
 
-  bool get heartRateWarning =>
-      heartRate != null && (heartRate! > 100 || heartRate! < 60);
+  String? get heartRateWarning {
+    if (heartRate == null) return null;
+    if (heartRate! < VitalsThresholds.minHeartRate) {
+      return 'visits_vitals_warn_hr_low';
+    }
+    if (heartRate! > VitalsThresholds.maxHeartRate) {
+      return 'visits_vitals_warn_hr_high';
+    }
+    return null;
+  }
 
-  bool get temperatureWarning =>
-      temperature != null && (temperature! > 38.0 || temperature! < 36.0);
+  String? get temperatureWarning {
+    if (temperature == null) return null;
+    if (temperature! < VitalsThresholds.minTemperature) {
+      return 'visits_vitals_warn_temp_low';
+    }
+    if (temperature! > VitalsThresholds.maxTemperature) {
+      return 'visits_vitals_warn_temp_high';
+    }
+    return null;
+  }
 
-  bool get oxygenSaturationWarning =>
-      oxygenSaturation != null && oxygenSaturation! < 95;
+  String? get oxygenSaturationWarning {
+    if (oxygenSaturation == null) return null;
+    if (oxygenSaturation! < VitalsThresholds.minOxygenSaturation) {
+      return 'visits_vitals_warn_spo2_low';
+    }
+    if (oxygenSaturation! > VitalsThresholds.maxOxygenSaturation) {
+      return 'visits_vitals_warn_spo2_high';
+    }
+    return null;
+  }
+
+  String? get weightWarning {
+    if (weightKg == null) return null;
+    if (weightKg! < VitalsThresholds.minWeightKg) {
+      return 'visits_vitals_warn_weight_low';
+    }
+    if (weightKg! > VitalsThresholds.maxWeightKg) {
+      return 'visits_vitals_warn_weight_high';
+    }
+    return null;
+  }
+
+  String? get heightWarning {
+    if (heightCm == null) return null;
+    if (heightCm! < VitalsThresholds.minHeightCm) {
+      return 'visits_vitals_warn_height_low';
+    }
+    if (heightCm! > VitalsThresholds.maxHeightCm) {
+      return 'visits_vitals_warn_height_high';
+    }
+    return null;
+  }
 
   bool get hasAnyWarning =>
-      systolicBpWarning ||
-      diastolicBpWarning ||
-      heartRateWarning ||
-      temperatureWarning ||
-      oxygenSaturationWarning;
+      systolicBpWarning != null ||
+      diastolicBpWarning != null ||
+      heartRateWarning != null ||
+      temperatureWarning != null ||
+      oxygenSaturationWarning != null ||
+      weightWarning != null ||
+      heightWarning != null;
 
   factory VitalsModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const VitalsModel();
