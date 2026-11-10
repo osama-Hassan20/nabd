@@ -18,3 +18,4 @@ class RemoveDiscountParams extends Equatable {
         removedByUserId,
       ];
 }
+

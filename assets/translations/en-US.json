@@ -1023,5 +1023,10 @@
   "disc_policy_max_pct": "Maximum Discount (%)",
   "disc_policy_can_free": "Allow Free Consultations",
   "disc_policy_changed_success": "Discount policy updated successfully",
-  "disc_policy_owner_only": "Only the owner can modify discount policy"
+  "disc_policy_owner_only": "Only the owner can modify discount policy",
+  "disc_removed_due_to_fee_change": "Discount was removed because consultation fee changed and discount is no longer valid",
+  "disc_remove_button": "Remove Discount",
+  "disc_remove_reason_hint": "Enter detailed reason for removing discount",
+  "disc_confirm_remove": "Confirm Removal",
+  "disc_price_summary_title": "Price & Discount Summary"
 }

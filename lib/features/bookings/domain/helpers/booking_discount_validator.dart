@@ -102,3 +102,4 @@ class BookingDiscountValidator {
     return null;
   }
 }
+

@@ -893,31 +893,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
         }
       }
 
-      var toUpdate = booking;
-      // Re-validate discount if consultationFee changed on a discounted booking
-      if (existing.consultationFee != booking.consultationFee &&
-          booking.discountType != null &&
-          booking.discountType != DiscountTypeEnum.none) {
-        final fee = booking.consultationFee ?? 0;
-        final val = booking.discountValue ?? 0;
-        bool isInvalid = false;
-        if (booking.discountType == DiscountTypeEnum.fixedAmount && val > fee) {
-          isInvalid = true;
-        }
-        if (booking.netAmount < (booking.paidAmount ?? 0)) {
-          isInvalid = true;
-        }
-        if (isInvalid) {
-          toUpdate = booking.copyWith(
-            discountType: DiscountTypeEnum.none,
-            discountValue: 0,
-            clearDiscountReason: true,
-            discountRemovedReason: 'invalid_after_fee_change',
-          );
-        }
-      }
-
-      final updated = toUpdate.copyWith(updatedAt: CairoTimeHelper.now());
+      final updated = booking.copyWith(updatedAt: CairoTimeHelper.now());
       _bookings[index] = updated;
       return right(updated);
     } catch (e) {

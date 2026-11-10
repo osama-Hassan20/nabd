@@ -1,19 +1,29 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/services/audit_logger.dart';
 import '../../../../core/services/permission_evaluator.dart';
+import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/uses_cases/use_cases.dart';
+import '../../../users_management/data/repositories/staff_users_repo.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/enums/discount_type_enum.dart';
+import '../helpers/booking_discount_policy_resolver.dart';
+import '../helpers/booking_discount_validator.dart';
 import '../repo/bookings_repo.dart';
 
 class CreateBookingUseCase implements UseCase<BookingModel, BookingModel> {
   final BookingsRepo repo;
+  final StaffUsersRepo? staffUsersRepo;
   final PermissionEvaluator? permissionEvaluator;
+  final CurrentUserProvider? currentUserProvider;
+  final AuditLogger? auditLogger;
 
   CreateBookingUseCase({
     required this.repo,
+    this.staffUsersRepo,
     this.permissionEvaluator,
+    this.currentUserProvider,
+    this.auditLogger,
   });
 
   @override
@@ -21,20 +31,56 @@ class CreateBookingUseCase implements UseCase<BookingModel, BookingModel> {
     BookingModel booking, {
     DateTime? customNow,
   }) async {
+    var bookingToCreate = booking;
+
     if (booking.discountType != null &&
-        booking.discountType != DiscountTypeEnum.none &&
-        permissionEvaluator != null) {
-      final hasPerm = permissionEvaluator!.can(
-        StaffPermissionEnum.applyBookingDiscount,
+        booking.discountType != DiscountTypeEnum.none) {
+      final policy = await BookingDiscountPolicyResolver.resolve(
+        currentUserProvider: currentUserProvider,
+        permissionEvaluator: permissionEvaluator,
+        staffUsersRepo: staffUsersRepo,
         branchId: booking.branchId,
       );
-      if (!hasPerm) {
-        return const Left(
-          ValidationFailure(errMessage: 'disc_validation_no_permission'),
-        );
+
+      final error = BookingDiscountValidator.validate(
+        booking: bookingToCreate,
+        discountType: bookingToCreate.discountType,
+        discountValue: bookingToCreate.discountValue,
+        reason: bookingToCreate.discountReason,
+        isOwner: policy.isOwner,
+        hasApplyPermission: policy.hasApplyPermission,
+        maxDiscountPercent: policy.maxDiscountPercent,
+        canGrantFreeConsultation: policy.canGrantFreeConsultation,
+      );
+
+      if (error != null) {
+        return Left(ValidationFailure(errMessage: error));
       }
+
+      bookingToCreate = bookingToCreate.copyWith(
+        discountApprovedByUserId: policy.actor?.id,
+        discountApprovedAt: CairoTimeHelper.now(),
+      );
     }
 
-    return repo.createBooking(booking, customNow: customNow);
+    final createRes =
+        await repo.createBooking(bookingToCreate, customNow: customNow);
+    return createRes.fold(
+      (failure) => Left(failure),
+      (saved) {
+        if (saved.discountType != null &&
+            saved.discountType != DiscountTypeEnum.none) {
+          auditLogger?.log(
+            eventType: 'booking_discount_applied',
+            targetUserId: saved.patientId,
+            performedByUserId: saved.discountApprovedByUserId,
+            branchId: saved.branchId,
+            details:
+                'Discount applied on booking creation: type ${saved.discountType?.value}, value ${saved.discountValue}, reason: ${saved.discountReason}',
+          );
+        }
+        return Right(saved);
+      },
+    );
   }
 }

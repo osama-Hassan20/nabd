@@ -1,3 +1,4 @@
+import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -5,8 +6,12 @@ import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.d
 import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/apply_discount_params.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/remove_discount_params.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/remove_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
+import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
@@ -38,6 +43,8 @@ void main() {
   late FakeRolesProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
   late ApplyBookingDiscountUseCase applyDiscountUseCase;
+  late RemoveBookingDiscountUseCase removeDiscountUseCase;
+  late CreateBookingUseCase createBookingUseCase;
   late UpdateBookingUseCase updateBookingUseCase;
 
   setUp(() async {
@@ -54,18 +61,35 @@ void main() {
       bookingsRepo: bookingsRepo,
       staffUsersRepo: staffUsersRepo,
       permissionEvaluator: permissionEvaluator,
+      currentUserProvider: userProvider,
+      auditLogger: auditLogger,
+    );
+    removeDiscountUseCase = RemoveBookingDiscountUseCase(
+      bookingsRepo: bookingsRepo,
+      staffUsersRepo: staffUsersRepo,
+      permissionEvaluator: permissionEvaluator,
+      currentUserProvider: userProvider,
+      auditLogger: auditLogger,
+    );
+    createBookingUseCase = CreateBookingUseCase(
+      repo: bookingsRepo,
+      staffUsersRepo: staffUsersRepo,
+      permissionEvaluator: permissionEvaluator,
+      currentUserProvider: userProvider,
       auditLogger: auditLogger,
     );
     updateBookingUseCase = UpdateBookingUseCase(
       repo: bookingsRepo,
+      staffUsersRepo: staffUsersRepo,
       permissionEvaluator: permissionEvaluator,
+      currentUserProvider: userProvider,
+      auditLogger: auditLogger,
     );
   });
 
-  group('B-DISC M-1: Discount Validation Tests', () {
+  group('B-DISC M-1 & M-2: Discount Validation Tests', () {
     test('T1: Percentage 101% -> Left(Failure: disc_validation_pct_range)',
         () async {
-      // Set user to owner
       final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
       userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
 
@@ -109,7 +133,8 @@ void main() {
       );
     });
 
-    test('T3: Discount without reason -> Left(Failure: disc_validation_reason_required)',
+    test(
+        'T3: Discount without reason -> Left(Failure: disc_validation_reason_required)',
         () async {
       final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
       userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
@@ -158,7 +183,6 @@ void main() {
     test(
         'T5: Discount on cancelled booking -> Left(Failure: disc_validation_cancelled_booking)',
         () async {
-      // Create a cancelled booking
       await bookingsRepo.createBooking(
         const BookingModel(
           id: 'BOOK-CANCELLED',
@@ -193,11 +217,9 @@ void main() {
     test(
         'T6: Discount percentage 30% when role max is 20% -> Left(Failure: disc_validation_max_exceeded)',
         () async {
-      // USER-REC has role_reception which has maxDiscountPercent = 20
       final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
       userProvider.user = recRes.getOrElse(() => const StaffUserModel());
 
-      // Create booking with 0 paid
       await bookingsRepo.createBooking(
         const BookingModel(
           id: 'BOOK-REC-1',
@@ -261,7 +283,6 @@ void main() {
     test(
         'T8: 100% or amount = fee when role lacks canGrantFreeConsultation -> Left(Failure: disc_validation_free_required)',
         () async {
-      // USER-REC has canGrantFreeConsultation = false
       final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
       userProvider.user = recRes.getOrElse(() => const StaffUserModel());
 
@@ -275,7 +296,6 @@ void main() {
         ),
       );
 
-      // Try free type
       final resultFree = await applyDiscountUseCase(
         const ApplyDiscountParams(
           bookingId: 'BOOK-REC-3',
@@ -291,7 +311,6 @@ void main() {
         (_) => fail('Should fail'),
       );
 
-      // Try 100% percentage
       final result100 = await applyDiscountUseCase(
         const ApplyDiscountParams(
           bookingId: 'BOOK-REC-3',
@@ -309,9 +328,9 @@ void main() {
       );
     });
 
-    test('T9: 100% discount with canGrantFreeConsultation = true -> Right(success)',
+    test(
+        'T9: 100% discount with canGrantFreeConsultation = true -> Right(success)',
         () async {
-      // USER-MGR (branchManager) has canGrantFreeConsultation = true and maxDiscountPercent = 100
       final mgrRes = await staffUsersRepo.getStaffUserById('USER-MGR');
       userProvider.user = mgrRes.getOrElse(() => const StaffUserModel());
 
@@ -351,23 +370,23 @@ void main() {
       final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
       userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
 
-      // Fee: 300, already paid: 200. Discount 150 leaves net 150 (< 200 paid)
       await bookingsRepo.createBooking(
         const BookingModel(
-          id: 'BOOK-PAID-200',
+          id: 'BOOK-PAID-TEST',
           consultationFee: 300,
-          paidAmount: 200,
+          paidAmount: 250, // Paid 250
           status: BookingStatusEnum.waiting,
           branchId: 'branch_1',
         ),
       );
 
+      // Attempt 100 fixed discount -> net 200 < paid 250
       final result = await applyDiscountUseCase(
         const ApplyDiscountParams(
-          bookingId: 'BOOK-PAID-200',
+          bookingId: 'BOOK-PAID-TEST',
           discountType: DiscountTypeEnum.fixedAmount,
-          discountValue: 150,
-          reason: 'Fixed discount',
+          discountValue: 100,
+          reason: 'Partial courtesy discount',
           approvedByUserId: 'USER-OWNER',
         ),
       );
@@ -380,7 +399,7 @@ void main() {
     });
 
     test(
-        'T11: Reception with maxDiscount=20 applies 15% discount -> Right(success)',
+        'T11: Receptionist applies 15% discount (below 20% limit) -> Right(success)',
         () async {
       final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
       userProvider.user = recRes.getOrElse(() => const StaffUserModel());
@@ -399,7 +418,7 @@ void main() {
         const ApplyDiscountParams(
           bookingId: 'BOOK-REC-VALID',
           discountType: DiscountTypeEnum.percentage,
-          discountValue: 15, // <= 20%
+          discountValue: 15,
           reason: 'Family discount',
           approvedByUserId: 'USER-REC',
         ),
@@ -409,7 +428,7 @@ void main() {
       result.fold(
         (_) => fail('Should succeed'),
         (booking) {
-          expect(booking.discountAmount, 45); // 15% of 300
+          expect(booking.discountAmount, 45);
           expect(booking.netAmount, 255);
         },
       );
@@ -454,7 +473,6 @@ void main() {
     test(
         'T13: Modifying discountType in UpdateBookingUseCase without applyBookingDiscount -> Left(Failure: disc_validation_no_permission)',
         () async {
-      // USER-MED-DIR (Medical Director) does NOT have applyBookingDiscount permission
       final medDirRes =
           await staffUsersRepo.getStaffUserById('USER-MED-DIR');
       userProvider.user = medDirRes.getOrElse(() => const StaffUserModel());
@@ -470,7 +488,6 @@ void main() {
         ),
       );
 
-      // Attempt to modify discountType to percentage
       const updatedBooking = BookingModel(
         id: 'BOOK-UPDATE-PERM',
         consultationFee: 300,
@@ -489,6 +506,468 @@ void main() {
             expect(failure.errMessage, 'disc_validation_no_permission'),
         (_) => fail('Should fail'),
       );
+    });
+
+    test(
+        'T14: Session-derived approver: passing another user ID in approvedByUserId does NOT change recorded approver or audit actor',
+        () async {
+      // Session user is USER-REC
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-SPOOF-TEST',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          branchId: 'branch_1',
+        ),
+      );
+
+      // Caller maliciously passes USER-OWNER as approvedByUserId
+      final result = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-SPOOF-TEST',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 10,
+          reason: 'Valid reason',
+          approvedByUserId: 'USER-OWNER', // Attempted spoof
+        ),
+      );
+
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Should succeed'),
+        (booking) {
+          // Strictly bound to session actor: USER-REC
+          expect(booking.discountApprovedByUserId, 'USER-REC');
+        },
+      );
+
+      final applyLogs = auditLogger.getLogs(eventType: 'booking_discount_applied');
+      expect(applyLogs, isNotEmpty);
+      expect(applyLogs.last.performedByUserId, 'USER-REC');
+    });
+
+    test(
+        'T15: Session-derived remover: passing another user ID in removedByUserId does NOT change remover in audit log',
+        () async {
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      // Create booking with active discount
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-REMOVE-SPOOF',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 10,
+          discountReason: 'Initial',
+          discountApprovedByUserId: 'USER-REC',
+          branchId: 'branch_1',
+        ),
+      );
+
+      final result = await removeDiscountUseCase(
+        const RemoveDiscountParams(
+          bookingId: 'BOOK-REMOVE-SPOOF',
+          reason: 'Customer requested full price receipt',
+          removedByUserId: 'USER-OWNER', // Attempted spoof
+        ),
+      );
+
+      expect(result.isRight(), isTrue);
+      final removeLogs = auditLogger.getLogs(eventType: 'booking_discount_removed');
+      expect(removeLogs, isNotEmpty);
+      expect(removeLogs.last.performedByUserId, 'USER-REC');
+    });
+
+    test(
+        'T16: Custom role with null discount policy fields fails closed -> Left(Failure: disc_validation_max_exceeded)',
+        () async {
+      // Create user with custom role having null discount fields
+      final customRole = const RoleDefinitionModel(
+        id: 'role_custom_trainee',
+        nameAr: 'متدرب مخصص',
+        permissions: [StaffPermissionEnum.applyBookingDiscount],
+        maxDiscountPercent: null, // Null!
+        canGrantFreeConsultation: null, // Null!
+      );
+      rolesProvider.roles = [...rolesProvider.roles, customRole];
+      await staffUsersRepo.saveRole(role: customRole, currentUserId: 'USER-OWNER');
+
+      final traineeUser = const StaffUserModel(
+        id: 'USER-TRAINEE',
+        fullName: 'متدرب تجريبي',
+        isActive: true,
+        isOwner: false,
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: ['role_custom_trainee'],
+          ),
+        ],
+      );
+      await staffUsersRepo.createStaffUser(
+        user: traineeUser,
+        temporaryPassword: 'Password123',
+        currentUserId: 'USER-OWNER',
+      );
+
+      userProvider.user = traineeUser;
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-TRAINEE-TEST',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          branchId: 'branch_1',
+        ),
+      );
+
+      final result = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-TRAINEE-TEST',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 10,
+          reason: 'Attempt discount by custom trainee',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'disc_validation_max_exceeded'),
+        (_) => fail('Should fail closed'),
+      );
+    });
+
+    test(
+        'T17: User whose role definition does not exist fails closed -> Left(Failure: disc_validation_no_permission)',
+        () async {
+      final phantomUser = const StaffUserModel(
+        id: 'USER-PHANTOM',
+        fullName: 'مستخدم بلا دور',
+        isActive: true,
+        isOwner: false,
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: ['role_non_existent'],
+          ),
+        ],
+      );
+      userProvider.user = phantomUser;
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-PHANTOM-TEST',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          branchId: 'branch_1',
+        ),
+      );
+
+      final result = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-PHANTOM-TEST',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 10,
+          reason: 'Test',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) =>
+            expect(failure.errMessage, 'disc_validation_no_permission'),
+        (_) => fail('Should fail closed'),
+      );
+    });
+
+    test(
+        'T18: Unauthenticated user (null session user) fails closed -> Left(Failure: staff_user_not_found)',
+        () async {
+      userProvider.user = null;
+
+      final result = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'MED-101',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 10,
+          reason: 'Test',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'staff_user_not_found'),
+        (_) => fail('Should fail'),
+      );
+    });
+
+    test(
+        'T19: Failed apply discount logs ZERO booking_discount_applied audit events',
+        () async {
+      final beforeCount =
+          auditLogger.getLogs(eventType: 'booking_discount_applied').length;
+
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      // Attempt 50% discount when limit is 20%
+      final result = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'MED-101',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 50,
+          reason: 'Test failure',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      final afterCount =
+          auditLogger.getLogs(eventType: 'booking_discount_applied').length;
+      expect(afterCount, beforeCount);
+    });
+
+    test(
+        'T20: Failed remove discount logs ZERO booking_discount_removed audit events',
+        () async {
+      final beforeCount =
+          auditLogger.getLogs(eventType: 'booking_discount_removed').length;
+
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      // Missing reason
+      final result = await removeDiscountUseCase(
+        const RemoveDiscountParams(
+          bookingId: 'MED-101',
+          reason: '',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      final afterCount =
+          auditLogger.getLogs(eventType: 'booking_discount_removed').length;
+      expect(afterCount, beforeCount);
+    });
+
+    test(
+        'T21: F-04a booking lock (visit in_progress) does NOT prevent applying or removing discount',
+        () async {
+      final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
+      userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-IN-PROGRESS-LOCK',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.inConsultation, // Locked by consultation
+          branchId: 'branch_1',
+        ),
+      );
+
+      // 1. Apply discount succeeds
+      final applyResult = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-IN-PROGRESS-LOCK',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 20,
+          reason: 'Doctor approved mid-consultation courtesy discount',
+        ),
+      );
+      expect(applyResult.isRight(), isTrue);
+
+      // 2. Remove discount succeeds
+      final removeResult = await removeDiscountUseCase(
+        const RemoveDiscountParams(
+          bookingId: 'BOOK-IN-PROGRESS-LOCK',
+          reason: 'Doctor decided standard procedure price applies',
+        ),
+      );
+      expect(removeResult.isRight(), isTrue);
+    });
+
+    test(
+        'T22: Changing consultationFee on a booking with active discount without applyBookingDiscount is rejected',
+        () async {
+      final medDirRes =
+          await staffUsersRepo.getStaffUserById('USER-MED-DIR');
+      userProvider.user = medDirRes.getOrElse(() => const StaffUserModel());
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-FEE-CHANGE-NOPERM',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 20,
+          discountReason: 'Existing discount',
+          branchId: 'branch_1',
+        ),
+      );
+
+      // Change fee from 300 to 400
+      const updated = BookingModel(
+        id: 'BOOK-FEE-CHANGE-NOPERM',
+        consultationFee: 400,
+        paidAmount: 0,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.percentage,
+        discountValue: 20,
+        discountReason: 'Existing discount',
+        branchId: 'branch_1',
+      );
+
+      final result = await updateBookingUseCase(updated);
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) =>
+            expect(failure.errMessage, 'disc_validation_no_permission'),
+        (_) => fail('Should fail'),
+      );
+    });
+
+    test(
+        'T23: Changing consultationFee on a booking with discount where new fee makes discount invalid resets discount and logs audit',
+        () async {
+      final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
+      userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
+
+      // Booking had fee 300, fixed discount 200 (net 100), paid 100
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-FEE-CHANGE-RESET',
+          consultationFee: 300,
+          paidAmount: 100,
+          status: BookingStatusEnum.waiting,
+          discountType: DiscountTypeEnum.fixedAmount,
+          discountValue: 200,
+          discountReason: 'Initial discount',
+          branchId: 'branch_1',
+        ),
+      );
+
+      // Fee is reduced to 150 -> fixed discount 200 is now > fee (150) and net (-50) < paid (100) -> Invalid!
+      const updated = BookingModel(
+        id: 'BOOK-FEE-CHANGE-RESET',
+        consultationFee: 150,
+        paidAmount: 100,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.fixedAmount,
+        discountValue: 200,
+        discountReason: 'Initial discount',
+        branchId: 'branch_1',
+      );
+
+      final result = await updateBookingUseCase(updated);
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Should succeed with reset'),
+        (saved) {
+          expect(saved.discountType, DiscountTypeEnum.none);
+          expect(saved.discountValue, 0);
+          expect(saved.discountRemovedReason, 'fee_changed');
+        },
+      );
+
+      final removeLogs = auditLogger
+          .getLogs(eventType: 'booking_discount_removed')
+          .where((l) => l.details?.contains('fee_changed') ?? false)
+          .toList();
+      expect(removeLogs, isNotEmpty);
+    });
+
+    test(
+        'T24: Receptionist creating booking with 30% discount (limit 20%) -> Left(Failure: disc_validation_max_exceeded)',
+        () async {
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      const newBooking = BookingModel(
+        id: 'BOOK-CREATE-30PCT',
+        consultationFee: 300,
+        paidAmount: 0,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.percentage,
+        discountValue: 30, // Exceeds 20%
+        discountReason: 'Attempted creation with high discount',
+        branchId: 'branch_1',
+      );
+
+      final result = await createBookingUseCase(newBooking);
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'disc_validation_max_exceeded'),
+        (_) => fail('Should fail'),
+      );
+    });
+
+    test(
+        'T25: Receptionist creating free booking without canGrantFreeConsultation -> Left(Failure: disc_validation_free_required)',
+        () async {
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      const newBooking = BookingModel(
+        id: 'BOOK-CREATE-FREE',
+        consultationFee: 300,
+        paidAmount: 0,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.free,
+        discountReason: 'Attempted free creation',
+        branchId: 'branch_1',
+      );
+
+      final result = await createBookingUseCase(newBooking);
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'disc_validation_free_required'),
+        (_) => fail('Should fail'),
+      );
+    });
+
+    test(
+        'T26: Receptionist creating booking with 15% discount succeeds and logs booking_discount_applied audit event',
+        () async {
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      userProvider.user = recRes.getOrElse(() => const StaffUserModel());
+
+      const newBooking = BookingModel(
+        id: 'BOOK-CREATE-15PCT',
+        consultationFee: 300,
+        paidAmount: 0,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.percentage,
+        discountValue: 15,
+        discountReason: 'Valid family discount',
+        branchId: 'branch_1',
+      );
+
+      final result = await createBookingUseCase(newBooking);
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Should succeed'),
+        (saved) {
+          expect(saved.discountAmount, 45);
+          expect(saved.netAmount, 255);
+          expect(saved.discountApprovedByUserId, 'USER-REC');
+        },
+      );
+
+      final applyLogs = auditLogger
+          .getLogs(eventType: 'booking_discount_applied')
+          .where((l) => l.performedByUserId == 'USER-REC')
+          .toList();
+      expect(applyLogs, isNotEmpty);
     });
   });
 }

@@ -5,13 +5,16 @@ import '../../../../core/utils/enums/request_status_enum.dart';
 import '../../data/models/role_definition_model.dart';
 import '../../data/models/staff_user_model.dart';
 import '../../data/repositories/staff_users_repo.dart';
+import '../../domain/use_cases/save_role_use_case.dart';
 import 'staff_users_state.dart';
 
 class StaffUsersCubit extends SafeCubit<StaffUsersState> {
   final StaffUsersRepo staffUsersRepo;
+  final SaveRoleUseCase? saveRoleUseCase;
 
   StaffUsersCubit({
     required this.staffUsersRepo,
+    this.saveRoleUseCase,
   }) : super(const StaffUsersState());
 
   Future<void> loadData({bool showLoading = true}) async {
@@ -265,10 +268,14 @@ class StaffUsersCubit extends SafeCubit<StaffUsersState> {
   }) async {
     emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
 
-    final result = await staffUsersRepo.saveRole(
-      role: role,
-      currentUserId: currentUserId,
-    );
+    final result = saveRoleUseCase != null
+        ? await saveRoleUseCase!(
+            SaveRoleParams(role: role, currentUserId: currentUserId),
+          )
+        : await staffUsersRepo.saveRole(
+            role: role,
+            currentUserId: currentUserId,
+          );
 
     return result.fold(
       (failure) {

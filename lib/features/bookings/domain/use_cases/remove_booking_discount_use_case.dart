@@ -1,12 +1,11 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/services/audit_logger.dart';
 import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/uses_cases/use_cases.dart';
-import '../../../users_management/data/models/staff_user_model.dart';
 import '../../../users_management/data/repositories/staff_users_repo.dart';
 import '../../data/models/booking_model.dart';
+import '../helpers/booking_discount_policy_resolver.dart';
 import '../repo/bookings_repo.dart';
 import 'params/remove_discount_params.dart';
 
@@ -15,12 +14,14 @@ class RemoveBookingDiscountUseCase
   final BookingsRepo bookingsRepo;
   final StaffUsersRepo? staffUsersRepo;
   final PermissionEvaluator? permissionEvaluator;
+  final CurrentUserProvider? currentUserProvider;
   final AuditLogger? auditLogger;
 
   RemoveBookingDiscountUseCase({
     required this.bookingsRepo,
     this.staffUsersRepo,
     this.permissionEvaluator,
+    this.currentUserProvider,
     this.auditLogger,
   });
 
@@ -43,37 +44,43 @@ class RemoveBookingDiscountUseCase
     }
     final booking = bookingRes.getOrElse(() => throw StateError(''));
 
-    // 3. Permission check
-    if (staffUsersRepo != null && params.removedByUserId != null) {
-      final actorRes =
-          await staffUsersRepo!.getStaffUserById(params.removedByUserId!);
-      StaffUserModel? actor;
-      actorRes.fold((_) => null, (u) => actor = u);
-      if (actor != null && actor!.isOwner != true) {
-        if (permissionEvaluator != null &&
-            !permissionEvaluator!.can(
-              StaffPermissionEnum.applyBookingDiscount,
-              branchId: booking.branchId,
-            )) {
-          return const Left(
-            ValidationFailure(errMessage: 'disc_validation_no_permission'),
-          );
-        }
-      }
+    // 3. Resolve actor policy from session
+    final policy = await BookingDiscountPolicyResolver.resolve(
+      currentUserProvider: currentUserProvider,
+      permissionEvaluator: permissionEvaluator,
+      staffUsersRepo: staffUsersRepo,
+      branchId: booking.branchId,
+      fallbackUserId: params.removedByUserId,
+    );
+
+    if (policy.actor == null) {
+      return const Left(ValidationFailure(errMessage: 'staff_user_not_found'));
+    }
+
+    if (!policy.isOwner && !policy.hasApplyPermission) {
+      return const Left(
+        ValidationFailure(errMessage: 'disc_validation_no_permission'),
+      );
     }
 
     final prevType = booking.discountType;
     final prevVal = booking.discountValue;
 
-    // 4. Remove discount via repo
-    final removeRes = await bookingsRepo.removeDiscount(params);
+    // 4. Remove discount via repo using actor's ID (ignoring caller-passed removedByUserId)
+    final effectiveParams = RemoveDiscountParams(
+      bookingId: params.bookingId,
+      reason: params.reason,
+      removedByUserId: policy.actor!.id,
+    );
+
+    final removeRes = await bookingsRepo.removeDiscount(effectiveParams);
     return removeRes.fold(
       (failure) => Left(failure),
       (updated) {
         auditLogger?.log(
           eventType: 'booking_discount_removed',
           targetUserId: booking.patientId,
-          performedByUserId: params.removedByUserId,
+          performedByUserId: policy.actor!.id,
           branchId: booking.branchId,
           details:
               'Discount removed: previousType ${prevType?.value}, previousValue $prevVal, reason: ${params.reason}',

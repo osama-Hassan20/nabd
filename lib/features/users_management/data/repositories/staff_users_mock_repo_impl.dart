@@ -808,11 +808,40 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
     if (actor?.isOwner != true) {
       if (existingIndex != -1) {
         final existingRole = _roles[existingIndex];
+        if (role.maxDiscountPercent != existingRole.maxDiscountPercent ||
+            role.canGrantFreeConsultation !=
+                existingRole.canGrantFreeConsultation) {
+          auditLogger.log(
+            eventType: 'privilege_escalation_attempt',
+            performedByUserId: currentUserId,
+            details:
+                'Non-owner attempted to modify discount policy for role: ${role.nameAr}',
+          );
+          return const Left(
+            PrivilegeEscalationFailure(
+              errMessage: 'disc_policy_owner_only',
+            ),
+          );
+        }
         roleToSave = role.copyWith(
           maxDiscountPercent: existingRole.maxDiscountPercent,
           canGrantFreeConsultation: existingRole.canGrantFreeConsultation,
         );
       } else {
+        if (role.maxDiscountPercent != null ||
+            role.canGrantFreeConsultation == true) {
+          auditLogger.log(
+            eventType: 'privilege_escalation_attempt',
+            performedByUserId: currentUserId,
+            details:
+                'Non-owner attempted to set discount policy on new role: ${role.nameAr}',
+          );
+          return const Left(
+            PrivilegeEscalationFailure(
+              errMessage: 'disc_policy_owner_only',
+            ),
+          );
+        }
         roleToSave = role.copyWith(
           maxDiscountPercent: null,
           canGrantFreeConsultation: null,

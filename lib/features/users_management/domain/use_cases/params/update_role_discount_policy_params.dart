@@ -21,3 +21,4 @@ class UpdateRoleDiscountPolicyParams extends Equatable {
         currentUserId,
       ];
 }
+

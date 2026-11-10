@@ -22,7 +22,17 @@ import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_cas
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
 import 'package:eyadty/features/visits/data/models/enums/visit_status_enum.dart';
+import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _FakeCurrentUserProvider implements CurrentUserProvider {
+  StaffUserModel? user;
+  @override
+  StaffUserModel? get currentUser => user;
+  @override
+  String? get activeBranchId => 'branch_1';
+}
 
 void main() {
   late BookingsMockRepoImpl repo;
@@ -266,6 +276,19 @@ void main() {
     test(
         'T7: Changing consultationFee on discounted booking revalidates and resets discount if invalid',
         () async {
+      final auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
+      final staffRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
+      final userProvider = _FakeCurrentUserProvider();
+      final ownerRes = await staffRepo.getStaffUserById('USER-OWNER');
+      userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
+
+      final updateUseCase = UpdateBookingUseCase(
+        repo: repo,
+        staffUsersRepo: staffRepo,
+        currentUserProvider: userProvider,
+        auditLogger: auditLogger,
+      );
+
       // 1. Create a discounted booking: Fee 300, fixed discount 200 (Net 100)
       await repo.createBooking(
         const BookingModel(
@@ -290,7 +313,7 @@ void main() {
         branchId: 'branch_1',
       );
 
-      final updateRes = await repo.updateBooking(updateParams);
+      final updateRes = await updateUseCase(updateParams);
       expect(updateRes.isRight(), isTrue);
 
       updateRes.fold(
@@ -300,7 +323,7 @@ void main() {
           // Discount is automatically reset because 200 > 150
           expect(updated.discountType, DiscountTypeEnum.none);
           expect(updated.discountValue, 0);
-          expect(updated.discountRemovedReason, 'invalid_after_fee_change');
+          expect(updated.discountRemovedReason, 'fee_changed');
         },
       );
     });

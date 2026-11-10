@@ -1,12 +1,11 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/services/audit_logger.dart';
 import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/uses_cases/use_cases.dart';
-import '../../../users_management/data/models/role_definition_model.dart';
 import '../../../users_management/data/repositories/staff_users_repo.dart';
 import '../../data/models/booking_model.dart';
+import '../helpers/booking_discount_policy_resolver.dart';
 import '../helpers/booking_discount_validator.dart';
 import '../repo/bookings_repo.dart';
 import 'params/apply_discount_params.dart';
@@ -16,12 +15,14 @@ class ApplyBookingDiscountUseCase
   final BookingsRepo bookingsRepo;
   final StaffUsersRepo staffUsersRepo;
   final PermissionEvaluator? permissionEvaluator;
+  final CurrentUserProvider? currentUserProvider;
   final AuditLogger? auditLogger;
 
   ApplyBookingDiscountUseCase({
     required this.bookingsRepo,
     required this.staffUsersRepo,
     this.permissionEvaluator,
+    this.currentUserProvider,
     this.auditLogger,
   });
 
@@ -37,89 +38,52 @@ class ApplyBookingDiscountUseCase
     }
     final booking = bookingRes.getOrElse(() => throw StateError(''));
 
-    // 2. Fetch actor
-    final actorRes =
-        await staffUsersRepo.getStaffUserById(params.approvedByUserId ?? '');
-    if (actorRes.isLeft()) {
+    // 2. Resolve actor policy strictly from session
+    final policy = await BookingDiscountPolicyResolver.resolve(
+      currentUserProvider: currentUserProvider,
+      permissionEvaluator: permissionEvaluator,
+      staffUsersRepo: staffUsersRepo,
+      branchId: booking.branchId,
+      fallbackUserId: params.approvedByUserId,
+    );
+
+    if (policy.actor == null) {
       return const Left(ValidationFailure(errMessage: 'staff_user_not_found'));
     }
-    final actor = actorRes.getOrElse(() => throw StateError(''));
 
-    // 3. Resolve permissions & role policy
-    final isOwner = actor.isOwner == true;
-    bool hasApplyPermission = isOwner;
-    num? maxDiscountPercent;
-    bool? canGrantFreeConsultation;
-
-    if (!isOwner) {
-      if (permissionEvaluator != null) {
-        hasApplyPermission = permissionEvaluator!.can(
-          StaffPermissionEnum.applyBookingDiscount,
-          branchId: booking.branchId,
-        );
-      }
-
-      final rolesRes = await staffUsersRepo.getRoles();
-      List<RoleDefinitionModel> allRoles = [];
-      rolesRes.fold((_) => null, (r) => allRoles = r);
-
-      final branchAssignment = actor.branchAssignments
-              ?.where((b) => b.branchId == booking.branchId)
-              .firstOrNull ??
-          actor.branchAssignments?.firstOrNull;
-
-      final roleIds = branchAssignment?.roleIds ?? [];
-      for (final rId in roleIds) {
-        final roleDef = allRoles.where((r) => r.id == rId).firstOrNull;
-        if (roleDef != null) {
-          if (permissionEvaluator == null &&
-              (roleDef.permissions
-                      ?.contains(StaffPermissionEnum.applyBookingDiscount) ??
-                  false)) {
-            hasApplyPermission = true;
-          }
-          final p = roleDef.maxDiscountPercent;
-          if (p != null) {
-            maxDiscountPercent = maxDiscountPercent == null
-                ? p
-                : (p > maxDiscountPercent ? p : maxDiscountPercent);
-          }
-          if (roleDef.canGrantFreeConsultation == true) {
-            canGrantFreeConsultation = true;
-          }
-        }
-      }
-    } else {
-      hasApplyPermission = true;
-      maxDiscountPercent = 100;
-      canGrantFreeConsultation = true;
-    }
-
-    // 4. Validate
+    // 3. Validate discount constraints
     final error = BookingDiscountValidator.validate(
       booking: booking,
       discountType: params.discountType,
       discountValue: params.discountValue,
       reason: params.reason,
-      isOwner: isOwner,
-      hasApplyPermission: hasApplyPermission,
-      maxDiscountPercent: maxDiscountPercent,
-      canGrantFreeConsultation: canGrantFreeConsultation,
+      isOwner: policy.isOwner,
+      hasApplyPermission: policy.hasApplyPermission,
+      maxDiscountPercent: policy.maxDiscountPercent,
+      canGrantFreeConsultation: policy.canGrantFreeConsultation,
     );
 
     if (error != null) {
       return Left(ValidationFailure(errMessage: error));
     }
 
-    // 5. Apply discount via repo
-    final applyRes = await bookingsRepo.applyDiscount(params);
+    // 4. Apply discount via repo using actor's id (ignoring caller-passed approvedByUserId)
+    final effectiveParams = ApplyDiscountParams(
+      bookingId: params.bookingId,
+      discountType: params.discountType,
+      discountValue: params.discountValue,
+      reason: params.reason,
+      approvedByUserId: policy.actor!.id,
+    );
+
+    final applyRes = await bookingsRepo.applyDiscount(effectiveParams);
     return applyRes.fold(
       (failure) => Left(failure),
       (updated) {
         auditLogger?.log(
           eventType: 'booking_discount_applied',
           targetUserId: booking.patientId,
-          performedByUserId: params.approvedByUserId,
+          performedByUserId: policy.actor!.id,
           branchId: booking.branchId,
           details:
               'Discount applied: type ${params.discountType?.value}, value ${params.discountValue}, netAmount ${updated.netAmount}, reason: ${params.reason}',

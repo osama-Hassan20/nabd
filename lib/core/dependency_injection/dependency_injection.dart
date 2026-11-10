@@ -31,6 +31,7 @@ import 'package:eyadty/features/bookings/domain/use_cases/get_doctor_bookings_fo
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/remove_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
+import 'package:eyadty/features/users_management/domain/use_cases/save_role_use_case.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 
@@ -195,10 +196,22 @@ Future<void> setupGetIt() async {
     () => GetBookingByIdUseCase(repo: getIt<BookingsRepo>()),
   );
   getIt.registerLazySingleton<CreateBookingUseCase>(
-    () => CreateBookingUseCase(repo: getIt<BookingsRepo>()),
+    () => CreateBookingUseCase(
+      repo: getIt<BookingsRepo>(),
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
   );
   getIt.registerLazySingleton<UpdateBookingUseCase>(
-    () => UpdateBookingUseCase(repo: getIt<BookingsRepo>()),
+    () => UpdateBookingUseCase(
+      repo: getIt<BookingsRepo>(),
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
   );
   getIt.registerLazySingleton<ChangeBookingStatusUseCase>(
     () => ChangeBookingStatusUseCase(
@@ -226,6 +239,7 @@ Future<void> setupGetIt() async {
       bookingsRepo: getIt<BookingsRepo>(),
       staffUsersRepo: getIt<StaffUsersRepo>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
       auditLogger: getIt<AuditLogger>(),
     ),
   );
@@ -234,12 +248,20 @@ Future<void> setupGetIt() async {
       bookingsRepo: getIt<BookingsRepo>(),
       staffUsersRepo: getIt<StaffUsersRepo>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
       auditLogger: getIt<AuditLogger>(),
     ),
   );
   getIt.registerLazySingleton<UpdateRoleDiscountPolicyUseCase>(
     () => UpdateRoleDiscountPolicyUseCase(
       staffUsersRepo: getIt<StaffUsersRepo>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<SaveRoleUseCase>(
+    () => SaveRoleUseCase(
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      currentUserProvider: getIt<SessionCubit>(),
       auditLogger: getIt<AuditLogger>(),
     ),
   );
@@ -462,6 +484,7 @@ Future<void> setupGetIt() async {
   getIt.registerFactory<StaffUsersCubit>(
     () => StaffUsersCubit(
       staffUsersRepo: getIt<StaffUsersRepo>(),
+      saveRoleUseCase: getIt<SaveRoleUseCase>(),
     ),
   );
 
