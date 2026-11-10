@@ -392,9 +392,11 @@ class BookingModel {
     DiscountTypeEnum? discountType,
     num? discountValue,
     String? discountReason,
+    bool clearDiscountReason = false,
     String? discountApprovedByUserId,
     DateTime? discountApprovedAt,
     String? discountRemovedReason,
+    bool clearDiscountRemovedReason = false,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -445,12 +447,15 @@ class BookingModel {
       technicianName: technicianName ?? this.technicianName,
       discountType: discountType ?? this.discountType,
       discountValue: discountValue ?? this.discountValue,
-      discountReason: discountReason ?? this.discountReason,
+      discountReason: clearDiscountReason
+          ? null
+          : (discountReason ?? this.discountReason),
       discountApprovedByUserId:
           discountApprovedByUserId ?? this.discountApprovedByUserId,
       discountApprovedAt: discountApprovedAt ?? this.discountApprovedAt,
-      discountRemovedReason:
-          discountRemovedReason ?? this.discountRemovedReason,
+      discountRemovedReason: clearDiscountRemovedReason
+          ? null
+          : (discountRemovedReason ?? this.discountRemovedReason),
     );
   }
 }

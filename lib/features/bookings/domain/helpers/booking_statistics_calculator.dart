@@ -24,6 +24,9 @@ class BookingStatisticsCalculator {
     int noShow = 0;
     int cancelled = 0;
     int postponed = 0;
+    num totalDiscounts = 0;
+    int freeConsultations = 0;
+    num totalNetRev = 0;
 
     for (final booking in bookings) {
       if (!matchesBranch(booking, branchId)) continue;
@@ -48,6 +51,13 @@ class BookingStatisticsCalculator {
 
       total++;
 
+      // Financials for non-cancelled bookings on selected date
+      totalDiscounts += booking.discountAmount;
+      if (booking.isFreeConsultation) {
+        freeConsultations++;
+      }
+      totalNetRev += booking.netAmount;
+
       if (booking.status == BookingStatusEnum.completed) {
         completed++;
       } else if (booking.status == BookingStatusEnum.inConsultation) {
@@ -70,6 +80,9 @@ class BookingStatisticsCalculator {
       noShowCount: noShow,
       cancelledBookings: cancelled,
       postponedCount: postponed,
+      totalDiscountsGiven: totalDiscounts,
+      freeConsultationsCount: freeConsultations,
+      totalNetRevenue: totalNetRev,
     );
   }
 

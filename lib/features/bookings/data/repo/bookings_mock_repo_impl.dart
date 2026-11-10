@@ -911,7 +911,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
           toUpdate = booking.copyWith(
             discountType: DiscountTypeEnum.none,
             discountValue: 0,
-            discountReason: null,
+            clearDiscountReason: true,
             discountRemovedReason: 'invalid_after_fee_change',
           );
         }
@@ -942,7 +942,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
         discountReason: params.reason,
         discountApprovedByUserId: params.approvedByUserId,
         discountApprovedAt: now,
-        discountRemovedReason: null,
+        clearDiscountRemovedReason: true,
         updatedAt: now,
       );
       _bookings[index] = updated;
@@ -966,7 +966,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
       final updated = existing.copyWith(
         discountType: DiscountTypeEnum.none,
         discountValue: 0,
-        discountReason: null,
+        clearDiscountReason: true,
         discountRemovedReason: params.reason,
         updatedAt: now,
       );

@@ -9,15 +9,19 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_booking_by_id_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_booking_summary_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/apply_discount_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/remove_discount_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/remove_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/patients/domain/use_cases/get_patients_use_case.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/get_doctors_use_case.dart';
@@ -57,6 +61,8 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   final GetDoctorLeavesUseCase? getDoctorLeavesUseCase;
   final GetCompanySettingsUseCase? getCompanySettingsUseCase;
   final GetDoctorBookingsForDateUseCase? getDoctorBookingsForDateUseCase;
+  final ApplyBookingDiscountUseCase? applyBookingDiscountUseCase;
+  final RemoveBookingDiscountUseCase? removeBookingDiscountUseCase;
 
   Timer? _noShowTimer;
 
@@ -69,6 +75,8 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     required this.changeBookingStatusUseCase,
     required this.reassignTechnicianUseCase,
     required this.deleteBookingUseCase,
+    this.applyBookingDiscountUseCase,
+    this.removeBookingDiscountUseCase,
     GetDoctorsUseCase? getDoctorsUseCase,
     GetDoctorsUseCase? getTechniciansUseCase,
     GetPatientsUseCase? getPatientsUseCase,
@@ -1379,6 +1387,72 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
             actionStatus: RequestStatusEnum.success,
             selectedBooking: updatedBooking,
             actionSuccessMessage: 'status_updated_successfully',
+          ),
+        );
+        fetchBookingSummary();
+        fetchBookings(resetPage: false);
+        return true;
+      },
+    );
+  }
+
+  Future<bool> applyDiscount(ApplyDiscountParams params) async {
+    if (applyBookingDiscountUseCase == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+    final result = await applyBookingDiscountUseCase!(params);
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            errMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (updatedBooking) {
+        final currentSelected = state.selectedBooking;
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            selectedBooking: (currentSelected != null &&
+                    currentSelected.id == updatedBooking.id)
+                ? updatedBooking
+                : currentSelected,
+            actionSuccessMessage: 'disc_applied_success',
+          ),
+        );
+        fetchBookingSummary();
+        fetchBookings(resetPage: false);
+        return true;
+      },
+    );
+  }
+
+  Future<bool> removeDiscount(RemoveDiscountParams params) async {
+    if (removeBookingDiscountUseCase == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+    final result = await removeBookingDiscountUseCase!(params);
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            errMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (updatedBooking) {
+        final currentSelected = state.selectedBooking;
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            selectedBooking: (currentSelected != null &&
+                    currentSelected.id == updatedBooking.id)
+                ? updatedBooking
+                : currentSelected,
+            actionSuccessMessage: 'disc_removed_success',
           ),
         );
         fetchBookingSummary();

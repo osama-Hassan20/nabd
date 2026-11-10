@@ -7,6 +7,9 @@ class BookingSummaryModel {
   final int? inConsultationCount;
   final int? noShowCount;
   final int? postponedCount;
+  final num? totalDiscountsGiven;
+  final int? freeConsultationsCount;
+  final num? totalNetRevenue;
 
   const BookingSummaryModel({
     this.totalBookings,
@@ -17,6 +20,9 @@ class BookingSummaryModel {
     this.inConsultationCount,
     this.noShowCount,
     this.postponedCount,
+    this.totalDiscountsGiven,
+    this.freeConsultationsCount,
+    this.totalNetRevenue,
   });
 
   int get visitsToday => totalBookings ?? 0;
@@ -26,6 +32,9 @@ class BookingSummaryModel {
   int get noShow => noShowCount ?? 0;
   int get cancelledToday => cancelledBookings ?? 0;
   int get postponedToOther => postponedCount ?? 0;
+  num get discountsGiven => totalDiscountsGiven ?? 0;
+  int get freeConsultations => freeConsultationsCount ?? 0;
+  num get netRevenue => totalNetRevenue ?? 0;
 
   factory BookingSummaryModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const BookingSummaryModel();
@@ -38,6 +47,9 @@ class BookingSummaryModel {
       inConsultationCount: json['inConsultationCount'] as int?,
       noShowCount: json['noShowCount'] as int?,
       postponedCount: json['postponedCount'] as int?,
+      totalDiscountsGiven: json['totalDiscountsGiven'] as num?,
+      freeConsultationsCount: json['freeConsultationsCount'] as int?,
+      totalNetRevenue: json['totalNetRevenue'] as num?,
     );
   }
 
@@ -52,6 +64,11 @@ class BookingSummaryModel {
         'inConsultationCount': inConsultationCount,
       if (noShowCount != null) 'noShowCount': noShowCount,
       if (postponedCount != null) 'postponedCount': postponedCount,
+      if (totalDiscountsGiven != null)
+        'totalDiscountsGiven': totalDiscountsGiven,
+      if (freeConsultationsCount != null)
+        'freeConsultationsCount': freeConsultationsCount,
+      if (totalNetRevenue != null) 'totalNetRevenue': totalNetRevenue,
     };
   }
 }

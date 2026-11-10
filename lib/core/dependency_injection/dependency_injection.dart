@@ -309,6 +309,8 @@ Future<void> setupGetIt() async {
       getDoctorLeavesUseCase: getIt<GetDoctorLeavesUseCase>(),
       getCompanySettingsUseCase: getIt<GetCompanySettingsUseCase>(),
       getDoctorBookingsForDateUseCase: getIt<GetDoctorBookingsForDateUseCase>(),
+      applyBookingDiscountUseCase: getIt<ApplyBookingDiscountUseCase>(),
+      removeBookingDiscountUseCase: getIt<RemoveBookingDiscountUseCase>(),
     ),
   );
 
