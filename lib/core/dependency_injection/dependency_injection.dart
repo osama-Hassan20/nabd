@@ -16,6 +16,7 @@ import 'package:eyadty/shared/auth/domain/use_cases/login/login_use_case.dart';
 import 'package:eyadty/shared/cubit/basic_cubit.dart';
 
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/domain/contracts/active_visit_lookup.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
@@ -27,6 +28,16 @@ import 'package:eyadty/features/bookings/domain/use_cases/get_doctor_bookings_fo
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
+
+// Visits Feature
+import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
+import 'package:eyadty/features/visits/domain/use_cases/finalize_visit_use_case.dart';
+import 'package:eyadty/features/visits/domain/use_cases/get_doctor_queue_use_case.dart';
+import 'package:eyadty/features/visits/domain/use_cases/get_visit_by_booking_id_use_case.dart';
+import 'package:eyadty/features/visits/domain/use_cases/record_vitals_use_case.dart';
+import 'package:eyadty/features/visits/domain/use_cases/save_visit_draft_use_case.dart';
+import 'package:eyadty/features/visits/domain/use_cases/start_consultation_use_case.dart';
 
 // Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
@@ -182,16 +193,64 @@ Future<void> setupGetIt() async {
     () => UpdateBookingUseCase(repo: getIt<BookingsRepo>()),
   );
   getIt.registerLazySingleton<ChangeBookingStatusUseCase>(
-    () => ChangeBookingStatusUseCase(repo: getIt<BookingsRepo>()),
+    () => ChangeBookingStatusUseCase(
+      repo: getIt<BookingsRepo>(),
+      activeVisitLookup: getIt<ActiveVisitLookup>(),
+    ),
   );
   getIt.registerLazySingleton<ReassignTechnicianUseCase>(
-    () => ReassignTechnicianUseCase(repo: getIt<BookingsRepo>()),
+    () => ReassignTechnicianUseCase(
+      repo: getIt<BookingsRepo>(),
+      activeVisitLookup: getIt<ActiveVisitLookup>(),
+    ),
   );
   getIt.registerLazySingleton<DeleteBookingUseCase>(
-    () => DeleteBookingUseCase(repo: getIt<BookingsRepo>()),
+    () => DeleteBookingUseCase(
+      repo: getIt<BookingsRepo>(),
+      activeVisitLookup: getIt<ActiveVisitLookup>(),
+    ),
   );
   getIt.registerLazySingleton<GetDoctorBookingsForDateUseCase>(
     () => GetDoctorBookingsForDateUseCase(repo: getIt<BookingsRepo>()),
+  );
+
+  // ─── Visits Feature ────────────────────────────────────────────────────────
+  getIt.registerLazySingleton<VisitsMockRepoImpl>(
+    () => VisitsMockRepoImpl(bookingsRepo: getIt<BookingsRepo>()),
+  );
+  getIt.registerLazySingleton<VisitsRepo>(
+    () => getIt<VisitsMockRepoImpl>(),
+  );
+  getIt.registerLazySingleton<ActiveVisitLookup>(
+    () => getIt<VisitsMockRepoImpl>(),
+  );
+
+  getIt.registerLazySingleton<GetDoctorQueueUseCase>(
+    () => GetDoctorQueueUseCase(repo: getIt<VisitsRepo>()),
+  );
+  getIt.registerLazySingleton<GetVisitByBookingIdUseCase>(
+    () => GetVisitByBookingIdUseCase(repo: getIt<VisitsRepo>()),
+  );
+  getIt.registerLazySingleton<StartConsultationUseCase>(
+    () => StartConsultationUseCase(
+      visitsRepo: getIt<VisitsRepo>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+    ),
+  );
+  getIt.registerLazySingleton<SaveVisitDraftUseCase>(
+    () => SaveVisitDraftUseCase(repo: getIt<VisitsRepo>()),
+  );
+  getIt.registerLazySingleton<RecordVitalsUseCase>(
+    () => RecordVitalsUseCase(
+      visitsRepo: getIt<VisitsRepo>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+    ),
+  );
+  getIt.registerLazySingleton<FinalizeVisitUseCase>(
+    () => FinalizeVisitUseCase(
+      visitsRepo: getIt<VisitsRepo>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+    ),
   );
 
   getIt.registerFactory<BookingsCubit>(
