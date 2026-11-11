@@ -987,6 +987,8 @@
   "disc_type_fixed": "Fixed Amount Discount",
   "disc_type_free": "Free Consultation",
   "disc_value_label": "Discount Value",
+  "disc_value_hint_pct": "0 - {max}%",
+  "disc_value_hint_fixed": "0 - {max}",
   "disc_reason_label": "Discount Reason (Required)",
   "disc_reason_hint": "Explain the reason for this discount",
   "disc_free_reason_humanitarian": "Humanitarian Case",

@@ -142,7 +142,8 @@ class BookingDiscountSection extends StatelessWidget {
             CustomTextFormField(
               controller: discountValueController,
               headerText: 'disc_value_label'.tr(),
-              hintText: '0 - ${isOwner ? 100 : maxPct}%',
+              hintText: 'disc_value_hint_pct'
+                  .tr(namedArgs: {'max': '${isOwner ? 100 : maxPct}'}),
               textInputType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
@@ -169,7 +170,9 @@ class BookingDiscountSection extends StatelessWidget {
             CustomTextFormField(
               controller: discountValueController,
               headerText: 'disc_value_label'.tr(),
-              hintText: '0 - ${AppFormatterHelper.formatCurrency(fee)}',
+              hintText: 'disc_value_hint_fixed'.tr(
+                namedArgs: {'max': AppFormatterHelper.formatCurrency(fee)},
+              ),
               textInputType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),

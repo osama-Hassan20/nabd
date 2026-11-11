@@ -977,6 +977,8 @@
   "disc_type_fixed": "خصم بمبلغ ثابت",
   "disc_type_free": "مجاني",
   "disc_value_label": "قيمة الخصم",
+  "disc_value_hint_pct": "0 - {max}%",
+  "disc_value_hint_fixed": "0 - {max}",
   "disc_reason_label": "سبب الخصم (مطلوب)",
   "disc_reason_hint": "وضّح سبب الخصم",
   "disc_free_reason_humanitarian": "حالة إنسانية",
