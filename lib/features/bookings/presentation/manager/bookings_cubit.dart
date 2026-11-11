@@ -1329,14 +1329,12 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         loadSlotsForCurrentForm(forceRefresh: true);
         return false;
       },
-      (updated) {
-        final successMsg = updated.discountRemovedReason == 'fee_changed'
-            ? 'disc_removed_due_to_fee_change'
-            : 'booking_updated_successfully';
+      (result) {
+        final successMsg = result.discountResetKey ?? 'booking_updated_successfully';
         emit(
           state.copyWith(
             actionStatus: RequestStatusEnum.success,
-            selectedBooking: updated,
+            selectedBooking: result.booking,
             actionSuccessMessage: successMsg,
           ),
         );

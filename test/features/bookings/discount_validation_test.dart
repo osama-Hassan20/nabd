@@ -15,6 +15,8 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/domain/use_cases/params/update_role_discount_policy_params.dart';
+import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class FakeCurrentUserProvider implements CurrentUserProvider {
@@ -872,10 +874,11 @@ void main() {
       expect(result.isRight(), isTrue);
       result.fold(
         (_) => fail('Should succeed with reset'),
-        (saved) {
-          expect(saved.discountType, DiscountTypeEnum.none);
-          expect(saved.discountValue, 0);
-          expect(saved.discountRemovedReason, 'fee_changed');
+        (res) {
+          expect(res.discountResetKey, 'disc_removed_due_to_fee_change');
+          expect(res.booking.discountType, DiscountTypeEnum.none);
+          expect(res.booking.discountValue, 0);
+          expect(res.booking.discountRemovedReason, 'fee_changed');
         },
       );
 
@@ -884,6 +887,234 @@ void main() {
           .where((l) => l.details?.contains('fee_changed') ?? false)
           .toList();
       expect(removeLogs, isNotEmpty);
+    });
+
+    test(
+        'T27: Changing consultationFee from 300 to 400 where 10% discount remains valid preserves discount with discountResetKey == null',
+        () async {
+      final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
+      userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-FEE-VALID-PRESERVED',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 10,
+          discountReason: 'Loyalty discount',
+          branchId: 'branch_1',
+        ),
+      );
+
+      const updated = BookingModel(
+        id: 'BOOK-FEE-VALID-PRESERVED',
+        consultationFee: 400,
+        paidAmount: 0,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.percentage,
+        discountValue: 10,
+        discountReason: 'Loyalty discount',
+        branchId: 'branch_1',
+      );
+
+      final result = await updateBookingUseCase(updated);
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Should succeed without reset'),
+        (res) {
+          expect(res.discountResetKey, isNull);
+          expect(res.booking.discountType, DiscountTypeEnum.percentage);
+          expect(res.booking.discountValue, 10);
+          expect(res.booking.discountAmount, 40); // 10% of 400
+          expect(res.booking.netAmount, 360);
+        },
+      );
+    });
+
+    test(
+        'T28: Changing consultationFee makes netAmount < paidAmount -> resets discount with discountResetKey and logs audit',
+        () async {
+      final ownerRes = await staffUsersRepo.getStaffUserById('USER-OWNER');
+      userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
+
+      // Booking had fee 300, 20% discount (net 240), paid 100
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-FEE-NET-BELOW-PAID',
+          consultationFee: 300,
+          paidAmount: 100,
+          status: BookingStatusEnum.waiting,
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 20,
+          discountReason: 'Initial discount',
+          branchId: 'branch_1',
+        ),
+      );
+
+      // Fee reduced to 120 -> 20% of 120 = 24, net is 96, but paid is 100! (net < paid)
+      const updated = BookingModel(
+        id: 'BOOK-FEE-NET-BELOW-PAID',
+        consultationFee: 120,
+        paidAmount: 100,
+        status: BookingStatusEnum.waiting,
+        discountType: DiscountTypeEnum.percentage,
+        discountValue: 20,
+        discountReason: 'Initial discount',
+        branchId: 'branch_1',
+      );
+
+      final result = await updateBookingUseCase(updated);
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Should succeed with reset'),
+        (res) {
+          expect(res.discountResetKey, 'disc_removed_due_to_fee_change');
+          expect(res.booking.discountType, DiscountTypeEnum.none);
+          expect(res.booking.discountValue, 0);
+          expect(res.booking.discountRemovedReason, 'fee_changed');
+        },
+      );
+
+      final removeLogs = auditLogger
+          .getLogs(eventType: 'booking_discount_removed')
+          .where((l) => l.details?.contains('fee_changed') ?? false)
+          .toList();
+      expect(removeLogs, isNotEmpty);
+    });
+
+    test(
+        'T29: Custom role with 35% discount policy: applies 30% successfully, rejects 40% with disc_validation_max_exceeded',
+        () async {
+      const customRole = RoleDefinitionModel(
+        id: 'role_custom_senior_coord',
+        nameAr: 'منسق أول مخصص',
+        permissions: [StaffPermissionEnum.applyBookingDiscount],
+        maxDiscountPercent: 35,
+        canGrantFreeConsultation: false,
+      );
+      rolesProvider.roles = [...rolesProvider.roles, customRole];
+      await staffUsersRepo.saveRole(role: customRole, currentUserId: 'USER-OWNER');
+
+      final seniorUser = const StaffUserModel(
+        id: 'USER-SENIOR-COORD',
+        fullName: 'منسق أول',
+        isActive: true,
+        isOwner: false,
+        branchAssignments: [
+          BranchAssignmentModel(
+            branchId: 'branch_1',
+            roleIds: ['role_custom_senior_coord'],
+          ),
+        ],
+      );
+      await staffUsersRepo.createStaffUser(
+        user: seniorUser,
+        temporaryPassword: 'Password123',
+        currentUserId: 'USER-OWNER',
+      );
+
+      userProvider.user = seniorUser;
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-CUSTOM-35PCT',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          branchId: 'branch_1',
+        ),
+      );
+
+      // 1. Applying 30% <= 35% succeeds
+      final res30 = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-CUSTOM-35PCT',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 30,
+          reason: '30% within 35% policy',
+        ),
+      );
+      expect(res30.isRight(), isTrue);
+
+      // 2. Applying 40% > 35% is rejected
+      final res40 = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-CUSTOM-35PCT',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 40,
+          reason: '40% exceeds 35% policy',
+        ),
+      );
+      expect(res40.isLeft(), isTrue);
+      res40.fold(
+        (failure) => expect(failure.errMessage, 'disc_validation_max_exceeded'),
+        (_) => fail('Should fail'),
+      );
+    });
+
+    test(
+        'T30: Owner updating receptionist role policy immediately changes receptionist discount behavior in subsequent calls',
+        () async {
+      final recRes = await staffUsersRepo.getStaffUserById('USER-REC');
+      final recUser = recRes.getOrElse(() => const StaffUserModel());
+      userProvider.user = recUser;
+
+      await bookingsRepo.createBooking(
+        const BookingModel(
+          id: 'BOOK-DYNAMIC-POLICY',
+          consultationFee: 300,
+          paidAmount: 0,
+          status: BookingStatusEnum.waiting,
+          branchId: 'branch_1',
+        ),
+      );
+
+      // 1. Receptionist applying 30% fails initially because default limit is 20%
+      final failAttempt = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-DYNAMIC-POLICY',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 30,
+          reason: 'Early attempt before policy change',
+        ),
+      );
+      expect(failAttempt.isLeft(), isTrue);
+
+      // 2. Owner updates reception role policy to 35%
+      final updatePolicy = UpdateRoleDiscountPolicyUseCase(
+        staffUsersRepo: staffUsersRepo,
+        auditLogger: auditLogger,
+      );
+      await updatePolicy(
+        const UpdateRoleDiscountPolicyParams(
+          roleId: RoleIds.reception,
+          maxDiscountPercent: 35,
+          canGrantFreeConsultation: false,
+          currentUserId: 'USER-OWNER',
+        ),
+      );
+
+      // 3. Receptionist immediately attempts 30% again without app restart -> succeeds!
+      userProvider.user = recUser;
+      final successAttempt = await applyDiscountUseCase(
+        const ApplyDiscountParams(
+          bookingId: 'BOOK-DYNAMIC-POLICY',
+          discountType: DiscountTypeEnum.percentage,
+          discountValue: 30,
+          reason: 'Attempt after owner raised limit to 35%',
+        ),
+      );
+      expect(successAttempt.isRight(), isTrue);
+      successAttempt.fold(
+        (_) => fail('Should succeed now'),
+        (b) {
+          expect(b.discountValue, 30);
+          expect(b.discountAmount, 90);
+          expect(b.netAmount, 210);
+        },
+      );
     });
 
     test(

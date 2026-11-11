@@ -107,7 +107,7 @@ class BookingDiscountPolicyResolver {
       actor: actor,
       isOwner: false,
       hasApplyPermission: hasApplyPermission,
-      maxDiscountPercent: maxDiscountPercent ?? 0,
+      maxDiscountPercent: maxDiscountPercent,
       canGrantFreeConsultation: canGrantFreeConsultation ?? false,
     );
   }

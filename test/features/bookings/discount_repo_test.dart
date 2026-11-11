@@ -318,12 +318,13 @@ void main() {
 
       updateRes.fold(
         (_) => fail('Update should succeed'),
-        (updated) {
-          expect(updated.consultationFee, 150);
+        (res) {
+          expect(res.discountResetKey, 'disc_removed_due_to_fee_change');
+          expect(res.booking.consultationFee, 150);
           // Discount is automatically reset because 200 > 150
-          expect(updated.discountType, DiscountTypeEnum.none);
-          expect(updated.discountValue, 0);
-          expect(updated.discountRemovedReason, 'fee_changed');
+          expect(res.booking.discountType, DiscountTypeEnum.none);
+          expect(res.booking.discountValue, 0);
+          expect(res.booking.discountRemovedReason, 'fee_changed');
         },
       );
     });

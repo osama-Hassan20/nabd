@@ -68,6 +68,9 @@ class BookingDiscountValidator {
 
     // 6. Max discount limit check (convert fixed to percentage)
     if (!isOwner) {
+      if (maxDiscountPercent == null) {
+        return 'disc_validation_max_exceeded';
+      }
       num effectivePct = 0;
       if (effectiveType == DiscountTypeEnum.percentage) {
         effectivePct = discountValue ?? 0;
@@ -77,8 +80,7 @@ class BookingDiscountValidator {
         effectivePct = 100;
       }
 
-      final limit = maxDiscountPercent ?? 0;
-      if (effectivePct > limit) {
+      if (effectivePct > maxDiscountPercent) {
         return 'disc_validation_max_exceeded';
       }
     }

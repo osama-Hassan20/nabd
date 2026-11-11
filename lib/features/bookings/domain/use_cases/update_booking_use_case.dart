@@ -11,7 +11,18 @@ import '../helpers/booking_discount_policy_resolver.dart';
 import '../helpers/booking_discount_validator.dart';
 import '../repo/bookings_repo.dart';
 
-class UpdateBookingUseCase implements UseCase<BookingModel, BookingModel> {
+class UpdateBookingResult {
+  final BookingModel booking;
+  final String? discountResetKey;
+
+  const UpdateBookingResult({
+    required this.booking,
+    this.discountResetKey,
+  });
+}
+
+class UpdateBookingUseCase
+    implements UseCase<UpdateBookingResult, BookingModel> {
   final BookingsRepo repo;
   final StaffUsersRepo? staffUsersRepo;
   final PermissionEvaluator? permissionEvaluator;
@@ -27,7 +38,7 @@ class UpdateBookingUseCase implements UseCase<BookingModel, BookingModel> {
   });
 
   @override
-  Future<Either<Failures, BookingModel>> call(
+  Future<Either<Failures, UpdateBookingResult>> call(
     BookingModel booking, {
     DateTime? customNow,
   }) async {
@@ -56,6 +67,7 @@ class UpdateBookingUseCase implements UseCase<BookingModel, BookingModel> {
     final feeChanged = existing.consultationFee != booking.consultationFee;
 
     var bookingToUpdate = booking;
+    bool discountResetOccurred = false;
 
     // Rule 1: Changing fee on a booking with active discount requires applyBookingDiscount
     if (feeChanged && existingHadDiscount) {
@@ -116,6 +128,7 @@ class UpdateBookingUseCase implements UseCase<BookingModel, BookingModel> {
       );
 
       if (error != null) {
+        discountResetOccurred = true;
         final prevType = bookingToUpdate.discountType;
         final prevVal = bookingToUpdate.discountValue;
 
@@ -168,7 +181,14 @@ class UpdateBookingUseCase implements UseCase<BookingModel, BookingModel> {
                 'Discount removed on update: reason: ${saved.discountRemovedReason}',
           );
         }
-        return Right(saved);
+        return Right(
+          UpdateBookingResult(
+            booking: saved,
+            discountResetKey: discountResetOccurred
+                ? 'disc_removed_due_to_fee_change'
+                : null,
+          ),
+        );
       },
     );
   }

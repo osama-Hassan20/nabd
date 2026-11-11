@@ -38,11 +38,15 @@ void main() {
   late TestUserSessionProvider sessionProvider;
   late TestRolesProvider rolesProvider;
   late PermissionEvaluator evaluator;
+  late DateTime today;
+  late DateTime yesterday;
 
   final defaultRoles = RoleDefinitionModel.defaultSystemRoles();
 
   setUp(() {
     CairoTimeHelper.setFixedClock(DateTime(2026, 11, 10, 10, 0));
+    today = CairoTimeHelper.now();
+    yesterday = today.subtract(const Duration(days: 1));
     sessionProvider = TestUserSessionProvider();
     rolesProvider = TestRolesProvider(defaultRoles);
     evaluator = PermissionEvaluator(
@@ -150,8 +154,6 @@ void main() {
     ),
   };
 
-  final today = CairoTimeHelper.now();
-  final yesterday = today.subtract(const Duration(days: 1));
 
   group('Table-Driven Row Action Buttons State Matrix Tests', () {
     // ─── Case 1: waiting without visit (today, branch_1) ──────────────────────
