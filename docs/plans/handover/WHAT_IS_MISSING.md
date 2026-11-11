@@ -107,7 +107,11 @@ lib/features/cashier/
 3. **تسجيل المصروفات النثرية** — صرف من الخزينة مع ذكر السبب والمستلم
 4. **إغلاق الوردية (التقفيل):** `Expected Cash = Opening + Cash Payments - Expenses`، الكاشير يعد الكاش الفعلي، النظام يحسب العجز/الزيادة ويطبع تقرير الوردية
 
-> **مرجع التفاصيل الكاملة:** [`docs/plans/PKG-A-treasury-billing.md`](../PKG-A-treasury-billing.md)
+> **مرجع التفاصيل الكاملة:** [`docs/plans/PKG-A-treasury-billing.md`](../PKG-A-treasury-billing.md) و [`docs/plans/F-05-cashier-shifts.md`](../F-05-cashier-shifts.md)
+
+> [!NOTE]
+> **بنود مؤجلة لما بعد F-05 (Deferred Items):**
+> - **تخصيص سياسات الخزينة لكل عميل عبر واجهة الإعدادات (Tenant Cashier Policies UI):** كلاس `CashierPolicy` مصمم ومحقون عبر DI بقيم افتراضية قابلة للاستبدال بدون تعديل الـ use cases. بناء شاشة إعدادات متقدمة لتعديل سقوف العجز والمصروفات النثرية وعمر الوردية ديناميكياً لكل مستأجر/فرع مؤجل لما بعد F-05.
 
 ---
 
