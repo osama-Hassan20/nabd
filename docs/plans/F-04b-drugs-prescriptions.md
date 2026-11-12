@@ -4,7 +4,7 @@
 > **طبيعة المنتج:** نظام SaaS سريري متعدد المستأجرين (Multi-Tenant Clinic SaaS) خاضع لتخصيص الإعدادات لكل عميل وفرع دون تغيير الكود أو افتراض قيم صلبة خاصة بعميل بعينه.  
 > **البيئة والمبادئ:** Flutter (Desktop/Web/Tablet) — Clean Architecture — Cubit واحد لكل فيتشر — Mock In-Memory بالكامل (بدون Dio وبدون backend) — صفر نصوص Hardcoded (تطابق 100% بين `ar-EG` و `en-US`) — صفر `DateTime.now()` (استخدام `CairoTimeHelper.now()` حصراً) — صفر `setState` و صفر Code-gen — حوكمة صارمة بصلاحيات Fail-Closed وSession-derived actors.  
 > **توقيت التنفيذ والاعتمادية:** يبدأ تنفيذ هذه الفيتشر بالكامل بعد اكتمال F-05 بنسبة 100% (بما فيه M-6b).  
-> **تاريخ آخر تدقيق برمجي وميداني:** 12-11-2026.
+> **تاريخ آخر تدقيق برمجي وميداني:** 13-11-2026.
 
 ---
 
@@ -70,7 +70,7 @@
    - **محتوى الـ Commit التنفيذي الأول:**
      - في `VIS-002`: وضع `chiefComplaint: 'مغص معوي حاد وإسهال متكرر منذ يومين'` وتصحيح `patientName: 'طارق عبد الرحمن علي'` وهاتفه `'+201545678901'`.
      - في `VIS-003`: وضع `chiefComplaint: 'ألم شديد بالحلق وصعوبة في البلع وارتفاع في درجة الحرارة'`.
-     - إضافة روشتة مسودة لكشف `VIS-001` وروشتة كشف منتهٍ لكشف `VIS-002`.
+     - *(ملاحظة معمارية: تقتصر هذه التعديلات في الـ Commit المؤجل على تصحيح الـ complaint واسم المريض وهاتفه فقط؛ أما إضافة مسودة الروشتة والروشتة المنتهية فمكانها M-3 عند بناء تكامل الروشتة السريرية)*.
 
 ### 1.2 فحص اسم المريض في Snapshot الكشف مقابل `PatientsMockRepoImpl` و `BookingsMockRepoImpl`
 
@@ -125,9 +125,61 @@
 
 ## 3. تصميم الـ Models والـ State والتحقق السريري
 
-### 3.1 تصميم كائنات البيانات (Models) — جميع الحقول Nullable مع `fromJson/toJson/copyWith/==`
+### 3.1 تصميم كائنات البيانات (Models) والـ Enums — جميع الحقول Nullable مع `fromJson/toJson/copyWith/==`
 
 ```dart
+// Enums النظام الدوائي والسريري
+enum ReviewStatusEnum {
+  pending,
+  approved,
+  rejected,
+  merged;
+
+  String toJson() => name;
+  static ReviewStatusEnum? fromJson(String? value) {
+    if (value == null) return null;
+    return ReviewStatusEnum.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => ReviewStatusEnum.pending,
+    );
+  }
+}
+
+enum AddendumChangeTypeEnum {
+  dose,
+  frequency,
+  duration,
+  instructions,
+  discontinue,
+  add,
+  diagnosis;
+
+  String toJson() => name;
+  static AddendumChangeTypeEnum? fromJson(String? value) {
+    if (value == null) return null;
+    return AddendumChangeTypeEnum.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => AddendumChangeTypeEnum.instructions,
+    );
+  }
+}
+
+enum DrugSourceEnum {
+  preset,
+  custom,
+  imported,
+  quickAdd;
+
+  String toJson() => name;
+  static DrugSourceEnum? fromJson(String? value) {
+    if (value == null) return null;
+    return DrugSourceEnum.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => DrugSourceEnum.preset,
+    );
+  }
+}
+
 // 1. كائن الدواء في الكتالوج العام
 class DrugModel extends Equatable {
   final String? id;
@@ -142,7 +194,8 @@ class DrugModel extends Equatable {
   final String? manufacturer; // اسم الشركة المصنعة كنص
   final bool? isActive; // نشط أو مؤرشف (Soft Delete)
   final bool? isQuickAdded; // هل أضيف سريعاً من شاشة الكشف؟
-  final String? reviewStatus; // 'pending_review' | 'approved' | 'rejected' | 'merged'
+  final ReviewStatusEnum? reviewStatus; // pending, approved, rejected, merged
+  final DrugSourceEnum? source; // preset, custom, imported, quickAdd
   final String? createdByUserId; // هوية المستخدم المنشئ للدواء
   final DateTime? createdAt; // توقيت الإنشاء عبر CairoTimeHelper
   final String? reviewedByUserId; // هوية المعتمد
@@ -191,8 +244,12 @@ class PrescriptionItemModel extends Equatable {
   final String? scientificName; // لقطة المادة الفعالة
   final String? concentration; // لقطة التركيز
   final String? dosage; // الجرعة المقررة للحالة
-  final String? frequency; // التكرار (مفتاح ترجمة أو نص حر)
-  final String? duration; // المدة (اختياري: مفتاح ترجمة أو نص حر)
+  final String? frequency; // التكرار النهائي المعروض
+  final String? frequencyPreset; // خيار التكرار الجاهز من القائمة (Preset)
+  final String? frequencyCustom; // التكرار المخصص المكتوب حراً (Custom)
+  final String? duration; // المدة النهائية المعروضة
+  final String? durationPreset; // خيار المدة الجاهزة من القائمة (Preset)
+  final String? durationCustom; // المدة المخصصة المكتوبة حراً (Custom)
   final String? instructions; // تعليمات خاصة بالصرف
   final int? orderIndex; // ترتيب العرض في الروشتة
   final DateTime? createdAt;
@@ -206,10 +263,12 @@ class VisitAddendumModel extends Equatable {
   final String? doctorName; // اسم الطبيب المشتق
   final DateTime? createdAt; // توقيت التعديل الموثق
   final String? reason; // سبب التعديل الإلزامي
-  final String? changeType; // 'add_item' | 'remove_item' | 'modify_item' | 'diagnosis_edit'
+  final AddendumChangeTypeEnum? changeType; // dose, frequency, duration, instructions, discontinue, add, diagnosis
   final String? affectedItemId; // معرّف البند المتأثر
   final PrescriptionItemModel? oldItemSnapshot; // لقطة ما قبل التعديل
   final PrescriptionItemModel? newItemSnapshot; // لقطة ما بعد التعديل
+  final String? diagnosisBefore; // لقطة التشخيص الطبي قبل التعديل
+  final String? diagnosisAfter; // لقطة التشخيص الطبي بعد التعديل
   final String? notes; // ملاحظات سريرية توضيحية
 }
 ```
@@ -269,43 +328,116 @@ class DrugsState extends Equatable {
 ### 4.1 تحديات التخزين الفعلي وقواعد المطابقة الصارمة:
 1. **طبيعة البيانات القائمة:**
    حساسيات المريض في `PatientModel.allergies` هي نصوص حرة (`List<String>`) أدخلها المستخدم (مثل: `['حساسية بنسلين شديدة']` أو `['حساسية سلفا وأسبرين']`).
-2. **خطوات خوارزمية المطابقة (`DrugAllergyMatcher.checkAllergy`):**
-   - **الخطوة (أ) - الربط بعنصر الكتالوج:** محاولة مطابقة نص حساسية المريض مع عناصر كتالوج الحساسية النشطة بعد تطبيع النصين.
-   - **الخطوة (ب) - تجريد الكلمات الشائعة (Stop-words Stripping):** إذا لم يتطابق النص مباشرة، يتم تجريد الكلمات الزائدة:
-     - العربية: `['حساسية', 'حساسيه', 'شديدة', 'شديده', 'من', 'ضد', 'تجاه', 'مرض']`.
-     - الإنجليزية: `['allergy', 'allergic', 'severe', 'to', 'against']`.
-     - النص المتبقي يُمثل جوهر المادة المسببة للحساسية.
-   - **الخطوة (ج) - الفحص المتقاطع (Cross Matching):** مقارنة المادة المسببة للحساسية ومرادفاتها (`aliases`) مع:
-     - الاسم التجاري للدواء (`drug.name`).
-     - الاسم العلمي / المادة الفعالة (`drug.scientificName`).
-   - **الخطوة (د) - قواعد التطابق الدقيقة (Token vs Substring):**
-     - تطابق الكلمة الكاملة (Word Token Match) بحروف متطابقة.
-     - أو تطابق جزئي بشرط أن يكون طول المقطع المشترك $\ge 3$ حروف مع مراعاة حدود الكلمات لمنع التطابقات العشوائية.
-   - **توثيق الـ False Positives والـ False Negatives المقبولة:**
-     - *False Positive مقبول:* تحذير من `Sulfamethoxazole` لمريض لديه حساسية مسجلة باسم "سلفا" (هذا مرغوب ومطلوب لحماية المريض).
-     - *False Negative مقبول:* عدم التحذير من دواء تجاري جديد ليس له اسم علمي مسجل بالكتالوج ولا يحتوي اسمه على كلمة بنسلين ولم تُدرج مادته الفعالة في المرادفات (وهنا يأتي دور إخلاء المسؤولية السريري).
-3. **تحديد `allergyCatalogItemId` في الـ Audit Log عند غياب الربط المباشر:**
-   - إن كان التعارض مرتبطاً بعنصر كتالوج: يُسجل المعرف الحقيقي (مثل `CAT-ALL-001`).
-   - إن كان التعارض ناتجاً عن مطابقة نص حر لم يُعثر له على عنصر كتالوج: يُسجل المعرف البديل المعقم:
-     `allergyCatalogItemId: 'unmapped:${sanitizedSlug}'` (مثال: `'unmapped:penicillin'`).
-     **وصفر نصوص سريرية مطولة في الـ Audit Log.**
-4. **تنظيف تكرار عناصر الـ Seed في الكتالوج الطبي:**
-   - في الـ Seed الحالي بـ `medical_catalog_mock_repo_impl.dart`:
-     يوجد `'بنسلين'` و `'حساسية بنسلين شديدة'` كعنصرين منفصلين، وكذلك `'أسبرين'` و `'حساسية أسبرين'`.
-   - **الإجراء:** دمج وحذف العناصر المكررة، والإبقاء على الاسم المرجعي الصافي (`'بنسلين'`, `'أسبرين'`, `'سلفا'`) وتضمين العبارات الأخرى في قائمة الـ `aliases` الخاصة بها.
-   - **الأثر على اختبارات المرضى:** تم فحص `test/features/patients/` وتبين أنها تفحص `items.any((i) => i.name == 'بنسلين')` وتفحص نصوص الحساسية للمريض، وستظل جميع الاختبارات خضراء 100%.
-5. **سيناريوهات الاختبار الإلزامية على الـ Seed الفعلي:**
+
+2. **قواعد التطبيع وخوارزمية مطابقة الكلمة الكاملة (`DrugAllergyMatcher.checkAllergy`):**
+   - **قاعدة حاسمة:** **حذف قاعدة "مقطع مشترك ≥ 3 حروف" نهائياً**. المطابقة تتم حصراً على مستوى **الكلمة الكاملة (Full-Word Token Match)** بعد التطبيع الصارم، مع **حظر تام للمطابقة بالأجزاء داخل الكلمة (Strictly NO Intra-word Substring Matching)**.
+   - **خطوات خوارزمية التطبيع والمطابقة:**
+     - **الخطوة (أ) - التطبيع الصارم للنصوص (Strict Normalization):**
+       1. تحويل كافة النصوص اللاتينية إلى أحرف صغيرة (lowercase).
+       2. إزالة المسافات الزائدة في البداية والنهاية ودمج المسافات المتعددة (trim & collapse whitespace).
+       3. إزالة كافة علامات التشكيل العربية (فَتْحَة، ضَمَّة، كَسْرَة، سُكُون، تَنْوِين، شَدَّة).
+       4. توحيد الألفات (أ، إ، آ $\to$ ا)، توحيد الياء والياء المقصورة (ى $\to$ ي)، وتوحيد التاء المربوطة والهاء (ة $\to$ ه).
+       5. تجريد الكلمات الشائعة (Stop-words Stripping):
+          - العربية: `['حساسية', 'حساسيه', 'شديدة', 'شديده', 'من', 'ضد', 'تجاه', 'مرض']`.
+          - الإنجليزية: `['allergy', 'allergic', 'severe', 'to', 'against']`.
+       6. قواعد تجريد السوابق (Prefix Stripping Rules):
+          - تجريد "ال" التعريف فقط إذا كان ما بعدها $\ge 3$ أحرف (مثل: `البنسلين` $\to$ `بنسلين`).
+          - تجريد واو العطف "و" وحروف الجر "ب/ل" فقط عندما تسبق "ال" أو كلمات مستقلة، مع حماية صارمة للحروف الأصلية (Strict Guard) تمنع تجريد الحروف الجذرية للأدوية إطلاقاً (مثل: منع حذف "ب" من `بنسلين` أو `باراسيتامول`، ومنع حذف "ل" من `لوراتادين`).
+       7. تجزئة النصوص (Tokenization):
+          - التقسيم على علامات الترقيم الفاصلة (`/`, `-`, `+`, `،`, `,`, `(`, `)`).
+          - التقسيم على الأرقام ووحدات الجرعات (`mg`, `g`, `ml`, `mcg`, `جم`, `ملغ`, `مل`) لفصل التراكيز عن الأسماء (مثل: تجزئة `Augmentin 1g` إلى `Augmentin`، وتجزئة `Amoxicillin/Clavulanate` إلى `Amoxicillin` و `Clavulanate`).
+     - **الخطوة (ب) - الربط بعنصر الكتالوج (Catalog Item Lookup):**
+       محاولة مطابقة كلمات نص الحساسية مع عناصر كتالوج الحساسية النشطة بعد تطبيع النصين، لجلب قائمة مرادفات المادة الفعالة والعائلة الدوائية (`aliases`).
+     - **الخطوة (ج) - الفحص المتقاطع على الكلمة الكاملة (Word-Token Cross Matching):**
+       مقارنة كل كلمة كاملة ناتجة عن تجريد نص الحساسية، وكلمات مرادفات عنصر الكتالوج المرتبط (`aliases`)، مع الكلمات الكاملة المكونة لـ:
+       1. الاسم التجاري للدواء (`drug.name`).
+       2. الاسم العلمي / المادة الفعالة (`drug.scientificName`).
+     - **الخطوة (د) - منع التطابقات العشوائية والـ False Positives (No Intra-word Substring Matching):**
+       - وجود مقطع من الحروف داخل كلمة أخرى لا يُعد تطابقاً نهائياً ما لم تكن الكلمة مطابقة كلياً أو مرادفاً صريحاً.
+       - **أمثلة الـ False Positives المحظورة والمحمية باختبارات صريحة (بما فيها رموز اصطناعية Synthetic Tokens):**
+         - دواء يحتوي اسمه على مقطع أحرف مشابه لحساسية مسجلة دون أن يكون نفس الكلمة أو مرادفاً لها:
+           - فحص دواء تجريبي باسم `Aspartame / أسبارتام` ضد حساسية `'أسبرين'` $\to$ **لا تحذير** (رغم تشابه مقطع أ-س-ب-ر).
+           - فحص دواء تجريبي باسم `Pension / بنسيون` ضد حساسية `'بنسلين'` $\to$ **لا تحذير** (رغم الاشتراك في 4 حروف متتالية: ب-ن-س-ي).
+           - فحص مركب تجاري يحمل مقطع سلفا في سياق غير دوائي مثل `Sulfolane / سلفولان` ضد حساسية `'سلفا'` $\to$ **لا تحذير**.
+           - رموز اصطناعية مركبة للاختبار الصارم: `سلفاتور_وهمي` ضد سلفا $\to$ **لا تحذير**؛ `بنسلاتين_وهمي` ضد بنسلين $\to$ **لا تحذير**؛ `Aspi_synthetic` ضد أسبرين $\to$ **لا تحذير**؛ `Penicil_mock` ضد بنسلين $\to$ **لا تحذير**.
+       - **فحص صريح للمريض بلا حساسية مسجلة:**
+         - مريض لديه `allergies: null` أو `allergies: []` $\to$ فحص أي دواء (Augmentin, Aspocid, Septrin, Omeprazole...) $\to$ **لا يظهر أي تحذير إطلاقاً**.
+       - **توثيق الـ False Negatives المقبولة سريرياً:**
+         - الأخطاء الإملائية الفادحة التي لا تغطيها مرادفات الكتالوج (Spelling typos).
+         - الجموع الشاذة غير المدرجة أو التسميات العامية غير المعرفة (Unmapped colloquialisms).
+         - وهنا يبرز الدور الحيوي لإخلاء المسؤولية السريرية وشريط التحذير الدائم.
+
+3. **الـ Audit Log وقاعدة الخلو التام من النصوص الصحية (Zero Health Text in Audit):**
+   - **قاعدة حاسمة:** **حذف صيغة `unmapped:${sanitizedSlug}` نهائياً**، لأنها تشتق من نص صحي سريري حساس.
+   - **التسجيل الأمني المعتمد لحدث `rx_allergy_warning_acknowledged`:**
+     - عند وجود عنصر كتالوج مرتبط:
+       `allergyCatalogItemId: id` (مثل: `'CAT-ALL-001'`)
+       مع `matchSource: 'catalog_item'`.
+     - عند عدم وجود عنصر كتالوج مرتبط (مطابقة نص حر):
+       `allergyCatalogItemId: null`
+       مع `matchSource: 'free_text'`.
+     - **حمولة الحدث (Payload) معرفات وحالات فقط:**
+       `{'visitId': visitId, 'patientId': patientId, 'drugId': drugId, 'allergyCatalogItemId': catalogItemId, 'matchSource': matchSource}`.
+     - **اختبار حتمي في الـ Test Suite:** التأكد عبر فحص برمجي صارم من أن حمولة التدقيق خالية تماماً من أي نص حساسية، أو أسماء أدوية، أو أي نصوص تشخيصية. وصفر تسجيل عند الفشل.
+
+4. **الحالة السريرية للأسبرين ومضادات الالتهاب غير الستيرويدية (NSAIDs):**
+   - **قاعدة حاسمة:** **حذف اختبار "Cataflam ضد حساسية الأسبرين = لا تحذير" نهائياً**؛ لتجنب تقنين معلومة سريرية غير مؤكدة (حيث أن مضادات الالتهاب غير الستيرويدية NSAIDs قد تسبب حساسية متقاطعة Cross-reactivity خطيرة مع الأسبرين لدى بعض المرضى).
+   - **تعديل الحالة السلبية لمريم محمود (`PAT-000103` — حساسية سلفا وأسبرين: مخزنة كعنصرين منفصلين `['حساسية سلفا', 'حساسية أسبرين']`):**
+     استبدال الحالة السلبية بدواء لا علاقة له إطلاقاً بالفئتين، وهو مثبط مضخة بروتون (Proton Pump Inhibitor - PPI) مثل `Omeprazole 20mg`:
+     - صرف `Aspocid 75mg` (الاسم العلمي: `Acetylsalicylic acid / Aspirin`) $\to$ **يظهر تحذير الحساسية**.
+     - صرف `Septrin` (الاسم العلمي: `Sulfamethoxazole` - متطابق مع مرادفات السلفا) $\to$ **يظهر تحذير الحساسية**.
+     - صرف `Omeprazole 20mg` $\to$ **لا يظهر أي تحذير** (دون إبداء أي ادعاء تجاه فئة الـ NSAIDs).
+   - **الالتزام السريري:** لا تضع الخطة أو الاختبارات أي تأكيد أو نفي للتحذير لفئة مضادات الالتهاب غير الستيرويدية (NSAIDs).
+   - عنصر الكتالوج `CAT-ALL-007` ('مضادات الالتهاب غير الستيرويدية') يُترك **بدون أي مرادفات في الـ Seed** (`aliases: []`).
+   - تسجيل مسألة الحساسية المتقاطعة بالكامل في قسم **الأسئلة المفتوحة** لمراجعتها بواسطة طبيب مرخص.
+
+5. **طبيعة الـ Seed الدوائي كبيانات تجريبية غير علاجية (Mock Experimental Seed Disclaimer):**
+   - كل أسماء الأدوية والمواد الفعالة والمرادفات في الـ Seed الدوائي كُتبت من معرفة عامة ولأغراض المحاكاة البرمجية والتطويرية فقط وليست مأخوذة من مرجع دوائي أو دستور أدوية رسمي معتمد.
+   - يتم وسم كافة بيانات الـ Seed الدوائية بعلامة صريحة في الكود (في تعليق ترويسة ملف `drugs_mock_repo_impl.dart`، وحقل `source: DrugSourceEnum.preset`) وفي الخطة:
+     **"بيانات تجريبية لأغراض الاختبار البرمجي فقط، وتحتاج مراجعة وتدقيق طبيب أو صيدلي مرخص قبل أي استخدام فعلي"**.
+   - خلو تام في الترجمة (`ar-EG` و `en-US`) والواجهات من أي ادعاء بدقة أو موثوقية طبية للمعلومات المزروعة.
+   - **لافتة التحذير الدائمة وإخلاء المسؤولية السريرية (Persistent Allergy Banner & Clinical Disclaimer):**
+     - في شاشة الكشف السريري (`DoctorConsultationScreen`)، يتم عرض شريط دائم يوضح حساسيات المريض المسجلة مع إخلاء مسؤولية سريري صريح: *"تنبيه: محرك الحساسية أداة استرشادية مساعدة، وغياب التحذير لا يعني الأمان التام، والقرار السريري مسؤولية الطبيب المباشر."*
+     - عند إضافة دواء متعارض، تفتح نافذة تأكيد تتطلب إقراراً صريحاً من الطبيب بالمتابعة، ويُسجل حدث `rx_allergy_warning_acknowledged` بالمعرفات فقط.
+
+6. **دمج عناصر كتالوج الحساسية والأثر على الاختبارات القائمة:**
+   - **الوضع الحالي لعناصر الـ Seed في `medical_catalog_mock_repo_impl.dart`:**
+     - `CAT-ALL-001`: `'بنسلين'`
+     - `CAT-ALL-002`: `'حساسية بنسلين شديدة'`
+     - `CAT-ALL-003`: `'أسبرين'`
+     - `CAT-ALL-004`: `'حساسية أسبرين'`
+     - `CAT-ALL-005`: `'سلفا'`
+     - `CAT-ALL-006`: `'حساسية سلفا'`
+     - `CAT-ALL-007`: `'مضادات الالتهاب غير الستيرويدية'`
+   - **إجراء الدمج:** دمج العناصر التكرارية (`CAT-ALL-002`, `CAT-ALL-004`, `CAT-ALL-006`) في أصولها النظيفة (`CAT-ALL-001`, `CAT-ALL-003`, `CAT-ALL-005`) مع ترحيل العبارات المدمجة إلى حقل `aliases`.
+   - **حصر الاختبارات القائمة بالاسم وتأكيد عدم انكسارها:**
+     1. `test/features/patients/patient_model_and_helpers_test.dart`:
+        - `test('Initializes with seed allergies and chronic diseases')`: يفحص `items.length >= 10`، و `items.any((i) => i.name == 'بنسلين')` و `items.any((i) => i.name == 'سلفا')`. بعد الدمج، يتقلص عدد عناصر الحساسية من 16 إلى 13 (ما يزال $\ge 10$)، ويظل البنسلين والسلفا موجودين، فينجح الاختبار 100%.
+        - `test('Searches items with Arabic normalization')`: يبحث عن `query: 'اسبرين'` ويتوقع مطابقة `'أسبرين'`، ويظل ناجحاً 100%.
+        - `test('addCatalogItem adds new item and avoids duplicate insertions')`: يفحص إضافة عنصر جديد ولا يتأثر بالدمج.
+     2. `test/features/patients/patient_dialogs_flow_test.dart`:
+        - `test('Tags management: adds and removes allergies and chronic diseases')`: يفحص إضافة وحذف `'حساسية سلفا'` في قائمة نصوص الـ FormState، ولا يعتمد على معرّفات الـ Seed.
+     3. `test/features/audit_logs/audit_logger_expansion_and_patient_access_test.dart`: لا يمس عناصر الحساسية.
+   - **تأكيد عدم تأثر حساسيات المرضى (نصوص حرة):**
+     حساسيات المرضى في `PatientModel.allergies` مخزنة كنصوص حرة (`List<String>`) مستقلة تماماً عن معرّفات الكتالوج (سارة: `['حساسية بنسلين شديدة']`، مريم: `['حساسية سلفا وأسبرين']`). دمج عناصر الكتالوج لا يعدل كائنات المرضى ولا نصوص الحساسية الخاصة بهم إطلاقاً.
+   - **اختبار ثبات العرض (Regression Stability Test):**
+     إضافة اختبار مؤتمت صريح يؤكد أن نصوص حساسيات المرضى تظهر في بطاقة المريض (`PatientProfileCard`) وشاشة الكشف السريري (`DoctorConsultationScreen`) بنفس نصوصها الأصلية دون أي تشوه أو تغيير بعد دمج عناصر الكتالوج.
+
+7. **سيناريوهات الاختبار الإلزامية المحدثة على الـ Seed الفعلي:**
    - **سارة أحمد (`PAT-000101` — حساسية بنسلين شديدة):**
-     - صرف `Augmentin 1g` (الاسم العلمي: `Amoxicillin`) $\to$ **يظهر تحذير الحساسية**.
+     - صرف `Augmentin 1g` (الاسم العلمي: `Amoxicillin` - متطابق مع مرادفات البنسلين) $\to$ **يظهر تحذير الحساسية**.
      - صرف `Amoxicillin 500mg` $\to$ **يظهر تحذير الحساسية**.
      - صرف `Paracetamol 500mg` $\to$ **لا يظهر أي تحذير**.
    - **مريم محمود (`PAT-000103` — حساسية سلفا وأسبرين):**
      - صرف `Aspocid 75mg` (الاسم العلمي: `Acetylsalicylic acid / Aspirin`) $\to$ **يظهر تحذير الحساسية**.
-     - صرف `Septrin` (الاسم العلمي: `Sulfamethoxazole`) $\to$ **يظهر تحذير الحساسية**.
-     - صرف `Cataflam 50mg` $\to$ **لا يظهر تحذير**.
+     - صرف `Septrin` (الاسم العلمي: `Sulfamethoxazole` - متطابق مع مرادفات السلفا) $\to$ **يظهر تحذير الحساسية**.
+     - صرف `Omeprazole 20mg` (مثبط مضخة بروتون PPI) $\to$ **لا يظهر أي تحذير**.
    - **مريض بلا حساسية مسجلة (`allergies == null` أو فارغة):**
      - صرف أي دواء $\to$ **لا يظهر أي تحذير إطلاقاً**.
-6. **بند تقنين معماري لاحق (Future Refactoring):**
+   - **فحص الكلمات المشتركة بحروف (False Positive Prevention):**
+     - صرف دواء يحتوي اسمه على مقطع أحرف مشابه لحساسية مسجلة دون أن يكون نفس الكلمة أو مرادفاً لها (مثل `Aspartame` ضد أسبرين، أو `Pension` ضد بنسلين) $\to$ **لا يظهر أي تحذير**.
+
+8. **بند تقنين معماري لاحق (Future Refactoring):**
    - توثيق أن المرحلة القادمة من المنظومة (خارج F-04b) يجب أن تنتقل لتخزين حساسيات المرضى كمعرفات عناصر كتالوج (`List<String> allergyCatalogItemIds`) بدلاً من النصوص الحرة لتفادي مشاكل عدم دقة الإدخال.
 
 ---
@@ -340,23 +472,39 @@ class DrugsState extends Equatable {
   3. يظهر إشعار تنبيهي بارز للطبيب: *"تم تخطي {count} دواء مؤرشف من الوصفة الجاهزة، يرجى مراجعة الروشتة."*
   4. في شاشة إدارة القوالب، يتم وسم القالب بعلامة تحذيرية صفراء تدل على احتوائه بنوداً مؤرشفة تحتاج تحديثاً.
 
-### 5.4 الملاحق السريرية للروشتة بعد الإنهاء (Prescription Addenda):
-1. **تمثيل التعديل بهيكلية Before/After:**
-   لا يُخزن التعديل كنص حر فقط؛ بل ككائن `VisitAddendumModel` يحتوي:
-   - `changeType`: `add_item` أو `remove_item` أو `modify_item`.
-   - `oldItemSnapshot`: لقطة كاملة للبند قبل التعديل.
-   - `newItemSnapshot`: لقطة كاملة للبند بعد التعديل.
-   - `reason`: السبب السريري الإلزامي (يرفض الحفظ إذا كان فارغاً).
-2. **مفهوم "الروشتة الفعلية" (Effective Prescription):**
-   - الروشتة الأصلية المحفوظة عند `finalized` تظل مجمدة تاريخياً دون أي تغيير.
-   - الروشتة الفعلية الحالية = الروشتة الأصلية + جميع الملاحق المعتمدة مرتبة زمنياً.
-3. **طباعة الروشتة المعدلة بملحق:**
+### 5.4 الملاحق السريرية بعد الإنهاء (Prescription & Diagnosis Addenda):
+1. **تمثيل التعديل بهيكلية Before/After الشاملة:**
+   لا يُخزن التعديل كنص حر فقط؛ بل ككائن `VisitAddendumModel` مدقق يحتوي:
+   - `changeType`: خاضع للـ Enum الصريح `AddendumChangeTypeEnum`:
+     - ملاحق الروشتة: `dose`, `frequency`, `duration`, `instructions`, `discontinue`, `add`.
+     - ملحق التشخيص الطبي: `diagnosis`.
+   - `oldItemSnapshot`: لقطة كاملة لبند الروشتة قبل التعديل (في ملاحق العلاج).
+   - `newItemSnapshot`: لقطة كاملة لبند الروشتة بعد التعديل (في ملاحق العلاج).
+   - `diagnosisBefore`: النص الأصلي للتشخيص قبل التعديل (في ملحق التشخيص).
+   - `diagnosisAfter`: النص الجديد المعدل للتشخيص بعد التعديل (في ملحق التشخيص).
+   - `reason`: السبب السريري الإلزامي قانونياً (يرفض الحفظ قطعياً إذا كان فارغاً).
+2. **شروط وضوابط إنشاء الملحق السريري:**
+   - **حالة الكشف:** الكشف منتهٍ حصراً (`visit.status == VisitStatusEnum.finalized`).
+   - **شرط الطبيب المعالج:** محصور بطبيب الكشف الأصلي حصراً (`visit.doctorId == sessionUser.linkedDoctorId`).
+   - **حوكمة الصلاحيات المنفصلة:**
+     - ملاحق الروشتة تتطلب صلاحية: `StaffPermissionEnum.issuePrescription`.
+     - ملحق التشخيص الطبي يتطلب صلاحية: `StaffPermissionEnum.editMedicalDiagnosis`.
+     - وكلتا الصلاحيتين مشروطتان بكون المستخدم هو طبيب الكشف ذاته.
+   - **التحقق من الاختلاف الفعلي للتشخيص:**
+     - في ملحق التشخيص (`changeType == AddendumChangeTypeEnum.diagnosis`):
+       يجب ألا يكون `diagnosisAfter.trim()` فارغاً، ويجب أن يختلف فعلياً عن `diagnosisBefore.trim()`؛ ويُرفض التعديل فوراً إن كان النص متطابقاً دون تغيير.
+3. **مفهوم "الروشتة الفعلية" و "التشخيص الفعلي":**
+   - السجل الأصلي المحفوظ عند `finalized` يظل مجمداً تاريخياً دون أي تعديل فيزيائي.
+   - الملاحق تُخزن بنمط Append-Only وتُرتب زمنياً تصاعدياً حسب `createdAt`.
+   - **الروشتة الفعلية (Effective Prescription):** الروشتة الأصلية + كافة ملاحق الروشتة المعتمدة.
+   - **التشخيص الفعلي (Effective Diagnosis):** تشخيص آخر ملحق من نوع `diagnosis`، أو التشخيص الأصلي إن لم توجد ملاحق تشخيصية.
+4. **طباعة الروشتة المعدلة بملحق:**
    - عند الطباعة، تتم طباعة **الروشتة الفعلية** متضمنة التعديلات.
    - تُعلَّم النسخة المطبوعة بشريط مميز وترويسة واضحة:
      *"نسخة معدلة بملحق سريري رقم {addendumId} بتاريخ {date} — د. {doctorName}"*.
-4. **نافذة إضافة الملحق في الواجهة:**
+5. **نافذة إضافة الملحق في الواجهة:**
    - زر "إضافة ملحق كشف" يظهر حصراً في الكشوفات المنتهية (`finalized`) ولطبيب الكشف صاحب الزيارة فقط.
-   - يفتح حواراً متخصصاً `AddVisitAddendumDialog` لاختيار نوع التعديل وإدخال السبب الإلزامي.
+   - يفتح حواراً متخصصاً `AddVisitAddendumDialog` لاختيار نوع التعديل (تعديل علاج / تعديل تشخيص) وإدخال السبب الإلزامي.
 
 ---
 
@@ -367,22 +515,27 @@ class DrugsState extends Equatable {
    - قراءة الملف وعرض تقرير معاينة تفصيلي (أول 5 أسطر، عدد السطور السليمة، عدد السطور المرفوضة، وعدد السطور المكررة).
    - المستخدم يختار بين خيارين واضحين: **"استيراد السطور السليمة فقط"** أو **"إلغاء العملية"**.
    - عملية الحفظ نفسها تتم بصورة ذرية (Atomic Commit) في الذاكرة.
-2. **سياسة حزم الـ Excel واختيار الملفات:**
-   - **التحقق من pub.dev:**
-     - حزمة اختيار الملفات الرسمية من فلاتر: `file_selector` (صيانة رسمية من `flutter.dev`، ترخيص BSD-3-Clause، دعم كامل لـ Web و Desktop).
-     - حزم قراءة جداول Excel: حزمة `excel` أو بديلها الحديث `excel_plus` (ترخيص MIT، دارت نقي 100% بدون JNI/C++، تدعم Web و Desktop، صفر Code-gen).
-   - **حالة الاعتماد:** **موافقة مبدئية في الخطة دون تثبيت إصدار صلب الآن.**
-   - **الموافقة النهائية:** تُطلب من المستخدم رسمياً عند الوصول لمرحلة الاستيراد (M-7) بعد استعراض ناتج صفحة pub.dev وإجراء Spike اختباري لقراءة ملف Excel يحوي 500 سطر على Web بنجاح.
+2. **سياسة حزم الـ Excel واختيار الملفات ومسار الاعتماد:**
+   - **الأساس المعتمد (Default Baseline):** استيراد ملفات CSV بترميز UTF-8 هو الأساس المعتمد في المنظومة، وهو يعمل مباشرة عبر مكتبات Dart القياسية دون الحاجة لأي حزم خارجية إضافية في `pubspec.yaml`.
+   - **تقييم حزم Excel واختيار الملفات (M-7 Spike):**
+     - لا تتم إضافة أي حزمة خارجية جديدة إلى `pubspec.yaml` في المراحل الحالية.
+     - عند الوصول إلى المايلستون M-7، سيخضع خيار إضافة حزم خارجية (مثل اختيار الملفات وقراءة Excel) لاختبار تقييمي صارم (Spike) وفق المعايير التالية:
+       1. الترخيص البرمجي المتوافق مع المشاريع التجارية (MIT / BSD / Apache 2.0).
+       2. التوافق التام 100% مع بيئة Web بدون تعارضات وبدون Native/JNI.
+       3. أثر حجم الحزمة واستقرار الاعتماديات وعدم إحداث تعارض في إصدارات الحزم القائمة.
+       4. إجراء Spike عملي ناجح لقراءة ومعالجة ملف جدول يحوي 500 سطر.
+     - **السقوط الآمن (Fallback Rule):** في حال عدم تحقق كافة هذه الشروط بنسبة 100% أو تعثر الـ Spike على Web، يُلغى اعتماد حزم Excel ويُكتفى كلياً بمحرك CSV UTF-8 القياسي.
 3. **متطلبات CSV ودعم الترميز الصارم (UTF-8 with BOM):**
    - دعم قراءة ومعالجة الـ BOM العربي `[0xEF, 0xBB, 0xBF]`.
    - فك الترميز بـ `utf8.decode(bytes, allowMalformed: false)`.
    - في حال كشف ترميز غير صالح (مثل Windows-1256 المعتاد عند تصدير Excel العربي):
      - يرفض المحرك الملف فوراً ويظهر رسالة خطأ واضحة ومترجمة:
-       - `ar-EG`: *"ترميز الملف غير صالح (يجب أن يكون UTF-8). يرجى حفظ الملف كـ CSV (UTF-8) أو رفعه مباشرة بصيغة Excel (xlsx)."*
+       - `ar-EG`: *"ترميز الملف غير صالح (يجب أن يكون UTF-8). يرجى حفظ الملف كـ CSV (UTF-8) أو رفعه بصيغة Excel (xlsx)."*
        - `en-US`: *"Invalid file encoding (UTF-8 required). Please save file as CSV (UTF-8) or upload directly as Excel (xlsx)."*
 4. **التدقيق الأمني (Audit Log):**
-   - تسجيل حدث `drugs_imported_batch` بالحقول:
-     `{'importedCount': count1, 'skippedCount': count2, 'fileName': sanitizedName, 'userId': userId}`.
+   - تسجيل حدث `drugs_imported_batch` بالحقول الرقمية المعقمة فقط:
+     `{'importedCount': count1, 'skippedCount': count2, 'userId': userId}`.
+   - خلو تام من أي نصوص حرة أو أسماء ملفات المستخدم (`fileName`) لمنع تسريب أي معلومات مسارات محلية أو بيانات حساسة.
 
 ---
 
@@ -533,29 +686,39 @@ lib/
 
 ### 9.1 مصفوفة الصلاحيات المحدثة لـ F-04b:
 
-| الصلاحية | الاستخدام والغرض السريري | الأدوار الممنوحة لها | قيود الفحص Fail-Closed |
+| الصلاحية / العملية السريرية | الاستخدام والغرض السريري | الأدوار الممنوحة لها | قيود الفحص Fail-Closed |
 | :--- | :--- | :--- | :--- |
-| `manageDrugCatalog` *(جديدة)* | إدارة الأدوية، التصنيفات، مراجعة الأدوية المضافة سريعاً، تحرير مرادفات الحساسية، والاستيراد. | المالك (`owner`)، المدير الطبي (`medical_director`). | حجب تام عن باقي الأدوار. |
-| `issuePrescription` | كتابة الروشتة وإصدارها وطباعتها وإضافة ملحق تعديل للكشف المنتهي. | الطبيب (`doctor`) فقط. | مقيدة بـ: `doctorId == sessionUser.linkedDoctorId` والكشف في تاريخ اليوم أو المنشأ بواسطته. |
+| `manageDrugCatalog` *(جديدة)* | إدارة الأدوية العامة، التصنيفات، مراجعة الأدوية المضافة سريعاً، تحرير مرادفات الحساسية، والاستيراد. | المالك (`owner`)، المدير الطبي (`medical_director`). | حجب تام عن باقي الأدوار. |
+| `issuePrescription` | كتابة الروشتة وإصدارها. | الطبيب (`doctor`) فقط. | مقيدة بـ: `doctorId == sessionUser.linkedDoctorId` والكشف في تاريخ اليوم وبحالة `inProgress`. |
+| **الإضافة السريعة للدواء (Quick-Add)** | إضافة دواء جديد غير مسجل مؤقتاً أثناء الفحص بانتظار المراجعة. | الطبيب المعالج فقط. | تشترط صلاحية `issuePrescription` و `doctorId == sessionUser.linkedDoctorId`. |
+| **إدارة قوالب الوصفات الجاهزة** | إنشاء وتعديل وحذف بروتوكولات الوصفات الخاصة بالطبيب. | الطبيب المنشئ فقط. | معزولة تماماً: الطبيب يملك حق الوصول لقوالبه الخاصة حصراً (`doctorId == sessionUser.linkedDoctorId`). |
+| **طباعة الروشتة السريرية** | طباعة الروشتة الفعلية مع ترويسة الفرع وعلامة الملحق. | طبيب الكشف فقط. | مقيدة بـ `issuePrescription` و `doctorId == sessionUser.linkedDoctorId` لمنع طباعتها من غير المعالج. |
+| **إضافة ملحق للروشتة (Rx Addendum)** | تعديل أو إضافة أو إيقاف علاج لكشف مقفل. | طبيب الكشف فقط. | تشترط: `issuePrescription` + `doctorId == linkedDoctorId` + حالة `finalized` + سبب إلزامي. |
+| **تعديل التشخيص بملحق (Diagnosis Addendum)** | تعديل التشخيص الطبي لكشف مقفل وتوثيق الفارق. | طبيب الكشف فقط. | تشترط: `editMedicalDiagnosis` + `doctorId == linkedDoctorId` + حالة `finalized` + سبب إلزامي + اختلاف فعلي. |
 | `viewConsultationNotes` | استعراض وقراءة الروشتة والملاحظات السريرية (Read-Only). | الطبيب، المدير الطبي، مدير الفرع. | حجب تام عن التمريض، الاستقبال، والمحاسب. |
 
-### 9.2 جدول أحداث التدقيق الأمني (Audit Events) بالحقول الدقيقة لكل حدث:
+### 9.2 جدول أحداث التدقيق الأمني (Audit Events) وقائمة المفاتيح المسموحة (Whitelist):
 
-| اسم الحدث (`action`) | الحقول المسجلة في الحمولة (`payload`) | الوصف والضوابط السريرية |
+> **قاعدة التدقيق الذهبية (Strict Whitelist Rule):**  
+> كافة أحداث التدقيق الأمني تحتوي **حصراً على: معرفات (IDs)، أعداد (Counts)، قيم Enums مقننة، وطوابع زمنية**.  
+> **حظر قطعي (Zero Tolerance):** يمنع تماماً تسجيل أي نصوص حرة، أو أسماء مرضى أو أطباء، أو أرقام بطاقات أو مسارات ملفات (`fileName`)، أو أي نصوص سريرية أو تشخيصات في الـ Audit Log.  
+> ويتضمن جناح الاختبارات اختباراً مؤتمتاً صريحاً يفحص حقول كل حدث مسجل مقابل Whitelist بيضاء صارمة للمفاتيح المسموحة.
+
+| اسم الحدث (`action`) | المفاتيح المسموحة بالحمولة (`Payload Whitelist`) | الوصف والضوابط السريرية |
 | :--- | :--- | :--- |
-| `drug_created` | `drugId`, `categoryId`, `userId` | إضافة دواء جديد للكتالوج العام بواسطة مسؤول الكتالوج. |
-| `drug_updated` | `drugId`, `updatedFields: List<String>`, `userId` | تعديل بيانات دواء (أسماء الحقول المعدلة دون نصوص). |
-| `drug_archived` | `drugId`, `reason`, `userId` | أرشفة دواء وتعطيله من الكتالوج (Soft Delete). |
-| `drug_quick_added` | `drugId`, `visitId`, `doctorId` | إضافة دواء سريعاً من شاشة الكشف بانتظار المراجعة. |
-| `drug_reviewed` | `drugId`, `decision: 'approved'/'rejected'/'merged'`, `reviewedByUserId` | اعتماد أو رفض أو دمج دواء مضاف سريعاً. |
-| `prescription_template_created` | `templateId`, `doctorId`, `itemsCount` | إنشاء قالب وصفة جاهزة للطبيب. |
-| `prescription_template_updated` | `templateId`, `doctorId`, `itemsCount` | تعديل قالب وصفة جاهزة. |
-| `prescription_template_deleted` | `templateId`, `doctorId` | حذف قالب وصفة جاهزة (Soft Delete). |
-| `rx_allergy_warning_acknowledged`| `visitId`, `patientId`, `drugId`, `allergyCatalogItemId` | استمرار الطبيب بإضافة دواء رغم تحذير الحساسية (معرفات فقط). |
-| `visit_addendum_added` | `addendumId`, `visitId`, `doctorId`, `changeType` | إضافة ملحق تعديل للروشتة بعد الإنهاء بوجود سبب إلزامي. |
-| `allergy_aliases_updated` | `allergyCatalogItemId`, `aliasesCountBefore`, `aliasesCountAfter`, `userId` | تحديث مرادفات الحساسية بواسطة مسؤول الكتالوج. |
-| `drugs_imported_batch` | `importedCount`, `skippedCount`, `fileName`, `userId` | استيراد دفعة أدوية (أعداد وأسماء معقمة وصفر نصوص سريرية). |
-| `prescription_printed` | `visitId`, `patientId`, `doctorId`, `itemsCount`, `isAmended: bool` | طباعة روشتة الكشف (معرفات وأعداد فقط). |
+| `drug_created` | `['drugId', 'categoryId', 'userId']` | إضافة دواء جديد للكتالوج العام بواسطة مسؤول الكتالوج. |
+| `drug_updated` | `['drugId', 'updatedFields', 'userId']` | تعديل بيانات دواء (`updatedFields`: مصفوفة أسماء حقول فقط مثل `['concentration']`). |
+| `drug_archived` | `['drugId', 'userId']` | أرشفة دواء وتعطيله من الكتالوج (Soft Delete) دون أي نصوص حرة للسبب. |
+| `drug_quick_added` | `['drugId', 'visitId', 'doctorId']` | إضافة دواء سريعاً من شاشة الكشف بانتظار المراجعة. |
+| `drug_reviewed` | `['drugId', 'decision', 'reviewedByUserId']` | اعتماد أو رفض أو دمج دواء مضاف سريعاً (`decision`: Enum). |
+| `prescription_template_created` | `['templateId', 'doctorId', 'itemsCount']` | إنشاء قالب وصفة جاهزة للطبيب. |
+| `prescription_template_updated` | `['templateId', 'doctorId', 'itemsCount']` | تعديل قالب وصفة جاهزة. |
+| `prescription_template_deleted` | `['templateId', 'doctorId']` | حذف قالب وصفة جاهزة (Soft Delete). |
+| `rx_allergy_warning_acknowledged`| `['visitId', 'patientId', 'drugId', 'allergyCatalogItemId', 'matchSource']` | متابعة الطبيب رغم التحذير (معرفات فقط، allergyCatalogItemId يكون null عند النص الحر، وصفر نصوص حساسية). |
+| `visit_addendum_added` | `['addendumId', 'visitId', 'doctorId', 'changeType']` | إضافة ملحق تعديل بعد الإنهاء (`changeType`: Enum من AddendumChangeTypeEnum). |
+| `allergy_aliases_updated` | `['allergyCatalogItemId', 'aliasesCountBefore', 'aliasesCountAfter', 'userId']` | تحديث مرادفات الحساسية بواسطة مسؤول الكتالوج (أعداد ومعرفات فقط). |
+| `drugs_imported_batch` | `['importedCount', 'skippedCount', 'userId']` | استيراد دفعة أدوية (أعداد ومعرف مستخدم فقط، وخلو تام من أسماء الملفات). |
+| `prescription_printed` | `['visitId', 'patientId', 'doctorId', 'itemsCount', 'isAmended']` | طباعة روشتة الكشف (معرفات وأعداد ومؤشر بولياني فقط). |
 
 ---
 
@@ -652,30 +815,30 @@ lib/
 
 ---
 
-## 11. خطة الاختبارات المؤتمتة الشاملة (136 اختباراً مؤتمتاً موزعة بالتفصيل)
+## 11. خطة الاختبارات المؤتمتة الشاملة (158 اختباراً مؤتمتاً موزعة بالتفصيل)
 
 ### 11.1 التحقق الميداني من أعداد الاختبارات القائمة حالياً:
 - اختبارات فيتشر الزيارات `test/features/visits/`: **129 اختباراً مؤتمتاً** (تم فحصها برمجياً بنجاح 100%).
 - اختبارات المشروع الكلي: **447 اختباراً مؤتمتاً** (تم تشغيلها كاملة بنجاح 100%).
 - قاعدة الثبات لـ Milestone 0 (TD-001): **بقاء الـ 129 اختباراً خضراء بنسبة 100% دون أي تعديل على كودها.**
 
-### 11.2 توزيع الاختبارات الـ 136 الجديدة بدقة تامة:
+### 11.2 توزيع الاختبارات الـ 158 الجديدة بدقة تامة:
 
 | الملف المستهدف للاختبار | الـ Milestone | عدد الاختبارات | النطاق المغطى |
 | :--- | :---: | :---: | :--- |
 | `test/features/drugs/drug_name_validator_test.dart` | M-1 | **10** | فحص الطول الأدنى والأقصى، رفض الأرقام الصرفة (`'7'`, `'123123'`)، رفض الرموز الخالصة، قبول الأسماء اللاتينية والعربية المركبة، وتنظيف المسافات الزائدة. |
-| `test/features/drugs/drugs_models_and_repo_test.dart` | M-1 | **12** | تسلسل `DrugModel` و `DrugCategoryModel` (`fromJson/toJson/copyWith/props`)، قراءة الكتالوج والبحث والتصفية، أرشفة الدواء (Soft Deactivation)، وتحقق الـ Seed التجريبي. |
-| `test/features/drugs/drug_allergy_matcher_test.dart` | M-1 | **14** | دالة `DrugAllergyMatcher`: تطابق مباشر، تطابق عبر الـ `aliases` (`Amoxicillin` ضد حساسية بنسلين)، تجريد الكلمات الشائعة، تطابق الكلمات والمقاطع $\ge 3$، عدم تطابق، اختلاف التشكيل، عدم وجود حساسية، فحص مرضى الـ Seed الفعلي (سارة ومريم). |
+| `test/features/drugs/drugs_models_and_repo_test.dart` | M-1 | **12** | تسلسل `DrugModel` و `DrugCategoryModel` (`fromJson/toJson/copyWith/props`)، قراءة الكتالوج والبحث والتصفية، أرشفة الدواء (Soft Deactivation)، وتحقق مصدر الـ Seed التجريبي (`DrugSourceEnum.preset`). |
+| `test/features/drugs/drug_allergy_matcher_test.dart` | M-1 | **22** | دالة `DrugAllergyMatcher`: تطابق مباشر للكلمة الكاملة، تطابق عبر الـ `aliases` (`Amoxicillin` ضد حساسية بنسلين)، تجريد الكلمات الشائعة، تجريد السوابق ("ال" بشرط $\ge 3$ وحماية واو العطف وحروف الجر الجذرية مثل بـنسلين ولـوراتادين)، تجزئة الوحدات والترقيم (`Augmentin 1g` و `Amoxicillin/Clavulanate`)، حظر المطابقة بالأجزاء داخل الكلمة (No intra-word substring match)، اختبارات منع الـ false positive للرموز الاصطناعية والكلمات المشتركة بحروف دون أن تكون مرادفة (مثل `Aspartame`, `Pension`, `Sulfolane`, `سلفاتور_وهمي`, `بنسلاتين_وهمي`, `Aspi_synthetic`, `Penicil_mock`)، فحص مريم بعنصري حساسية منفصلين (`سلفا` و `أسبرين`) ضد `Aspocid` و `Septrin`، الحالة السلبية لمريم بـ `Omeprazole 20mg` (دون أي ادعاء تجاه فئة NSAIDs)، تأكيد خلو `CAT-ALL-007` من المرادفات، وفحص عدم ظهور أي تحذير لمريض بلا حساسية مسجلة (`allergies == null` أو فارغة). |
 | `test/features/drugs/prescription_templates_test.dart` | M-2 | **12** | تسلسل `PrescriptionTemplateModel`، عزل خصوصية الطبيب (`DOC-01` لا يرى أو يعدل وصفات `DOC-02`)، حفظ وحذف الوصفات، وتخطي الأدوية المؤرشفة تلقائياً مع تنبيه الطبيب. |
-| `test/features/drugs/drugs_use_cases_test.dart` | M-2 | **12** | فحص Use Cases: `SearchDrugsUseCase`, `QuickAddDrugUseCase` موسوماً بـ `pending_review`، حوكمة صلاحية `manageDrugCatalog`، و Use Case اعتماد ومراجعة الأدوية المضافة سريعاً. |
-| `test/features/visits/visit_prescription_mixin_test.dart` | M-3 | **12** | تفاعل `VisitPrescriptionMixin` داخل `VisitsCubit`، إضافة وحذف وتعديل بنود الروشتة في `VisitFormState` كـ Immutable Snapshots، ومنع تجاوز الحد الأقصى (20 بنداً). |
-| `test/features/visits/visit_addendum_and_lock_test.dart` | M-3 | **12** | قفل الروشتة التام عند `finalized`، إنشاء ملحق `VisitAddendumModel` بلقطات Before/After للبند، منع حفظ ملحق بدون سبب إلزامي، قصر الملحق على طبيب الكشف، وحساب الروشتة الفعلية. |
-| `test/features/visits/consultation_prescription_panel_test.dart` | M-4 | **12** | ظهور لوحة الروشتة، تطبيق وصفة جاهزة بضغطة زر، فتح نافذة الإضافة السريعة مع بقاء المسودة دون فقدان عند الإلغاء، حوار الملحق للكشف المنتهي، والقراءة فقط لغير المحررين. |
-| `test/features/visits/allergy_warning_dialog_and_audit_test.dart` | M-4 | **8** | ظهور لافتة التحذير السريري غير المانعة عند التعارض، متابعة الطبيب رغم التحذير، انبعاث حدث التدقيق `rx_allergy_warning_acknowledged` بالمعرفات فقط، والتعامل مع الحساسية غير المربوطة بـ `unmapped:slug`. |
+| `test/features/drugs/drugs_use_cases_test.dart` | M-2 | **14** | فحص Use Cases: `SearchDrugsUseCase`, `QuickAddDrugUseCase` موسوماً بـ `pending_review`، حوكمة صلاحية `manageDrugCatalog`، و Use Case اعتماد ومراجعة ودمج الأدوية المضافة سريعاً، وتحديث مرادفات الحساسية. |
+| `test/features/visits/visit_prescription_mixin_test.dart` | M-3 | **14** | تفاعل `VisitPrescriptionMixin` داخل `VisitsCubit`، خيارات التكرار والمدة (Preset & Custom)، إضافة وحذف وتعديل بنود الروشتة في `VisitFormState` كـ Immutable Snapshots، ومنع تجاوز الحد الأقصى (20 بنداً). |
+| `test/features/visits/visit_addendum_and_lock_test.dart` | M-3 | **14** | قفل الروشتة التام عند `finalized`، إنشاء ملحق `VisitAddendumModel` بلقطات Before/After لبنود الروشتة، ملحق تعديل التشخيص الطبي (`modifyDiagnosis`) والتحقق من الاختلاف الفعلي، منع حفظ أي ملحق بدون سبب إلزامي، قصر الملحق على طبيب الكشف، الترتيب الزمني، وحساب الروشتة الفعلية والتشخيص الفعلي. |
+| `test/features/visits/consultation_prescription_panel_test.dart` | M-4 | **16** | ظهور لوحة الروشتة، تطبيق وصفة جاهزة بضغطة زر، فتح نافذة الإضافة السريعة مع بقاء المسودة دون فقدان عند الإلغاء، حوار الملحق السريري للكشف المنتهي (علاج / تشخيص)، شريط التحذير السريري الدائم، القراءة فقط لغير المحررين، واختبار ثبات عرض نصوص حساسية المريض في شاشة المريض وشاشة الكشف السريري بعد دمج عناصر كتالوج الحساسية. |
+| `test/features/visits/allergy_warning_dialog_and_audit_test.dart` | M-4 | **12** | ظهور حوار التحذير السريري غير المانع عند التعارض مع إخلاء المسؤولية، متابعة الطبيب رغم التحذير، انبعاث حدث التدقيق `rx_allergy_warning_acknowledged` بالمعرفات فقط، تسجيل `matchSource: 'catalog_item'` مع المعرف، وتسجيل `matchSource: 'free_text'` مع `allergyCatalogItemId: null` عند النص الحر، واختبار تحقق حتمي من خلو كافة أحداث الـ Audit 100% من أي نصوص حساسية أو أسماء أدوية أو نصوص تشخيصية ومطابقتها التامة للـ Payload Whitelist. |
 | `test/features/visits/prescription_printing_test.dart` | M-5 | **12** | توليد روشتة PDF بمقاس A4 ومقاس حراري 80 مم استناداً لإعدادات الفرع، طباعة الروشتة الفعلية متضمنة الملاحق، وسم النسخة المعدلة، حصر الطباعة بطبيب الكشف، وانبعاث حدث `prescription_printed`. |
 | `test/features/drugs/drugs_page_and_cubit_test.dart` | M-6 | **12** | دورة حياة `DrugsCubit`، التنقل بين التبويبات الثلاثة (أدوية، وصفات، مرادفات الحساسية)، تعديل المرادفات بصلاحية `manageDrugCatalog` وانبعاث `allergy_aliases_updated`، وإجراءات مراجعة الأدوية المضافة سريعاً. |
-| `test/features/drugs/drugs_import_engine_test.dart` | M-7 | **8** | استيراد ملفات CSV و Excel، معالجة BOM، رفض الترميزات المعطوبة كـ Windows-1256 برسالة واضحة، معاينة التقرير (سليمة/مرفوضة/مكررة)، خيار "استورد السليمة فقط"، والحفظ الذري مع تدقيق الأعداد. |
-| **المجموع الإجمالي المؤتمت:** | — | **136** | **136 اختباراً مؤتمتاً بنسبة نجاح 100% دون أي اختبار فاشل.** |
+| `test/features/drugs/drugs_import_engine_test.dart` | M-7 | **8** | استيراد ملفات CSV و Excel، معالجة BOM، رفض الترميزات المعطوبة كـ Windows-1256 برسالة واضحة، معاينة التقرير (سليمة/مرفوضة/مكررة)، خيار "استورد السليمة فقط"، والحفظ الذري مع تدقيق الأعداد وحظر اسم الملف من التدقيق. |
+| **المجموع الإجمالي المؤتمت:** | — | **158** | **158 اختباراً مؤتمتاً بنسبة نجاح 100% دون أي اختبار فاشل.** |
 
 ---
 
@@ -690,21 +853,21 @@ flowchart TD
     M4 --> M5["M-5: Prescription Printing Engine<br>(A4 & Thermal 80mm PDF, Effective Prescription, Amended Watermark)"]
     M5 --> M6["M-6: Independent Drugs & Templates Screen<br>(Route: /drugs, 3 Tabs with Allergy Aliases, RBAC Matrix Guard)"]
     M6 --> M7["M-7: Drug Import Engine (CSV & Excel)<br>(Candidate packages spike, Validation Report, Atomic Save)"]
-    M7 --> M8["M-8: Comprehensive Audit & Verification<br>(136 Tests Suite, Translations Parity, Handover Docs)"]
+    M7 --> M8["M-8: Comprehensive Audit & Verification<br>(158 Tests Suite, Translations Parity, Handover Docs)"]
 ```
 
 | المرحلة | النطاق والمخرجات الفنية | عدد الاختبارات | الالتزام المستقل (Git Commit) |
 | :--- | :--- | :---: | :--- |
-| **Commit تصحيح الـ Seed** | أول commit تنفيذي عند بدء F-04b بعد F-05: وضع الشكوى للكشفين VIS-002 و VIS-003 وتصحيح اسم مريض VIS-002. | — | `fix(visits): correct finalized visits seed complaints and patient name snapshot` |
+| **Commit تصحيح الـ Seed** | أول commit تنفيذي عند بدء F-04b بعد F-05: وضع الشكوى للكشفين VIS-002 و VIS-003 وتصحيح اسم مريض VIS-002 وهاتفه. | — | `fix(visits): correct finalized visits seed complaints and patient name snapshot` |
 | **TD-001: إعادة هيكلة `visits_cubit.dart` (Milestone 0)** | تقسيم ملف `visits_cubit.dart` (698 سطراً) إلى Mixins: `VisitQueueMixin`, `VisitVitalsMixin`, `VisitConsultationMixin`. صفر تغيير سلوكي، وثبات تام لـ 129 اختباراً. | 0 اختبارات جديدة<br>(ثبات 129 اختباراً) | `refactor(visits): split visits cubit into focused domain mixins` |
-| **M-1: Data Layer & Pure Allergy Matcher** | كائنات `DrugModel`, `DrugCategoryModel`، فاحص الاسم الصارم `DrugNameValidator`، الدالة النقية `DrugAllergyMatcher` مع تجريد الكلمات الشائعة، ومستودع `DrugsMockRepoImpl` مع تنظيف تكرار عناصر الحساسية. | 36 اختباراً | `feat(F-04b-M1): drug models, pure allergy matcher and seed repo` |
-| **M-2: Prescription Templates & Domain Use Cases** | كائن `PrescriptionTemplateModel`، عزل خصوصية الطبيب، تخطي الأدوية المؤرشفة، Use Cases الأدوية والوصفات والإضافة السريعة ومراجعتها (`pending_review`). | 24 اختباراً | `feat(F-04b-M2): prescription templates domain and quick add review workflow` |
-| **M-3: Visits Cubit Prescription Integration** | إضافة `VisitPrescriptionMixin` لـ `VisitsCubit`، دمج بنود الروشتة في `VisitFormState` كـ Snapshots، كائن `VisitAddendumModel` الملحق بلقطات Before/After وسبب إلزامي، وتدقيق `rx_allergy_warning_acknowledged`. | 24 اختباراً | `feat(F-04b-M3): prescription form state and structured before after addenda` |
-| **M-4: Consultation Screen UI & Prescription Panel** | لوحة تحرير الروشتة داخل شاشة الكشف (`PrescriptionEditorPanel`)، سطور الأدوية، نافذة إدراج الوصفة الجاهزة، نافذة الإضافة السريعة، حوار الملحق السريري، وشريط تحذير الحساسية غير المانع. | 20 اختباراً | `feat(F-04b-M4): consultation prescription editor panel and allergy alerts` |
+| **M-1: Data Layer & Pure Allergy Matcher** | كائنات `DrugModel`, `DrugCategoryModel`، فاحص الاسم الصارم `DrugNameValidator`، الدالة النقية `DrugAllergyMatcher` مع تجريد الكلمات الشائعة والسوابق والوحدات ومطابقة الكلمة الكاملة ومنع الـ false positive الصريح، ومستودع `DrugsMockRepoImpl` مع علامة الـ Seed التجريبي وتنظيف تكرار عناصر الحساسية. | 44 اختباراً | `feat(F-04b-M1): drug models, pure allergy matcher and seed repo` |
+| **M-2: Prescription Templates & Domain Use Cases** | كائن `PrescriptionTemplateModel`، عزل خصوصية الطبيب، تخطي الأدوية المؤرشفة، Use Cases الأدوية والوصفات والإضافة السريعة ومراجعتها (`pending_review`) وتحديث مرادفات الحساسية. | 26 اختباراً | `feat(F-04b-M2): prescription templates domain and quick add review workflow` |
+| **M-3: Visits Cubit Prescription Integration** | إضافة `VisitPrescriptionMixin` لـ `VisitsCubit`، دمج بنود الروشتة في `VisitFormState` كـ Snapshots (Preset & Custom)، كائن `VisitAddendumModel` الملحق بلقطات Before/After وسبب إلزامي وملاحق التشخيص، وحساب الروشتة والتشخيص الفعليين. | 28 اختباراً | `feat(F-04b-M3): prescription form state and structured before after addenda` |
+| **M-4: Consultation Screen UI & Prescription Panel** | لوحة تحرير الروشتة داخل شاشة الكشف (`PrescriptionEditorPanel`)، سطور الأدوية، نافذة إدراج الوصفة الجاهزة، نافذة الإضافة السريعة، حوار الملحق السريري، شريط تحذير الحساسية الدائم، واختبار ثبات عرض الحساسيات وتحقق حمولة الـ Audit مقابل الـ Whitelist. | 28 اختباراً | `feat(F-04b-M4): consultation prescription editor panel and allergy alerts` |
 | **M-5: Prescription Printing Engine** | مولد روشتة العلاج PDF المتكيف `PrescriptionPdfGenerator` (A4 وحراري 80 مم) معتمد على إعدادات الفرع، حساب الروشتة الفعلية مع الملاحق، وسم النسخة المعدلة، وحصر الطباعة بطبيب الكشف. | 12 اختباراً | `feat(F-04b-M5): adaptive prescription pdf printing with addenda watermark` |
 | **M-6: Independent Drugs & Templates Screen** | صفحة إدارة الأدوية والوصفات المستقلة (`/drugs`) بـ 3 تبويبات (أدوية، وصفات، مرادفات الحساسية)، تحرير المرادفات بصلاحية `manageDrugCatalog` وتدقيق `allergy_aliases_updated`، وحوارات مراجعة الأدوية. | 12 اختباراً | `feat(F-04b-M6): standalone drugs page with 3 tabs and allergy aliases management` |
-| **M-7: Drug Import Engine (CSV & Excel)** | تقييم واعتماد حزم الاستيراد بعد الـ Spike، محرك استيراد CSV و Excel بترميز UTF-8/BOM، فحص ومعاينة الأسطر (سليمة/مرفوضة/مكررة)، وخيار "استورد السليمة فقط" بالحفظ الذري وتدقيق الأعداد. | 8 اختبارات | `feat(F-04b-M7): batch drug import engine with valid only import option` |
-| **M-8: Verification & Handover** | فحص المطابقة الشاملة لكافة الاختبارات الـ 136 الجديدة + الـ 447 اختباراً السابقة، التأكد من `flutter analyze = 0` و `flutter test = 100%`، والتحقق التام من تطابق الترجمات. | تدقيق شامل | `docs(F-04b): record architecture decisions and feature completion` |
+| **M-7: Drug Import Engine (CSV & Excel)** | تقييم واعتماد حزم الاستيراد بعد الـ Spike، محرك استيراد CSV و Excel بترميز UTF-8/BOM، فحص ومعاينة الأسطر (سليمة/مرفوضة/مكررة)، وخيار "استورد السليمة فقط" بالحفظ الذري وتدقيق الأعداد مع حظر اسم الملف. | 8 اختبارات | `feat(F-04b-M7): batch drug import engine with valid only import option` |
+| **M-8: Verification & Handover** | فحص المطابقة الشاملة لكافة الاختبارات الـ 158 الجديدة + الـ 447 اختباراً السابقة، التأكد من `flutter analyze = 0` و `flutter test = 100%`، والتحقق التام من تطابق الترجمات. | تدقيق شامل | `docs(F-04b): record architecture decisions and feature completion` |
 
 ---
 
@@ -719,8 +882,18 @@ flowchart TD
 6. **فحص الحساسية أداة مساعدة سريرية:** النظام لا يصادر قرار الطبيب؛ والتحذير غير مانع، وإن تابع الطبيب يُسجل حدث تدقيق أمني بالمعرفات فقط وصفر نصوص سريرية.
 7. **خصوصية الوصفات الجاهزة:** قوالب الروشتات ملك للطبيب المنشئ لها فقط، بينما كتالوج الأدوية عام للمنشأة وفروعها.
 8. **استبعاد كتالوج التشخيصات:** تم توثيقه كبند مؤجل في `WHAT_IS_MISSING.md`.
-9. **حزم الاستيراد:** موافقة مبدئية في الخطة، والاعتماد النهائي في `pubspec.yaml` عند الوصول لمرحلة M-7 بعد استعراض pub.dev ونجاح الـ Spike على Web.
+9. **حزم الاستيراد:** موافقة مبدئية في الخطة، والاعتماد النهائي في `pubspec.yaml` عند الوصول لمرحلة M-7 بعد استعراض pub.dev ونجاح الـ Spike على Web، مع بقاء CSV UTF-8 كأساس قياسي.
 10. **تصحيح الـ Seed:** يُنفذ كأول commit تنفيذي في بداية F-04b بعد اكتمال وتسليم F-05 بالكامل.
 
-### 13.2 الأسئلة المفتوحة الحقيقية (Real Open Questions):
-- **لا يوجد:** تم حسم وتثبيت كافة القرارات الهندسية والسريرية والمسارات والأعداد والصلاحيات بالدليل البرمجي القاطع، والخطة جاهزة تماماً كمرجع تنفيذي شامل فور انتهاء F-05.
+### 13.2 الأسئلة المفتوحة الحقيقية (Real Open Questions — فئة: سريري، يحتاج مراجعة طبيب مرخص قبل التشغيل الفعلي):
+
+1. **نطاق تغطية الحساسية المتقاطعة (Cross-Reactivity Coverage):**
+   - **الأسبرين ومضادات الالتهاب غير الستيرويدية (Aspirin & NSAIDs):** هل يتم تفعيل تحذير الحساسية المتقاطعة برمجياً بين الأسبرين وكافة أدوية الـ NSAIDs (مثل الإيبوبروفين والديكلوفيناك والكيتوبروفين)، أم يُترك التقدير للطبيب المباشر دون تنبيه آلي؟ (الخيار الحالي في الخطة: حيادي ولا يتدخل برمجياً حتى ورود توجيه سريري صريح، مع ترك `CAT-ALL-007` بدون مرادفات).
+   - **مركبات السلفا (Sulfonamides):** هل يشمل تحذير حساسية السلفا المضادات الحيوية فقط (مثل `Sulfamethoxazole` في `Septrin`)، أم يمتد للمركبات غير المضادة للميكروبات (Non-antibiotic sulfonamides مثل بعض مدرات البول Thiazides وخافضات السكر Sulfonylureas)؟
+   - **البنسلين والسيفالوسبورينات (Penicillins & Cephalosporins):** هل يتم تفعيل تحذير الحساسية المتقاطعة بين البنسلينات والجيل الأول أو كافة أجيال السيفالوسبورينات؟
+
+2. **اعتماد وتدقيق قوائم المرادفات السريرية (`aliases`):**
+   - مراجعة وتدقيق واعتماد كافة قوائم المرادفات والأسماء العلمية والتجارية المدخلة في كتالوج الحساسية والأدوية بواسطة صيدلي إكلينيكي أو لجنة طبية مرخصة قبل وضع النظام في التشغيل والإنتاج الفعلي، للتأكد من شموليتها وخلوها من التعارضات غير المقصودة.
+
+> ⚠️ **إشعار قانوني وسريري حاسم:**  
+> لا يجوز إطلاق هذا النظام لأي منشأة طبية أو عميل فعلي دون تدقيق ومراجعة واعتماد سريري كامل لكافة بيانات الكتالوج وقواعد التعارض من قِبل لجنة طبية وصيدلانية مرخصة رسمياً.
