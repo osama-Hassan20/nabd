@@ -66,7 +66,11 @@ flowchart LR
 - `PrescriptionPdfPreview` + زر الطباعة الفورية الصامتة.
 - قوالب التشخيص والروشتات الجاهزة لتسريع عمل الطبيب.
 
-> **مرجع التفاصيل الكاملة:** [`docs/plans/PKG-B-visit-prescription-drugs.md`](../PKG-B-visit-prescription-drugs.md)
+> **مرجع التفاصيل الكاملة:** [`docs/plans/PKG-B-visit-prescription-drugs.md`](../PKG-B-visit-prescription-drugs.md) و [`docs/plans/F-04b-drugs-prescriptions.md`](../F-04b-drugs-prescriptions.md)
+
+> [!NOTE]
+> **بنود مؤجلة لما بعد F-04b (Deferred Items):**
+> - **كتالوج التشخيصات الاسترشادي (Diagnostic Catalog Autocomplete):** تم استبعاده من مسار تنفيذ F-04b لتركيز النطاق على كتالوج الأدوية والروشتات السريرية، مع استمرار شاشة الكشف في دعم التشخيص الطبي كنص حر وافٍ كما هو قائم. بناء الكتالوج الاسترشادي مؤجل كتحسين سريري لاحق.
 
 ---
 

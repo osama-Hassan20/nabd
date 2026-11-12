@@ -110,6 +110,8 @@ import 'package:eyadty/features/users_management/presentation/cubit/staff_users_
 import 'package:eyadty/features/audit_logs/domain/repo/audit_logs_repo.dart';
 import 'package:eyadty/features/audit_logs/data/repo/audit_logs_mock_repo_impl.dart';
 import 'package:eyadty/features/audit_logs/presentation/cubit/audit_logs_cubit.dart';
+import 'package:eyadty/features/cashier/domain/repo/cashier_repo.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -492,6 +494,10 @@ Future<void> setupGetIt() async {
     () => AuditLogsMockRepoImpl(
       auditLogger: getIt<AuditLogger>(),
     ),
+  );
+
+  getIt.registerLazySingleton<CashierRepo>(
+    () => CashierMockRepoImpl(),
   );
 
   getIt.registerFactory<AuditLogsCubit>(
