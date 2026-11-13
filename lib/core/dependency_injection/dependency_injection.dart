@@ -112,6 +112,17 @@ import 'package:eyadty/features/audit_logs/data/repo/audit_logs_mock_repo_impl.d
 import 'package:eyadty/features/audit_logs/presentation/cubit/audit_logs_cubit.dart';
 import 'package:eyadty/features/cashier/domain/repo/cashier_repo.dart';
 import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/domain/contracts/cashier_policy.dart';
+import 'package:eyadty/features/cashier/domain/helpers/cashier_shift_calculator.dart';
+import 'package:eyadty/features/cashier/domain/helpers/payment_reconciliation_helper.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/get_active_shift_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/open_shift_drawer_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/close_shift_drawer_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/collect_payment_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/refund_payment_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/record_drawer_expense_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/approve_shortage_use_case.dart';
+import 'package:eyadty/features/cashier/domain/use_cases/force_close_shift_use_case.dart';
 
 final getIt = GetIt.instance;
 
@@ -496,8 +507,99 @@ Future<void> setupGetIt() async {
     ),
   );
 
+  getIt.registerLazySingleton<CashierPolicy>(
+    () => const CashierPolicy(),
+  );
+
+  getIt.registerLazySingleton<CashierShiftCalculator>(
+    () => const CashierShiftCalculator(),
+  );
+
+  getIt.registerLazySingleton<PaymentReconciliationHelper>(
+    () => const PaymentReconciliationHelper(),
+  );
+
   getIt.registerLazySingleton<CashierRepo>(
     () => CashierMockRepoImpl(),
+  );
+
+  getIt.registerLazySingleton<GetActiveShiftUseCase>(
+    () => GetActiveShiftUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<OpenShiftDrawerUseCase>(
+    () => OpenShiftDrawerUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CloseShiftDrawerUseCase>(
+    () => CloseShiftDrawerUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      policy: getIt<CashierPolicy>(),
+      calculator: getIt<CashierShiftCalculator>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CollectPaymentUseCase>(
+    () => CollectPaymentUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+      reconciliationHelper: getIt<PaymentReconciliationHelper>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<RefundPaymentUseCase>(
+    () => RefundPaymentUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      bookingsRepo: getIt<BookingsRepo>(),
+      reconciliationHelper: getIt<PaymentReconciliationHelper>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<RecordDrawerExpenseUseCase>(
+    () => RecordDrawerExpenseUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      policy: getIt<CashierPolicy>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ApproveShortageUseCase>(
+    () => ApproveShortageUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      staffUsersRepo: getIt<StaffUsersRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ForceCloseShiftUseCase>(
+    () => ForceCloseShiftUseCase(
+      cashierRepo: getIt<CashierRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
   );
 
   getIt.registerFactory<AuditLogsCubit>(

@@ -33,6 +33,8 @@ enum StaffPermissionEnum {
   viewCashierShift,
   applyManualDiscount,
   applyBookingDiscount,
+  manageCashierShifts,
+  manageDrawerMovements,
 
   // ─── 5. HR & Settlements (الموارد البشرية والمستحقات) ────────────────────
   accessHr,

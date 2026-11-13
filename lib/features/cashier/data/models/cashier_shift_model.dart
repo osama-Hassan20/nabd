@@ -24,6 +24,7 @@ class CashierShiftModel {
   final int? totalOwnerWithdrawalsPiastres;
   final String? closingNotes;
   final bool? isShortageApproved;
+  final bool? isOwnerSelfApproved;
   final String? shortageApprovedByUserId;
   final DateTime? shortageApprovedAt;
   final String? shortageReason;
@@ -54,6 +55,7 @@ class CashierShiftModel {
     this.totalOwnerWithdrawalsPiastres,
     this.closingNotes,
     this.isShortageApproved,
+    this.isOwnerSelfApproved,
     this.shortageApprovedByUserId,
     this.shortageApprovedAt,
     this.shortageReason,
@@ -112,6 +114,7 @@ class CashierShiftModel {
       totalOwnerWithdrawalsPiastres: json['totalOwnerWithdrawalsPiastres'] as int?,
       closingNotes: json['closingNotes'] as String?,
       isShortageApproved: json['isShortageApproved'] as bool?,
+      isOwnerSelfApproved: json['isOwnerSelfApproved'] as bool?,
       shortageApprovedByUserId: json['shortageApprovedByUserId'] as String?,
       shortageApprovedAt: json['shortageApprovedAt'] != null
           ? DateTime.tryParse(json['shortageApprovedAt'].toString())
@@ -159,6 +162,7 @@ class CashierShiftModel {
         'totalOwnerWithdrawalsPiastres': totalOwnerWithdrawalsPiastres,
       if (closingNotes != null) 'closingNotes': closingNotes,
       if (isShortageApproved != null) 'isShortageApproved': isShortageApproved,
+      if (isOwnerSelfApproved != null) 'isOwnerSelfApproved': isOwnerSelfApproved,
       if (shortageApprovedByUserId != null)
         'shortageApprovedByUserId': shortageApprovedByUserId,
       if (shortageApprovedAt != null)
@@ -194,6 +198,7 @@ class CashierShiftModel {
     int? totalOwnerWithdrawalsPiastres,
     String? closingNotes,
     bool? isShortageApproved,
+    bool? isOwnerSelfApproved,
     String? shortageApprovedByUserId,
     DateTime? shortageApprovedAt,
     String? shortageReason,
@@ -236,6 +241,7 @@ class CashierShiftModel {
           totalOwnerWithdrawalsPiastres ?? this.totalOwnerWithdrawalsPiastres,
       closingNotes: closingNotes ?? this.closingNotes,
       isShortageApproved: isShortageApproved ?? this.isShortageApproved,
+      isOwnerSelfApproved: isOwnerSelfApproved ?? this.isOwnerSelfApproved,
       shortageApprovedByUserId:
           shortageApprovedByUserId ?? this.shortageApprovedByUserId,
       shortageApprovedAt: shortageApprovedAt ?? this.shortageApprovedAt,

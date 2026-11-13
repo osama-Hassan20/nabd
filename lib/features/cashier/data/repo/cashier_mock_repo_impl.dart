@@ -446,6 +446,7 @@ class CashierMockRepoImpl implements CashierRepo {
       final updated = current.copyWith(
         status: ShiftStatusEnum.closed,
         isShortageApproved: true,
+        isOwnerSelfApproved: isOwnerSelfApproved,
         shortageApprovedByUserId: approvedByUserId,
         shortageApprovedAt: CairoTimeHelper.now(),
         shortageReason: reason,
@@ -737,11 +738,14 @@ class CashierMockRepoImpl implements CashierRepo {
   @override
   Future<Either<Failures, List<PaymentTransactionModel>>> getPaymentsForShift({
     required String shiftId,
+    bool includeVoided = false,
   }) async {
     try {
-      final list = _payments
-          .where((p) => p.shiftId == shiftId && !(p.isVoidedBySystem ?? false))
-          .toList();
+      final list = _payments.where((p) {
+        if (p.shiftId != shiftId) return false;
+        if (!includeVoided && (p.isVoidedBySystem ?? false)) return false;
+        return true;
+      }).toList();
       return Right(list.reversed.toList());
     } catch (e) {
       return Left(ServerFailure(errMessage: e.toString()));

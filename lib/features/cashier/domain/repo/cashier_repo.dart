@@ -91,6 +91,7 @@ abstract class CashierRepo {
 
   Future<Either<Failures, List<PaymentTransactionModel>>> getPaymentsForShift({
     required String shiftId,
+    bool includeVoided = false,
   });
 
   Future<Either<Failures, List<PaymentTransactionModel>>> getPaymentsByBookingId({

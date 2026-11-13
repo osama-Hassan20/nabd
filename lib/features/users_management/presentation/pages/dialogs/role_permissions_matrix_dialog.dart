@@ -91,6 +91,8 @@ class _RolePermissionsMatrixDialogState
       StaffPermissionEnum.refundPayment,
       StaffPermissionEnum.viewCashierShift,
       StaffPermissionEnum.applyManualDiscount,
+      StaffPermissionEnum.manageCashierShifts,
+      StaffPermissionEnum.manageDrawerMovements,
     ],
     'الموارد البشرية والمستحقات': [
       StaffPermissionEnum.accessHr,
