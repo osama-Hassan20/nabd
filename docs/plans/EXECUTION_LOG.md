@@ -20,15 +20,16 @@
 | 14-11-2026 | **F-05** | **M-6** (Adaptive PDF Printing & Print Settings Tab) | `70e5a2c` | 537 $\to$ 554 (+17) | 0 issues | مولدات تقارير الـ PDF المتكيفة لإيصال السداد وتقرير الوردية A4 و80 مم حراري، وتبويب إعدادات الطباعة للفرع في الإعدادات، وقفل صلاحيات الحوكمة accessSettings، وتدقيق print_settings_updated بدون بيانات حساسة. |
 | 15-11-2026 | **F-05** | **M-7** (Final Verification & Feature Closure) | `8ee1954` | 554 $\to$ 554 (+8) | 0 issues | إقفال فيتشر F-05 بالكامل (148/148 اختباراً)، تدقيق أمني شامل للأحداث الـ 10، وتوثيق القرارات DEC-014 و DEC-015 وتحديث PROGRESS.md. |
 | 15-11-2026 | **F-04b** | **Seed Fix & TD-001** (Visits Seed & Mixins Refactor) | `e09b6b8` | 554 $\to$ 554 (0) | 0 issues | تصحيح كشفي VIS-002 و VIS-003 بالشكوى واسم المريض، وتفكيك visits_cubit.dart من 698 سطراً إلى 3 Mixins مستقلة (Queue, Vitals, Consultation) مع ثبات الـ 129 اختباراً بنسبة 100%. |
+| 15-11-2026 | **F-04b** | **M-1** (Drug Catalog & Pure Allergy Matcher) | `8c79e24` | 562 $\to$ 606 (+44) | 0 issues | بناء نماذج DrugModel و DrugCategoryModel، فاحص الاسم DrugNameValidator، محرك الحساسية النقي DrugAllergyMatcher بمطابقة الكلمة الكاملة وخلو تام من الـ False Positives، و DrugsMockRepoImpl مع 25 دواء نسبي وتطابق 100% للترجمات. |
 
 ---
 
 ## الحالة الراهنة ونقطة الاستئناف
 - **فيتشر F-05:** 🟢 مكتملة ومقفلة 100%.
 - **فيتشر F-04b (الأدوية والروشتات):**
-  - **المكتمل:** Seed Fix (`ad611da`) و TD-001 (`e09b6b8`).
-  - **الخطوة التالية المباشرة:** F-04b **M-1** (Drug Catalog Data Layer & Pure Allergy Matcher).
+  - **المكتمل:** Seed Fix (`ad611da`)، TD-001 (`e09b6b8`)، و **M-1** (`8c79e24`).
+  - **الخطوة التالية المباشرة:** F-04b **M-2** (Doctor Prescription Templates & Domain Use Cases).
 - **الخطوات التالية:**
-  1. إكمال F-04b (M-1 إلى M-8).
+  1. إكمال F-04b (M-2 إلى M-8).
   2. تنفيذ F-06 بالكامل (M-1 إلى M-9).
   3. خطة F-07 ثم تنفيذها بالكامل وإقفال المشروع.
