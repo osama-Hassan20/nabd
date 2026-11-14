@@ -73,6 +73,7 @@ import 'package:eyadty/features/settings/domain/use_cases/change_password_use_ca
 import 'package:eyadty/features/settings/domain/use_cases/delete_special_holiday_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/update_company_settings_use_case.dart';
+import 'package:eyadty/features/settings/domain/use_cases/update_print_settings_use_case.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 
 // Medical Services Catalog Feature
@@ -441,6 +442,14 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<ChangePasswordUseCase>(
     () => ChangePasswordUseCase(repo: getIt<SettingsRepo>()),
   );
+  getIt.registerLazySingleton<UpdatePrintSettingsUseCase>(
+    () => UpdatePrintSettingsUseCase(
+      repo: getIt<SettingsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
 
   // ─── Medical Services Catalog ───────────────────────────────────────────────
   getIt.registerLazySingleton<MedicalServicesRepo>(
@@ -692,6 +701,7 @@ Future<void> setupGetIt() async {
       addSpecialHolidayUseCase: getIt<AddSpecialHolidayUseCase>(),
       deleteSpecialHolidayUseCase: getIt<DeleteSpecialHolidayUseCase>(),
       changePasswordUseCase: getIt<ChangePasswordUseCase>(),
+      updatePrintSettingsUseCase: getIt<UpdatePrintSettingsUseCase>(),
     ),
   );
 

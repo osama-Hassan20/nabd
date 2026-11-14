@@ -1,3 +1,4 @@
+import 'enums/print_format_enum.dart';
 import 'special_holiday_model.dart';
 
 class CompanySettingsModel {
@@ -13,6 +14,9 @@ class CompanySettingsModel {
   final List<SpecialHolidayModel>? specialHolidays;
   final bool? notificationEnabled;
   final int? reminderMinutesBefore;
+  final String? receiptPrintFormat;
+  final String? shiftReportPrintFormat;
+  final String? prescriptionPrintFormat;
 
   const CompanySettingsModel({
     this.id,
@@ -27,7 +31,17 @@ class CompanySettingsModel {
     this.specialHolidays,
     this.notificationEnabled,
     this.reminderMinutesBefore,
+    this.receiptPrintFormat,
+    this.shiftReportPrintFormat,
+    this.prescriptionPrintFormat,
   });
+
+  PrintFormat get effectiveReceiptPrintFormat =>
+      PrintFormat.fromString(receiptPrintFormat);
+  PrintFormat get effectiveShiftReportPrintFormat =>
+      PrintFormat.fromString(shiftReportPrintFormat);
+  PrintFormat get effectivePrescriptionPrintFormat =>
+      PrintFormat.fromString(prescriptionPrintFormat);
 
   factory CompanySettingsModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const CompanySettingsModel();
@@ -48,6 +62,9 @@ class CompanySettingsModel {
           .toList(),
       notificationEnabled: json['notificationEnabled'] as bool?,
       reminderMinutesBefore: json['reminderMinutesBefore'] as int?,
+      receiptPrintFormat: json['receiptPrintFormat'] as String?,
+      shiftReportPrintFormat: json['shiftReportPrintFormat'] as String?,
+      prescriptionPrintFormat: json['prescriptionPrintFormat'] as String?,
     );
   }
 
@@ -68,6 +85,12 @@ class CompanySettingsModel {
         'notificationEnabled': notificationEnabled,
       if (reminderMinutesBefore != null)
         'reminderMinutesBefore': reminderMinutesBefore,
+      if (receiptPrintFormat != null)
+        'receiptPrintFormat': receiptPrintFormat,
+      if (shiftReportPrintFormat != null)
+        'shiftReportPrintFormat': shiftReportPrintFormat,
+      if (prescriptionPrintFormat != null)
+        'prescriptionPrintFormat': prescriptionPrintFormat,
     };
   }
 
@@ -84,6 +107,9 @@ class CompanySettingsModel {
     List<SpecialHolidayModel>? specialHolidays,
     bool? notificationEnabled,
     int? reminderMinutesBefore,
+    String? receiptPrintFormat,
+    String? shiftReportPrintFormat,
+    String? prescriptionPrintFormat,
   }) {
     return CompanySettingsModel(
       id: id ?? this.id,
@@ -99,6 +125,11 @@ class CompanySettingsModel {
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
       reminderMinutesBefore:
           reminderMinutesBefore ?? this.reminderMinutesBefore,
+      receiptPrintFormat: receiptPrintFormat ?? this.receiptPrintFormat,
+      shiftReportPrintFormat:
+          shiftReportPrintFormat ?? this.shiftReportPrintFormat,
+      prescriptionPrintFormat:
+          prescriptionPrintFormat ?? this.prescriptionPrintFormat,
     );
   }
 }

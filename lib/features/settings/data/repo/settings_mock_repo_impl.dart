@@ -184,6 +184,12 @@ class SettingsMockRepoImpl implements SettingsRepo {
       final updated = settings.copyWith(
         id: current.id,
         specialHolidays: settings.specialHolidays ?? current.specialHolidays,
+        receiptPrintFormat:
+            settings.receiptPrintFormat ?? current.receiptPrintFormat,
+        shiftReportPrintFormat:
+            settings.shiftReportPrintFormat ?? current.shiftReportPrintFormat,
+        prescriptionPrintFormat:
+            settings.prescriptionPrintFormat ?? current.prescriptionPrintFormat,
       );
       _branchSettings[branchId] = updated;
       return Right(updated);

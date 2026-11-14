@@ -1176,5 +1176,20 @@
   "cashier_method_other": "Other",
   "cashier_currency_egp": "EGP",
   "cashier_needs_refund": "Needs Refund",
-  "booking_cannot_delete_has_payments": "Cannot delete booking with recorded payments. Please process a refund first."
+  "booking_cannot_delete_has_payments": "Cannot delete booking with recorded payments. Please process a refund first.",
+  "tab_print_settings": "Print Settings",
+  "print_settings_title": "Print Formats & Layouts",
+  "print_settings_desc": "Set the default print format for each document type in this branch",
+  "print_format_a4": "Standard A4 Paper",
+  "print_format_a4_desc": "Ideal for regular office printers and comprehensive official reports",
+  "print_format_thermal80": "Thermal Receipt Printer (80mm)",
+  "print_format_thermal80_desc": "Ideal for fast receipts and direct cashier point-of-sale printing",
+  "print_doc_receipt": "Cashier Payment Receipt",
+  "print_doc_receipt_desc": "Format used when printing collection receipts for bookings or patients",
+  "print_doc_shift_report": "Shift Closing Report (Z-Report)",
+  "print_doc_shift_report_desc": "Format used when printing daily inventory and reconciliation closing reports",
+  "print_doc_prescription": "Medical Prescription & Formulas",
+  "print_doc_prescription_desc": "Format used when printing physician prescriptions (F-04c)",
+  "print_settings_saved_success": "Print settings saved for branch successfully",
+  "print_switch_preview_format": "Switch Preview Format"
 }

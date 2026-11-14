@@ -1176,5 +1176,20 @@
   "cashier_method_other": "أخرى",
   "cashier_currency_egp": "ج.م",
   "cashier_needs_refund": "يحتاج استرداد",
-  "booking_cannot_delete_has_payments": "لا يمكن حذف الحجز لوجود مدفوعات مسجلة له. يرجى استرداد المبلغ أولاً."
+  "booking_cannot_delete_has_payments": "لا يمكن حذف الحجز لوجود مدفوعات مسجلة له. يرجى استرداد المبلغ أولاً.",
+  "tab_print_settings": "إعدادات الطباعة",
+  "print_settings_title": "إعدادات وتنسيقات الطباعة",
+  "print_settings_desc": "تحديد مقاس الطباعة الافتراضي لكل نوع مستند في هذا الفرع",
+  "print_format_a4": "ورق قياسي A4",
+  "print_format_a4_desc": "مناسب للطابعات المكتبية العادية والتقارير الرسمية الموسعة",
+  "print_format_thermal80": "طابعة فواتير حرارية (80 مم)",
+  "print_format_thermal80_desc": "مناسب للإيصالات السريعة وطابعات الكاشير المباشرة",
+  "print_doc_receipt": "إيصال سداد الخزينة",
+  "print_doc_receipt_desc": "المقاس المستخدم عند طباعة إيصال تحصيل دفعة الحجز أو المريض",
+  "print_doc_shift_report": "تقرير تقفيل الوردية (Z-Report)",
+  "print_doc_shift_report_desc": "المقاس المستخدم عند طباعة تقرير الجرد والإقفال اليومي",
+  "print_doc_prescription": "روشتة العلاج والوصفات الطبية",
+  "print_doc_prescription_desc": "المقاس المستخدم عند طباعة الروشتة الصادرة من الطبيب (F-04c)",
+  "print_settings_saved_success": "تم حفظ إعدادات الطباعة للفرع بنجاح",
+  "print_switch_preview_format": "تغيير مقاس المعاينة"
 }

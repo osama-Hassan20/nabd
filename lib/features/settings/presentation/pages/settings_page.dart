@@ -14,6 +14,7 @@ import 'package:eyadty/features/settings/presentation/widgets/tabs/special_holid
 import 'package:eyadty/features/settings/presentation/widgets/tabs/working_schedule_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/services/medical_services_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/doctors_schedule/doctors_schedule_tab.dart';
+import 'package:eyadty/features/settings/presentation/widgets/tabs/print_settings_tab.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
@@ -54,6 +55,7 @@ class _SettingsViewState extends State<SettingsView>
     AppIcons.calendar,
     AppIcons.service,
     AppIcons.calendar,
+    AppIcons.transactions,
   ];
 
   List<String> get _tabs => [
@@ -64,6 +66,7 @@ class _SettingsViewState extends State<SettingsView>
     'tab_special_holidays'.tr(),
     'tab_medical_services'.tr(),
     'tab_doctors_schedule'.tr(),
+    'tab_print_settings'.tr(),
     // 'tab_notifications'.tr(),
   ];
 
@@ -172,6 +175,7 @@ class _SettingsViewState extends State<SettingsView>
                     SpecialHolidaysTab(settingsCubit: cubit),
                     const MedicalServicesTab(),
                     const DoctorsScheduleTab(),
+                    const PrintSettingsTab(),
                     // NotificationsTab(settingsCubit: cubit),
                   ],
                 ),

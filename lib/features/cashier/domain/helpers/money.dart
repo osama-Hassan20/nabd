@@ -95,6 +95,8 @@ class Money {
     return '${pounds.toStringAsFixed(2)} ج.م';
   }
 
+  String get formattedEgp => formatEgp();
+
   Money operator +(Money other) => Money(piastres + other.piastres);
   Money operator -(Money other) => Money(piastres - other.piastres);
   Money operator *(num factor) => Money((piastres * factor).round());

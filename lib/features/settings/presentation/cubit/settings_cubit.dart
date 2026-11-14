@@ -9,6 +9,7 @@ import '../../domain/use_cases/change_password_use_case.dart';
 import '../../domain/use_cases/delete_special_holiday_use_case.dart';
 import '../../domain/use_cases/get_company_settings_use_case.dart';
 import '../../domain/use_cases/update_company_settings_use_case.dart';
+import '../../domain/use_cases/update_print_settings_use_case.dart';
 import 'settings_state.dart';
 
 class SettingsCubit extends SafeCubit<SettingsState> {
@@ -17,6 +18,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
   final AddSpecialHolidayUseCase addSpecialHolidayUseCase;
   final DeleteSpecialHolidayUseCase deleteSpecialHolidayUseCase;
   final ChangePasswordUseCase changePasswordUseCase;
+  final UpdatePrintSettingsUseCase? updatePrintSettingsUseCase;
 
   SettingsCubit({
     required this.getCompanySettingsUseCase,
@@ -24,6 +26,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
     required this.addSpecialHolidayUseCase,
     required this.deleteSpecialHolidayUseCase,
     required this.changePasswordUseCase,
+    this.updatePrintSettingsUseCase,
   }) : super(const SettingsState());
 
   void init() {
@@ -444,6 +447,48 @@ class SettingsCubit extends SafeCubit<SettingsState> {
           state.copyWith(
             actionStatus: RequestStatusEnum.success,
             successMessage: 'password_changed_successfully',
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> updatePrintSettings({
+    String? receiptPrintFormat,
+    String? shiftReportPrintFormat,
+    String? prescriptionPrintFormat,
+    String? branchId,
+  }) async {
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+
+    final useCase = updatePrintSettingsUseCase;
+    if (useCase == null) return false;
+
+    final result = await useCase(
+      UpdatePrintSettingsParams(
+        branchId: branchId,
+        receiptPrintFormat: receiptPrintFormat,
+        shiftReportPrintFormat: shiftReportPrintFormat,
+        prescriptionPrintFormat: prescriptionPrintFormat,
+      ),
+    );
+
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            errMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (saved) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            settings: saved,
           ),
         );
         return true;
