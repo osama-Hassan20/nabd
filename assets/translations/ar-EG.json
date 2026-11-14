@@ -1174,5 +1174,7 @@
   "cashier_method_insurance": "تأمين طبي",
   "cashier_method_wallet": "محفظة إلكترونية",
   "cashier_method_other": "أخرى",
-  "cashier_currency_egp": "ج.م"
+  "cashier_currency_egp": "ج.م",
+  "cashier_needs_refund": "يحتاج استرداد",
+  "booking_cannot_delete_has_payments": "لا يمكن حذف الحجز لوجود مدفوعات مسجلة له. يرجى استرداد المبلغ أولاً."
 }

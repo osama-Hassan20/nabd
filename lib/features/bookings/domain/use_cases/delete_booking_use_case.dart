@@ -16,6 +16,7 @@ class DeleteBookingUseCase implements UseCase<Unit, String> {
 
   @override
   Future<Either<Failures, Unit>> call(String bookingId) async {
+    // 1. Clinical lock: cannot delete booking with active consultation in triage/inProgress
     if (activeVisitLookup != null) {
       final visitStatus =
           await activeVisitLookup!.getVisitStatusByBookingId(bookingId);
@@ -28,6 +29,20 @@ class DeleteBookingUseCase implements UseCase<Unit, String> {
         );
       }
     }
+
+    // 2. Financial lock (M-5): prevent deletion of booking with recorded payments (must refund first)
+    final bookingRes = await repo.getBookingById(bookingId);
+    if (bookingRes.isRight()) {
+      final booking = bookingRes.getOrElse(() => throw StateError(''));
+      if ((booking.paidAmount ?? 0) > 0) {
+        return const Left(
+          ValidationFailure(
+            errMessage: 'booking_cannot_delete_has_payments',
+          ),
+        );
+      }
+    }
+
     return repo.deleteBooking(bookingId);
   }
 }

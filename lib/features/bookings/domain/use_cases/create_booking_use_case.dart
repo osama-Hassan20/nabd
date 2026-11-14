@@ -5,6 +5,7 @@ import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/uses_cases/use_cases.dart';
 import '../../../users_management/data/repositories/staff_users_repo.dart';
+import '../../data/models/enums/payment_status_enum.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/enums/discount_type_enum.dart';
 import '../helpers/booking_discount_policy_resolver.dart';
@@ -31,7 +32,13 @@ class CreateBookingUseCase implements UseCase<BookingModel, BookingModel> {
     BookingModel booking, {
     DateTime? customNow,
   }) async {
-    var bookingToCreate = booking;
+    // M-5 rule: paidAmount is locked to 0 on creation; payments are registered through cashier only
+    var bookingToCreate = booking.copyWith(
+      paidAmount: 0,
+      paymentStatus: booking.isFreeConsultation
+          ? PaymentStatusEnum.paid
+          : PaymentStatusEnum.unpaid,
+    );
 
     if (booking.discountType != null &&
         booking.discountType != DiscountTypeEnum.none) {

@@ -49,6 +49,8 @@ import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 // Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/domain/contracts/patient_balance_lookup.dart';
+import 'package:eyadty/features/bookings/data/services/booking_patient_balance_lookup_impl.dart';
 import 'package:eyadty/features/patients/domain/repo/medical_catalog_repo.dart';
 import 'package:eyadty/features/patients/domain/repo/patients_repo.dart';
 import 'package:eyadty/features/patients/domain/use_cases/add_medical_catalog_item_use_case.dart';
@@ -362,11 +364,16 @@ Future<void> setupGetIt() async {
     () => AddMedicalCatalogItemUseCase(repo: getIt<MedicalCatalogRepo>()),
   );
 
+  getIt.registerLazySingleton<PatientBalanceLookup>(
+    () => BookingPatientBalanceLookupImpl(getIt<BookingsRepo>()),
+  );
+
   getIt.registerLazySingleton<PatientsRepo>(
     () => PatientsMockRepoImpl(
       apiConsumer: getIt<DioConsumer>(),
       roleProvider: getIt<CurrentRoleProvider>(),
       bookingsRepo: getIt<BookingsRepo>(),
+      balanceLookup: getIt<PatientBalanceLookup>(),
     ),
   );
 

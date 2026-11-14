@@ -13,6 +13,8 @@ class BookingActionsMenu extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onCallPatient;
   final VoidCallback? onStartConsultation;
+  final VoidCallback? onCollectPayment;
+  final VoidCallback? onRefundPayment;
   final String? consultationButtonKey;
   final Color iconColor;
   final double iconSize;
@@ -26,6 +28,8 @@ class BookingActionsMenu extends StatelessWidget {
     this.onDelete,
     this.onCallPatient,
     this.onStartConsultation,
+    this.onCollectPayment,
+    this.onRefundPayment,
     this.consultationButtonKey,
     this.iconColor = AppColors.gray71717A,
     this.iconSize = 20,
@@ -40,6 +44,12 @@ class BookingActionsMenu extends StatelessWidget {
       icon: Icon(Icons.more_vert, size: iconSize, color: iconColor),
       onSelected: (value) {
         switch (value) {
+          case 'collect_payment':
+            onCollectPayment?.call();
+            break;
+          case 'refund_payment':
+            onRefundPayment?.call();
+            break;
           case 'start_consultation':
             onStartConsultation?.call();
             break;
@@ -64,6 +74,50 @@ class BookingActionsMenu extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
+        if (onCollectPayment != null)
+          PopupMenuItem(
+            value: 'collect_payment',
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.payments_outlined,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'cashier_collect_btn'.tr(),
+                    style: CustomAppFontStyle.semiBold13.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (onRefundPayment != null)
+          PopupMenuItem(
+            value: 'refund_payment',
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.assignment_return_outlined,
+                  size: 16,
+                  color: AppColors.error,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'cashier_refund_btn'.tr(),
+                    style: CustomAppFontStyle.semiBold13.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (onStartConsultation != null)
           PopupMenuItem(
             value: 'start_consultation',

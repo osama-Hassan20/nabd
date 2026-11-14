@@ -365,16 +365,16 @@ void main() {
         }
       }
 
-      // 2. PAT-000105 debt is directly derived from bookings
+      // 2. PAT-000105 debt is derived strictly from completed bookings (0 EGP, MED-105 not completed)
       final pat105Res = await patientsRepo.getPatientById(id: 'PAT-000105');
       pat105Res.fold((l) => fail(l.errMessage), (pat105) {
-        expect(pat105.outstandingBalance, 200);
+        expect(pat105.outstandingBalance, 0);
       });
 
-      // 3. PAT-000102 debt is directly derived from bookings (300 EGP)
+      // 3. PAT-000102 debt is derived strictly from completed bookings (150 EGP from MED-107)
       final pat102Res = await patientsRepo.getPatientById(id: 'PAT-000102');
       pat102Res.fold((l) => fail(l.errMessage), (pat102) {
-        expect(pat102.outstandingBalance, 300);
+        expect(pat102.outstandingBalance, 150);
       });
     });
 
@@ -439,7 +439,7 @@ void main() {
     test('Rejects archiving a patient with debt balance', () async {
       final repo = PatientsMockRepoImpl();
 
-      // PAT-000102 has 300 EGP debt
+      // PAT-000102 has 150 EGP debt
       final debtArchive = await repo.archivePatient(id: 'PAT-000102');
       expect(debtArchive.isLeft(), isTrue);
       debtArchive.fold((failure) {

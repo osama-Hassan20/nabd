@@ -256,14 +256,33 @@ class BookingCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    if (booking.isFreeConsultation)
+                    if (booking.status == BookingStatusEnum.cancelled &&
+                        (booking.paidAmount ?? 0) > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffFEF3C7),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: const Color(0xffF59E0B)),
+                        ),
+                        child: Text(
+                          'cashier_needs_refund'.tr(),
+                          style: CustomAppFontStyle.medium10.copyWith(
+                            color: const Color(0xffB45309),
+                          ),
+                        ),
+                      )
+                    else if (booking.isFreeConsultation)
                       const FreeBookingBadge(
                         fontSize: 10,
-                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                       )
                     else
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: booking.effectivePaymentStatus.backgroundColor,
                           borderRadius: BorderRadius.circular(100),

@@ -23,6 +23,8 @@ class BookingsTable extends StatelessWidget {
   final void Function(BookingModel booking) onDelete;
   final void Function(BookingModel booking)? onCallPatient;
   final void Function(BookingModel booking)? onStartConsultation;
+  final void Function(BookingModel booking)? onCollectPayment;
+  final void Function(BookingModel booking)? onRefundPayment;
 
   const BookingsTable({
     super.key,
@@ -34,6 +36,8 @@ class BookingsTable extends StatelessWidget {
     required this.onDelete,
     this.onCallPatient,
     this.onStartConsultation,
+    this.onCollectPayment,
+    this.onRefundPayment,
   });
 
   static const Map<int, TableColumnWidth> columnWidths = {
@@ -259,7 +263,23 @@ class BookingsTable extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        if (item.isFreeConsultation)
+        if (item.status == BookingStatusEnum.cancelled &&
+            (item.paidAmount ?? 0) > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+            decoration: BoxDecoration(
+              color: const Color(0xffFEF3C7),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: const Color(0xffF59E0B)),
+            ),
+            child: Text(
+              'cashier_needs_refund'.tr(),
+              style: CustomAppFontStyle.medium10.copyWith(
+                color: const Color(0xffB45309),
+              ),
+            ),
+          )
+        else if (item.isFreeConsultation)
           const FreeBookingBadge(
             fontSize: 10,
             padding: EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
@@ -343,6 +363,11 @@ class BookingsTable extends StatelessWidget {
       visit: null,
     );
 
+    final canCollect = !item.isFreeConsultation &&
+        item.status != BookingStatusEnum.cancelled &&
+        (item.netAmount > (item.paidAmount ?? 0));
+    final canRefund = (item.paidAmount ?? 0) > 0;
+
     final cell7 = Center(
       child: BookingActionsMenu(
         onViewDetails: onViewDetails != null
@@ -356,6 +381,12 @@ class BookingsTable extends StatelessWidget {
         onStartConsultation:
             showConsultation ? () => onStartConsultation!(item) : null,
         consultationButtonKey: consultationKey,
+        onCollectPayment: canCollect && onCollectPayment != null
+            ? () => onCollectPayment!(item)
+            : null,
+        onRefundPayment: canRefund && onRefundPayment != null
+            ? () => onRefundPayment!(item)
+            : null,
       ),
     );
 

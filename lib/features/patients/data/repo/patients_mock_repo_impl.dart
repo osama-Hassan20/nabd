@@ -12,6 +12,7 @@ import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart'
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import '../../domain/repo/patients_repo.dart';
 import '../models/enums/blood_group_enum.dart';
+import '../../domain/contracts/patient_balance_lookup.dart';
 import '../models/enums/gender_enum.dart';
 import '../models/patient_model.dart';
 import '../models/patients_response_model.dart';
@@ -20,11 +21,13 @@ class PatientsMockRepoImpl implements PatientsRepo {
   final ApiConsumer? apiConsumer;
   final CurrentRoleProvider? roleProvider;
   final BookingsRepo? bookingsRepo;
+  final PatientBalanceLookup? balanceLookup;
 
   PatientsMockRepoImpl({
     this.apiConsumer,
     this.roleProvider,
     this.bookingsRepo,
+    this.balanceLookup,
   }) {
     _initMockData();
   }
@@ -40,6 +43,14 @@ class PatientsMockRepoImpl implements PatientsRepo {
       return getIt<BookingsRepo>();
     }
     return _fallbackBookingsRepo;
+  }
+
+  PatientBalanceLookup? get _effectiveBalanceLookup {
+    if (balanceLookup != null) return balanceLookup;
+    if (getIt.isRegistered<PatientBalanceLookup>()) {
+      return getIt<PatientBalanceLookup>();
+    }
+    return null;
   }
 
   PatientModel _enrichWithBookingStats(PatientModel patient) {
@@ -60,19 +71,39 @@ class PatientsMockRepoImpl implements PatientsRepo {
         .toList();
 
     final visitsCount = nonCancelled.length;
-    final totalPaid = nonCancelled.fold<num>(
-      0,
-      (sum, b) => sum + (b.paidAmount ?? 0),
-    );
-    final outstanding = nonCancelled.fold<num>(
-      0,
-      (sum, b) {
-        final fee = b.consultationFee ?? b.totalPrice ?? 0;
-        final paid = b.paidAmount ?? 0;
-        final due = fee - paid;
-        return sum + (due > 0 ? due : 0);
-      },
-    );
+
+    final lookup = _effectiveBalanceLookup;
+    num totalPaid;
+    num outstanding;
+
+    if (lookup != null) {
+      totalPaid = lookup.calculateTotalPaid(
+        patientId: patient.id ?? '',
+        fileNumber: patient.fileNumber,
+      );
+      outstanding = lookup.calculateOutstandingBalance(
+        patientId: patient.id ?? '',
+        fileNumber: patient.fileNumber,
+      );
+    } else {
+      totalPaid = nonCancelled.fold<num>(
+        0,
+        (sum, b) => sum + (b.paidAmount ?? 0),
+      );
+      // M-5 rule: debt / outstanding is strictly from completed bookings
+      final completedBookings = patientBookings
+          .where((b) => b.status == BookingStatusEnum.completed)
+          .toList();
+      outstanding = completedBookings.fold<num>(
+        0,
+        (sum, b) {
+          final fee = b.consultationFee ?? b.totalPrice ?? 0;
+          final paid = b.paidAmount ?? 0;
+          final due = fee - paid;
+          return sum + (due > 0 ? due : 0);
+        },
+      );
+    }
 
     final now = CairoTimeHelper.now();
     DateTime? lastVisit;

@@ -225,8 +225,8 @@ void main() {
     });
 
     test('allows deleting booking when visit is finalized or null', () async {
-      // MED-103 has no visit
-      final res = await deleteBookingUseCase('MED-103');
+      // MED-105 has no visit and no payments
+      final res = await deleteBookingUseCase('MED-105');
       expect(res.isRight(), isTrue);
     });
   });

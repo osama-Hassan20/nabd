@@ -66,7 +66,11 @@ class UpdateBookingUseCase
 
     final feeChanged = existing.consultationFee != booking.consultationFee;
 
-    var bookingToUpdate = booking;
+    // M-5 rule: prevent manual tampering of paidAmount and paymentStatus from booking update
+    var bookingToUpdate = booking.copyWith(
+      paidAmount: existing.paidAmount,
+      paymentStatus: existing.paymentStatus,
+    );
     bool discountResetOccurred = false;
 
     // Rule 1: Changing fee on a booking with active discount requires applyBookingDiscount

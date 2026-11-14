@@ -1174,5 +1174,7 @@
   "cashier_method_insurance": "Medical Insurance",
   "cashier_method_wallet": "E-Wallet",
   "cashier_method_other": "Other",
-  "cashier_currency_egp": "EGP"
+  "cashier_currency_egp": "EGP",
+  "cashier_needs_refund": "Needs Refund",
+  "booking_cannot_delete_has_payments": "Cannot delete booking with recorded payments. Please process a refund first."
 }
