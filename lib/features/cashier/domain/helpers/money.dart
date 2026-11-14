@@ -6,6 +6,10 @@ class Money {
 
   factory Money.fromPiastres(int piastres) => Money(piastres);
 
+  factory Money.fromEgpString(String text) => Money.fromString(text);
+
+  static int egpToPiastres(num pounds) => Money.fromPounds(pounds).piastres;
+
   factory Money.fromPounds(num pounds) {
     if (pounds is int) {
       return Money(pounds * 100);
@@ -85,6 +89,11 @@ class Money {
   }
 
   double toPounds() => piastres / 100.0;
+
+  String formatEgp() {
+    final pounds = toPounds();
+    return '${pounds.toStringAsFixed(2)} ج.م';
+  }
 
   Money operator +(Money other) => Money(piastres + other.piastres);
   Money operator -(Money other) => Money(piastres - other.piastres);

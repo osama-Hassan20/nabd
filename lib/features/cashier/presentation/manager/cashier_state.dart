@@ -109,3 +109,4 @@ class CashierState extends Equatable {
         lastRefund,
       ];
 }
+

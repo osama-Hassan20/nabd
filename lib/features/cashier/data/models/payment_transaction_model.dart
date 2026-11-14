@@ -45,6 +45,8 @@ class PaymentTransactionModel {
   Money get effectivePaidMoney =>
       Money((amountPiastres ?? 0) - (refundedAmountPiastres ?? 0));
 
+  String get receiptNumber => id ?? '';
+
   bool get isCash => paymentMethod == PaymentMethod.cash;
   bool get isCard => paymentMethod == PaymentMethod.card;
   bool get isBankTransfer => paymentMethod == PaymentMethod.bankTransfer;

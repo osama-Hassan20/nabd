@@ -1,0 +1,329 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
+import 'package:eyadty/features/cashier/domain/helpers/money.dart';
+import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'dialogs/close_shift_dialog.dart';
+import 'dialogs/open_shift_dialog.dart';
+import 'dialogs/record_drawer_expense_dialog.dart';
+
+class ActiveShiftBar extends StatelessWidget {
+  final CashierShiftModel? activeShift;
+  final VoidCallback? onRefresh;
+
+  const ActiveShiftBar({
+    super.key,
+    required this.activeShift,
+    this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (activeShift == null) {
+      return _buildNoActiveShiftBanner(context);
+    }
+    return _buildActiveShiftBanner(context, activeShift!);
+  }
+
+  Widget _buildNoActiveShiftBanner(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.grayE2E8F0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.lock_clock_rounded,
+              color: AppColors.secondary,
+              size: 26,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'cashier_no_active_shift'.tr(),
+                  style: CustomAppFontStyle.bold16.copyWith(
+                    color: AppColors.darkText,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'cashier_open_shift_prompt'.tr(),
+                  style: CustomAppFontStyle.regular13.copyWith(
+                    color: AppColors.gray71717A,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          CustomPushButton(
+            height: 42,
+            backgroundColor: AppColors.primary,
+            borderRadius: BorderRadius.circular(10),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (_) => const OpenShiftDialog(),
+              );
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add_box_rounded, color: AppColors.white, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'cashier_open_shift_btn'.tr(),
+                  style: CustomAppFontStyle.semiBold14.copyWith(
+                    color: AppColors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveShiftBanner(BuildContext context, CashierShiftModel shift) {
+    final dateFormat = DateFormat('yyyy/MM/dd - hh:mm a');
+    final formattedTime =
+        shift.openedAt != null ? dateFormat.format(shift.openedAt!) : '-';
+    final expectedCashFormatted =
+        Money(shift.expectedCashPiastres ?? 0).formatEgp();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 14,
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          // Shift Identity and status
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.point_of_sale_rounded,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'cashier_active_shift_title'.tr(),
+                        style: CustomAppFontStyle.bold16.copyWith(
+                          color: AppColors.darkText,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff007834).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'cashier_status_open'.tr(),
+                          style: CustomAppFontStyle.semiBold12.copyWith(
+                            color: const Color(0xff007834),
+                          ),
+                        ),
+                      ),
+                      if (shift.id != null) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '#${shift.id}',
+                          style: CustomAppFontStyle.medium12.copyWith(
+                            color: AppColors.gray71717A,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.person_outline_rounded,
+                          size: 14, color: AppColors.gray71717A),
+                      const SizedBox(width: 4),
+                      Text(
+                        shift.cashierName ?? 'كاشير',
+                        style: CustomAppFontStyle.medium12.copyWith(
+                          color: AppColors.darkText,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Icon(Icons.access_time_rounded,
+                          size: 14, color: AppColors.gray71717A),
+                      const SizedBox(width: 4),
+                      Text(
+                        formattedTime,
+                        style: CustomAppFontStyle.regular12.copyWith(
+                          color: AppColors.gray71717A,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Expected Cash & Actions
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Expected Cash Badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'cashier_expected_cash'.tr(),
+                      style: CustomAppFontStyle.regular11.copyWith(
+                        color: AppColors.gray71717A,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      expectedCashFormatted,
+                      style: CustomAppFontStyle.bold16.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Record Expense Button
+              CustomPushButton(
+                height: 40,
+                backgroundColor: AppColors.white,
+                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => RecordDrawerExpenseDialog(
+                      shiftId: shift.id!,
+                      branchId: shift.branchId!,
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.receipt_long_rounded,
+                        color: AppColors.darkText, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'cashier_record_movement_btn'.tr(),
+                      style: CustomAppFontStyle.medium13.copyWith(
+                        color: AppColors.darkText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Close Shift Button
+              CustomPushButton(
+                height: 40,
+                backgroundColor: AppColors.red,
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => CloseShiftDialog(shift: shift),
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle_outline_rounded,
+                        color: AppColors.white, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'cashier_close_shift_btn'.tr(),
+                      style: CustomAppFontStyle.semiBold13.copyWith(
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
