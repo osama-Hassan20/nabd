@@ -123,6 +123,7 @@ import 'package:eyadty/features/cashier/domain/use_cases/refund_payment_use_case
 import 'package:eyadty/features/cashier/domain/use_cases/record_drawer_expense_use_case.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/approve_shortage_use_case.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/force_close_shift_use_case.dart';
+import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -599,6 +600,20 @@ Future<void> setupGetIt() async {
       permissionEvaluator: getIt<PermissionEvaluator>(),
       currentUserProvider: getIt<CurrentUserProvider>(),
       auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerFactory<CashierCubit>(
+    () => CashierCubit(
+      cashierRepo: getIt<CashierRepo>(),
+      getActiveShiftUseCase: getIt<GetActiveShiftUseCase>(),
+      openShiftDrawerUseCase: getIt<OpenShiftDrawerUseCase>(),
+      closeShiftDrawerUseCase: getIt<CloseShiftDrawerUseCase>(),
+      collectPaymentUseCase: getIt<CollectPaymentUseCase>(),
+      refundPaymentUseCase: getIt<RefundPaymentUseCase>(),
+      recordDrawerExpenseUseCase: getIt<RecordDrawerExpenseUseCase>(),
+      approveShortageUseCase: getIt<ApproveShortageUseCase>(),
+      forceCloseShiftUseCase: getIt<ForceCloseShiftUseCase>(),
     ),
   );
 
