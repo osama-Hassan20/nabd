@@ -188,4 +188,37 @@
   - اشتقاق هوية المعتمد والمزيل حصرياً من الجلسة النشطة `CurrentUserProvider`.
   - حوكمة سياسات الخصم للأدوار دومينياً عبر `SaveRoleUseCase` وقصر تعديلها على المالك فقط.
   - إعادة التحقق الدوميني عند تغيير سعر الكشف وتصفير الخصم غير الصالح مع تسجيل حدث `booking_discount_removed` بسبب `fee_changed`.
-- **الخطوة الجاية:** التوقف وانتظار توجيه المستخدم للبدء في F-04b أو الانتقال للموجة التالية (ممنوع البدء في F-05 تلقائياً).
+
+### F-05: الخزينة والورديات والتحصيل وإعدادات الطباعة (Cashier Shifts, Payments & Printing)
+- **الحالة:** 🟢 مكتملة بالكامل ومختبرة وموثقة (100%)
+- **الـ Commits:**
+  - `a109f22`: `feat(F-05-M1): money value object, cashier models, repo and relative seed`
+  - `ec984cd`: `feat(F-05-M2): cashier calculator, policy injection, payment saga and audited use cases`
+  - `2199000`: `feat(F-05-M3): cashier cubit and state lifecycle`
+  - `2a62734` & `f911aea`: `feat(F-05-M4): cashier shift dashboard and management dialogs`
+  - `2066042` & `1babcc9`: `feat(F-05-M5): booking payment entry points, patient balance contract, and rbac matrix`
+  - `70e5a2c`: `feat(F-05-M6): adaptive pdf generators and branch print settings tab`
+  - `8ee1954`: `feat(F-05-M7): comprehensive cashier audit verification suite`
+- **نتيجة الفحص (flutter analyze):** 0 issues found (خالٍ تماماً من أي أخطاء أو تحذيرات).
+- **نتيجة الاختبارات (flutter test):**
+  - اختبارات F-05 المستهدفة والمنجزة: 148/148 passed (100%) عبر 12 ملف اختبار:
+    - `money_value_object_test.dart`: 16 tests
+    - `cashier_models_and_seed_repo_test.dart`: 16 tests
+    - `cashier_shift_calculator_test.dart`: 14 tests
+    - `cashier_validation_and_usecases_test.dart`: 18 tests
+    - `payment_reconciliation_saga_test.dart`: 12 tests
+    - `cashier_cubit_test.dart`: 10 tests
+    - `cashier_ui_and_dialogs_test.dart`: 10 tests
+    - `cashier_booking_integration_test.dart`: 14 tests
+    - `cashier_rbac_matrix_test.dart`: 12 tests
+    - `adaptive_pdf_generators_test.dart`: 10 tests
+    - `print_settings_tab_test.dart`: 8 tests
+    - `cashier_final_audit_verification_test.dart`: 8 tests
+  - كامل المشروع الإجمالي: 554/554 passed (100%).
+- **القرارات المعمارية المنفذة:**
+  - اعتماد التعامل المالي الصارم بالقروش عبر كائن القيمة `Money` ومنع `double`.
+  - تطبيق Saga الدفع مع Compensating Rollback الصريح وحماية Idempotency بـ `clientRequestId`.
+  - عقد `PatientBalanceLookup` لعزل الدومين ومنع التبعية الدائرية مع قفل التعديل اليدوي لحالة الدفع في الحجز.
+  - مولدات PDF متكيفة لـ A4 و 80 مم حراري بتخطيط عمودي سليم، وتوليد ترويسة حيادية من إعدادات المنشأة دون أي كود صلب.
+  - تدقيق أمني بأرقام ومعرفات وenums فقط (صفر بيانات سريرية أو أرقام بطاقات).
+- **الخطوة التالية المباشرة:** بدء فيتشر F-04b (الأدوية والروشتات الذكية) وفق الخطة المحدثة.
