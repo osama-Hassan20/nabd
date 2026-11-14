@@ -47,6 +47,8 @@ import 'package:eyadty/features/visits/domain/use_cases/start_consultation_use_c
 import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 
 // Patients Feature
+import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/domain/repo/drugs_repo.dart';
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/domain/contracts/patient_balance_lookup.dart';
@@ -351,6 +353,11 @@ Future<void> setupGetIt() async {
       applyBookingDiscountUseCase: getIt<ApplyBookingDiscountUseCase>(),
       removeBookingDiscountUseCase: getIt<RemoveBookingDiscountUseCase>(),
     ),
+  );
+
+  // ─── Drugs Feature ──────────────────────────────────────────────────────────
+  getIt.registerLazySingleton<DrugsRepo>(
+    () => DrugsMockRepoImpl(),
   );
 
   // ─── Patients Feature ───────────────────────────────────────────────────────

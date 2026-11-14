@@ -77,6 +77,7 @@ class _RolePermissionsMatrixDialogState
       StaffPermissionEnum.viewAllDoctorsMedicalRecords,
       StaffPermissionEnum.editMedicalDiagnosis,
       StaffPermissionEnum.issuePrescription,
+      StaffPermissionEnum.manageDrugCatalog,
     ],
     'الأطباء والعيادات': [
       StaffPermissionEnum.accessDoctors,

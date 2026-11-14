@@ -18,6 +18,7 @@ enum StaffPermissionEnum {
   viewAllDoctorsMedicalRecords,
   editMedicalDiagnosis,
   issuePrescription,
+  manageDrugCatalog,
 
   // ─── 3. Doctors & Clinical Staff (الأطباء والعيادات) ─────────────────────
   accessDoctors,

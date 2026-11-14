@@ -15,34 +15,114 @@ class MedicalCatalogMockRepoImpl implements MedicalCatalogRepo {
     int idCounter = 1;
 
     // ─── Allergies Seed ──────────────────────────────────────────────────────
-    final allergies = [
-      'بنسلين',
-      'حساسية بنسلين شديدة',
-      'أسبرين',
-      'حساسية أسبرين',
-      'سلفا',
-      'حساسية سلفا',
-      'مضادات الالتهاب غير الستيرويدية',
-      'لاتكس',
-      'بيض',
-      'لبن',
-      'فول سوداني',
-      'مكسرات',
-      'مأكولات بحرية',
-      'غبار الطلع',
-      'غبار المنزل',
-      'لسعات الحشرات',
+    final allergySeeds = [
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-001',
+        name: 'بنسلين',
+        type: 'allergy',
+        aliases: [
+          'بنسلين',
+          'penicillin',
+          'اموكسيسيلين',
+          'amoxicillin',
+          'اموكسيل',
+          'amoxil',
+          'اوجمنتين',
+          'augmentin',
+          'هاي بيوتك',
+          'hibiotic',
+          'امبيسيلين',
+          'ampicillin',
+          'حساسية بنسلين شديدة',
+          'حساسية بنسلين',
+        ],
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-003',
+        name: 'أسبرين',
+        type: 'allergy',
+        aliases: [
+          'اسبرين',
+          'aspirin',
+          'اسبوسيد',
+          'aspocid',
+          'حمض اسيتيل ساليسيليك',
+          'acetylsalicylic acid',
+          'ريفو',
+          'rivo',
+          'حساسية اسبرين',
+        ],
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-005',
+        name: 'سلفا',
+        type: 'allergy',
+        aliases: [
+          'سلفا',
+          'sulfa',
+          'سلفاميثوكسازول',
+          'sulfamethoxazole',
+          'سبترين',
+          'septrin',
+          'سوتريم',
+          'sutrim',
+          'حساسية سلفا',
+        ],
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-007',
+        name: 'مضادات الالتهاب غير الستيرويدية',
+        type: 'allergy',
+        aliases: [],
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-008',
+        name: 'لاتكس',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-009',
+        name: 'بيض',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-010',
+        name: 'لبن',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-011',
+        name: 'فول سوداني',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-012',
+        name: 'مكسرات',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-013',
+        name: 'مأكولات بحرية',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-014',
+        name: 'غبار الطلع',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-015',
+        name: 'غبار المنزل',
+        type: 'allergy',
+      ),
+      const MedicalCatalogItemModel(
+        id: 'CAT-ALL-016',
+        name: 'لسعات الحشرات',
+        type: 'allergy',
+      ),
     ];
 
-    for (final name in allergies) {
-      _items.add(
-        MedicalCatalogItemModel(
-          id: 'CAT-ALL-${(idCounter++).toString().padLeft(3, '0')}',
-          name: name,
-          type: 'allergy',
-        ),
-      );
-    }
+    _items.addAll(allergySeeds);
 
     // ─── Chronic Diseases Seed ───────────────────────────────────────────────
     final chronicDiseases = [
