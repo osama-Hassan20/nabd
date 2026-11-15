@@ -1318,5 +1318,13 @@
   "permission_denied_issue_prescription": "ليس لديك صلاحية إصدار الروشتات",
   "unauthorized_not_attending_doctor": "طباعة وإصدار الروشتة محصورة بالطبيب المعالج للكشف فقط",
   "diagnosis_addendum_must_differ": "يجب أن يختلف التشخيص الجديد عن التشخيص السابق",
-  "visit_not_found": "الكشف غير موجود"
+  "visit_not_found": "الكشف غير موجود",
+  "hr_doctor_id_required": "معرف الطبيب إلزامي",
+  "hr_branch_id_required": "معرف الفرع إلزامي",
+  "hr_effective_from_required": "تاريخ سريان قاعدة الأجر إلزامي",
+  "hr_compensation_type_required": "نوع الأجر إلزامي",
+  "hr_invalid_commission_percentage": "نسبة العمولة يجب أن تكون بين 0 و 100",
+  "hr_invalid_fixed_amount": "المبلغ الثابت للكشف لا يمكن أن يكون سالباً",
+  "hr_invalid_base_salary": "الراتب الأساسي لا يمكن أن يكون سالباً",
+  "hr_retroactive_rule_rejected_confirmed_period_exists": "لا يمكن تعديل قواعد الأجر بأثر رجعي لفترة تسوية معتمدة أو منصرفة"
 }

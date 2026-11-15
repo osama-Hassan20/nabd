@@ -167,3 +167,4 @@ class DoctorSettlementItemModel extends Equatable {
     eventIds,
   ];
 }
+

@@ -117,3 +117,4 @@ class DoctorCompensationRuleModel extends Equatable {
     notes,
   ];
 }
+

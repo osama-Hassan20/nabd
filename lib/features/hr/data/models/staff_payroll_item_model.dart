@@ -151,3 +151,4 @@ class StaffPayrollItemModel extends Equatable {
     netSalaryPiastres,
   ];
 }
+

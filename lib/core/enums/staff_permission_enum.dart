@@ -40,6 +40,13 @@ enum StaffPermissionEnum {
   // ─── 5. HR & Settlements (الموارد البشرية والمستحقات) ────────────────────
   accessHr,
   calculateDoctorSettlement,
+  viewDoctorSettlements,
+  confirmDoctorSettlement,
+  payoutSettlement,
+  manageCompensationRules,
+  manageEmployeeLedger,
+  viewOwnDoctorSettlement,
+  manageStaffPayroll,
 
   // ─── 6. Analytics & Reports (التقارير والإحصائيات) ────────────────────────
   accessAnalytics,

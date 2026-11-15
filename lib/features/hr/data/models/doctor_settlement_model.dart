@@ -269,3 +269,4 @@ class DoctorSettlementModel extends Equatable {
     createdAt,
   ];
 }
+

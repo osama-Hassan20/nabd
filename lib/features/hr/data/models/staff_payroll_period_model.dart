@@ -156,3 +156,4 @@ class StaffPayrollPeriodModel extends Equatable {
     createdAt,
   ];
 }
+

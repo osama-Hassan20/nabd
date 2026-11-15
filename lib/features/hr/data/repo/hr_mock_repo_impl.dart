@@ -247,18 +247,23 @@ class HrMockRepoImpl implements HrRepo {
 
     if (rule.id != null && rule.id!.isNotEmpty) {
       final index = _rules.indexWhere((r) => r.id == rule.id);
-      if (index == -1) {
-        return const Left(ValidationFailure(errMessage: 'rule_not_found'));
+      if (index != -1) {
+        final updated = rule.copyWith(isActive: rule.isActive ?? true);
+        _rules[index] = updated;
+        return Right(updated);
       }
-      final updated = rule.copyWith();
-      _rules[index] = updated;
-      return Right(updated);
+      final created = rule.copyWith(
+        createdAt: rule.createdAt ?? now,
+        isActive: rule.isActive ?? true,
+      );
+      _rules.add(created);
+      return Right(created);
     } else {
       final newId = 'RULE-${(++_ruleCounter)}';
       final created = rule.copyWith(
         id: newId,
         createdAt: now,
-        isActive: true,
+        isActive: rule.isActive ?? true,
       );
       _rules.add(created);
       return Right(created);

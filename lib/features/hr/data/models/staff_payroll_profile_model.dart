@@ -120,3 +120,4 @@ class StaffPayrollProfileModel extends Equatable {
     updatedAt,
   ];
 }
+

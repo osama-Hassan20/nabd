@@ -1318,5 +1318,13 @@
   "permission_denied_issue_prescription": "You do not have permission to issue prescriptions",
   "unauthorized_not_attending_doctor": "Prescription printing and issuance is restricted to the attending doctor only",
   "diagnosis_addendum_must_differ": "New diagnosis must differ from the previous diagnosis",
-  "visit_not_found": "Visit not found"
+  "visit_not_found": "Visit not found",
+  "hr_doctor_id_required": "Doctor ID is required",
+  "hr_branch_id_required": "Branch ID is required",
+  "hr_effective_from_required": "Rule effective date is required",
+  "hr_compensation_type_required": "Compensation type is required",
+  "hr_invalid_commission_percentage": "Commission percentage must be between 0 and 100",
+  "hr_invalid_fixed_amount": "Fixed amount per visit cannot be negative",
+  "hr_invalid_base_salary": "Base salary cannot be negative",
+  "hr_retroactive_rule_rejected_confirmed_period_exists": "Cannot apply compensation rule retroactively to a confirmed or paid settlement period"
 }
