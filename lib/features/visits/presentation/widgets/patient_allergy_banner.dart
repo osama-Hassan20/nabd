@@ -72,6 +72,14 @@ class PatientAllergyBanner extends StatelessWidget {
               );
             }).toList(),
           ),
+          const SizedBox(height: 8),
+          Text(
+            'rx_allergy_disclaimer'.tr(),
+            style: CustomAppFontStyle.regular12.copyWith(
+              color: const Color(0xFF9F1239), // Rose 800
+              fontStyle: FontStyle.italic,
+            ),
+          ),
         ],
       ),
     );

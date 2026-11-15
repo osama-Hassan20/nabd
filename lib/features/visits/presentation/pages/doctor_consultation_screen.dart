@@ -13,11 +13,15 @@ import '../../../../shared/widgets/custom_push_container_button.dart';
 import '../../../../shared/widgets/custom_toast.dart';
 import '../../../../shared/widgets/responsive_helper/adaptive_layout.dart';
 import '../../data/models/enums/visit_status_enum.dart';
+import '../../data/models/visit_model.dart';
 import '../manager/visits_cubit.dart';
 import '../manager/visits_state.dart';
 import '../widgets/consultation_notes_panel.dart';
+import '../widgets/dialogs/add_visit_addendum_dialog.dart';
 import '../widgets/dialogs/finalize_visit_dialog.dart';
 import '../widgets/patient_allergy_banner.dart';
+import '../widgets/prescription_editor_panel.dart';
+import '../widgets/visit_addenda_timeline.dart';
 import '../widgets/vitals_input_panel.dart';
 
 class DoctorConsultationScreen extends StatefulWidget {
@@ -126,6 +130,20 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
             branchId: visit?.branchId,
           );
 
+          final canAddAddendum = isFinalized &&
+              (evaluator.can(
+                    StaffPermissionEnum.issuePrescription,
+                    branchId: visit?.branchId,
+                    patientDoctorIds:
+                        visit?.doctorId != null ? {visit!.doctorId!} : null,
+                  ) ||
+                  evaluator.can(
+                    StaffPermissionEnum.editMedicalDiagnosis,
+                    branchId: visit?.branchId,
+                    patientDoctorIds:
+                        visit?.doctorId != null ? {visit!.doctorId!} : null,
+                  ));
+
           return PopScope(
             canPop: true,
             onPopInvokedWithResult: (didPop, result) {
@@ -142,6 +160,7 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                       state,
                       isFinalized,
                       isActionLoading,
+                      canAddAddendum,
                     ),
 
                     // Main Content
@@ -168,6 +187,7 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
     VisitsState state,
     bool isFinalized,
     bool isActionLoading,
+    bool canAddAddendum,
   ) {
     final visit = state.activeVisit;
     final patientName = visit?.patientName;
@@ -321,6 +341,38 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                   style: CustomAppFontStyle.semiBold13.copyWith(
                     color: AppColors.white,
                   ),
+                ),
+              ),
+            ),
+          ],
+          if (isFinalized && canAddAddendum) ...[
+            CustomPushButton(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              backgroundColor: const Color(0xFF16A34A),
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                if (visit != null) {
+                  AddVisitAddendumDialog.show(
+                    context: context,
+                    cubit: _cubit,
+                    visit: visit,
+                  );
+                }
+              },
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add, size: 16, color: AppColors.white),
+                    const SizedBox(width: 4),
+                    Text(
+                      'addendum_add_btn'.tr(),
+                      style: CustomAppFontStyle.semiBold12.copyWith(
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -575,6 +627,15 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
           )
         : const SizedBox.shrink();
 
+    final prescriptionSection = state.canViewNotes
+        ? PrescriptionEditorPanel(
+            cubit: _cubit,
+            visit: state.activeVisit ?? const VisitModel(),
+            isReadOnly: isFinalized || !state.canEditDiagnosis,
+            onPrint: () {},
+          )
+        : const SizedBox.shrink();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -592,7 +653,7 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
             chronicDiseasesWidget,
             const SizedBox(height: 16),
           ],
-          if (isDesktop)
+          if (isDesktop) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -609,13 +670,24 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                     child: clinicalNotesSection,
                   ),
               ],
-            )
-          else ...[
+            ),
+            if (state.canViewNotes) ...[
+              const SizedBox(height: 20),
+              prescriptionSection,
+            ],
+          ] else ...[
             vitalsSection,
             if (state.canViewNotes) ...[
               const SizedBox(height: 16),
               clinicalNotesSection,
+              const SizedBox(height: 16),
+              prescriptionSection,
             ],
+          ],
+          if (state.activeVisit?.addenda != null &&
+              state.activeVisit!.addenda!.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            VisitAddendaTimeline(addenda: state.activeVisit!.addenda!),
           ],
         ],
       ),
