@@ -17,6 +17,8 @@ class CompanySettingsModel {
   final String? receiptPrintFormat;
   final String? shiftReportPrintFormat;
   final String? prescriptionPrintFormat;
+  final String? doctorSettlementPrintFormat;
+  final String? staffPayrollPrintFormat;
 
   const CompanySettingsModel({
     this.id,
@@ -34,6 +36,8 @@ class CompanySettingsModel {
     this.receiptPrintFormat,
     this.shiftReportPrintFormat,
     this.prescriptionPrintFormat,
+    this.doctorSettlementPrintFormat,
+    this.staffPayrollPrintFormat,
   });
 
   PrintFormat get effectiveReceiptPrintFormat =>
@@ -42,6 +46,10 @@ class CompanySettingsModel {
       PrintFormat.fromString(shiftReportPrintFormat);
   PrintFormat get effectivePrescriptionPrintFormat =>
       PrintFormat.fromString(prescriptionPrintFormat);
+  PrintFormat get effectiveDoctorSettlementPrintFormat =>
+      PrintFormat.fromString(doctorSettlementPrintFormat);
+  PrintFormat get effectiveStaffPayrollPrintFormat =>
+      PrintFormat.fromString(staffPayrollPrintFormat);
 
   factory CompanySettingsModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const CompanySettingsModel();
@@ -65,6 +73,8 @@ class CompanySettingsModel {
       receiptPrintFormat: json['receiptPrintFormat'] as String?,
       shiftReportPrintFormat: json['shiftReportPrintFormat'] as String?,
       prescriptionPrintFormat: json['prescriptionPrintFormat'] as String?,
+      doctorSettlementPrintFormat: json['doctorSettlementPrintFormat'] as String?,
+      staffPayrollPrintFormat: json['staffPayrollPrintFormat'] as String?,
     );
   }
 
@@ -91,6 +101,10 @@ class CompanySettingsModel {
         'shiftReportPrintFormat': shiftReportPrintFormat,
       if (prescriptionPrintFormat != null)
         'prescriptionPrintFormat': prescriptionPrintFormat,
+      if (doctorSettlementPrintFormat != null)
+        'doctorSettlementPrintFormat': doctorSettlementPrintFormat,
+      if (staffPayrollPrintFormat != null)
+        'staffPayrollPrintFormat': staffPayrollPrintFormat,
     };
   }
 
@@ -110,6 +124,8 @@ class CompanySettingsModel {
     String? receiptPrintFormat,
     String? shiftReportPrintFormat,
     String? prescriptionPrintFormat,
+    String? doctorSettlementPrintFormat,
+    String? staffPayrollPrintFormat,
   }) {
     return CompanySettingsModel(
       id: id ?? this.id,
@@ -130,6 +146,10 @@ class CompanySettingsModel {
           shiftReportPrintFormat ?? this.shiftReportPrintFormat,
       prescriptionPrintFormat:
           prescriptionPrintFormat ?? this.prescriptionPrintFormat,
+      doctorSettlementPrintFormat:
+          doctorSettlementPrintFormat ?? this.doctorSettlementPrintFormat,
+      staffPayrollPrintFormat:
+          staffPayrollPrintFormat ?? this.staffPayrollPrintFormat,
     );
   }
 }

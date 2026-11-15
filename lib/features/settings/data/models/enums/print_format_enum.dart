@@ -15,6 +15,8 @@ enum PrintFormat {
 enum PrintDocumentType {
   paymentReceipt,
   shiftReport,
-  prescription;
+  prescription,
+  doctorSettlement,
+  staffPayroll;
 }
 
