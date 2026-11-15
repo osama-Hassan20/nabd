@@ -266,7 +266,7 @@ void main() {
         consultationFee: initialService.consultationFee,
         totalPrice: initialService.consultationFee,
         durationMinutes: initialService.durationMinutes,
-        date: DateTime(2026, 11, 15),
+        date: DateTime(2026, 11, 25),
         startTime: '11:00',
         endTime: '11:20',
       );

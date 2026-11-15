@@ -61,6 +61,7 @@ import 'package:eyadty/features/drugs/domain/use_cases/get_doctor_templates_use_
 import 'package:eyadty/features/drugs/domain/use_cases/save_prescription_template_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/delete_prescription_template_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/update_allergy_aliases_use_case.dart';
+import 'package:eyadty/features/drugs/presentation/manager/drugs_cubit.dart';
 
 // Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
@@ -829,6 +830,26 @@ Future<void> setupGetIt() async {
       sessionCubit: getIt.isRegistered<SessionCubit>()
           ? getIt<SessionCubit>()
           : null,
+    ),
+  );
+
+  getIt.registerFactory<DrugsCubit>(
+    () => DrugsCubit(
+      repo: getIt<DrugsRepo>(),
+      medicalCatalogRepo: getIt<MedicalCatalogRepo>(),
+      getDrugsCatalogUseCase: getIt<GetDrugsCatalogUseCase>(),
+      addDrugUseCase: getIt<AddDrugUseCase>(),
+      updateDrugUseCase: getIt<UpdateDrugUseCase>(),
+      archiveDrugUseCase: getIt<ArchiveDrugUseCase>(),
+      reviewQuickAddDrugUseCase: getIt<ReviewQuickAddDrugUseCase>(),
+      getDoctorTemplatesUseCase: getIt<GetDoctorTemplatesUseCase>(),
+      savePrescriptionTemplateUseCase: getIt<SavePrescriptionTemplateUseCase>(),
+      deletePrescriptionTemplateUseCase:
+          getIt<DeletePrescriptionTemplateUseCase>(),
+      updateAllergyAliasesUseCase: getIt<UpdateAllergyAliasesUseCase>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      userProvider: getIt<CurrentUserProvider>(),
+      auditLogger: getIt<AuditLogger>(),
     ),
   );
 }

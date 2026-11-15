@@ -51,6 +51,9 @@ abstract class DrugsRepo {
     required List<String> aliases,
   });
 
+  /// Fetches the map of all allergy aliases.
+  Future<Either<Failures, Map<String, List<String>>>> getAllergyAliases();
+
   /// Fetches prescription templates belonging exclusively to the specified doctor.
   Future<Either<Failures, List<PrescriptionTemplateModel>>> getDoctorTemplates(
     String doctorId,

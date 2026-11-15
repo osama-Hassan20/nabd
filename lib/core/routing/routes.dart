@@ -38,6 +38,9 @@ class AppRouter {
   static const String usersManagement = '/settings/users';
   static const String auditLogs = '/settings/audit-logs';
 
-  // 9. Security & Access Errors
+  // 9. Drugs & Medical Catalog
+  static const String drugs = '/drugs';
+
+  // 10. Security & Access Errors
   static const String forbidden = '/forbidden';
 }

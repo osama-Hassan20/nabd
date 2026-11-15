@@ -830,6 +830,11 @@ class DrugsMockRepoImpl implements DrugsRepo {
   }
 
   @override
+  Future<Either<Failures, Map<String, List<String>>>> getAllergyAliases() async {
+    return Right(Map.unmodifiable(_allergyAliasesMap));
+  }
+
+  @override
   Future<Either<Failures, List<PrescriptionTemplateModel>>> getDoctorTemplates(
     String doctorId,
   ) async {

@@ -12,6 +12,7 @@ import 'package:eyadty/features/analytics/presentation/pages/analytics_page.dart
 import 'package:eyadty/features/bookings/presentation/pages/booking_details_page.dart';
 import 'package:eyadty/features/bookings/presentation/pages/bookings_page.dart';
 import 'package:eyadty/features/cashier/presentation/pages/cashier_page.dart';
+import 'package:eyadty/features/drugs/presentation/pages/drugs_page.dart';
 import 'package:eyadty/features/patients/presentation/pages/patient_details_page.dart';
 import 'package:eyadty/features/patients/presentation/pages/patients_page.dart';
 import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
@@ -299,6 +300,9 @@ StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
   if (location.startsWith(AppRouter.settings)) {
     return StaffPermissionEnum.accessSettings;
   }
+  if (location.startsWith(AppRouter.drugs)) {
+    return StaffPermissionEnum.manageDrugCatalog;
+  }
   return null;
 }
 
@@ -520,6 +524,20 @@ List<RouteBase> getAppRoutes() => [
           pageBuilder: (context, state) => buildAnimatedPage(
             key: state.pageKey,
             child: const CashierPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // Drugs & Prescriptions Catalog
+        GoRoute(
+          path: AppRouter.drugs,
+          name: AppRouter.drugs,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const DrugsPage(),
             animationType: checkIsIOS()
                 ? AnimationType.cupertino
                 : AnimationType.slideFromLeft,
