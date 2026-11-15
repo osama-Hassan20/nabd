@@ -91,6 +91,8 @@ abstract class HrRepo {
     int? year,
   });
 
+  Future<Either<Failures, StaffPayrollPeriodModel>> getStaffPayrollPeriodById(String periodId);
+
   Future<Either<Failures, StaffPayrollPeriodModel>> saveStaffPayrollPeriod(
     StaffPayrollPeriodModel period,
   );

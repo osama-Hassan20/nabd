@@ -548,17 +548,25 @@ class HrMockRepoImpl implements HrRepo {
 
     if (profile.id != null && profile.id!.isNotEmpty) {
       final idx = _payrollProfiles.indexWhere((p) => p.id == profile.id);
-      if (idx == -1) {
-        return const Left(ValidationFailure(errMessage: 'payroll_profile_not_found'));
+      if (idx != -1) {
+        final updated = profile.copyWith(
+          isActive: profile.isActive ?? true,
+          updatedAt: now,
+        );
+        _payrollProfiles[idx] = updated;
+        return Right(updated);
       }
-      final updated = profile.copyWith(updatedAt: now);
-      _payrollProfiles[idx] = updated;
-      return Right(updated);
+      final created = profile.copyWith(
+        isActive: profile.isActive ?? true,
+        updatedAt: now,
+      );
+      _payrollProfiles.add(created);
+      return Right(created);
     } else {
       final newId = 'PRF-${(++_payrollProfileCounter)}';
       final created = profile.copyWith(
         id: newId,
-        isActive: true,
+        isActive: profile.isActive ?? true,
         updatedAt: now,
       );
       _payrollProfiles.add(created);
@@ -583,6 +591,18 @@ class HrMockRepoImpl implements HrRepo {
   }
 
   @override
+  Future<Either<Failures, StaffPayrollPeriodModel>> getStaffPayrollPeriodById(String periodId) async {
+    final p = _payrollPeriods.cast<StaffPayrollPeriodModel?>().firstWhere(
+          (e) => e?.id == periodId,
+          orElse: () => null,
+        );
+    if (p == null) {
+      return const Left(ValidationFailure(errMessage: 'payroll_period_not_found'));
+    }
+    return Right(p);
+  }
+
+  @override
   Future<Either<Failures, StaffPayrollPeriodModel>> saveStaffPayrollPeriod(
     StaffPayrollPeriodModel period,
   ) async {
@@ -590,10 +610,11 @@ class HrMockRepoImpl implements HrRepo {
 
     if (period.id != null && period.id!.isNotEmpty) {
       final idx = _payrollPeriods.indexWhere((p) => p.id == period.id);
-      if (idx == -1) {
-        return const Left(ValidationFailure(errMessage: 'payroll_period_not_found'));
+      if (idx != -1) {
+        _payrollPeriods[idx] = period;
+        return Right(period);
       }
-      _payrollPeriods[idx] = period;
+      _payrollPeriods.insert(0, period);
       return Right(period);
     } else {
       final newId = 'PAY-${(++_payrollPeriodCounter)}';
@@ -656,6 +677,29 @@ class HrMockRepoImpl implements HrRepo {
       paidAt: now,
     );
     _payrollPeriods[idx] = paid;
+
+    // Append ledger payout entry for each employee in payroll
+    if (existing.items != null) {
+      for (final item in existing.items!) {
+        if (item.staffUserId != null && (item.netSalaryPiastres ?? 0) > 0) {
+          _ledgerEntries.add(
+            EmployeeLedgerEntryModel(
+              id: 'LED-${(++_ledgerCounter)}',
+              employeeId: item.staffUserId,
+              employeeType: EmployeeTypeEnum.staff,
+              branchId: existing.primaryBranchId,
+              entryType: LedgerEntryTypeEnum.payout,
+              amountPiastres: item.netSalaryPiastres,
+              reason: 'صرف مسير رواتب شهر ${existing.month}/${existing.year} - ${existing.payrollNumber}',
+              date: now,
+              performedByUserId: paidByUserId,
+              createdAt: now,
+            ),
+          );
+        }
+      }
+    }
+
     return Right(paid);
   }
 }

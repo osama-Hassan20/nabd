@@ -1332,5 +1332,14 @@
   "hr_settlement_already_confirmed_or_paid": "التسوية معتمدة أو منصرفة مسبقاً ولا يمكن تعديل حالتها",
   "hr_doctor_cannot_confirm_own_settlement": "فصل المهام: لا يجوز للطبيب اعتماد تسويته الخاصة بنفسه",
   "hr_settlement_not_confirmed_cannot_payout": "لا يمكن صرف تسوية لم يتم اعتمادها وقفلها أولاً",
-  "hr_settlement_already_paid": "تم صرف هذه التسوية مسبقاً"
+  "hr_settlement_already_paid": "تم صرف هذه التسوية مسبقاً",
+  "hr_invalid_month": "الشهر غير صالح",
+  "hr_invalid_year": "السنة غير صالحة",
+  "hr_payroll_period_already_exists": "تم إنشاء مسير رواتب لهذا الفرع والشهر مسبقاً",
+  "hr_staff_user_id_required": "معرف الموظف إلزامي",
+  "hr_invalid_allowance": "قيمة البدل لا يمكن أن تكون سالبة",
+  "hr_invalid_deduction": "قيمة الاستقطاع لا يمكن أن تكون سالبة",
+  "hr_payroll_period_already_confirmed_or_paid": "مسير الرواتب معتمد أو منصرف مسبقاً",
+  "hr_payroll_period_not_confirmed_cannot_payout": "لا يمكن صرف مسير رواتب لم يتم اعتماده أولاً",
+  "hr_payroll_period_already_paid": "تم صرف مسير الرواتب هذا مسبقاً"
 }
