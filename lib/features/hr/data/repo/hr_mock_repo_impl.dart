@@ -462,10 +462,12 @@ class HrMockRepoImpl implements HrRepo {
       }
     }
 
-    final newId = 'LED-${(++_ledgerCounter)}';
+    final newId = (entry.id != null && entry.id!.isNotEmpty)
+        ? entry.id!
+        : 'LED-${(++_ledgerCounter)}';
     final created = entry.copyWith(
       id: newId,
-      createdAt: CairoTimeHelper.now(),
+      createdAt: entry.createdAt ?? CairoTimeHelper.now(),
     );
     _ledgerEntries.add(created);
     return Right(created);

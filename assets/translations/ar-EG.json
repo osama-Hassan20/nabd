@@ -1326,5 +1326,11 @@
   "hr_invalid_commission_percentage": "نسبة العمولة يجب أن تكون بين 0 و 100",
   "hr_invalid_fixed_amount": "المبلغ الثابت للكشف لا يمكن أن يكون سالباً",
   "hr_invalid_base_salary": "الراتب الأساسي لا يمكن أن يكون سالباً",
-  "hr_retroactive_rule_rejected_confirmed_period_exists": "لا يمكن تعديل قواعد الأجر بأثر رجعي لفترة تسوية معتمدة أو منصرفة"
+  "hr_retroactive_rule_rejected_confirmed_period_exists": "لا يمكن تعديل قواعد الأجر بأثر رجعي لفترة تسوية معتمدة أو منصرفة",
+  "hr_invalid_settlement_period": "فترة التسوية غير صالحة: تاريخ البداية يجب أن يسبق النهاية",
+  "hr_settlement_period_overlapping": "فترة التسوية تتداخل مع فترة تسوية معتمدة لنفس الطبيب والفرع",
+  "hr_settlement_already_confirmed_or_paid": "التسوية معتمدة أو منصرفة مسبقاً ولا يمكن تعديل حالتها",
+  "hr_doctor_cannot_confirm_own_settlement": "فصل المهام: لا يجوز للطبيب اعتماد تسويته الخاصة بنفسه",
+  "hr_settlement_not_confirmed_cannot_payout": "لا يمكن صرف تسوية لم يتم اعتمادها وقفلها أولاً",
+  "hr_settlement_already_paid": "تم صرف هذه التسوية مسبقاً"
 }
