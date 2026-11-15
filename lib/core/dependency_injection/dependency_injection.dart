@@ -146,6 +146,23 @@ import 'package:eyadty/features/cashier/domain/use_cases/approve_shortage_use_ca
 import 'package:eyadty/features/cashier/domain/use_cases/force_close_shift_use_case.dart';
 import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
 
+// HR Feature
+import 'package:eyadty/features/hr/domain/repo/hr_repo.dart';
+import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/domain/contracts/doctor_settlement_visits_lookup.dart';
+import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_mock_lookup.dart';
+import 'package:eyadty/features/hr/domain/use_cases/get_doctor_compensation_rules_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/save_doctor_compensation_rule_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/get_active_rule_for_doctor_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/calculate_doctor_settlement_draft_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/confirm_doctor_settlement_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/payout_doctor_settlement_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/generate_staff_payroll_period_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/save_staff_payroll_profile_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/confirm_staff_payroll_period_use_case.dart';
+import 'package:eyadty/features/hr/domain/use_cases/payout_staff_payroll_period_use_case.dart';
+import 'package:eyadty/features/hr/presentation/manager/hr_cubit.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> setupGetIt() async {
@@ -859,6 +876,116 @@ Future<void> setupGetIt() async {
       permissionEvaluator: getIt<PermissionEvaluator>(),
       userProvider: getIt<CurrentUserProvider>(),
       auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  // ─── HR & Doctor Settlements Feature ──────────────────────────────────────
+  getIt.registerLazySingleton<HrRepo>(
+    () => HrMockRepoImpl(seedInitialData: true),
+  );
+  getIt.registerLazySingleton<DoctorSettlementVisitsLookup>(
+    () => DoctorSettlementVisitsMockLookup(),
+  );
+
+  getIt.registerLazySingleton<GetDoctorCompensationRulesUseCase>(
+    () => GetDoctorCompensationRulesUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+  getIt.registerLazySingleton<SaveDoctorCompensationRuleUseCase>(
+    () => SaveDoctorCompensationRuleUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<GetActiveRuleForDoctorUseCase>(
+    () => GetActiveRuleForDoctorUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+  getIt.registerLazySingleton<CalculateDoctorSettlementDraftUseCase>(
+    () => CalculateDoctorSettlementDraftUseCase(
+      hrRepo: getIt<HrRepo>(),
+      visitsLookup: getIt<DoctorSettlementVisitsLookup>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<ConfirmDoctorSettlementUseCase>(
+    () => ConfirmDoctorSettlementUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<PayoutDoctorSettlementUseCase>(
+    () => PayoutDoctorSettlementUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<GenerateStaffPayrollPeriodUseCase>(
+    () => GenerateStaffPayrollPeriodUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+  getIt.registerLazySingleton<SaveStaffPayrollProfileUseCase>(
+    () => SaveStaffPayrollProfileUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+  getIt.registerLazySingleton<ConfirmStaffPayrollPeriodUseCase>(
+    () => ConfirmStaffPayrollPeriodUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<PayoutStaffPayrollPeriodUseCase>(
+    () => PayoutStaffPayrollPeriodUseCase(
+      hrRepo: getIt<HrRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerFactory<HrCubit>(
+    () => HrCubit(
+      hrRepo: getIt<HrRepo>(),
+      getDoctorCompensationRulesUseCase:
+          getIt<GetDoctorCompensationRulesUseCase>(),
+      saveDoctorCompensationRuleUseCase:
+          getIt<SaveDoctorCompensationRuleUseCase>(),
+      getActiveRuleForDoctorUseCase: getIt<GetActiveRuleForDoctorUseCase>(),
+      calculateDoctorSettlementDraftUseCase:
+          getIt<CalculateDoctorSettlementDraftUseCase>(),
+      confirmDoctorSettlementUseCase: getIt<ConfirmDoctorSettlementUseCase>(),
+      payoutDoctorSettlementUseCase: getIt<PayoutDoctorSettlementUseCase>(),
+      generateStaffPayrollPeriodUseCase:
+          getIt<GenerateStaffPayrollPeriodUseCase>(),
+      saveStaffPayrollProfileUseCase: getIt<SaveStaffPayrollProfileUseCase>(),
+      confirmStaffPayrollPeriodUseCase:
+          getIt<ConfirmStaffPayrollPeriodUseCase>(),
+      payoutStaffPayrollPeriodUseCase:
+          getIt<PayoutStaffPayrollPeriodUseCase>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
     ),
   );
 }
