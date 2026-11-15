@@ -222,3 +222,38 @@
   - مولدات PDF متكيفة لـ A4 و 80 مم حراري بتخطيط عمودي سليم، وتوليد ترويسة حيادية من إعدادات المنشأة دون أي كود صلب.
   - تدقيق أمني بأرقام ومعرفات وenums فقط (صفر بيانات سريرية أو أرقام بطاقات).
 - **الخطوة التالية المباشرة:** بدء فيتشر F-04b (الأدوية والروشتات الذكية) وفق الخطة المحدثة.
+
+### F-04b: الأدوية والروشتة ومحرك الكشف الطبي (Drugs, Prescriptions & Clinical Engine)
+- **الحالة:** 🟢 مكتملة بالكامل ومختبرة وموثقة (100%)
+- **الـ Commits:**
+  - `e09b6b8`: `refactor(visits): split visits cubit into focused domain mixins` (TD-001)
+  - `8c79e24`: `feat(F-04b-M1): drug models, pure allergy matcher and seed repo`
+  - `70cdb82`: `feat(F-04b-M2): prescription templates domain and quick add review workflow`
+  - `13665fa`: `feat(F-04b-M3): prescription form state and structured before after addenda`
+  - `8892fa6`: `feat(F-04b-M4): consultation prescription editor panel and allergy alerts`
+  - `03ed84f`: `feat(F-04b-M5): adaptive prescription pdf printing with addenda watermark`
+  - `175b9cd`: `feat(F-04b-M6): standalone drugs page with 3 tabs and allergy aliases management`
+  - `c9659df`: `feat(F-04b-M7): batch drug import engine with valid only import option`
+- **نتيجة الفحص (flutter analyze):** 0 issues found (خالٍ تماماً من أي أخطاء أو تحذيرات).
+- **نتيجة الاختبارات (flutter test):**
+  - اختبارات F-04b المستهدفة والمنجزة: 149/149 passed (100%) عبر 12 ملف اختبار:
+    - `drugs_models_and_repo_test.dart`: 12 tests
+    - `drug_name_validator_test.dart`: 10 tests
+    - `drug_allergy_matcher_test.dart`: 22 tests
+    - `prescription_templates_test.dart`: 12 tests
+    - `drugs_use_cases_test.dart`: 14 tests
+    - `visit_prescription_mixin_test.dart`: 14 tests
+    - `visit_addenda_timeline_test.dart`: 14 tests
+    - `consultation_prescription_panel_test.dart`: 16 tests
+    - `allergy_warning_dialog_and_audit_test.dart`: 12 tests
+    - `prescription_printing_test.dart`: 12 tests
+    - `drugs_page_and_cubit_test.dart`: 13 tests
+    - `drugs_import_engine_test.dart`: 8 tests
+  - كامل المشروع الإجمالي: 733/733 passed (100%).
+- **القرارات المعمارية المنفذة:**
+  - كشف المريض يقوده كائن واحد `VisitsCubit` عبر `VisitPrescriptionMixin` دون كيوبت موازٍ للروشتة لمنع تضارب الحفظ.
+  - مطابقة الحساسية نقية تماماً `DrugAllergyMatcher` على مستوى الكلمة الكاملة وخلو تام من أي False Positives.
+  - ثبات الروشتة السريرية المقفلة كـ Deep Snapshot، وأي تعديل بعد الإنهاء يكون عبر ملاحق سريرية مهيكلة `VisitAddendumModel` بلقطات Before/After وسبب إلزامي وبطبيب الكشف حصراً.
+  - طباعة متكيفة للروشتة (A4 و80 مم حراري) من إعدادات المنشأة وترويسة حيادية مع وسم النسخة المعدلة عند وجود ملاحق.
+  - محرك استيراد نقي في الذاكرة `DrugCsvImportEngine` يدعم UTF-8 مع BOM العربي، وخيار استيراد السليمة فقط وتدقيق أمني رقمي خالٍ من أسماء ومسارات الملفات.
+- **الخطوة التالية المباشرة:** بدء فيتشر F-06 (الموارد البشرية وتسويات الأطباء) وفق `docs/plans/F-06-hr-settlements.md`.
