@@ -10,6 +10,7 @@ import '../../domain/use_cases/add_visit_addendum_use_case.dart';
 import '../../domain/use_cases/finalize_visit_use_case.dart';
 import '../../domain/use_cases/get_doctor_queue_use_case.dart';
 import '../../domain/use_cases/get_visit_by_booking_id_use_case.dart';
+import '../../domain/use_cases/print_prescription_use_case.dart';
 import '../../domain/use_cases/record_vitals_use_case.dart';
 import '../../domain/use_cases/save_visit_draft_use_case.dart';
 import '../../domain/use_cases/start_consultation_use_case.dart';
@@ -44,6 +45,8 @@ class VisitsCubit extends SafeCubit<VisitsState>
   @override
   final AddVisitAddendumUseCase? addVisitAddendumUseCase;
   @override
+  final PrintPrescriptionUseCase? printPrescriptionUseCase;
+  @override
   final PermissionEvaluator permissionEvaluator;
   @override
   final AuditLogger? auditLogger;
@@ -67,6 +70,7 @@ class VisitsCubit extends SafeCubit<VisitsState>
     required this.recordVitalsUseCase,
     required this.finalizeVisitUseCase,
     this.addVisitAddendumUseCase,
+    this.printPrescriptionUseCase,
     required this.permissionEvaluator,
     this.auditLogger,
     this.sessionCubit,

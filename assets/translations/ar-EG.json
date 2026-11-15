@@ -1294,6 +1294,7 @@
   "only_assigned_doctor_can_add_addendum": "طبيب الكشف المعالج فقط هو المخول بإضافة ملحق سريري",
   "permission_denied_edit_medical_diagnosis": "ليس لديك صلاحية تعديل التشخيص الطبي",
   "permission_denied_issue_prescription": "ليس لديك صلاحية إصدار الروشتات",
+  "unauthorized_not_attending_doctor": "طباعة وإصدار الروشتة محصورة بالطبيب المعالج للكشف فقط",
   "diagnosis_addendum_must_differ": "يجب أن يختلف التشخيص الجديد عن التشخيص السابق",
   "visit_not_found": "الكشف غير موجود"
 }

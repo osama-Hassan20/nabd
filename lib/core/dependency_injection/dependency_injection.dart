@@ -45,6 +45,7 @@ import 'package:eyadty/features/visits/domain/use_cases/get_visit_by_booking_id_
 import 'package:eyadty/features/visits/domain/use_cases/record_vitals_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/save_visit_draft_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/start_consultation_use_case.dart';
+import 'package:eyadty/features/visits/domain/use_cases/print_prescription_use_case.dart';
 import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 
 // Drugs Feature
@@ -349,6 +350,13 @@ Future<void> setupGetIt() async {
     () => AddVisitAddendumUseCase(
       visitsRepo: getIt<VisitsRepo>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<PrintPrescriptionUseCase>(
+    () => PrintPrescriptionUseCase(
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      userProvider: getIt<CurrentUserProvider>(),
       auditLogger: getIt<AuditLogger>(),
     ),
   );
@@ -815,6 +823,7 @@ Future<void> setupGetIt() async {
       recordVitalsUseCase: getIt<RecordVitalsUseCase>(),
       finalizeVisitUseCase: getIt<FinalizeVisitUseCase>(),
       addVisitAddendumUseCase: getIt<AddVisitAddendumUseCase>(),
+      printPrescriptionUseCase: getIt<PrintPrescriptionUseCase>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       auditLogger: getIt<AuditLogger>(),
       sessionCubit: getIt.isRegistered<SessionCubit>()

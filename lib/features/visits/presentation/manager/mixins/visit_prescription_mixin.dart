@@ -1,15 +1,23 @@
+import 'dart:typed_data';
+import 'package:dartz/dartz.dart';
 import '../../../../../core/base/safe_cubit.dart';
+import '../../../../../core/errors/failures.dart';
 import '../../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../drugs/data/models/drug_model.dart';
 import '../../../../drugs/data/models/prescription_template_model.dart';
 import '../../../../drugs/domain/helpers/drug_allergy_matcher.dart';
 import '../../../../patients/data/models/medical_catalog_item_model.dart';
+import '../../../../patients/data/models/patient_model.dart';
+import '../../../../settings/data/models/company_settings_model.dart';
+import '../../../../settings/data/models/enums/print_format_enum.dart';
 import '../../../data/models/prescription_item_model.dart';
 import '../../../domain/use_cases/add_visit_addendum_use_case.dart';
+import '../../../domain/use_cases/print_prescription_use_case.dart';
 import '../visits_state.dart';
 
 mixin VisitPrescriptionMixin on SafeCubit<VisitsState> {
   AddVisitAddendumUseCase? get addVisitAddendumUseCase;
+  PrintPrescriptionUseCase? get printPrescriptionUseCase;
 
   static const int maxPrescriptionItems = 20;
 
@@ -228,6 +236,26 @@ mixin VisitPrescriptionMixin on SafeCubit<VisitsState> {
         );
         return true;
       },
+    );
+  }
+
+  Future<Either<Failures, Uint8List>?> printActivePrescription({
+    CompanySettingsModel? settings,
+    PrintFormat? format,
+    ByteData? fontData,
+    PatientModel? patient,
+  }) async {
+    final visit = state.activeVisit;
+    if (visit == null || printPrescriptionUseCase == null) return null;
+
+    return printPrescriptionUseCase!(
+      PrintPrescriptionParams(
+        visit: visit,
+        patient: patient,
+        settings: settings,
+        format: format,
+        fontData: fontData,
+      ),
     );
   }
 }

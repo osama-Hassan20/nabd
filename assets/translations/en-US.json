@@ -1294,6 +1294,7 @@
   "only_assigned_doctor_can_add_addendum": "Only the assigned treating doctor can add a clinical addendum",
   "permission_denied_edit_medical_diagnosis": "You do not have permission to edit medical diagnosis",
   "permission_denied_issue_prescription": "You do not have permission to issue prescriptions",
+  "unauthorized_not_attending_doctor": "Prescription printing and issuance is restricted to the attending doctor only",
   "diagnosis_addendum_must_differ": "New diagnosis must differ from the previous diagnosis",
   "visit_not_found": "Visit not found"
 }

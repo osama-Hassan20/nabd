@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:printing/printing.dart';
 import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/routing/routes.dart';
@@ -91,6 +92,27 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
           header: 'visits_finalize_success'.tr(),
         ).showTopToast();
       }
+    }
+  }
+
+  Future<void> _onPrintPrescription() async {
+    final result = await _cubit.printActivePrescription();
+    if (result != null && mounted) {
+      result.fold(
+        (failure) {
+          CustomToast(
+            context: context,
+            header: failure.errMessage.tr(),
+          ).showTopToast();
+        },
+        (pdfBytes) async {
+          try {
+            await Printing.layoutPdf(
+              onLayout: (format) async => pdfBytes,
+            );
+          } catch (_) {}
+        },
+      );
     }
   }
 
@@ -632,7 +654,7 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
             cubit: _cubit,
             visit: state.activeVisit ?? const VisitModel(),
             isReadOnly: isFinalized || !state.canEditDiagnosis,
-            onPrint: () {},
+            onPrint: _onPrintPrescription,
           )
         : const SizedBox.shrink();
 
