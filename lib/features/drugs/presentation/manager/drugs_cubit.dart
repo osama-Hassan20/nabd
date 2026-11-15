@@ -17,6 +17,7 @@ import '../../domain/use_cases/get_drugs_catalog_use_case.dart';
 import '../../domain/use_cases/review_quick_add_drug_use_case.dart';
 import '../../domain/use_cases/save_prescription_template_use_case.dart';
 import '../../domain/use_cases/update_allergy_aliases_use_case.dart';
+import '../../domain/use_cases/import_drugs_use_case.dart';
 import '../../domain/use_cases/update_drug_use_case.dart';
 import 'drugs_state.dart';
 
@@ -32,6 +33,7 @@ class DrugsCubit extends SafeCubit<DrugsState> {
   final SavePrescriptionTemplateUseCase savePrescriptionTemplateUseCase;
   final DeletePrescriptionTemplateUseCase deletePrescriptionTemplateUseCase;
   final UpdateAllergyAliasesUseCase updateAllergyAliasesUseCase;
+  final ImportDrugsUseCase? importDrugsUseCase;
   final PermissionEvaluator permissionEvaluator;
   final CurrentUserProvider userProvider;
   final AuditLogger? auditLogger;
@@ -48,6 +50,7 @@ class DrugsCubit extends SafeCubit<DrugsState> {
     required this.savePrescriptionTemplateUseCase,
     required this.deletePrescriptionTemplateUseCase,
     required this.updateAllergyAliasesUseCase,
+    this.importDrugsUseCase,
     required this.permissionEvaluator,
     required this.userProvider,
     this.auditLogger,
@@ -280,6 +283,47 @@ class DrugsCubit extends SafeCubit<DrugsState> {
             actionStatus: RequestStatusEnum.success,
             drugs: updatedList,
             successMessage: 'drug_reviewed_success',
+            clearError: true,
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> importDrugs({
+    required List<DrugModel> drugsToImport,
+    required int skippedCount,
+  }) async {
+    if (importDrugsUseCase == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+
+    final currentUserId = userProvider.currentUser?.id ?? '';
+    final res = await importDrugsUseCase!(
+      ImportDrugsParams(
+        drugsToImport: drugsToImport,
+        skippedCount: skippedCount,
+        userId: currentUserId,
+      ),
+    );
+
+    return res.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            errMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (count) {
+        final updatedList = [...drugsToImport, ...state.drugs];
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            drugs: updatedList,
+            successMessage: 'drugs_import_success',
             clearError: true,
           ),
         );

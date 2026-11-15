@@ -69,4 +69,7 @@ abstract class DrugsRepo {
     String templateId,
     String doctorId,
   );
+
+  /// Atomically imports a batch of drugs into the catalog.
+  Future<Either<Failures, int>> importDrugsBatch(List<DrugModel> drugs);
 }

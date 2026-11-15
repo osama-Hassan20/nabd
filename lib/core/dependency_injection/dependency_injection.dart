@@ -61,6 +61,7 @@ import 'package:eyadty/features/drugs/domain/use_cases/get_doctor_templates_use_
 import 'package:eyadty/features/drugs/domain/use_cases/save_prescription_template_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/delete_prescription_template_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/update_allergy_aliases_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/import_drugs_use_case.dart';
 import 'package:eyadty/features/drugs/presentation/manager/drugs_cubit.dart';
 
 // Patients Feature
@@ -443,6 +444,13 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<UpdateAllergyAliasesUseCase>(
     () => UpdateAllergyAliasesUseCase(
+      repo: getIt<DrugsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<ImportDrugsUseCase>(
+    () => ImportDrugsUseCase(
       repo: getIt<DrugsRepo>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       auditLogger: getIt<AuditLogger>(),
@@ -847,6 +855,7 @@ Future<void> setupGetIt() async {
       deletePrescriptionTemplateUseCase:
           getIt<DeletePrescriptionTemplateUseCase>(),
       updateAllergyAliasesUseCase: getIt<UpdateAllergyAliasesUseCase>(),
+      importDrugsUseCase: getIt<ImportDrugsUseCase>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       userProvider: getIt<CurrentUserProvider>(),
       auditLogger: getIt<AuditLogger>(),

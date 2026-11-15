@@ -907,4 +907,25 @@ class DrugsMockRepoImpl implements DrugsRepo {
     );
     return Right(unit);
   }
+
+  @override
+  Future<Either<Failures, int>> importDrugsBatch(List<DrugModel> drugs) async {
+    final now = CairoTimeHelper.now();
+    final imported = <DrugModel>[];
+
+    for (final d in drugs) {
+      final newId = 'DRG-${(++_idCounter).toString().padLeft(3, '0')}';
+      final item = d.copyWith(
+        id: newId,
+        source: DrugSourceEnum.imported,
+        reviewStatus: ReviewStatusEnum.approved,
+        isActive: true,
+        createdAt: now,
+      );
+      imported.add(item);
+    }
+
+    _drugs.insertAll(0, imported);
+    return Right(imported.length);
+  }
 }

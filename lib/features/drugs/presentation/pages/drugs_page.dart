@@ -10,6 +10,7 @@ import '../../../../shared/widgets/custom_toast.dart';
 import '../manager/drugs_cubit.dart';
 import '../manager/drugs_state.dart';
 import '../widgets/dialogs/add_drug_dialog.dart';
+import '../widgets/dialogs/import_drugs_dialog.dart';
 import '../widgets/tabs/allergy_aliases_tab.dart';
 import '../widgets/tabs/drugs_catalog_tab.dart';
 import '../widgets/tabs/prescription_templates_tab.dart';
@@ -101,34 +102,70 @@ class _DrugsPageState extends State<DrugsPage>
                           ],
                         ),
                         if (canManage)
-                          CustomPushButton(
-                            height: 40,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            backgroundColor: AppColors.primary,
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: () {
-                              AddDrugDialog.show(
-                                context: context,
-                                cubit: _cubit,
-                              );
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.add,
-                                    color: AppColors.white, size: 18),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'drugs_add_drug'.tr(),
-                                  style: CustomAppFontStyle.bold13.copyWith(
-                                    color: AppColors.white,
-                                  ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CustomPushButton(
+                                height: 40,
+                                border: const BorderSide(color: Color(0xFFCBD5E1)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
                                 ),
-                              ],
-                            ),
+                                backgroundColor: AppColors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () {
+                                  ImportDrugsDialog.show(
+                                    context: context,
+                                    cubit: _cubit,
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.file_upload_outlined,
+                                        color: AppColors.primary, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'drugs_import_btn'.tr(),
+                                      style: CustomAppFontStyle.bold13.copyWith(
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              CustomPushButton(
+                                height: 40,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                backgroundColor: AppColors.primary,
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () {
+                                  AddDrugDialog.show(
+                                    context: context,
+                                    cubit: _cubit,
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.add,
+                                        color: AppColors.white, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'drugs_add_drug'.tr(),
+                                      style: CustomAppFontStyle.bold13.copyWith(
+                                        color: AppColors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                       ],
                     ),
