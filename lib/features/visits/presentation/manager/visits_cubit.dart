@@ -6,6 +6,7 @@ import '../../../../core/services/permission_evaluator.dart';
 import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../../patients/domain/repo/patients_repo.dart';
 import '../../domain/repo/visits_repo.dart';
+import '../../domain/use_cases/add_visit_addendum_use_case.dart';
 import '../../domain/use_cases/finalize_visit_use_case.dart';
 import '../../domain/use_cases/get_doctor_queue_use_case.dart';
 import '../../domain/use_cases/get_visit_by_booking_id_use_case.dart';
@@ -13,12 +14,17 @@ import '../../domain/use_cases/record_vitals_use_case.dart';
 import '../../domain/use_cases/save_visit_draft_use_case.dart';
 import '../../domain/use_cases/start_consultation_use_case.dart';
 import 'mixins/visit_consultation_mixin.dart';
+import 'mixins/visit_prescription_mixin.dart';
 import 'mixins/visit_queue_mixin.dart';
 import 'mixins/visit_vitals_mixin.dart';
 import 'visits_state.dart';
 
 class VisitsCubit extends SafeCubit<VisitsState>
-    with VisitQueueMixin, VisitVitalsMixin, VisitConsultationMixin {
+    with
+        VisitQueueMixin,
+        VisitVitalsMixin,
+        VisitConsultationMixin,
+        VisitPrescriptionMixin {
   @override
   final VisitsRepo visitsRepo;
   final BookingsRepo bookingsRepo;
@@ -35,6 +41,8 @@ class VisitsCubit extends SafeCubit<VisitsState>
   final RecordVitalsUseCase recordVitalsUseCase;
   @override
   final FinalizeVisitUseCase finalizeVisitUseCase;
+  @override
+  final AddVisitAddendumUseCase? addVisitAddendumUseCase;
   @override
   final PermissionEvaluator permissionEvaluator;
   @override
@@ -58,6 +66,7 @@ class VisitsCubit extends SafeCubit<VisitsState>
     required this.saveVisitDraftUseCase,
     required this.recordVitalsUseCase,
     required this.finalizeVisitUseCase,
+    this.addVisitAddendumUseCase,
     required this.permissionEvaluator,
     this.auditLogger,
     this.sessionCubit,

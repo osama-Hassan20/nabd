@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'enums/visit_status_enum.dart';
+import 'prescription_item_model.dart';
+import 'visit_addendum_model.dart';
 import 'vitals_model.dart';
 
 class VisitModel extends Equatable {
@@ -21,6 +23,8 @@ class VisitModel extends Equatable {
   final String? treatmentPlan;
   final String? followUpNotes;
   final int? followUpDays;
+  final List<PrescriptionItemModel>? prescriptionItems;
+  final List<VisitAddendumModel>? addenda;
   final DateTime? triageAt;
   final DateTime? startedAt;
   final DateTime? finalizedAt;
@@ -45,6 +49,8 @@ class VisitModel extends Equatable {
     this.treatmentPlan,
     this.followUpNotes,
     this.followUpDays,
+    this.prescriptionItems,
+    this.addenda,
     this.triageAt,
     this.startedAt,
     this.finalizedAt,
@@ -74,6 +80,18 @@ class VisitModel extends Equatable {
       treatmentPlan: json['treatmentPlan'] as String?,
       followUpNotes: json['followUpNotes'] as String?,
       followUpDays: json['followUpDays'] as int?,
+      prescriptionItems: json['prescriptionItems'] != null
+          ? (json['prescriptionItems'] as List<dynamic>)
+              .map((e) =>
+                  PrescriptionItemModel.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : null,
+      addenda: json['addenda'] != null
+          ? (json['addenda'] as List<dynamic>)
+              .map((e) =>
+                  VisitAddendumModel.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : null,
       triageAt: json['triageAt'] != null
           ? DateTime.tryParse(json['triageAt'] as String)
           : null,
@@ -109,6 +127,8 @@ class VisitModel extends Equatable {
       'treatmentPlan': treatmentPlan,
       'followUpNotes': followUpNotes,
       'followUpDays': followUpDays,
+      'prescriptionItems': prescriptionItems?.map((e) => e.toJson()).toList(),
+      'addenda': addenda?.map((e) => e.toJson()).toList(),
       'triageAt': triageAt?.toIso8601String(),
       'startedAt': startedAt?.toIso8601String(),
       'finalizedAt': finalizedAt?.toIso8601String(),
@@ -135,6 +155,8 @@ class VisitModel extends Equatable {
     String? treatmentPlan,
     String? followUpNotes,
     int? followUpDays,
+    List<PrescriptionItemModel>? prescriptionItems,
+    List<VisitAddendumModel>? addenda,
     DateTime? triageAt,
     DateTime? startedAt,
     DateTime? finalizedAt,
@@ -159,6 +181,8 @@ class VisitModel extends Equatable {
       treatmentPlan: treatmentPlan ?? this.treatmentPlan,
       followUpNotes: followUpNotes ?? this.followUpNotes,
       followUpDays: followUpDays ?? this.followUpDays,
+      prescriptionItems: prescriptionItems ?? this.prescriptionItems,
+      addenda: addenda ?? this.addenda,
       triageAt: triageAt ?? this.triageAt,
       startedAt: startedAt ?? this.startedAt,
       finalizedAt: finalizedAt ?? this.finalizedAt,
@@ -186,6 +210,8 @@ class VisitModel extends Equatable {
         treatmentPlan,
         followUpNotes,
         followUpDays,
+        prescriptionItems,
+        addenda,
         triageAt,
         startedAt,
         finalizedAt,

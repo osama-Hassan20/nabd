@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../data/models/consultation_queue_item_model.dart';
+import '../../data/models/visit_addendum_model.dart';
 import '../../data/models/visit_model.dart';
 import '../../data/models/vitals_model.dart';
 
@@ -13,6 +14,10 @@ abstract class VisitsRepo {
 
   Future<Either<Failures, VisitModel?>> getVisitByBookingId({
     required String bookingId,
+  });
+
+  Future<Either<Failures, VisitModel?>> getVisitById({
+    required String visitId,
   });
 
   Future<Either<Failures, VisitModel>> upsertConsultationStart({
@@ -44,5 +49,10 @@ abstract class VisitsRepo {
 
   Future<Either<Failures, VisitModel>> finalizeVisit({
     required VisitModel finalContent,
+  });
+
+  Future<Either<Failures, VisitModel>> addVisitAddendum({
+    required String visitId,
+    required VisitAddendumModel addendum,
   });
 }

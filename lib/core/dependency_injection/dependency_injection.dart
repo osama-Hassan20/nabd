@@ -38,6 +38,7 @@ import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dar
 // Visits Feature
 import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
 import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
+import 'package:eyadty/features/visits/domain/use_cases/add_visit_addendum_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/finalize_visit_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/get_doctor_queue_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/get_visit_by_booking_id_use_case.dart';
@@ -340,6 +341,13 @@ Future<void> setupGetIt() async {
     () => FinalizeVisitUseCase(
       visitsRepo: getIt<VisitsRepo>(),
       bookingsRepo: getIt<BookingsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<AddVisitAddendumUseCase>(
+    () => AddVisitAddendumUseCase(
+      visitsRepo: getIt<VisitsRepo>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       auditLogger: getIt<AuditLogger>(),
     ),
@@ -806,6 +814,7 @@ Future<void> setupGetIt() async {
       saveVisitDraftUseCase: getIt<SaveVisitDraftUseCase>(),
       recordVitalsUseCase: getIt<RecordVitalsUseCase>(),
       finalizeVisitUseCase: getIt<FinalizeVisitUseCase>(),
+      addVisitAddendumUseCase: getIt<AddVisitAddendumUseCase>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       auditLogger: getIt<AuditLogger>(),
       sessionCubit: getIt.isRegistered<SessionCubit>()

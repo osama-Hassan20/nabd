@@ -1286,5 +1286,12 @@
   "template_validation_name_required": "Template name is required and must be at least 2 characters",
   "template_validation_items_required": "At least one medication must be added to the template",
   "template_not_found": "Prescription template not found",
-  "template_unauthorized": "Unauthorized to modify or delete another physician's template"
+  "template_unauthorized": "Unauthorized to modify or delete another physician's template",
+  "addendum_reason_required": "Modification reason is mandatory and legally required",
+  "cannot_add_addendum_to_unfinalized_visit": "Cannot add addendum to an unfinalized visit",
+  "only_assigned_doctor_can_add_addendum": "Only the assigned treating doctor can add a clinical addendum",
+  "permission_denied_edit_medical_diagnosis": "You do not have permission to edit medical diagnosis",
+  "permission_denied_issue_prescription": "You do not have permission to issue prescriptions",
+  "diagnosis_addendum_must_differ": "New diagnosis must differ from the previous diagnosis",
+  "visit_not_found": "Visit not found"
 }

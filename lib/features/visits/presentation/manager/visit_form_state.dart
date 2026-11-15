@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import '../../data/models/prescription_item_model.dart';
+import '../../data/models/visit_addendum_model.dart';
 import '../../data/models/visit_model.dart';
 import '../../data/models/vitals_model.dart';
 
@@ -11,6 +13,10 @@ class VisitFormState extends Equatable {
   final String? followUpNotes;
   final int? followUpDays;
   final VitalsModel vitals;
+  final List<PrescriptionItemModel>? prescriptionItems;
+  final List<VisitAddendumModel>? addenda;
+  final PrescriptionItemModel? editingItem;
+  final bool isAllergyWarningDismissed;
   final bool isDirty;
   final bool isSaving;
   final DateTime? lastSavedAt;
@@ -24,6 +30,10 @@ class VisitFormState extends Equatable {
     this.followUpNotes,
     this.followUpDays,
     this.vitals = const VitalsModel(),
+    this.prescriptionItems,
+    this.addenda,
+    this.editingItem,
+    this.isAllergyWarningDismissed = false,
     this.isDirty = false,
     this.isSaving = false,
     this.lastSavedAt,
@@ -40,6 +50,10 @@ class VisitFormState extends Equatable {
       followUpNotes: visit.followUpNotes,
       followUpDays: visit.followUpDays,
       vitals: visit.vitals ?? const VitalsModel(),
+      prescriptionItems: visit.prescriptionItems,
+      addenda: visit.addenda,
+      editingItem: null,
+      isAllergyWarningDismissed: false,
       isDirty: false,
       isSaving: false,
       lastSavedAt: visit.lastSavedAt,
@@ -56,6 +70,8 @@ class VisitFormState extends Equatable {
       followUpNotes: followUpNotes,
       followUpDays: followUpDays,
       vitals: vitals,
+      prescriptionItems: prescriptionItems,
+      addenda: addenda,
       lastSavedAt: lastSavedAt,
     );
   }
@@ -69,6 +85,11 @@ class VisitFormState extends Equatable {
     String? followUpNotes,
     int? followUpDays,
     VitalsModel? vitals,
+    List<PrescriptionItemModel>? prescriptionItems,
+    List<VisitAddendumModel>? addenda,
+    PrescriptionItemModel? editingItem,
+    bool clearEditingItem = false,
+    bool? isAllergyWarningDismissed,
     bool? isDirty,
     bool? isSaving,
     DateTime? lastSavedAt,
@@ -82,6 +103,11 @@ class VisitFormState extends Equatable {
       followUpNotes: followUpNotes ?? this.followUpNotes,
       followUpDays: followUpDays ?? this.followUpDays,
       vitals: vitals ?? this.vitals,
+      prescriptionItems: prescriptionItems ?? this.prescriptionItems,
+      addenda: addenda ?? this.addenda,
+      editingItem: clearEditingItem ? null : (editingItem ?? this.editingItem),
+      isAllergyWarningDismissed:
+          isAllergyWarningDismissed ?? this.isAllergyWarningDismissed,
       isDirty: isDirty ?? this.isDirty,
       isSaving: isSaving ?? this.isSaving,
       lastSavedAt: lastSavedAt ?? this.lastSavedAt,
@@ -98,6 +124,10 @@ class VisitFormState extends Equatable {
         followUpNotes,
         followUpDays,
         vitals,
+        prescriptionItems,
+        addenda,
+        editingItem,
+        isAllergyWarningDismissed,
         isDirty,
         isSaving,
         lastSavedAt,

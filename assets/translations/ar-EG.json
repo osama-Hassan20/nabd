@@ -1286,5 +1286,12 @@
   "template_validation_name_required": "اسم الوصفة الجاهزة إلزامي ويجب ألا يقل عن حرفين",
   "template_validation_items_required": "يجب إضافة دواء واحد على الأقل للوصفة الجاهزة",
   "template_not_found": "الوصفة الجاهزة غير موجودة",
-  "template_unauthorized": "غير مصرح بتعديل أو حذف وصفة جاهزة لطبيب آخر"
+  "template_unauthorized": "غير مصرح بتعديل أو حذف وصفة جاهزة لطبيب آخر",
+  "addendum_reason_required": "سبب التعديل إلزامي ومطلوب قانونياً",
+  "cannot_add_addendum_to_unfinalized_visit": "لا يمكن إضافة ملحق لكشف غير منتهٍ",
+  "only_assigned_doctor_can_add_addendum": "طبيب الكشف المعالج فقط هو المخول بإضافة ملحق سريري",
+  "permission_denied_edit_medical_diagnosis": "ليس لديك صلاحية تعديل التشخيص الطبي",
+  "permission_denied_issue_prescription": "ليس لديك صلاحية إصدار الروشتات",
+  "diagnosis_addendum_must_differ": "يجب أن يختلف التشخيص الجديد عن التشخيص السابق",
+  "visit_not_found": "الكشف غير موجود"
 }

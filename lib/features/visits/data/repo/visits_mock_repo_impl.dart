@@ -12,6 +12,7 @@ import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../domain/repo/visits_repo.dart';
 import '../models/consultation_queue_item_model.dart';
 import '../models/enums/visit_status_enum.dart';
+import '../models/visit_addendum_model.dart';
 import '../models/visit_model.dart';
 import '../models/vitals_model.dart';
 
@@ -355,6 +356,41 @@ class VisitsMockRepoImpl implements VisitsRepo, ActiveVisitLookup {
       status: VisitStatusEnum.finalized,
       finalizedAt: now,
       lastSavedAt: now,
+    );
+    _visits[index] = updated;
+    return Right(updated);
+  }
+
+  @override
+  Future<Either<Failures, VisitModel?>> getVisitById({
+    required String visitId,
+  }) async {
+    for (final v in _visits) {
+      if (v.id == visitId) {
+        return Right(v);
+      }
+    }
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failures, VisitModel>> addVisitAddendum({
+    required String visitId,
+    required VisitAddendumModel addendum,
+  }) async {
+    final index = _visits.indexWhere((v) => v.id == visitId);
+    if (index == -1) {
+      return const Left(ValidationFailure(errMessage: 'visit_not_found'));
+    }
+
+    final existing = _visits[index];
+    final updatedAddenda =
+        List<VisitAddendumModel>.from(existing.addenda ?? const []);
+    updatedAddenda.add(addendum);
+
+    final updated = existing.copyWith(
+      addenda: updatedAddenda,
+      lastSavedAt: CairoTimeHelper.now(),
     );
     _visits[index] = updated;
     return Right(updated);
