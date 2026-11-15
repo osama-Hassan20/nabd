@@ -13,7 +13,7 @@ import '../models/service_revenue_distribution_model.dart';
 class AnalyticsMockRepoImpl implements AnalyticsRepo {
   final bool seedInitialData;
 
-  AnalyticsMockRepoImpl({this.seedInitialData = true});
+  const AnalyticsMockRepoImpl({this.seedInitialData = true});
 
   // ─── Date Range Bounds Helper ──────────────────────────────────────────────
   ({DateTime start, DateTime end}) resolveDateRange({

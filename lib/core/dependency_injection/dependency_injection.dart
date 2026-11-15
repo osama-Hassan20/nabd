@@ -163,6 +163,16 @@ import 'package:eyadty/features/hr/domain/use_cases/confirm_staff_payroll_period
 import 'package:eyadty/features/hr/domain/use_cases/payout_staff_payroll_period_use_case.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_cubit.dart';
 
+// Analytics Feature
+import 'package:eyadty/features/analytics/data/repo/analytics_mock_repo_impl.dart';
+import 'package:eyadty/features/analytics/domain/repo/analytics_repo.dart';
+import 'package:eyadty/features/analytics/domain/use_cases/get_analytics_summary_use_case.dart';
+import 'package:eyadty/features/analytics/domain/use_cases/get_branch_comparison_use_case.dart';
+import 'package:eyadty/features/analytics/domain/use_cases/get_doctor_performance_use_case.dart';
+import 'package:eyadty/features/analytics/domain/use_cases/get_hourly_traffic_use_case.dart';
+import 'package:eyadty/features/analytics/domain/use_cases/get_revenue_trend_use_case.dart';
+import 'package:eyadty/features/analytics/presentation/manager/analytics_cubit.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> setupGetIt() async {
@@ -986,6 +996,63 @@ Future<void> setupGetIt() async {
           getIt<PayoutStaffPayrollPeriodUseCase>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
       currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+
+  // ─── 14. Analytics & Executive Reports Feature ──────────────────────────────
+  getIt.registerLazySingleton<AnalyticsRepo>(
+    () => const AnalyticsMockRepoImpl(),
+  );
+
+  getIt.registerLazySingleton<GetAnalyticsSummaryUseCase>(
+    () => GetAnalyticsSummaryUseCase(
+      analyticsRepo: getIt<AnalyticsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetRevenueTrendUseCase>(
+    () => GetRevenueTrendUseCase(
+      analyticsRepo: getIt<AnalyticsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetBranchComparisonUseCase>(
+    () => GetBranchComparisonUseCase(
+      analyticsRepo: getIt<AnalyticsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetDoctorPerformanceUseCase>(
+    () => GetDoctorPerformanceUseCase(
+      analyticsRepo: getIt<AnalyticsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetHourlyTrafficUseCase>(
+    () => GetHourlyTrafficUseCase(
+      analyticsRepo: getIt<AnalyticsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      currentUserProvider: getIt<SessionCubit>(),
+    ),
+  );
+
+  getIt.registerFactory<AnalyticsCubit>(
+    () => AnalyticsCubit(
+      analyticsRepo: getIt<AnalyticsRepo>(),
+      getAnalyticsSummaryUseCase: getIt<GetAnalyticsSummaryUseCase>(),
+      getRevenueTrendUseCase: getIt<GetRevenueTrendUseCase>(),
+      getBranchComparisonUseCase: getIt<GetBranchComparisonUseCase>(),
+      getDoctorPerformanceUseCase: getIt<GetDoctorPerformanceUseCase>(),
+      getHourlyTrafficUseCase: getIt<GetHourlyTrafficUseCase>(),
     ),
   );
 }

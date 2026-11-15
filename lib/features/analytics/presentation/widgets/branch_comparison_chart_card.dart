@@ -154,42 +154,54 @@ class BranchComparisonChartCard extends StatelessWidget {
               for (int i = 0; i < branches.length; i++)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: _branchColors[i % _branchColors.length],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: _branchColors[i % _branchColors.length],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            branches[i].branchName ?? '',
+                            style: CustomAppFontStyle.regular13.copyWith(color: AppColors.pitchBlack),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          branches[i].branchName ?? '',
-                          style: CustomAppFontStyle.regular13.copyWith(color: AppColors.pitchBlack),
-                        ),
-                      ),
-                      Text(
-                        '${branches[i].visitsCount ?? 0} ${'analytics_completed_visits'.tr()} • ',
-                        style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray),
-                      ),
-                      Text(
-                        Money.fromPiastres(branches[i].totalRevenuePiastres ?? 0).formatEgp(),
-                        style: CustomAppFontStyle.bold13.copyWith(color: AppColors.pitchBlack),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.grayf6,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '${branches[i].shareOfTotalRevenuePercent?.toStringAsFixed(0)}%',
-                          style: CustomAppFontStyle.bold11.copyWith(color: AppColors.primary),
-                        ),
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        children: [
+                          Text(
+                            '${branches[i].visitsCount ?? 0} ${'analytics_completed_visits'.tr()} • ',
+                            style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray),
+                          ),
+                          Text(
+                            Money.fromPiastres(branches[i].totalRevenuePiastres ?? 0).formatEgp(),
+                            style: CustomAppFontStyle.bold13.copyWith(color: AppColors.pitchBlack),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.grayf6,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${branches[i].shareOfTotalRevenuePercent?.toStringAsFixed(0)}%',
+                              style: CustomAppFontStyle.bold11.copyWith(color: AppColors.primary),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
