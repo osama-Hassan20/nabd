@@ -1,10 +1,19 @@
+import 'package:dartz/dartz.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
+import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/settings/data/models/enums/print_format_enum.dart';
 import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/features/settings/domain/use_cases/add_special_holiday_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/change_password_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/delete_special_holiday_use_case.dart';
@@ -12,6 +21,7 @@ import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_u
 import 'package:eyadty/features/settings/domain/use_cases/update_company_settings_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/update_print_settings_use_case.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:eyadty/features/settings/presentation/widgets/tabs/print_settings_tab.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
@@ -37,6 +47,43 @@ class MockRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
+class FailingSettingsRepo implements SettingsRepo {
+  @override
+  Future<Either<Failures, CompanySettingsModel>> getCompanySettings() async {
+    return const Left(ServerFailure(errMessage: 'db_connection_error'));
+  }
+
+  @override
+  Future<Either<Failures, CompanySettingsModel>> updateCompanySettings(
+    CompanySettingsModel settings,
+  ) async {
+    return const Left(ServerFailure(errMessage: 'db_write_error'));
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Widget _buildLocalizedTab({
+  required Widget child,
+  required SettingsCubit settingsCubit,
+}) {
+  return EasyLocalization(
+    supportedLocales: const [Locale('ar', 'EG'), Locale('en', 'US')],
+    path: 'assets/translations',
+    fallbackLocale: const Locale('ar', 'EG'),
+    startLocale: const Locale('ar', 'EG'),
+    saveLocale: false,
+    useOnlyLangCode: false,
+    child: BlocProvider<SettingsCubit>.value(
+      value: settingsCubit,
+      child: MaterialApp(
+        home: Scaffold(body: child),
+      ),
+    ),
+  );
+}
+
 void main() {
   late SettingsMockRepoImpl repo;
   late InMemoryAuditLogger auditLogger;
@@ -44,6 +91,13 @@ void main() {
   late MockRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
   late UpdatePrintSettingsUseCase updatePrintSettingsUseCase;
+
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    await AppSharedPreferences.initialSharedPreference();
+    await EasyLocalization.ensureInitialized();
+  });
 
   setUp(() {
     repo = SettingsMockRepoImpl();
@@ -150,11 +204,87 @@ void main() {
       final logs = auditLogger.getLogs(eventType: 'print_settings_updated');
       expect(logs, isEmpty);
     });
+
+    test('rejects invalid receipt print format with invalid_print_format', () async {
+      final result = await updatePrintSettingsUseCase(
+        const UpdatePrintSettingsParams(
+          receiptPrintFormat: 'invalid_format_xyz',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'invalid_print_format'),
+        (_) => fail('Should have failed validation'),
+      );
+      expect(auditLogger.getLogs(eventType: 'print_settings_updated'), isEmpty);
+    });
+
+    test('rejects invalid shift report print format with invalid_print_format', () async {
+      final result = await updatePrintSettingsUseCase(
+        const UpdatePrintSettingsParams(
+          shiftReportPrintFormat: 'unsupported_format',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'invalid_print_format'),
+        (_) => fail('Should have failed validation'),
+      );
+    });
+
+    test('rejects invalid prescription print format with invalid_print_format', () async {
+      final result = await updatePrintSettingsUseCase(
+        const UpdatePrintSettingsParams(
+          prescriptionPrintFormat: 'format_123',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'invalid_print_format'),
+        (_) => fail('Should have failed validation'),
+      );
+    });
+
+    test('defaults targetBranchId to userProvider.activeBranchId when branchId is omitted', () async {
+      userProvider.branch = 'branch_custom_99';
+      final result = await updatePrintSettingsUseCase(
+        const UpdatePrintSettingsParams(
+          receiptPrintFormat: 'thermal80',
+        ),
+      );
+
+      expect(result.isRight(), isTrue);
+      final logs = auditLogger.getLogs(eventType: 'print_settings_updated');
+      expect(logs.length, 1);
+      expect(logs.first.branchId, 'branch_custom_99');
+    });
+
+    test('propagates failure when repo.getCompanySettings fails', () async {
+      final failingUseCase = UpdatePrintSettingsUseCase(
+        repo: FailingSettingsRepo(),
+        permissionEvaluator: permissionEvaluator,
+        currentUserProvider: userProvider,
+        auditLogger: auditLogger,
+      );
+
+      final result = await failingUseCase(
+        const UpdatePrintSettingsParams(receiptPrintFormat: 'thermal80'),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'db_connection_error'),
+        (_) => fail('Should have returned Left'),
+      );
+      expect(auditLogger.getLogs(eventType: 'print_settings_updated'), isEmpty);
+    });
   });
 
   group('SettingsMockRepoImpl Print Settings Persistence', () {
     test('preserves print formats when general settings are updated without overriding print formats', () async {
-      // First update print settings
       await repo.updateCompanySettings(
         const CompanySettingsModel(
           companyName: 'عيادة النور',
@@ -164,7 +294,6 @@ void main() {
         ),
       );
 
-      // Now update only general info
       await repo.updateCompanySettings(
         const CompanySettingsModel(
           companyName: 'عيادة النور التخصصية المحدثة',
@@ -264,11 +393,140 @@ void main() {
         updatePrintSettingsUseCase: updatePrintSettingsUseCase,
       );
 
-      await cubit.updatePrintSettings(
+      final success = await cubit.updatePrintSettings(
         receiptPrintFormat: 'thermal80',
       );
 
+      expect(success, isFalse);
       expect(cubit.state.errMessage, 'settings_permission_denied');
+      await cubit.close();
+    });
+
+    test('returns false and emits failure with use_case_not_available when updatePrintSettingsUseCase is null', () async {
+      final getSettingsUseCase = GetCompanySettingsUseCase(repo: repo);
+      final updateCompanySettingsUseCase = UpdateCompanySettingsUseCase(repo: repo);
+
+      final cubit = SettingsCubit(
+        getCompanySettingsUseCase: getSettingsUseCase,
+        updateCompanySettingsUseCase: updateCompanySettingsUseCase,
+        addSpecialHolidayUseCase: AddSpecialHolidayUseCase(repo: repo),
+        deleteSpecialHolidayUseCase: DeleteSpecialHolidayUseCase(repo: repo),
+        changePasswordUseCase: ChangePasswordUseCase(repo: repo),
+        updatePrintSettingsUseCase: null,
+      );
+
+      final success = await cubit.updatePrintSettings(
+        receiptPrintFormat: 'thermal80',
+      );
+
+      expect(success, isFalse);
+      expect(cubit.state.errMessage, 'use_case_not_available');
+      await cubit.close();
+    });
+  });
+
+  group('PrintSettingsTab Widget Tests', () {
+    testWidgets('renders tab header, description, and all 3 document format cards', (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final getSettingsUseCase = GetCompanySettingsUseCase(repo: repo);
+      final updateCompanySettingsUseCase = UpdateCompanySettingsUseCase(repo: repo);
+
+      final cubit = SettingsCubit(
+        getCompanySettingsUseCase: getSettingsUseCase,
+        updateCompanySettingsUseCase: updateCompanySettingsUseCase,
+        addSpecialHolidayUseCase: AddSpecialHolidayUseCase(repo: repo),
+        deleteSpecialHolidayUseCase: DeleteSpecialHolidayUseCase(repo: repo),
+        changePasswordUseCase: ChangePasswordUseCase(repo: repo),
+        updatePrintSettingsUseCase: updatePrintSettingsUseCase,
+      );
+
+      cubit.emit(
+        cubit.state.copyWith(
+          status: RequestStatusEnum.success,
+          settings: const CompanySettingsModel(
+            companyName: 'عيادة الأمل',
+            receiptPrintFormat: 'a4',
+            shiftReportPrintFormat: 'a4',
+            prescriptionPrintFormat: 'a4',
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedTab(
+          settingsCubit: cubit,
+          child: PrintSettingsTab(settingsCubit: cubit),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PrintSettingsTab), findsOneWidget);
+      expect(find.byKey(const Key('print_settings_save_btn')), findsOneWidget);
+      expect(find.byKey(const Key('format_receipt_a4')), findsOneWidget);
+      expect(find.byKey(const Key('format_receipt_thermal80')), findsOneWidget);
+      expect(find.byKey(const Key('format_shift_a4')), findsOneWidget);
+      expect(find.byKey(const Key('format_shift_thermal80')), findsOneWidget);
+      expect(find.byKey(const Key('format_prescription_a4')), findsOneWidget);
+      expect(find.byKey(const Key('format_prescription_thermal80')), findsOneWidget);
+
+      await cubit.close();
+    });
+
+    testWidgets('allows changing format by tapping thermal80 option and saves', (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final getSettingsUseCase = GetCompanySettingsUseCase(repo: repo);
+      final updateCompanySettingsUseCase = UpdateCompanySettingsUseCase(repo: repo);
+
+      final cubit = SettingsCubit(
+        getCompanySettingsUseCase: getSettingsUseCase,
+        updateCompanySettingsUseCase: updateCompanySettingsUseCase,
+        addSpecialHolidayUseCase: AddSpecialHolidayUseCase(repo: repo),
+        deleteSpecialHolidayUseCase: DeleteSpecialHolidayUseCase(repo: repo),
+        changePasswordUseCase: ChangePasswordUseCase(repo: repo),
+        updatePrintSettingsUseCase: updatePrintSettingsUseCase,
+      );
+
+      cubit.emit(
+        cubit.state.copyWith(
+          status: RequestStatusEnum.success,
+          settings: const CompanySettingsModel(
+            companyName: 'عيادة الأمل',
+            receiptPrintFormat: 'a4',
+            shiftReportPrintFormat: 'a4',
+            prescriptionPrintFormat: 'a4',
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedTab(
+          settingsCubit: cubit,
+          child: PrintSettingsTab(settingsCubit: cubit),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap on receipt thermal80 format option
+      await tester.tap(find.byKey(const Key('format_receipt_thermal80')));
+      await tester.pump();
+
+      // Tap on save button
+      await tester.tap(find.byKey(const Key('print_settings_save_btn')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Verify that cubit settings were updated to thermal80
+      expect(cubit.state.settings?.receiptPrintFormat, 'thermal80');
+
+      // Drain toastification timer (3 seconds)
+      await tester.pump(const Duration(seconds: 4));
+
       await cubit.close();
     });
   });

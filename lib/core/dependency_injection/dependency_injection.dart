@@ -46,9 +46,21 @@ import 'package:eyadty/features/visits/domain/use_cases/save_visit_draft_use_cas
 import 'package:eyadty/features/visits/domain/use_cases/start_consultation_use_case.dart';
 import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 
-// Patients Feature
+// Drugs Feature
 import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
 import 'package:eyadty/features/drugs/domain/repo/drugs_repo.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/get_drugs_catalog_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/add_drug_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/update_drug_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/archive_drug_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/quick_add_drug_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/review_quick_add_drug_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/get_doctor_templates_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/save_prescription_template_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/delete_prescription_template_use_case.dart';
+import 'package:eyadty/features/drugs/domain/use_cases/update_allergy_aliases_use_case.dart';
+
+// Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/domain/contracts/patient_balance_lookup.dart';
@@ -358,6 +370,66 @@ Future<void> setupGetIt() async {
   // ─── Drugs Feature ──────────────────────────────────────────────────────────
   getIt.registerLazySingleton<DrugsRepo>(
     () => DrugsMockRepoImpl(),
+  );
+
+  getIt.registerLazySingleton<GetDrugsCatalogUseCase>(
+    () => GetDrugsCatalogUseCase(repo: getIt<DrugsRepo>()),
+  );
+  getIt.registerLazySingleton<AddDrugUseCase>(
+    () => AddDrugUseCase(
+      repo: getIt<DrugsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<UpdateDrugUseCase>(
+    () => UpdateDrugUseCase(
+      repo: getIt<DrugsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<ArchiveDrugUseCase>(
+    () => ArchiveDrugUseCase(
+      repo: getIt<DrugsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<QuickAddDrugUseCase>(
+    () => QuickAddDrugUseCase(
+      repo: getIt<DrugsRepo>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<ReviewQuickAddDrugUseCase>(
+    () => ReviewQuickAddDrugUseCase(
+      repo: getIt<DrugsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<GetDoctorTemplatesUseCase>(
+    () => GetDoctorTemplatesUseCase(repo: getIt<DrugsRepo>()),
+  );
+  getIt.registerLazySingleton<SavePrescriptionTemplateUseCase>(
+    () => SavePrescriptionTemplateUseCase(
+      repo: getIt<DrugsRepo>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<DeletePrescriptionTemplateUseCase>(
+    () => DeletePrescriptionTemplateUseCase(
+      repo: getIt<DrugsRepo>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+  getIt.registerLazySingleton<UpdateAllergyAliasesUseCase>(
+    () => UpdateAllergyAliasesUseCase(
+      repo: getIt<DrugsRepo>(),
+      permissionEvaluator: getIt<PermissionEvaluator>(),
+      auditLogger: getIt<AuditLogger>(),
+    ),
   );
 
   // ─── Patients Feature ───────────────────────────────────────────────────────

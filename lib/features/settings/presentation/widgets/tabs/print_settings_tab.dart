@@ -5,6 +5,7 @@ import 'package:toastification/toastification.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/settings/data/models/enums/print_format_enum.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_state.dart';
@@ -12,7 +13,9 @@ import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class PrintSettingsTab extends StatefulWidget {
-  const PrintSettingsTab({super.key});
+  final SettingsCubit? settingsCubit;
+
+  const PrintSettingsTab({super.key, this.settingsCubit});
 
   @override
   State<PrintSettingsTab> createState() => _PrintSettingsTabState();
@@ -24,20 +27,53 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
   PrintFormat _prescriptionFormat = PrintFormat.a4;
   bool _initialized = false;
 
-  void _syncFromSettings(SettingsState state) {
-    if (state.settings != null && !_initialized) {
-      _receiptFormat = state.settings!.effectiveReceiptPrintFormat;
-      _shiftReportFormat = state.settings!.effectiveShiftReportPrintFormat;
-      _prescriptionFormat = state.settings!.effectivePrescriptionPrintFormat;
-      _initialized = true;
+  @override
+  void initState() {
+    super.initState();
+    final cubit = widget.settingsCubit;
+    if (cubit != null && cubit.state.settings != null) {
+      _applySettings(cubit.state.settings!);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      try {
+        final cubit = widget.settingsCubit ?? context.read<SettingsCubit>();
+        if (cubit.state.settings != null) {
+          _applySettings(cubit.state.settings!);
+        }
+      } catch (_) {
+        // Fallback for isolated widget tests without BlocProvider in ancestry
+      }
+    }
+  }
+
+  void _applySettings(CompanySettingsModel settings) {
+    _receiptFormat = settings.effectiveReceiptPrintFormat;
+    _shiftReportFormat = settings.effectiveShiftReportPrintFormat;
+    _prescriptionFormat = settings.effectivePrescriptionPrintFormat;
+    _initialized = true;
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SettingsCubit, SettingsState>(
+      bloc: widget.settingsCubit,
       listener: (context, state) {
+        if (!_initialized && state.settings != null) {
+          setState(() {
+            _applySettings(state.settings!);
+          });
+        }
         if (state.actionStatus == RequestStatusEnum.success) {
+          if (state.settings != null) {
+            setState(() {
+              _applySettings(state.settings!);
+            });
+          }
           CustomToast(
             context: context,
             header: 'print_settings_saved_success'.tr(),
@@ -51,8 +87,6 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
         }
       },
       builder: (context, state) {
-        _syncFromSettings(state);
-
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -76,6 +110,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
 
               // 1. Payment Receipt Card
               _buildDocumentFormatCard(
+                docKey: 'receipt',
                 title: 'print_doc_receipt'.tr(),
                 desc: 'print_doc_receipt_desc'.tr(),
                 icon: Icons.receipt_long_outlined,
@@ -86,6 +121,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
 
               // 2. Shift Report Card
               _buildDocumentFormatCard(
+                docKey: 'shift',
                 title: 'print_doc_shift_report'.tr(),
                 desc: 'print_doc_shift_report_desc'.tr(),
                 icon: Icons.summarize_outlined,
@@ -96,6 +132,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
 
               // 3. Prescription Card
               _buildDocumentFormatCard(
+                docKey: 'prescription',
                 title: 'print_doc_prescription'.tr(),
                 desc: 'print_doc_prescription_desc'.tr(),
                 icon: Icons.medication_outlined,
@@ -108,17 +145,20 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
               Align(
                 alignment: AlignmentDirectional.centerEnd,
                 child: CustomPushButton(
+                  key: const Key('print_settings_save_btn'),
                   height: 44,
                   backgroundColor: AppColors.primary,
                   borderRadius: BorderRadius.circular(10),
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   isLoading: state.actionStatus == RequestStatusEnum.loading,
                   onTap: () {
-                    context.read<SettingsCubit>().updatePrintSettings(
-                          receiptPrintFormat: _receiptFormat.name,
-                          shiftReportPrintFormat: _shiftReportFormat.name,
-                          prescriptionPrintFormat: _prescriptionFormat.name,
-                        );
+                    final cubit =
+                        widget.settingsCubit ?? context.read<SettingsCubit>();
+                    cubit.updatePrintSettings(
+                      receiptPrintFormat: _receiptFormat.name,
+                      shiftReportPrintFormat: _shiftReportFormat.name,
+                      prescriptionPrintFormat: _prescriptionFormat.name,
+                    );
                   },
                   child: Text(
                     'save'.tr(),
@@ -136,6 +176,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
   }
 
   Widget _buildDocumentFormatCard({
+    required String docKey,
     required String title,
     required String desc,
     required IconData icon,
@@ -192,6 +233,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
             children: [
               Expanded(
                 child: _buildFormatOption(
+                  key: Key('format_${docKey}_a4'),
                   format: PrintFormat.a4,
                   label: 'print_format_a4'.tr(),
                   desc: 'print_format_a4_desc'.tr(),
@@ -202,6 +244,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
               const SizedBox(width: 14),
               Expanded(
                 child: _buildFormatOption(
+                  key: Key('format_${docKey}_thermal80'),
                   format: PrintFormat.thermal80,
                   label: 'print_format_thermal80'.tr(),
                   desc: 'print_format_thermal80_desc'.tr(),
@@ -217,6 +260,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
   }
 
   Widget _buildFormatOption({
+    Key? key,
     required PrintFormat format,
     required String label,
     required String desc,
@@ -224,6 +268,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
     required VoidCallback onSelect,
   }) {
     return InkWell(
+      key: key,
       onTap: onSelect,
       borderRadius: BorderRadius.circular(10),
       child: Container(
@@ -275,4 +320,3 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
     );
   }
 }
-

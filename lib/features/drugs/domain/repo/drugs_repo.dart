@@ -3,6 +3,7 @@ import 'package:eyadty/core/errors/failures.dart';
 import '../../data/models/drug_category_model.dart';
 import '../../data/models/drug_model.dart';
 import '../../data/models/enums/review_status_enum.dart';
+import '../../data/models/prescription_template_model.dart';
 
 abstract class DrugsRepo {
   /// Fetches catalog drugs with optional query, category filter, review status filter, and archive inclusion.
@@ -49,4 +50,20 @@ abstract class DrugsRepo {
     required String catalogItemId,
     required List<String> aliases,
   });
+
+  /// Fetches prescription templates belonging exclusively to the specified doctor.
+  Future<Either<Failures, List<PrescriptionTemplateModel>>> getDoctorTemplates(
+    String doctorId,
+  );
+
+  /// Saves (creates or updates) a prescription template owned by a doctor.
+  Future<Either<Failures, PrescriptionTemplateModel>> savePrescriptionTemplate(
+    PrescriptionTemplateModel template,
+  );
+
+  /// Deletes (soft deletes) a prescription template owned by a doctor.
+  Future<Either<Failures, Unit>> deletePrescriptionTemplate(
+    String templateId,
+    String doctorId,
+  );
 }

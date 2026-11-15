@@ -158,3 +158,4 @@ class DrugModel extends Equatable {
         reviewedAt,
       ];
 }
+

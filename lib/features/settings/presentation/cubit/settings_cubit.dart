@@ -460,10 +460,18 @@ class SettingsCubit extends SafeCubit<SettingsState> {
     String? prescriptionPrintFormat,
     String? branchId,
   }) async {
-    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
-
     final useCase = updatePrintSettingsUseCase;
-    if (useCase == null) return false;
+    if (useCase == null) {
+      emit(
+        state.copyWith(
+          actionStatus: RequestStatusEnum.failure,
+          errMessage: 'use_case_not_available',
+        ),
+      );
+      return false;
+    }
+
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
 
     final result = await useCase(
       UpdatePrintSettingsParams(

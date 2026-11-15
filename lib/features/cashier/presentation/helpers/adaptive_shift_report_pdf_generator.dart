@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../settings/data/models/company_settings_model.dart';
 import '../../../settings/data/models/enums/print_format_enum.dart';
 import '../../data/models/cashier_shift_model.dart';
@@ -61,7 +62,10 @@ class AdaptiveShiftReportPdfGenerator {
     CashierShiftModel shift,
     CompanySettingsModel? settings,
   ) {
-    final clinicName = settings?.companyName ?? 'عيادتي التخصصية';
+    final clinicName = (settings?.companyName != null &&
+            settings!.companyName!.trim().isNotEmpty)
+        ? settings.companyName!
+        : 'المركز الطبي';
     final phone = settings?.phone ?? '';
     final address = settings?.address ?? '';
 
@@ -118,7 +122,7 @@ class AdaptiveShiftReportPdfGenerator {
                     ),
                   ),
                   pw.Text(
-                    'تاريخ الطباعة: ${_formatDateTime(DateTime.now())}',
+                    'تاريخ الطباعة: ${_formatDateTime(CairoTimeHelper.now())}',
                     style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
                   ),
                 ],
@@ -239,7 +243,7 @@ class AdaptiveShiftReportPdfGenerator {
           pw.SizedBox(height: 10),
           pw.Center(
             child: pw.Text(
-              'نظام عيادتي لإدارة العيادات والمراكز الطبية',
+              'نظام إدارة العيادات والمراكز الطبية',
               style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
             ),
           ),
@@ -252,7 +256,10 @@ class AdaptiveShiftReportPdfGenerator {
     CashierShiftModel shift,
     CompanySettingsModel? settings,
   ) {
-    final clinicName = settings?.companyName ?? 'عيادتي التخصصية';
+    final clinicName = (settings?.companyName != null &&
+            settings!.companyName!.trim().isNotEmpty)
+        ? settings.companyName!
+        : 'المركز الطبي';
     final phone = settings?.phone ?? '';
 
     final openingBal = Money.fromPiastres(shift.openingBalancePiastres ?? 0);
@@ -328,7 +335,7 @@ class AdaptiveShiftReportPdfGenerator {
           pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
           pw.Center(
             child: pw.Text(
-              'تاريخ الطباعة: ${_formatDateTime(DateTime.now())}',
+              'تاريخ الطباعة: ${_formatDateTime(CairoTimeHelper.now())}',
               style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
             ),
           ),

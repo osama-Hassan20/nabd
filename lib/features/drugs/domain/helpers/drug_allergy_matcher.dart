@@ -278,3 +278,4 @@ class DrugAllergyMatcher {
     return AllergyMatchResult.none;
   }
 }
+

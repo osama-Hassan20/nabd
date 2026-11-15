@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import '../../../../core/enums/payment_method.dart';
 import '../../../settings/data/models/company_settings_model.dart';
 import '../../../settings/data/models/enums/print_format_enum.dart';
 import '../../data/models/payment_transaction_model.dart';
@@ -62,7 +63,10 @@ class AdaptiveReceiptPdfGenerator {
     CompanySettingsModel? settings,
   ) {
     final money = Money.fromPiastres(payment.amountPiastres ?? 0);
-    final clinicName = settings?.companyName ?? 'عيادتي التخصصية';
+    final clinicName = (settings?.companyName != null &&
+            settings!.companyName!.trim().isNotEmpty)
+        ? settings.companyName!
+        : 'المركز الطبي';
     final phone = settings?.phone ?? '';
     final address = settings?.address ?? '';
 
@@ -144,7 +148,7 @@ class AdaptiveReceiptPdfGenerator {
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text('التاريخ: ${payment.createdAt?.toIso8601String().split('T').first ?? '-'}'),
+                    pw.Text('التاريخ: ${_formatDateTime(payment.createdAt)}'),
                     pw.SizedBox(height: 6),
                     pw.Text('الكاشير: ${payment.cashierName ?? '-'}'),
                   ],
@@ -183,7 +187,7 @@ class AdaptiveReceiptPdfGenerator {
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(payment.paymentMethod?.name ?? 'نقدي'),
+                    child: pw.Text(_paymentMethodArabic(payment.paymentMethod)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
@@ -246,7 +250,10 @@ class AdaptiveReceiptPdfGenerator {
     CompanySettingsModel? settings,
   ) {
     final money = Money.fromPiastres(payment.amountPiastres ?? 0);
-    final clinicName = settings?.companyName ?? 'عيادتي التخصصية';
+    final clinicName = (settings?.companyName != null &&
+            settings!.companyName!.trim().isNotEmpty)
+        ? settings.companyName!
+        : 'المركز الطبي';
     final phone = settings?.phone ?? '';
 
     return pw.Container(
@@ -276,11 +283,8 @@ class AdaptiveReceiptPdfGenerator {
           _thermalRow('المريض:', payment.patientName ?? '-'),
           _thermalRow('الحجز:', payment.bookingId ?? '-'),
           _thermalRow('الكاشير:', payment.cashierName ?? '-'),
-          _thermalRow(
-            'الوقت:',
-            payment.createdAt?.toIso8601String().split('T').first ?? '-',
-          ),
-          _thermalRow('طريقة الدفع:', payment.paymentMethod?.name ?? 'نقدي'),
+          _thermalRow('الوقت:', _formatDateTime(payment.createdAt)),
+          _thermalRow('طريقة الدفع:', _paymentMethodArabic(payment.paymentMethod)),
           pw.SizedBox(height: 6),
           _dashedDivider(),
           pw.SizedBox(height: 6),
@@ -333,6 +337,29 @@ class AdaptiveReceiptPdfGenerator {
       style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
       maxLines: 1,
     );
+  }
+
+  static String _paymentMethodArabic(PaymentMethod? method) {
+    switch (method) {
+      case PaymentMethod.cash:
+        return 'نقدي';
+      case PaymentMethod.card:
+        return 'بطاقة / شبكة';
+      case PaymentMethod.bankTransfer:
+        return 'تحويل بنكي';
+      case null:
+        return 'نقدي';
+    }
+  }
+
+  static String _formatDateTime(DateTime? dt) {
+    if (dt == null) return '-';
+    final y = dt.year.toString().padLeft(4, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    final h = dt.hour.toString().padLeft(2, '0');
+    final min = dt.minute.toString().padLeft(2, '0');
+    return '$y-$m-$d $h:$min';
   }
 }
 

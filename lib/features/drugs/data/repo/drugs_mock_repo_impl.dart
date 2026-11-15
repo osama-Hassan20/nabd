@@ -8,12 +8,16 @@ import '../models/drug_category_model.dart';
 import '../models/drug_model.dart';
 import '../models/enums/drug_source_enum.dart';
 import '../models/enums/review_status_enum.dart';
+import '../models/prescription_template_item_model.dart';
+import '../models/prescription_template_model.dart';
 
 class DrugsMockRepoImpl implements DrugsRepo {
   final List<DrugModel> _drugs = [];
   final List<DrugCategoryModel> _categories = [];
+  final List<PrescriptionTemplateModel> _templates = [];
   final Map<String, List<String>> _allergyAliasesMap = {};
   int _idCounter = 25;
+  int _templateIdCounter = 3;
 
   DrugsMockRepoImpl() {
     _initSeed();
@@ -528,6 +532,113 @@ class DrugsMockRepoImpl implements DrugsRepo {
         createdAt: seedDate,
       ),
     ]);
+
+    // ─── Prescription Templates Seed ─────────────────────────────────────────
+    _templates.addAll([
+      PrescriptionTemplateModel(
+        id: 'TPL-001',
+        doctorId: 'DOC-01',
+        name: 'بروتوكول نزلة معوية',
+        description: 'علاج تقلصات وجفاف مصاحب للنزلات المعوية الحادة',
+        isActive: true,
+        createdAt: seedDate,
+        updatedAt: seedDate,
+        items: const [
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-015',
+            drugName: 'Motinorm 10mg',
+            scientificName: 'Domperidone',
+            concentration: '10mg',
+            dosage: 'قرص واحد',
+            frequency: '3 مرات يومياً (قبل الأكل)',
+            duration: '5 أيام',
+            orderIndex: 0,
+          ),
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-016',
+            drugName: 'Visceralgine',
+            scientificName: 'Tiemonium Methylsulfate',
+            concentration: '50mg',
+            dosage: 'قرص واحد',
+            frequency: '3 مرات يومياً',
+            duration: '5 أيام',
+            orderIndex: 1,
+          ),
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-010',
+            drugName: 'Panadol Extra',
+            scientificName: 'Paracetamol / Caffeine',
+            concentration: '500mg/65mg',
+            dosage: 'قرصان',
+            frequency: 'عند اللزوم',
+            duration: '3 أيام',
+            orderIndex: 2,
+          ),
+        ],
+      ),
+      PrescriptionTemplateModel(
+        id: 'TPL-002',
+        doctorId: 'DOC-01',
+        name: 'بروتوكول نزلة شعبية',
+        description: 'علاج التهابات الجهاز التنفسي والتهاب الشعب الهوائية',
+        isActive: true,
+        createdAt: seedDate,
+        updatedAt: seedDate,
+        items: const [
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-001',
+            drugName: 'Augmentin 1g',
+            scientificName: 'Amoxicillin / Clavulanic Acid',
+            concentration: '1g',
+            dosage: 'قرص واحد',
+            frequency: 'مرتان يومياً (كل 12 ساعة)',
+            duration: '7 أيام',
+            orderIndex: 0,
+          ),
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-022',
+            drugName: 'Ventolin Inhaler',
+            scientificName: 'Salbutamol',
+            concentration: '100mcg/dose',
+            dosage: 'بختان',
+            frequency: 'عند اللزوم',
+            duration: 'مستمر (علاج مزمن)',
+            orderIndex: 1,
+          ),
+        ],
+      ),
+      PrescriptionTemplateModel(
+        id: 'TPL-003',
+        doctorId: 'DOC-02',
+        name: 'بروتوكول حساسية موسمية',
+        description: 'علاج أعراض الحساسية والرشح الموسمي',
+        isActive: true,
+        createdAt: seedDate,
+        updatedAt: seedDate,
+        items: const [
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-023',
+            drugName: 'Zyrtec 10mg',
+            scientificName: 'Cetirizine Dihydrochloride',
+            concentration: '10mg',
+            dosage: 'قرص واحد',
+            frequency: 'مرة واحدة يومياً (مساءً)',
+            duration: '7 أيام',
+            orderIndex: 0,
+          ),
+          PrescriptionTemplateItemModel(
+            drugId: 'DRUG-010',
+            drugName: 'Panadol Extra',
+            scientificName: 'Paracetamol / Caffeine',
+            concentration: '500mg/65mg',
+            dosage: 'قرص واحد',
+            frequency: 'عند اللزوم',
+            duration: '3 أيام',
+            orderIndex: 1,
+          ),
+        ],
+      ),
+    ]);
   }
 
   @override
@@ -647,7 +758,7 @@ class DrugsMockRepoImpl implements DrugsRepo {
 
     final current = _drugs[index];
     _drugs[index] = current.copyWith(isActive: false);
-    return const Right(unit);
+    return Right(unit);
   }
 
   @override
@@ -715,6 +826,80 @@ class DrugsMockRepoImpl implements DrugsRepo {
     required List<String> aliases,
   }) async {
     _allergyAliasesMap[catalogItemId] = List<String>.from(aliases);
-    return const Right(unit);
+    return Right(unit);
+  }
+
+  @override
+  Future<Either<Failures, List<PrescriptionTemplateModel>>> getDoctorTemplates(
+    String doctorId,
+  ) async {
+    final matches = _templates
+        .where((t) => t.doctorId == doctorId && t.isActive == true)
+        .toList();
+    return Right(matches);
+  }
+
+  @override
+  Future<Either<Failures, PrescriptionTemplateModel>> savePrescriptionTemplate(
+    PrescriptionTemplateModel template,
+  ) async {
+    final name = template.name?.trim() ?? '';
+    if (name.length < 2) {
+      return const Left(ValidationFailure(errMessage: 'template_validation_name_required'));
+    }
+
+    if (template.items == null || template.items!.isEmpty) {
+      return const Left(ValidationFailure(errMessage: 'template_validation_items_required'));
+    }
+
+    if (template.id != null) {
+      final index = _templates.indexWhere((t) => t.id == template.id);
+      if (index == -1) {
+        return const Left(ValidationFailure(errMessage: 'template_not_found'));
+      }
+
+      final existing = _templates[index];
+      if (existing.doctorId != template.doctorId) {
+        return Left(PermissionDeniedFailure(errMessage: 'template_unauthorized'));
+      }
+
+      final updated = template.copyWith(
+        updatedAt: CairoTimeHelper.now(),
+      );
+      _templates[index] = updated;
+      return Right(updated);
+    } else {
+      final newId = 'TPL-${(++_templateIdCounter).toString().padLeft(3, '0')}';
+      final created = template.copyWith(
+        id: newId,
+        isActive: true,
+        createdAt: CairoTimeHelper.now(),
+        updatedAt: CairoTimeHelper.now(),
+      );
+      _templates.add(created);
+      return Right(created);
+    }
+  }
+
+  @override
+  Future<Either<Failures, Unit>> deletePrescriptionTemplate(
+    String templateId,
+    String doctorId,
+  ) async {
+    final index = _templates.indexWhere((t) => t.id == templateId);
+    if (index == -1) {
+      return const Left(ValidationFailure(errMessage: 'template_not_found'));
+    }
+
+    final existing = _templates[index];
+    if (existing.doctorId != doctorId) {
+      return Left(PermissionDeniedFailure(errMessage: 'template_unauthorized'));
+    }
+
+    _templates[index] = existing.copyWith(
+      isActive: false,
+      updatedAt: CairoTimeHelper.now(),
+    );
+    return Right(unit);
   }
 }

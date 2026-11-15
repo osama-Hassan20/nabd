@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/payment_method.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
 import 'package:eyadty/features/cashier/data/models/payment_transaction_model.dart';
@@ -30,11 +31,12 @@ void main() {
       amountPiastres: 35000,
       paymentMethod: PaymentMethod.cash,
       cashierUserId: 'user-c1',
+      cashierName: 'كاشير الفرع',
       createdAt: DateTime(2026, 4, 15, 10, 30),
       notes: 'كشف باطنة مستعجل',
     );
 
-    final clinicSettings = CompanySettingsModel(
+    final clinicSettings = const CompanySettingsModel(
       id: 'branch-1',
       companyName: 'عيادة الأمل التخصصية',
       phone: '01122334455',
@@ -71,7 +73,7 @@ void main() {
     });
 
     test('applies dynamic clinic header from CompanySettingsModel', () async {
-      final customSettings = CompanySettingsModel(
+      const customSettings = CompanySettingsModel(
         companyName: 'مركز الشفاء الطبي المتقدم',
         phone: '01000000000',
         address: 'الإسكندرية - سموحة',
@@ -88,16 +90,24 @@ void main() {
       expect(bytes.length, greaterThan(100));
     });
 
-    test('falls back gracefully to default clinic name when settings is null', () async {
-      final bytes = await AdaptiveReceiptPdfGenerator.generate(
+    test('falls back gracefully to neutral default clinic name when settings is null or empty', () async {
+      final bytesNull = await AdaptiveReceiptPdfGenerator.generate(
         payment: samplePayment,
         settings: null,
         format: PrintFormat.a4,
         fontData: fontData,
       );
+      expect(bytesNull, isNotNull);
+      expect(bytesNull.isNotEmpty, isTrue);
 
-      expect(bytes, isNotNull);
-      expect(bytes.isNotEmpty, isTrue);
+      final bytesEmpty = await AdaptiveReceiptPdfGenerator.generate(
+        payment: samplePayment,
+        settings: const CompanySettingsModel(companyName: '  '),
+        format: PrintFormat.thermal80,
+        fontData: fontData,
+      );
+      expect(bytesEmpty, isNotNull);
+      expect(bytesEmpty.isNotEmpty, isTrue);
     });
 
     test('defaults to A4 when format is unspecified', () async {
@@ -109,6 +119,29 @@ void main() {
 
       expect(bytes, isNotNull);
       expect(bytes.isNotEmpty, isTrue);
+    });
+
+    test('generates receipt for all payment methods: cash, card, and bankTransfer', () async {
+      for (final method in PaymentMethod.values) {
+        final payment = samplePayment.copyWith(paymentMethod: method);
+        final a4Bytes = await AdaptiveReceiptPdfGenerator.generate(
+          payment: payment,
+          settings: clinicSettings,
+          format: PrintFormat.a4,
+          fontData: fontData,
+        );
+        expect(a4Bytes, isNotNull);
+        expect(a4Bytes.isNotEmpty, isTrue);
+
+        final thermalBytes = await AdaptiveReceiptPdfGenerator.generate(
+          payment: payment,
+          settings: clinicSettings,
+          format: PrintFormat.thermal80,
+          fontData: fontData,
+        );
+        expect(thermalBytes, isNotNull);
+        expect(thermalBytes.isNotEmpty, isTrue);
+      }
     });
 
     test('never exposes credit card number or unmasked sensitive data', () async {
@@ -151,8 +184,11 @@ void main() {
       totalBankTransferPiastres: 50000, // 500 EGP
       totalExpensesPiastres: 20000, // 200 EGP
       totalRefundsPiastres: 10000, // 100 EGP
-      expectedCashPiastres: 320000, // 1000 + 2500 - 200 - 100 = 3200 EGP
-      actualCashCountPiastres: 315000, // 3150 EGP
+      totalCapitalInjectionsPiastres: 50000, // 500 EGP
+      totalBankDepositsPiastres: 100000, // 1000 EGP
+      totalOwnerWithdrawalsPiastres: 30000, // 300 EGP
+      expectedCashPiastres: 320000,
+      actualCashCountPiastres: 315000,
       cashDifferencePiastres: -5000, // -50 EGP shortage
       shortageReason: 'خطأ في إرجاع الفكة للمريض صباحاً',
       isShortageApproved: true,
@@ -161,7 +197,7 @@ void main() {
       transactionCount: 24,
     );
 
-    final clinicSettings = CompanySettingsModel(
+    const clinicSettings = CompanySettingsModel(
       id: 'branch-1',
       companyName: 'عيادة الأمل التخصصية',
       phone: '01122334455',
@@ -206,17 +242,64 @@ void main() {
       expect(bytes.length, greaterThan(200));
     });
 
-    test('falls back gracefully when settings is null', () async {
-      final bytes = await AdaptiveShiftReportPdfGenerator.generate(
+    test('falls back gracefully to neutral clinic name when settings is null or empty', () async {
+      final bytesNull = await AdaptiveShiftReportPdfGenerator.generate(
         shift: sampleShift,
         settings: null,
         format: PrintFormat.thermal80,
         fontData: fontData,
       );
+      expect(bytesNull, isNotNull);
+      expect(bytesNull.isNotEmpty, isTrue);
 
-      expect(bytes, isNotNull);
-      expect(bytes.isNotEmpty, isTrue);
+      final bytesEmpty = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: sampleShift,
+        settings: const CompanySettingsModel(companyName: '   '),
+        format: PrintFormat.a4,
+        fontData: fontData,
+      );
+      expect(bytesEmpty, isNotNull);
+      expect(bytesEmpty.isNotEmpty, isTrue);
+    });
+
+    test('deterministic printing with CairoTimeHelper clock', () async {
+      CairoTimeHelper.setFixedClock(DateTime(2026, 4, 15, 16, 30));
+      try {
+        final bytes = await AdaptiveShiftReportPdfGenerator.generate(
+          shift: sampleShift,
+          settings: clinicSettings,
+          format: PrintFormat.thermal80,
+          fontData: fontData,
+        );
+        expect(bytes, isNotNull);
+        expect(bytes.isNotEmpty, isTrue);
+      } finally {
+        CairoTimeHelper.resetFixedClock();
+      }
+    });
+
+    test('handles shift report with surplus and unapproved shortage states', () async {
+      final surplusShift = sampleShift.copyWith(
+        cashDifferencePiastres: 5000,
+        shortageReason: null,
+        isShortageApproved: false,
+      );
+
+      final a4Surplus = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: surplusShift,
+        settings: clinicSettings,
+        format: PrintFormat.a4,
+        fontData: fontData,
+      );
+      expect(a4Surplus, isNotNull);
+
+      final thermalSurplus = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: surplusShift,
+        settings: clinicSettings,
+        format: PrintFormat.thermal80,
+        fontData: fontData,
+      );
+      expect(thermalSurplus, isNotNull);
     });
   });
 }
-

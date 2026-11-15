@@ -55,3 +55,4 @@ class DrugCategoryModel extends Equatable {
   @override
   List<Object?> get props => [id, nameAr, nameEn, description, isActive];
 }
+

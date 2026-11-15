@@ -40,3 +40,4 @@ class DrugNameValidator {
     return null;
   }
 }
+

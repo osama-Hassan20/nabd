@@ -407,3 +407,4 @@ mixin VisitConsultationMixin on SafeCubit<VisitsState> {
     );
   }
 }
+

@@ -245,3 +245,7 @@ class InvalidBranchOperationFailure extends Failures {
   const InvalidBranchOperationFailure({required super.errMessage});
 }
 
+class PermissionDeniedFailure extends Failures {
+  const PermissionDeniedFailure({required super.errMessage});
+}
+

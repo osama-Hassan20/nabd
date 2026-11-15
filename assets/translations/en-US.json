@@ -1192,6 +1192,9 @@
   "print_doc_prescription_desc": "Format used when printing physician prescriptions (F-04c)",
   "print_settings_saved_success": "Print settings saved for branch successfully",
   "print_switch_preview_format": "Switch Preview Format",
+  "settings_permission_denied": "You do not have permission to access system settings",
+  "invalid_print_format": "Invalid print format, allowed formats are A4 or thermal 80mm",
+  "use_case_not_available": "Service is currently unavailable",
   "drugs_title": "Drugs & Templates",
   "drugs_catalog_tab": "Drug Catalog",
   "drugs_templates_tab": "Prescription Templates",
@@ -1279,5 +1282,9 @@
   "addendum_action_remove": "Discontinue / Remove Medication",
   "addendum_before_snapshot": "Previous Data",
   "addendum_after_snapshot": "Updated Data",
-  "addendum_validation_error": "Addendum reason is mandatory and legally required"
+  "addendum_validation_error": "Addendum reason is mandatory and legally required",
+  "template_validation_name_required": "Template name is required and must be at least 2 characters",
+  "template_validation_items_required": "At least one medication must be added to the template",
+  "template_not_found": "Prescription template not found",
+  "template_unauthorized": "Unauthorized to modify or delete another physician's template"
 }

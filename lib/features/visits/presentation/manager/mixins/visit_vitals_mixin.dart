@@ -99,3 +99,4 @@ mixin VisitVitalsMixin on SafeCubit<VisitsState> {
     );
   }
 }
+

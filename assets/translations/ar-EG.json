@@ -1192,6 +1192,9 @@
   "print_doc_prescription_desc": "المقاس المستخدم عند طباعة الروشتة الصادرة من الطبيب (F-04c)",
   "print_settings_saved_success": "تم حفظ إعدادات الطباعة للفرع بنجاح",
   "print_switch_preview_format": "تغيير مقاس المعاينة",
+  "settings_permission_denied": "ليس لديك صلاحية الوصول إلى إعدادات النظام",
+  "invalid_print_format": "تنسيق الطباعة غير صالح، المقاسات المتاحة هي A4 أو 80 مم حراري",
+  "use_case_not_available": "الخدمة غير متوفرة حالياً",
   "drugs_title": "الأدوية والوصفات",
   "drugs_catalog_tab": "كتالوج الأدوية",
   "drugs_templates_tab": "الوصفات الجاهزة",
@@ -1279,5 +1282,9 @@
   "addendum_action_remove": "إيقاف/إلغاء علاج",
   "addendum_before_snapshot": "البيانات السابقة",
   "addendum_after_snapshot": "البيانات بعد التعديل",
-  "addendum_validation_error": "سبب التعديل إلزامي ومطلوب قانونياً"
+  "addendum_validation_error": "سبب التعديل إلزامي ومطلوب قانونياً",
+  "template_validation_name_required": "اسم الوصفة الجاهزة إلزامي ويجب ألا يقل عن حرفين",
+  "template_validation_items_required": "يجب إضافة دواء واحد على الأقل للوصفة الجاهزة",
+  "template_not_found": "الوصفة الجاهزة غير موجودة",
+  "template_unauthorized": "غير مصرح بتعديل أو حذف وصفة جاهزة لطبيب آخر"
 }

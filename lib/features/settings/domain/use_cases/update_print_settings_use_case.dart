@@ -35,6 +35,8 @@ class UpdatePrintSettingsUseCase
     this.auditLogger,
   });
 
+  static const Set<String> _validFormats = {'a4', 'thermal80'};
+
   @override
   Future<Either<Failures, CompanySettingsModel>> call(
     UpdatePrintSettingsParams params,
@@ -54,7 +56,29 @@ class UpdatePrintSettingsUseCase
       );
     }
 
+    if (params.receiptPrintFormat != null &&
+        !_validFormats.contains(params.receiptPrintFormat)) {
+      return const Left(
+        ValidationFailure(errMessage: 'invalid_print_format'),
+      );
+    }
+    if (params.shiftReportPrintFormat != null &&
+        !_validFormats.contains(params.shiftReportPrintFormat)) {
+      return const Left(
+        ValidationFailure(errMessage: 'invalid_print_format'),
+      );
+    }
+    if (params.prescriptionPrintFormat != null &&
+        !_validFormats.contains(params.prescriptionPrintFormat)) {
+      return const Left(
+        ValidationFailure(errMessage: 'invalid_print_format'),
+      );
+    }
+
     final currentRes = await repo.getCompanySettings();
+    if (currentRes.isLeft()) {
+      return currentRes;
+    }
     final current = currentRes.getOrElse(() => const CompanySettingsModel());
 
     final toSave = current.copyWith(
