@@ -110,13 +110,67 @@ void main() {
       expect(bytesEmpty.isNotEmpty, isTrue);
     });
 
-    test('defaults to A4 when format is unspecified', () async {
+    test('defaults to A4 when format is unspecified and settings has no preference', () async {
       final bytes = await AdaptiveReceiptPdfGenerator.generate(
         payment: samplePayment,
-        settings: clinicSettings,
+        settings: null,
         fontData: fontData,
       );
 
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
+    });
+
+    test('respects settings.effectiveReceiptPrintFormat when format is unspecified', () async {
+      const thermalSettings = CompanySettingsModel(
+        companyName: 'عيادة الأمل التخصصية',
+        receiptPrintFormat: 'thermal80',
+      );
+
+      final bytes = await AdaptiveReceiptPdfGenerator.generate(
+        payment: samplePayment,
+        settings: thermalSettings,
+        fontData: fontData,
+      );
+
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
+    });
+
+    test('renders payment notes cleanly in both A4 and thermal formats', () async {
+      final paymentWithNotes = samplePayment.copyWith(
+        notes: 'ملاحظة خاصة: دفعة كشف استشاري ومتابعة فندقية',
+      );
+
+      final a4Bytes = await AdaptiveReceiptPdfGenerator.generate(
+        payment: paymentWithNotes,
+        settings: clinicSettings,
+        format: PrintFormat.a4,
+        fontData: fontData,
+      );
+      expect(a4Bytes, isNotNull);
+      expect(a4Bytes.isNotEmpty, isTrue);
+
+      final thermalBytes = await AdaptiveReceiptPdfGenerator.generate(
+        payment: paymentWithNotes,
+        settings: clinicSettings,
+        format: PrintFormat.thermal80,
+        fontData: fontData,
+      );
+      expect(thermalBytes, isNotNull);
+      expect(thermalBytes.isNotEmpty, isTrue);
+    });
+
+    test('handles null id gracefully by falling back to dash', () async {
+      final paymentNoId = samplePayment.copyWith(
+        id: null,
+      );
+
+      final bytes = await AdaptiveReceiptPdfGenerator.generate(
+        payment: paymentNoId,
+        settings: clinicSettings,
+        fontData: fontData,
+      );
       expect(bytes, isNotNull);
       expect(bytes.isNotEmpty, isTrue);
     });
@@ -300,6 +354,57 @@ void main() {
         fontData: fontData,
       );
       expect(thermalSurplus, isNotNull);
+    });
+
+    test('respects settings.effectiveShiftReportPrintFormat when format is unspecified', () async {
+      final bytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: sampleShift,
+        settings: clinicSettings,
+        fontData: fontData,
+      );
+
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
+    });
+
+    test('renders force-closed shift report with forceCloseReason and user in A4 and thermal', () async {
+      final forceClosedShift = sampleShift.copyWith(
+        status: ShiftStatusEnum.forceClosed,
+        forceClosedByUserId: 'manager-admin',
+        forceCloseReason: 'انقطاع تيار كهربائي مفاجئ بالفرع',
+      );
+
+      final a4Bytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: forceClosedShift,
+        settings: clinicSettings,
+        format: PrintFormat.a4,
+        fontData: fontData,
+      );
+      expect(a4Bytes, isNotNull);
+      expect(a4Bytes.isNotEmpty, isTrue);
+
+      final thermalBytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: forceClosedShift,
+        settings: clinicSettings,
+        format: PrintFormat.thermal80,
+        fontData: fontData,
+      );
+      expect(thermalBytes, isNotNull);
+      expect(thermalBytes.isNotEmpty, isTrue);
+    });
+
+    test('renders all shift statuses with Arabic localized names', () async {
+      for (final status in ShiftStatusEnum.values) {
+        final shiftWithStatus = sampleShift.copyWith(status: status);
+        final bytes = await AdaptiveShiftReportPdfGenerator.generate(
+          shift: shiftWithStatus,
+          settings: clinicSettings,
+          format: PrintFormat.thermal80,
+          fontData: fontData,
+        );
+        expect(bytes, isNotNull);
+        expect(bytes.isNotEmpty, isTrue);
+      }
     });
   });
 }

@@ -11,10 +11,14 @@ class AdaptiveReceiptPdfGenerator {
   static Future<Uint8List> generate({
     required PaymentTransactionModel payment,
     CompanySettingsModel? settings,
-    PrintFormat format = PrintFormat.a4,
+    PrintFormat? format,
     ByteData? fontData,
   }) async {
     final pdf = pw.Document();
+
+    final effectiveFormat = format ??
+        settings?.effectiveReceiptPrintFormat ??
+        PrintFormat.a4;
 
     pw.Font? ttfFont;
     if (fontData != null) {
@@ -28,12 +32,11 @@ class AdaptiveReceiptPdfGenerator {
       }
     }
 
-    final theme = pw.ThemeData.withFont(
-      base: ttfFont,
-      bold: ttfFont,
-    );
+    final theme = ttfFont != null
+        ? pw.ThemeData.withFont(base: ttfFont, bold: ttfFont)
+        : pw.ThemeData();
 
-    final pageFormat = format == PrintFormat.thermal80
+    final pageFormat = effectiveFormat == PrintFormat.thermal80
         ? const PdfPageFormat(
             80 * PdfPageFormat.mm,
             200 * PdfPageFormat.mm,
@@ -47,7 +50,7 @@ class AdaptiveReceiptPdfGenerator {
         theme: theme,
         textDirection: pw.TextDirection.rtl,
         build: (pw.Context context) {
-          if (format == PrintFormat.thermal80) {
+          if (effectiveFormat == PrintFormat.thermal80) {
             return _buildThermalLayout(payment, settings);
           }
           return _buildA4Layout(payment, settings);
@@ -113,7 +116,7 @@ class AdaptiveReceiptPdfGenerator {
                     ),
                   ),
                   pw.Text(
-                    'رقم الإيصال: ${payment.receiptNumber}',
+                    'رقم الإيصال: ${payment.receiptNumber.isNotEmpty ? payment.receiptNumber : '-'}',
                     style: pw.TextStyle(
                       fontSize: 12,
                       fontWeight: pw.FontWeight.bold,
@@ -197,6 +200,31 @@ class AdaptiveReceiptPdfGenerator {
               ),
             ],
           ),
+          if (payment.notes != null && payment.notes!.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 10),
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: const pw.BoxDecoration(
+                color: PdfColors.grey100,
+                borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+              ),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'ملاحظات: ',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                  ),
+                  pw.Expanded(
+                    child: pw.Text(
+                      payment.notes!.trim(),
+                      style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           pw.SizedBox(height: 24),
 
           // Total Highlight
@@ -275,7 +303,10 @@ class AdaptiveReceiptPdfGenerator {
             '-- إيصال سداد نقدية --',
             style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
           ),
-          pw.Text('رقم: ${payment.receiptNumber}', style: const pw.TextStyle(fontSize: 9)),
+          pw.Text(
+            'رقم: ${payment.receiptNumber.isNotEmpty ? payment.receiptNumber : '-'}',
+            style: const pw.TextStyle(fontSize: 9),
+          ),
           pw.SizedBox(height: 6),
           _dashedDivider(),
           pw.SizedBox(height: 6),
@@ -285,6 +316,8 @@ class AdaptiveReceiptPdfGenerator {
           _thermalRow('الكاشير:', payment.cashierName ?? '-'),
           _thermalRow('الوقت:', _formatDateTime(payment.createdAt)),
           _thermalRow('طريقة الدفع:', _paymentMethodArabic(payment.paymentMethod)),
+          if (payment.notes != null && payment.notes!.trim().isNotEmpty)
+            _thermalRow('ملاحظات:', payment.notes!.trim()),
           pw.SizedBox(height: 6),
           _dashedDivider(),
           pw.SizedBox(height: 6),

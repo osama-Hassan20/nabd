@@ -96,7 +96,7 @@ class UpdatePrintSettingsUseCase
       (saved) {
         auditLogger?.log(
           eventType: 'print_settings_updated',
-          targetUserId: targetBranchId,
+          targetUserId: null,
           performedByUserId: currentUserProvider?.currentUser?.id,
           branchId: targetBranchId,
           details:

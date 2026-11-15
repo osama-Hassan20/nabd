@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -174,7 +175,30 @@ void main() {
       expect(logs.length, 1);
       expect(logs.first.performedByUserId, 'user_owner');
       expect(logs.first.branchId, 'branch_1');
+      expect(logs.first.targetUserId, isNull);
       expect(logs.first.details?.contains('receiptFormat=thermal80'), isTrue);
+    });
+
+    test('preserves existing formats when only one format is updated', () async {
+      await repo.updateCompanySettings(
+        const CompanySettingsModel(
+          receiptPrintFormat: 'thermal80',
+          shiftReportPrintFormat: 'a4',
+          prescriptionPrintFormat: 'thermal80',
+        ),
+      );
+
+      final result = await updatePrintSettingsUseCase(
+        const UpdatePrintSettingsParams(
+          shiftReportPrintFormat: 'thermal80',
+        ),
+      );
+
+      expect(result.isRight(), isTrue);
+      final saved = result.getOrElse(() => const CompanySettingsModel());
+      expect(saved.receiptPrintFormat, 'thermal80'); // preserved
+      expect(saved.shiftReportPrintFormat, 'thermal80'); // updated
+      expect(saved.prescriptionPrintFormat, 'thermal80'); // preserved
     });
 
     test('fails closed and records zero audit when permission is denied', () async {
@@ -526,6 +550,105 @@ void main() {
 
       // Drain toastification timer (3 seconds)
       await tester.pump(const Duration(seconds: 4));
+
+      await cubit.close();
+    });
+
+    testWidgets('works seamlessly when settingsCubit parameter is null by using context', (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final getSettingsUseCase = GetCompanySettingsUseCase(repo: repo);
+      final updateCompanySettingsUseCase = UpdateCompanySettingsUseCase(repo: repo);
+
+      final cubit = SettingsCubit(
+        getCompanySettingsUseCase: getSettingsUseCase,
+        updateCompanySettingsUseCase: updateCompanySettingsUseCase,
+        addSpecialHolidayUseCase: AddSpecialHolidayUseCase(repo: repo),
+        deleteSpecialHolidayUseCase: DeleteSpecialHolidayUseCase(repo: repo),
+        changePasswordUseCase: ChangePasswordUseCase(repo: repo),
+        updatePrintSettingsUseCase: updatePrintSettingsUseCase,
+      );
+
+      cubit.emit(
+        cubit.state.copyWith(
+          status: RequestStatusEnum.success,
+          settings: const CompanySettingsModel(
+            companyName: 'عيادة الأمل',
+            receiptPrintFormat: 'a4',
+            shiftReportPrintFormat: 'a4',
+            prescriptionPrintFormat: 'a4',
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedTab(
+          settingsCubit: cubit,
+          child: const PrintSettingsTab(), // null settingsCubit parameter
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PrintSettingsTab), findsOneWidget);
+
+      // Select shift report thermal80 and prescription thermal80
+      await tester.tap(find.byKey(const Key('format_shift_thermal80')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('format_prescription_thermal80')));
+      await tester.pump();
+
+      // Tap save
+      await tester.tap(find.byKey(const Key('print_settings_save_btn')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(cubit.state.settings?.shiftReportPrintFormat, 'thermal80');
+      expect(cubit.state.settings?.prescriptionPrintFormat, 'thermal80');
+
+      await tester.pump(const Duration(seconds: 4));
+      await cubit.close();
+    });
+
+    testWidgets('shows loading state on save button while update is in progress', (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final getSettingsUseCase = GetCompanySettingsUseCase(repo: repo);
+      final updateCompanySettingsUseCase = UpdateCompanySettingsUseCase(repo: repo);
+
+      final cubit = SettingsCubit(
+        getCompanySettingsUseCase: getSettingsUseCase,
+        updateCompanySettingsUseCase: updateCompanySettingsUseCase,
+        addSpecialHolidayUseCase: AddSpecialHolidayUseCase(repo: repo),
+        deleteSpecialHolidayUseCase: DeleteSpecialHolidayUseCase(repo: repo),
+        changePasswordUseCase: ChangePasswordUseCase(repo: repo),
+        updatePrintSettingsUseCase: updatePrintSettingsUseCase,
+      );
+
+      cubit.emit(
+        cubit.state.copyWith(
+          status: RequestStatusEnum.success,
+          actionStatus: RequestStatusEnum.loading,
+          settings: const CompanySettingsModel(
+            receiptPrintFormat: 'a4',
+            shiftReportPrintFormat: 'a4',
+            prescriptionPrintFormat: 'a4',
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedTab(
+          settingsCubit: cubit,
+          child: PrintSettingsTab(settingsCubit: cubit),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
 
       await cubit.close();
     });

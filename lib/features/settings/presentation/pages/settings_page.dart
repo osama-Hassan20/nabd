@@ -175,7 +175,7 @@ class _SettingsViewState extends State<SettingsView>
                     SpecialHolidaysTab(settingsCubit: cubit),
                     const MedicalServicesTab(),
                     const DoctorsScheduleTab(),
-                    const PrintSettingsTab(),
+                    PrintSettingsTab(settingsCubit: cubit),
                     // NotificationsTab(settingsCubit: cubit),
                   ],
                 ),

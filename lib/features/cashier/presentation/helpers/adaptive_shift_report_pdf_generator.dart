@@ -5,16 +5,21 @@ import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../settings/data/models/company_settings_model.dart';
 import '../../../settings/data/models/enums/print_format_enum.dart';
 import '../../data/models/cashier_shift_model.dart';
+import '../../data/models/enums/shift_status_enum.dart';
 import '../../domain/helpers/money.dart';
 
 class AdaptiveShiftReportPdfGenerator {
   static Future<Uint8List> generate({
     required CashierShiftModel shift,
     CompanySettingsModel? settings,
-    PrintFormat format = PrintFormat.a4,
+    PrintFormat? format,
     ByteData? fontData,
   }) async {
     final pdf = pw.Document();
+
+    final effectiveFormat = format ??
+        settings?.effectiveShiftReportPrintFormat ??
+        PrintFormat.a4;
 
     pw.Font? ttfFont;
     if (fontData != null) {
@@ -28,12 +33,11 @@ class AdaptiveShiftReportPdfGenerator {
       }
     }
 
-    final theme = pw.ThemeData.withFont(
-      base: ttfFont,
-      bold: ttfFont,
-    );
+    final theme = ttfFont != null
+        ? pw.ThemeData.withFont(base: ttfFont, bold: ttfFont)
+        : pw.ThemeData();
 
-    final pageFormat = format == PrintFormat.thermal80
+    final pageFormat = effectiveFormat == PrintFormat.thermal80
         ? const PdfPageFormat(
             80 * PdfPageFormat.mm,
             260 * PdfPageFormat.mm,
@@ -47,7 +51,7 @@ class AdaptiveShiftReportPdfGenerator {
         theme: theme,
         textDirection: pw.TextDirection.rtl,
         build: (pw.Context context) {
-          if (format == PrintFormat.thermal80) {
+          if (effectiveFormat == PrintFormat.thermal80) {
             return _buildThermalLayout(shift, settings);
           }
           return _buildA4Layout(shift, settings);
@@ -146,7 +150,8 @@ class AdaptiveShiftReportPdfGenerator {
                 _buildMetaItem('الكاشير', shift.cashierName ?? shift.cashierUserId ?? '-'),
                 _buildMetaItem('وقت الفتح', _formatDateTime(shift.openedAt)),
                 _buildMetaItem('وقت الإغلاق', _formatDateTime(shift.closedAt)),
-                _buildMetaItem('الحالة', shift.status?.name ?? '-'),
+                _buildMetaItem('العمليات', '${shift.transactionCount ?? 0}'),
+                _buildMetaItem('الحالة', _shiftStatusArabic(shift.status)),
               ],
             ),
           ),
@@ -193,6 +198,7 @@ class AdaptiveShiftReportPdfGenerator {
 
           // Notes & Shortage Details
           if ((shift.shortageReason != null && shift.shortageReason!.isNotEmpty) ||
+              (shift.forceCloseReason != null && shift.forceCloseReason!.isNotEmpty) ||
               (shift.closingNotes != null && shift.closingNotes!.isNotEmpty))
             pw.Container(
               padding: const pw.EdgeInsets.all(10),
@@ -208,6 +214,13 @@ class AdaptiveShiftReportPdfGenerator {
                     pw.Text(shift.shortageReason!, style: const pw.TextStyle(fontSize: 10)),
                     if (shift.isShortageApproved == true)
                       pw.Text('تم اعتماد العجز من المشرف: ${shift.shortageApprovedByUserId ?? ""}', style: const pw.TextStyle(fontSize: 9, color: PdfColors.green700)),
+                    pw.SizedBox(height: 6),
+                  ],
+                  if (shift.forceCloseReason != null && shift.forceCloseReason!.isNotEmpty) ...[
+                    pw.Text('سبب الإغلاق الإجباري:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.red700)),
+                    pw.Text(shift.forceCloseReason!, style: const pw.TextStyle(fontSize: 10)),
+                    if (shift.forceClosedByUserId != null)
+                      pw.Text('بواسطة: ${shift.forceClosedByUserId!}', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
                     pw.SizedBox(height: 6),
                   ],
                   if (shift.closingNotes != null && shift.closingNotes!.isNotEmpty) ...[
@@ -304,6 +317,8 @@ class AdaptiveShiftReportPdfGenerator {
           _buildThermalRow('الكاشير', shift.cashierName ?? shift.cashierUserId ?? '-'),
           _buildThermalRow('الفتح', _formatDateTime(shift.openedAt)),
           _buildThermalRow('الإغلاق', _formatDateTime(shift.closedAt)),
+          _buildThermalRow('العمليات', '${shift.transactionCount ?? 0}'),
+          _buildThermalRow('الحالة', _shiftStatusArabic(shift.status)),
           pw.Divider(thickness: 0.5, borderStyle: pw.BorderStyle.dashed),
 
           _buildThermalRow('الافتتاحي', openingBal.formattedEgp),
@@ -329,6 +344,11 @@ class AdaptiveShiftReportPdfGenerator {
             pw.Divider(thickness: 0.5, borderStyle: pw.BorderStyle.dashed),
             pw.Text('سبب العجز:', style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold)),
             pw.Text(shift.shortageReason!, style: const pw.TextStyle(fontSize: 7)),
+          ],
+          if (shift.forceCloseReason != null && shift.forceCloseReason!.isNotEmpty) ...[
+            pw.Divider(thickness: 0.5, borderStyle: pw.BorderStyle.dashed),
+            pw.Text('سبب الإغلاق الإجباري:', style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, color: PdfColors.red700)),
+            pw.Text(shift.forceCloseReason!, style: const pw.TextStyle(fontSize: 7)),
           ],
 
           pw.SizedBox(height: 8),
@@ -439,6 +459,21 @@ class AdaptiveShiftReportPdfGenerator {
     final h = dt.hour.toString().padLeft(2, '0');
     final min = dt.minute.toString().padLeft(2, '0');
     return '$y-$m-$d $h:$min';
+  }
+
+  static String _shiftStatusArabic(ShiftStatusEnum? status) {
+    switch (status) {
+      case ShiftStatusEnum.open:
+        return 'مفتوحة';
+      case ShiftStatusEnum.closed:
+        return 'مغلقة';
+      case ShiftStatusEnum.closedPendingApproval:
+        return 'معلقة للاعتماد';
+      case ShiftStatusEnum.forceClosed:
+        return 'إغلاق إجباري';
+      case null:
+        return '-';
+    }
   }
 }
 
