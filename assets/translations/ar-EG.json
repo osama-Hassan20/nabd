@@ -1480,5 +1480,7 @@
   "analytics_col_avg_duration": "متوسط الكشف",
   "analytics_col_satisfaction": "التقييم",
   "minutes_short": "دقيقة",
-  "minutes_unit": "دقيقة"
+  "minutes_unit": "دقيقة",
+  "no_data": "لا توجد بيانات متاحة",
+  "hr_col_base_salary": "الراتب الأساسي"
 }
