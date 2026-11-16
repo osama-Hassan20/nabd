@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/payment_method.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
@@ -22,6 +24,7 @@ class CollectPaymentDialog extends StatefulWidget {
   final num paidAmount;
   final String? shiftId;
   final String? branchId;
+  final CashierCubit? cashierCubit;
 
   const CollectPaymentDialog({
     super.key,
@@ -32,6 +35,7 @@ class CollectPaymentDialog extends StatefulWidget {
     required this.paidAmount,
     this.shiftId,
     this.branchId,
+    this.cashierCubit,
   });
 
   @override
@@ -69,6 +73,17 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = widget.cashierCubit ??
+        (context.mounted
+            ? (() {
+                try {
+                  return context.read<CashierCubit>();
+                } catch (_) {
+                  return getIt<CashierCubit>();
+                }
+              })()
+            : getIt<CashierCubit>());
+
     final session = context.read<SessionCubit>().state;
     final effectiveBranchId =
         widget.branchId ?? session.activeBranchId ?? 'branch_1';
@@ -77,19 +92,20 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
     final remaining = widget.totalPrice - widget.paidAmount;
 
     return BlocConsumer<CashierCubit, CashierState>(
+      bloc: cubit,
       listener: (context, state) {
         if (state.errorMessage != null) {
           CustomToast(
             context: context,
             header: state.errorMessage!.tr(),
           ).showErrorToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
         } else if (state.successMessage != null && state.lastPayment != null) {
           CustomToast(
             context: context,
             header: state.successMessage!.tr(),
           ).showTopToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
           if (Navigator.canPop(context)) {
             Navigator.of(context).pop(true);
           }
@@ -353,9 +369,9 @@ class _CollectPaymentDialogState extends State<CollectPaymentDialog> {
                             if (_formKey.currentState?.validate() ?? false) {
                               final money = Money.fromEgpString(
                                   _amountController.text.trim());
-                              context.read<CashierCubit>().collectPayment(
+                              cubit.collectPayment(
                                     clientRequestId:
-                                        'req-col-${DateTime.now().millisecondsSinceEpoch}',
+                                        'req-col-${CairoTimeHelper.now().millisecondsSinceEpoch}',
                                     shiftId: activeShiftId,
                                     branchId: effectiveBranchId,
                                     bookingId: widget.bookingId,

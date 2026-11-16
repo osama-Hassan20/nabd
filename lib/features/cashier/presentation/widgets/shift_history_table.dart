@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
+import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'dialogs/approve_shortage_dialog.dart';
 
@@ -158,9 +160,21 @@ class ShiftHistoryTable extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             padding: const EdgeInsets.symmetric(horizontal: 8),
             onTap: () {
+              CashierCubit? cashierCubit;
+              try {
+                cashierCubit = context.read<CashierCubit>();
+              } catch (_) {}
               showDialog(
                 context: context,
-                builder: (_) => ApproveShortageDialog(shift: shift),
+                builder: (_) => cashierCubit != null
+                    ? BlocProvider.value(
+                        value: cashierCubit,
+                        child: ApproveShortageDialog(
+                          shift: shift,
+                          cashierCubit: cashierCubit,
+                        ),
+                      )
+                    : ApproveShortageDialog(shift: shift),
               );
             },
             child: Text(

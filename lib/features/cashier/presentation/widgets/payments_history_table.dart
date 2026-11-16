@@ -1,10 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/payment_transaction_model.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
+import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'dialogs/refund_payment_dialog.dart';
 
@@ -163,9 +165,21 @@ class PaymentsHistoryTable extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             padding: const EdgeInsets.symmetric(horizontal: 8),
             onTap: () {
+              CashierCubit? cashierCubit;
+              try {
+                cashierCubit = context.read<CashierCubit>();
+              } catch (_) {}
               showDialog(
                 context: context,
-                builder: (_) => RefundPaymentDialog(payment: payment),
+                builder: (_) => cashierCubit != null
+                    ? BlocProvider.value(
+                        value: cashierCubit,
+                        child: RefundPaymentDialog(
+                          payment: payment,
+                          cashierCubit: cashierCubit,
+                        ),
+                      )
+                    : RefundPaymentDialog(payment: payment),
               );
             },
             child: Text(

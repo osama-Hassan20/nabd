@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/enums/cash_movement_type_enum.dart';
@@ -17,11 +19,13 @@ import 'package:eyadty/shared/widgets/custom_toast.dart';
 class RecordDrawerExpenseDialog extends StatefulWidget {
   final String shiftId;
   final String branchId;
+  final CashierCubit? cashierCubit;
 
   const RecordDrawerExpenseDialog({
     super.key,
     required this.shiftId,
     required this.branchId,
+    this.cashierCubit,
   });
 
   @override
@@ -70,23 +74,31 @@ class _RecordDrawerExpenseDialogState extends State<RecordDrawerExpenseDialog> {
 
   @override
   Widget build(BuildContext context) {
+    CashierCubit cubit;
+    try {
+      cubit = widget.cashierCubit ?? context.read<CashierCubit>();
+    } catch (_) {
+      cubit = getIt<CashierCubit>();
+    }
+
     final session = context.read<SessionCubit>().state;
     final user = session.currentUser;
 
     return BlocConsumer<CashierCubit, CashierState>(
+      bloc: cubit,
       listener: (context, state) {
         if (state.errorMessage != null) {
           CustomToast(
             context: context,
             header: state.errorMessage!.tr(),
           ).showErrorToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
         } else if (state.successMessage != null) {
           CustomToast(
             context: context,
             header: state.successMessage!.tr(),
           ).showTopToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
           Navigator.of(context).pop(true);
         }
       },
@@ -240,21 +252,20 @@ class _RecordDrawerExpenseDialogState extends State<RecordDrawerExpenseDialog> {
                             if (_formKey.currentState?.validate() ?? false) {
                               final money = Money.fromEgpString(
                                   _amountController.text.trim());
-                              context.read<CashierCubit>().recordDrawerExpense(
-                                    clientRequestId:
-                                        'req-exp-${DateTime.now().millisecondsSinceEpoch}',
-                                    shiftId: widget.shiftId,
-                                    branchId: widget.branchId,
-                                    movementType: _selectedType.name,
-                                    amountPiastres: money.piastres,
-                                    reason: _reasonController.text.trim(),
-                                    recipientName: _recipientController.text
-                                            .trim()
-                                            .isNotEmpty
+                              cubit.recordDrawerExpense(
+                                clientRequestId:
+                                    'req-exp-${CairoTimeHelper.now().millisecondsSinceEpoch}',
+                                shiftId: widget.shiftId,
+                                branchId: widget.branchId,
+                                movementType: _selectedType.name,
+                                amountPiastres: money.piastres,
+                                reason: _reasonController.text.trim(),
+                                recipientName:
+                                    _recipientController.text.trim().isNotEmpty
                                         ? _recipientController.text.trim()
                                         : null,
-                                    performedByUserId: user?.id,
-                                  );
+                                performedByUserId: user?.id,
+                              );
                             }
                           },
                           child: Text(

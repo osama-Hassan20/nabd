@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/payment_method.dart';
+import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/payment_transaction_model.dart';
@@ -16,10 +18,12 @@ import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class RefundPaymentDialog extends StatefulWidget {
   final PaymentTransactionModel payment;
+  final CashierCubit? cashierCubit;
 
   const RefundPaymentDialog({
     super.key,
     required this.payment,
+    this.cashierCubit,
   });
 
   @override
@@ -47,23 +51,35 @@ class _RefundPaymentDialogState extends State<RefundPaymentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = widget.cashierCubit ??
+        (context.mounted
+            ? (() {
+                try {
+                  return context.read<CashierCubit>();
+                } catch (_) {
+                  return getIt<CashierCubit>();
+                }
+              })()
+            : getIt<CashierCubit>());
+
     final session = context.read<SessionCubit>().state;
     final user = session.currentUser;
 
     return BlocConsumer<CashierCubit, CashierState>(
+      bloc: cubit,
       listener: (context, state) {
         if (state.errorMessage != null) {
           CustomToast(
             context: context,
             header: state.errorMessage!.tr(),
           ).showErrorToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
         } else if (state.successMessage != null && state.lastRefund != null) {
           CustomToast(
             context: context,
             header: state.successMessage!.tr(),
           ).showTopToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
           if (Navigator.canPop(context)) {
             Navigator.of(context).pop(true);
           }
@@ -260,9 +276,9 @@ class _RefundPaymentDialogState extends State<RefundPaymentDialog> {
                             if (_formKey.currentState?.validate() ?? false) {
                               final money = Money.fromEgpString(
                                   _amountController.text.trim());
-                              context.read<CashierCubit>().refundPayment(
+                              cubit.refundPayment(
                                     clientRequestId:
-                                        'req-ref-${DateTime.now().millisecondsSinceEpoch}',
+                                        'req-ref-${CairoTimeHelper.now().millisecondsSinceEpoch}',
                                     originalPaymentId: widget.payment.id!,
                                     shiftId: activeShiftId,
                                     branchId: widget.payment.branchId!,

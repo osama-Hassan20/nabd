@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:printing/printing.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
@@ -7,6 +8,7 @@ import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
 import 'package:eyadty/features/cashier/presentation/helpers/adaptive_shift_report_pdf_generator.dart';
+import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
@@ -91,9 +93,13 @@ class ActiveShiftBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             onTap: () {
+              final cashierCubit = context.read<CashierCubit>();
               showDialog(
                 context: context,
-                builder: (_) => const OpenShiftDialog(),
+                builder: (_) => BlocProvider.value(
+                  value: cashierCubit,
+                  child: OpenShiftDialog(cashierCubit: cashierCubit),
+                ),
               );
             },
             child: Row(
@@ -317,11 +323,16 @@ class ActiveShiftBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 onTap: () {
+                  final cashierCubit = context.read<CashierCubit>();
                   showDialog(
                     context: context,
-                    builder: (_) => RecordDrawerExpenseDialog(
-                      shiftId: shift.id!,
-                      branchId: shift.branchId!,
+                    builder: (_) => BlocProvider.value(
+                      value: cashierCubit,
+                      child: RecordDrawerExpenseDialog(
+                        shiftId: shift.id!,
+                        branchId: shift.branchId!,
+                        cashierCubit: cashierCubit,
+                      ),
                     ),
                   );
                 },
@@ -349,9 +360,16 @@ class ActiveShiftBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 onTap: () {
+                  final cashierCubit = context.read<CashierCubit>();
                   showDialog(
                     context: context,
-                    builder: (_) => CloseShiftDialog(shift: shift),
+                    builder: (_) => BlocProvider.value(
+                      value: cashierCubit,
+                      child: CloseShiftDialog(
+                        shift: shift,
+                        cashierCubit: cashierCubit,
+                      ),
+                    ),
                   );
                 },
                 child: Row(

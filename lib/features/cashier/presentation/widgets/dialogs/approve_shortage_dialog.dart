@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
@@ -14,10 +15,12 @@ import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class ApproveShortageDialog extends StatefulWidget {
   final CashierShiftModel shift;
+  final CashierCubit? cashierCubit;
 
   const ApproveShortageDialog({
     super.key,
     required this.shift,
+    this.cashierCubit,
   });
 
   @override
@@ -36,6 +39,17 @@ class _ApproveShortageDialogState extends State<ApproveShortageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = widget.cashierCubit ??
+        (context.mounted
+            ? (() {
+                try {
+                  return context.read<CashierCubit>();
+                } catch (_) {
+                  return getIt<CashierCubit>();
+                }
+              })()
+            : getIt<CashierCubit>());
+
     final session = context.read<SessionCubit>().state;
     final user = session.currentUser;
 
@@ -43,19 +57,20 @@ class _ApproveShortageDialogState extends State<ApproveShortageDialog> {
     final shortageMoney = Money(diffPiastres.abs()).formatEgp();
 
     return BlocConsumer<CashierCubit, CashierState>(
+      bloc: cubit,
       listener: (context, state) {
         if (state.errorMessage != null) {
           CustomToast(
             context: context,
             header: state.errorMessage!.tr(),
           ).showErrorToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
         } else if (state.successMessage != null) {
           CustomToast(
             context: context,
             header: state.successMessage!.tr(),
           ).showTopToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
           Navigator.of(context).pop(true);
         }
       },
@@ -235,7 +250,7 @@ class _ApproveShortageDialogState extends State<ApproveShortageDialog> {
                           isLoading: state.isSubmitting,
                           onTap: () {
                             if (_formKey.currentState?.validate() ?? false) {
-                              context.read<CashierCubit>().approveShortage(
+                              cubit.approveShortage(
                                     shiftId: widget.shift.id!,
                                     branchId: widget.shift.branchId!,
                                     cashierUserId: widget.shift.cashierUserId!,

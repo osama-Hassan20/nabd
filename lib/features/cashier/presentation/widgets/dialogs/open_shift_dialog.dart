@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
@@ -13,7 +14,9 @@ import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class OpenShiftDialog extends StatefulWidget {
-  const OpenShiftDialog({super.key});
+  final CashierCubit? cashierCubit;
+
+  const OpenShiftDialog({super.key, this.cashierCubit});
 
   @override
   State<OpenShiftDialog> createState() => _OpenShiftDialogState();
@@ -33,24 +36,32 @@ class _OpenShiftDialogState extends State<OpenShiftDialog> {
 
   @override
   Widget build(BuildContext context) {
+    CashierCubit cubit;
+    try {
+      cubit = widget.cashierCubit ?? context.read<CashierCubit>();
+    } catch (_) {
+      cubit = getIt<CashierCubit>();
+    }
+
     final session = context.read<SessionCubit>().state;
     final branchId = session.activeBranchId ?? 'branch_1';
     final user = session.currentUser;
 
     return BlocConsumer<CashierCubit, CashierState>(
+      bloc: cubit,
       listener: (context, state) {
         if (state.errorMessage != null) {
           CustomToast(
             context: context,
             header: state.errorMessage!.tr(),
           ).showErrorToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
         } else if (state.successMessage != null && state.activeShift != null) {
           CustomToast(
             context: context,
             header: state.successMessage!.tr(),
           ).showTopToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
           if (Navigator.canPop(context)) {
             Navigator.of(context).pop();
           }
@@ -175,12 +186,12 @@ class _OpenShiftDialogState extends State<OpenShiftDialog> {
                           if (_formKey.currentState?.validate() ?? false) {
                             final money = Money.fromEgpString(
                                 _openingBalanceController.text.trim());
-                            context.read<CashierCubit>().openShift(
-                                  branchId: branchId,
-                                  openingBalancePiastres: money.piastres,
-                                  cashierUserId: user?.id,
-                                  cashierName: user?.fullName,
-                                );
+                            cubit.openShift(
+                              branchId: branchId,
+                              openingBalancePiastres: money.piastres,
+                              cashierUserId: user?.id,
+                              cashierName: user?.fullName,
+                            );
                           }
                         },
                         child: Text(

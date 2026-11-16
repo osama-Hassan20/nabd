@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
@@ -14,10 +15,12 @@ import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class CloseShiftDialog extends StatefulWidget {
   final CashierShiftModel shift;
+  final CashierCubit? cashierCubit;
 
   const CloseShiftDialog({
     super.key,
     required this.shift,
+    this.cashierCubit,
   });
 
   @override
@@ -69,23 +72,31 @@ class _CloseShiftDialogState extends State<CloseShiftDialog> {
 
   @override
   Widget build(BuildContext context) {
+    CashierCubit cubit;
+    try {
+      cubit = widget.cashierCubit ?? context.read<CashierCubit>();
+    } catch (_) {
+      cubit = getIt<CashierCubit>();
+    }
+
     final expectedPiastres = widget.shift.expectedCashPiastres ?? 0;
     final diffPiastres = _countedPiastres - expectedPiastres;
 
     return BlocConsumer<CashierCubit, CashierState>(
+      bloc: cubit,
       listener: (context, state) {
         if (state.errorMessage != null) {
           CustomToast(
             context: context,
             header: state.errorMessage!.tr(),
           ).showErrorToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
         } else if (state.successMessage != null && state.activeShift == null) {
           CustomToast(
             context: context,
             header: state.successMessage!.tr(),
           ).showTopToast();
-          context.read<CashierCubit>().clearMessages();
+          cubit.clearMessages();
           Navigator.of(context).pop();
         }
       },
@@ -311,15 +322,15 @@ class _CloseShiftDialogState extends State<CloseShiftDialog> {
                           isLoading: state.isSubmitting,
                           onTap: () {
                             if (_formKey.currentState?.validate() ?? false) {
-                              context.read<CashierCubit>().closeShift(
-                                    shiftId: widget.shift.id!,
-                                    actualCashCountPiastres: _countedPiastres,
-                                    closingNotes: _closingNotesController.text
-                                        .trim(),
-                                    shortageReason: _hasShortage
-                                        ? _shortageReasonController.text.trim()
-                                        : null,
-                                  );
+                              cubit.closeShift(
+                                shiftId: widget.shift.id!,
+                                actualCashCountPiastres: _countedPiastres,
+                                closingNotes:
+                                    _closingNotesController.text.trim(),
+                                shortageReason: _hasShortage
+                                    ? _shortageReasonController.text.trim()
+                                    : null,
+                              );
                             }
                           },
                           child: Text(
