@@ -60,3 +60,4 @@ class ServiceRevenueDistributionModel extends Equatable {
         percentage,
       ];
 }
+

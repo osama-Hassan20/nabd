@@ -67,3 +67,4 @@ class RevenueTrendPointModel extends Equatable {
         netProfitPiastres,
       ];
 }
+

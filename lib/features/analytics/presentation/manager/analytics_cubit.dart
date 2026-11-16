@@ -252,3 +252,4 @@ class AnalyticsCubit extends SafeCubit<AnalyticsState> {
     );
   }
 }
+

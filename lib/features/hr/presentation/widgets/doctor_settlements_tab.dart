@@ -35,3 +35,4 @@ class DoctorSettlementsTab extends StatelessWidget {
     );
   }
 }
+

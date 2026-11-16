@@ -33,3 +33,4 @@ class DoctorSettlementVisitsMockLookup implements DoctorSettlementVisitsLookup {
     }).toList();
   }
 }
+

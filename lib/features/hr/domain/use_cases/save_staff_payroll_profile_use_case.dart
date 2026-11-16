@@ -65,3 +65,4 @@ class SaveStaffPayrollProfileUseCase {
     return hrRepo.saveStaffPayrollProfile(profile);
   }
 }
+

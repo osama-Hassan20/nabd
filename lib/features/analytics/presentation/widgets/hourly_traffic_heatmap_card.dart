@@ -171,3 +171,4 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
     );
   }
 }
+

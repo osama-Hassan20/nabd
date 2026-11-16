@@ -98,3 +98,4 @@ class GenerateStaffPayrollPeriodUseCase {
     return hrRepo.saveStaffPayrollPeriod(period);
   }
 }
+

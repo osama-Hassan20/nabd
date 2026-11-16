@@ -4,3 +4,4 @@ enum AnalyticsTabEnum {
   clinical,
   doctors,
 }
+

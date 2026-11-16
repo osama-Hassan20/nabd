@@ -4,3 +4,4 @@ enum HrTabEnum {
   employeeLedger,
   compensationRules,
 }
+

@@ -53,3 +53,4 @@ class HourlyTrafficMetricModel extends Equatable {
         occupancyLevel,
       ];
 }
+

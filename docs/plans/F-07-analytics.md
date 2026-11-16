@@ -126,3 +126,4 @@
    - `flutter analyze` = 0 issues.
    - جميع الاختبارات تمر بنسبة 100%.
 4. تنفيذ Commit واضح بالبادئة: `feat(F-07-M{X}): {description}`.
+

@@ -67,3 +67,4 @@ class BranchAnalyticsComparisonModel extends Equatable {
         shareOfTotalRevenuePercent,
       ];
 }
+

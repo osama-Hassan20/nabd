@@ -153,3 +153,4 @@ class AnalyticsState extends Equatable {
         servicesError,
       ];
 }
+

@@ -130,3 +130,4 @@ class AnalyticsSummaryKpiModel extends Equatable {
         visitsGrowthRatePercent,
       ];
 }
+

@@ -103,3 +103,4 @@ class ConfirmDoctorSettlementUseCase {
     return confirmRes;
   }
 }
+

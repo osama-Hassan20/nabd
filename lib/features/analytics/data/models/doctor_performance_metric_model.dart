@@ -88,3 +88,4 @@ class DoctorPerformanceMetricModel extends Equatable {
         patientSatisfactionRating,
       ];
 }
+

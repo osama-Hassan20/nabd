@@ -46,3 +46,4 @@ abstract class AnalyticsRepo {
     required AnalyticsTimeRangeEnum timeRange,
   });
 }
+

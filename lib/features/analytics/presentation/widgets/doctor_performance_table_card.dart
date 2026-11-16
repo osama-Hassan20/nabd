@@ -194,3 +194,4 @@ class DoctorPerformanceTableCard extends StatelessWidget {
     );
   }
 }
+
