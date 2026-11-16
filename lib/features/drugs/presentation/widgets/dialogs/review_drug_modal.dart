@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../../shared/widgets/custom_push_container_button.dart';
+import '../../../../../shared/widgets/custom_stack_selector.dart';
 import '../../../data/models/drug_model.dart';
 import '../../../data/models/enums/review_status_enum.dart';
 import '../../manager/drugs_cubit.dart';
@@ -38,8 +39,21 @@ class ReviewDrugModal extends StatefulWidget {
 
 class _ReviewDrugModalState extends State<ReviewDrugModal> {
   String? _selectedMergeTargetDrugId;
+  late final TextEditingController _mergeTargetController;
   bool _isMerging = false;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mergeTargetController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _mergeTargetController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submitDecision(ReviewStatusEnum decision) async {
     setState(() => _isSubmitting = true);
@@ -167,27 +181,17 @@ class _ReviewDrugModalState extends State<ReviewDrugModal> {
 
               if (_isMerging) ...[
                 const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedMergeTargetDrugId,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                  ),
-                  hint: Text('drugs_trade_name'.tr()),
-                  items: otherDrugs.map((d) {
-                    return DropdownMenuItem<String>(
-                      value: d.id,
-                      child: Text(d.name ?? d.id ?? ''),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() => _selectedMergeTargetDrugId = val);
+                CustomStackSelector<DrugModel>(
+                  controller: _mergeTargetController,
+                  header: 'drugs_trade_name'.tr(),
+                  hintText: 'drugs_trade_name'.tr(),
+                  list: otherDrugs,
+                  itemAsString: (d) => d.name ?? d.id ?? '',
+                  changeValue: (d) {
+                    setState(() {
+                      _selectedMergeTargetDrugId = d.id;
+                      _mergeTargetController.text = d.name ?? d.id ?? '';
+                    });
                   },
                 ),
                 const SizedBox(height: 12),

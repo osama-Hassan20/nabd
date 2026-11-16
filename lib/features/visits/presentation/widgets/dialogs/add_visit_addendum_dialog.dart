@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../../shared/widgets/custom_push_container_button.dart';
+import '../../../../../shared/widgets/custom_stack_selector.dart';
 import '../../../../../shared/widgets/custom_text_field.dart';
 import '../../../../../shared/widgets/custom_toast.dart';
 import '../../../data/models/enums/addendum_change_type_enum.dart';
@@ -52,6 +54,7 @@ class _AddVisitAddendumDialogState extends State<AddVisitAddendumDialog> {
   final _frequencyController = TextEditingController();
   final _durationController = TextEditingController();
   final _instructionsController = TextEditingController();
+  final _selectedDrugController = TextEditingController();
 
   AddendumChangeTypeEnum _selectedType = AddendumChangeTypeEnum.dose;
   String? _selectedItemId;
@@ -75,8 +78,11 @@ class _AddVisitAddendumDialogState extends State<AddVisitAddendumDialog> {
     );
 
     if (_effectiveItems.isNotEmpty) {
-      _selectedItemId = _effectiveItems.first.id;
-      _populateItemFields(_effectiveItems.first);
+      final firstItem = _effectiveItems.first;
+      _selectedItemId = firstItem.id;
+      _selectedDrugController.text =
+          '${firstItem.tradeName ?? ''} (${firstItem.dosage ?? ''})';
+      _populateItemFields(firstItem);
     }
   }
 
@@ -98,6 +104,7 @@ class _AddVisitAddendumDialogState extends State<AddVisitAddendumDialog> {
     _frequencyController.dispose();
     _durationController.dispose();
     _instructionsController.dispose();
+    _selectedDrugController.dispose();
     super.dispose();
   }
 
@@ -134,7 +141,7 @@ class _AddVisitAddendumDialogState extends State<AddVisitAddendumDialog> {
 
     if (_selectedType == AddendumChangeTypeEnum.add) {
       newItem = PrescriptionItemModel(
-        id: 'RXI-ADD-${DateTime.now().millisecondsSinceEpoch}',
+        id: 'RXI-ADD-${CairoTimeHelper.now().millisecondsSinceEpoch}',
         tradeName: _tradeNameController.text.trim(),
         dosage: _dosageController.text.trim(),
         frequency: _frequencyController.text.trim(),
@@ -356,37 +363,20 @@ class _AddVisitAddendumDialogState extends State<AddVisitAddendumDialog> {
                         ),
                       )
                     else ...[
-                      Text(
-                        'rx_col_drug'.tr(),
-                        style: CustomAppFontStyle.semiBold14.copyWith(
-                          color: AppColors.darkText,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedItemId,
-                        items: _effectiveItems.map((item) {
-                          return DropdownMenuItem<String>(
-                            value: item.id,
-                            child: Text('${item.tradeName ?? ''} (${item.dosage ?? ''})'),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
+                      CustomStackSelector<PrescriptionItemModel>(
+                        controller: _selectedDrugController,
+                        header: 'rx_col_drug'.tr(),
+                        list: _effectiveItems,
+                        itemAsString: (item) =>
+                            '${item.tradeName ?? ''} (${item.dosage ?? ''})',
+                        changeValue: (selected) {
                           setState(() {
-                            _selectedItemId = val;
-                            final selected = _effectiveItems
-                                .where((i) => i.id == val)
-                                .firstOrNull;
-                            if (selected != null) {
-                              _populateItemFields(selected);
-                            }
+                            _selectedItemId = selected.id;
+                            _selectedDrugController.text =
+                                '${selected.tradeName ?? ''} (${selected.dosage ?? ''})';
+                            _populateItemFields(selected);
                           });
                         },
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
                       ),
                     ],
                   ],

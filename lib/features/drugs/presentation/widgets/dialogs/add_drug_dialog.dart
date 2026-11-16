@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../../shared/widgets/custom_push_container_button.dart';
+import '../../../../../shared/widgets/custom_stack_selector.dart';
 import '../../../../../shared/widgets/custom_text_field.dart';
+import '../../../data/models/drug_category_model.dart';
 import '../../../data/models/drug_model.dart';
 import '../../../domain/helpers/drug_name_validator.dart';
 import '../../manager/drugs_cubit.dart';
@@ -45,6 +47,7 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
   late final TextEditingController _frequencyController;
   late final TextEditingController _durationController;
   late final TextEditingController _manufacturerController;
+  late final TextEditingController _categoryController;
 
   String? _selectedCategoryId;
   String? _nameError;
@@ -66,6 +69,15 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
     _manufacturerController =
         TextEditingController(text: d?.manufacturer ?? '');
     _selectedCategoryId = d?.categoryId;
+
+    final initialCat = widget.cubit.state.categories
+        .where((c) => c.id == d?.categoryId)
+        .firstOrNull;
+    _categoryController = TextEditingController(
+      text: initialCat != null
+          ? (initialCat.nameAr ?? initialCat.nameEn ?? initialCat.id ?? '')
+          : 'drugs_filter_all'.tr(),
+    );
   }
 
   @override
@@ -77,6 +89,7 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
     _frequencyController.dispose();
     _durationController.dispose();
     _manufacturerController.dispose();
+    _categoryController.dispose();
     super.dispose();
   }
 
@@ -184,39 +197,21 @@ class _AddDrugDialogState extends State<AddDrugDialog> {
 
               // Category dropdown
               if (categories.isNotEmpty) ...[
-                Text(
-                  'drugs_category'.tr(),
-                  style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.darkText,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedCategoryId,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                  ),
-                  items: [
-                    DropdownMenuItem<String>(
-                      value: null,
-                      child: Text('drugs_filter_all'.tr()),
-                    ),
-                    ...categories.map((c) {
-                      return DropdownMenuItem<String>(
-                        value: c.id,
-                        child: Text(c.nameAr ?? c.nameEn ?? c.id ?? ''),
-                      );
-                    }),
-                  ],
-                  onChanged: (val) {
-                    setState(() => _selectedCategoryId = val);
+                CustomStackSelector<DrugCategoryModel?>(
+                  controller: _categoryController,
+                  header: 'drugs_category'.tr(),
+                  hintText: 'drugs_filter_all'.tr(),
+                  list: [null, ...categories],
+                  itemAsString: (c) => c != null
+                      ? (c.nameAr ?? c.nameEn ?? c.id ?? '')
+                      : 'drugs_filter_all'.tr(),
+                  changeValue: (c) {
+                    setState(() {
+                      _selectedCategoryId = c?.id;
+                      _categoryController.text = c != null
+                          ? (c.nameAr ?? c.nameEn ?? c.id ?? '')
+                          : 'drugs_filter_all'.tr();
+                    });
                   },
                 ),
                 const SizedBox(height: 12),

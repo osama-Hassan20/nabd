@@ -40,6 +40,9 @@ This skill is the master blueprint for creating or cloning any dashboard module 
    - **On mobile devices (`AdaptiveLayout.isMobile(context)` or screen width `<= 700px`), EVERY dialog MUST open in full screen (`Dialog.fullscreen`).**
    - On tablet and desktop, dialogs open as centered modal dialogs constrained to `maxWidth: 650`–`700` and `maxHeight: 90%`.
    - Never show small floating modal dialogs on mobile screens.
+8. **Universal Use of `CustomStackSelector<T>` for All Dropdowns (STRICT LAW):**
+   - **ZERO `DropdownButton` or `DropdownButtonFormField` across the entire codebase.**
+   - All dropdowns, selection menus, and picker triggers in forms, dialogs, tables, and filter bars MUST use `CustomStackSelector<T>` (`lib/shared/widgets/custom_stack_selector.dart`).
 
 ---
 

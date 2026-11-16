@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_push_container_button.dart';
+import '../../../../shared/widgets/custom_stack_selector.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/custom_toast.dart';
 import '../cubit/audit_logs_cubit.dart';
@@ -24,11 +26,15 @@ class AuditLogsFilterBar extends StatefulWidget {
 
 class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
   late final TextEditingController _searchController;
+  late final TextEditingController _eventTypeController;
+  late final TextEditingController _branchController;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.state.searchQuery);
+    _eventTypeController = TextEditingController();
+    _branchController = TextEditingController();
   }
 
   @override
@@ -43,6 +49,8 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
   @override
   void dispose() {
     _searchController.dispose();
+    _eventTypeController.dispose();
+    _branchController.dispose();
     super.dispose();
   }
 
@@ -177,56 +185,34 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               // Event Type Dropdown
-              Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.fillDisableColor.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.grayE2E8F0),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: state.selectedEventType,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                    style: CustomAppFontStyle.medium12.copyWith(color: AppColors.darkText),
-                    items: eventTypes.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item['key'],
-                        child: Text(item['label']!),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) cubit.setEventTypeFilter(val);
-                    },
-                  ),
+              SizedBox(
+                width: 170,
+                child: CustomStackSelector<Map<String, String>>(
+                  controller: _eventTypeController,
+                  list: eventTypes,
+                  itemAsString: (item) => item['label'] ?? '',
+                  changeValue: (item) {
+                    if (item['key'] != null) {
+                      _eventTypeController.text = item['label'] ?? '';
+                      cubit.setEventTypeFilter(item['key']!);
+                    }
+                  },
                 ),
               ),
 
               // Branch Dropdown
-              Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.fillDisableColor.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.grayE2E8F0),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: state.selectedBranchId,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                    style: CustomAppFontStyle.medium12.copyWith(color: AppColors.darkText),
-                    items: branches.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item['key'],
-                        child: Text(item['label']!),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) cubit.setBranchFilter(val);
-                    },
-                  ),
+              SizedBox(
+                width: 170,
+                child: CustomStackSelector<Map<String, String>>(
+                  controller: _branchController,
+                  list: branches,
+                  itemAsString: (item) => item['label'] ?? '',
+                  changeValue: (item) {
+                    if (item['key'] != null) {
+                      _branchController.text = item['label'] ?? '';
+                      cubit.setBranchFilter(item['key']!);
+                    }
+                  },
                 ),
               ),
 
@@ -234,7 +220,7 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
               InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: () async {
-                  final now = DateTime.now();
+                  final now = CairoTimeHelper.now();
                   final picked = await showDateRangePicker(
                     context: context,
                     firstDate: DateTime(now.year - 2),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
+import '../../../../shared/widgets/custom_stack_selector.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../cubit/staff_users_cubit.dart';
 import '../cubit/staff_users_state.dart';
@@ -22,6 +23,8 @@ class StaffUsersFilterBar extends StatefulWidget {
 
 class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
   late final TextEditingController _searchController;
+  late final TextEditingController _branchController;
+  late final TextEditingController _roleController;
 
   static const List<(String?, String)> _branches = [
     (null, 'all_branches'),
@@ -34,6 +37,8 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.state.searchQuery);
+    _branchController = TextEditingController(text: _getBranchLabel(widget.state.branchFilter));
+    _roleController = TextEditingController(text: _getRoleLabel(widget.state.roleFilter));
   }
 
   @override
@@ -42,12 +47,34 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
     if (widget.state.searchQuery != _searchController.text) {
       _searchController.text = widget.state.searchQuery;
     }
+    if (widget.state.branchFilter != oldWidget.state.branchFilter) {
+      _branchController.text = _getBranchLabel(widget.state.branchFilter);
+    }
+    if (widget.state.roleFilter != oldWidget.state.roleFilter ||
+        widget.state.roles != oldWidget.state.roles) {
+      _roleController.text = _getRoleLabel(widget.state.roleFilter);
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _branchController.dispose();
+    _roleController.dispose();
     super.dispose();
+  }
+
+  String _getBranchLabel(String? branchId) {
+    final match = _branches.where((b) => b.$1 == branchId);
+    if (match.isNotEmpty) return match.first.$2.tr();
+    return 'all_branches'.tr();
+  }
+
+  String _getRoleLabel(String? roleId) {
+    if (roleId == null) return 'all_roles'.tr();
+    final match = widget.state.roles.where((r) => r.id == roleId);
+    if (match.isNotEmpty) return match.first.nameAr ?? match.first.id ?? '';
+    return 'all_roles'.tr();
   }
 
   @override
@@ -112,6 +139,7 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
 
   Widget _buildSearchField() {
     return CustomTextFormField(
+      key: const Key('input_search_staff_users'),
       controller: _searchController,
       hintText: 'search_staff_users_hint'.tr(),
       prefixWidget: const Icon(
@@ -136,92 +164,37 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
   }
 
   Widget _buildBranchDropdown() {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppColors.lightBackground,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.grayE2E8F0),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String?>(
-          value: widget.state.branchFilter,
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.gray71717A, size: 20),
-          style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.darkText,
-          ),
-          hint: Text(
-            'all_branches'.tr(),
-            style: CustomAppFontStyle.regular13.copyWith(
-              color: AppColors.gray71717A,
-            ),
-          ),
-          items: _branches.map((b) {
-            return DropdownMenuItem<String?>(
-              value: b.$1,
-              child: Text(
-                b.$2.tr(),
-                overflow: TextOverflow.ellipsis,
-              ),
-            );
-          }).toList(),
-          onChanged: (val) {
-            widget.cubit.setBranchFilter(val);
-          },
-        ),
-      ),
+    return CustomStackSelector<(String?, String)>(
+      controller: _branchController,
+      hintText: 'all_branches'.tr(),
+      list: _branches,
+      itemAsString: (b) => b.$2.tr(),
+      changeValue: (b) {
+        setState(() {
+          _branchController.text = b.$2.tr();
+        });
+        widget.cubit.setBranchFilter(b.$1);
+      },
     );
   }
 
   Widget _buildRoleDropdown() {
-    final items = <DropdownMenuItem<String?>>[
-      DropdownMenuItem<String?>(
-        value: null,
-        child: Text('all_roles'.tr()),
-      ),
-      ...widget.state.roles.map((r) {
-        return DropdownMenuItem<String?>(
-          value: r.id,
-          child: Text(
-            r.nameAr ?? r.id ?? '',
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }),
+    final roleList = <(String?, String)>[
+      (null, 'all_roles'.tr()),
+      ...widget.state.roles.map((r) => (r.id, r.nameAr ?? r.id ?? '')),
     ];
 
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppColors.lightBackground,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.grayE2E8F0),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String?>(
-          value: widget.state.roleFilter,
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.gray71717A, size: 20),
-          style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.darkText,
-          ),
-          hint: Text(
-            'all_roles'.tr(),
-            style: CustomAppFontStyle.regular13.copyWith(
-              color: AppColors.gray71717A,
-            ),
-          ),
-          items: items,
-          onChanged: (val) {
-            widget.cubit.setRoleFilter(val);
-          },
-        ),
-      ),
+    return CustomStackSelector<(String?, String)>(
+      controller: _roleController,
+      hintText: 'all_roles'.tr(),
+      list: roleList,
+      itemAsString: (r) => r.$2,
+      changeValue: (r) {
+        setState(() {
+          _roleController.text = r.$2;
+        });
+        widget.cubit.setRoleFilter(r.$1);
+      },
     );
   }
 
@@ -237,89 +210,56 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildTabPill(
-            filter: StaffUserStatusFilter.all,
-            title: 'all'.tr(),
-            count: widget.state.totalCount,
+          _buildStatusTabItem(
+            title: 'status_all'.tr(),
+            isSelected: widget.state.statusFilter == StaffUserStatusFilter.all,
+            onTap: () => widget.cubit.setStatusFilter(StaffUserStatusFilter.all),
           ),
-          const SizedBox(width: 4),
-          _buildTabPill(
-            filter: StaffUserStatusFilter.active,
+          _buildStatusTabItem(
             title: 'status_active'.tr(),
-            count: widget.state.activeCount,
-            activeColor: const Color(0xFF10B981),
+            isSelected: widget.state.statusFilter == StaffUserStatusFilter.active,
+            onTap: () => widget.cubit.setStatusFilter(StaffUserStatusFilter.active),
           ),
-          const SizedBox(width: 4),
-          _buildTabPill(
-            filter: StaffUserStatusFilter.inactive,
+          _buildStatusTabItem(
             title: 'status_inactive'.tr(),
-            count: widget.state.inactiveCount,
-            activeColor: const Color(0xFFEF4444),
+            isSelected: widget.state.statusFilter == StaffUserStatusFilter.inactive,
+            onTap: () => widget.cubit.setStatusFilter(StaffUserStatusFilter.inactive),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabPill({
-    required StaffUserStatusFilter filter,
+  Widget _buildStatusTabItem({
     required String title,
-    required int count,
-    Color? activeColor,
+    required bool isSelected,
+    required VoidCallback onTap,
   }) {
-    final isSelected = widget.state.statusFilter == filter;
-
     return InkWell(
-      onTap: () => widget.cubit.setStatusFilter(filter),
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
                 ]
               : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              style: CustomAppFontStyle.semiBold13.copyWith(
-                color: isSelected
-                    ? (activeColor ?? AppColors.primary)
-                    : AppColors.gray71717A,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? (activeColor ?? AppColors.primary).withValues(alpha: 0.12)
-                    : AppColors.grayE2E8F0,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                count.toString(),
-                style: CustomAppFontStyle.medium11.copyWith(
-                  color: isSelected
-                      ? (activeColor ?? AppColors.primary)
-                      : AppColors.gray71717A,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        child: Text(
+          title,
+          style: CustomAppFontStyle.medium13.copyWith(
+            color: isSelected ? AppColors.primary : AppColors.gray71717A,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          ),
         ),
       ),
     );

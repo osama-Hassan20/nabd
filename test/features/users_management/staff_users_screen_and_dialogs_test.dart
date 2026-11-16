@@ -178,10 +178,10 @@ void main() {
 
       // Verify Table and Rows render
       expect(find.byType(StaffUsersTable), findsOneWidget);
-      expect(find.byType(TextField), findsOneWidget); // Search field
+      final searchField = find.byKey(const Key('input_search_staff_users'));
+      expect(searchField, findsOneWidget);
 
       // Type in search field
-      final searchField = find.byType(TextField);
       await tester.enterText(searchField, 'طبيب');
       await tester.pumpAndSettle();
 

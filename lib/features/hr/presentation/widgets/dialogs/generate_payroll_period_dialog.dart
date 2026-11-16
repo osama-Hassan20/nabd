@@ -7,6 +7,7 @@ import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_cubit.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_state.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class GeneratePayrollPeriodDialog extends StatefulWidget {
@@ -28,6 +29,8 @@ class _GeneratePayrollPeriodDialogState extends State<GeneratePayrollPeriodDialo
 
   late int _selectedMonth;
   late int _selectedYear;
+  late final TextEditingController _monthController;
+  late final TextEditingController _yearController;
 
   @override
   void initState() {
@@ -35,6 +38,15 @@ class _GeneratePayrollPeriodDialogState extends State<GeneratePayrollPeriodDialo
     final now = CairoTimeHelper.now();
     _selectedMonth = widget.initialMonth ?? now.month;
     _selectedYear = widget.initialYear ?? now.year;
+    _monthController = TextEditingController(text: '$_selectedMonth');
+    _yearController = TextEditingController(text: '$_selectedYear');
+  }
+
+  @override
+  void dispose() {
+    _monthController.dispose();
+    _yearController.dispose();
+    super.dispose();
   }
 
   @override
@@ -83,51 +95,33 @@ class _GeneratePayrollPeriodDialogState extends State<GeneratePayrollPeriodDialo
                   const SizedBox(height: 20),
 
                   // Month Selector
-                  DropdownButtonFormField<int>(
+                  CustomStackSelector<int>(
                     key: const Key('dropdown_payroll_month'),
-                    isExpanded: true,
-                    initialValue: _selectedMonth,
-                    decoration: InputDecoration(
-                      labelText: 'hr_month_label'.tr(),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      filled: true,
-                      fillColor: AppColors.surfaceLevel1,
-                    ),
-                    items: months.map((m) {
-                      return DropdownMenuItem<int>(
-                        value: m,
-                        child: Text('$m'),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedMonth = val);
-                      }
+                    controller: _monthController,
+                    header: 'hr_month_label'.tr(),
+                    list: months,
+                    itemAsString: (m) => '$m',
+                    changeValue: (m) {
+                      setState(() {
+                        _selectedMonth = m;
+                        _monthController.text = '$m';
+                      });
                     },
                   ),
                   const SizedBox(height: 16),
 
                   // Year Selector
-                  DropdownButtonFormField<int>(
+                  CustomStackSelector<int>(
                     key: const Key('dropdown_payroll_year'),
-                    isExpanded: true,
-                    initialValue: _selectedYear,
-                    decoration: InputDecoration(
-                      labelText: 'hr_year_label'.tr(),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      filled: true,
-                      fillColor: AppColors.surfaceLevel1,
-                    ),
-                    items: years.map((y) {
-                      return DropdownMenuItem<int>(
-                        value: y,
-                        child: Text('$y'),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedYear = val);
-                      }
+                    controller: _yearController,
+                    header: 'hr_year_label'.tr(),
+                    list: years,
+                    itemAsString: (y) => '$y',
+                    changeValue: (y) {
+                      setState(() {
+                        _selectedYear = y;
+                        _yearController.text = '$y';
+                      });
                     },
                   ),
                   const SizedBox(height: 24),
@@ -138,16 +132,15 @@ class _GeneratePayrollPeriodDialogState extends State<GeneratePayrollPeriodDialo
                     label: 'hr_generate_payroll_btn'.tr(),
                     isLoading: state.isSubmitting,
                     onTap: () async {
-                      if (!_formKey.currentState!.validate()) return;
-                      final nav = Navigator.of(context);
-
-                      final success = await context.read<HrCubit>().generateStaffPayrollPeriod(
-                            month: _selectedMonth,
-                            year: _selectedYear,
-                          );
-
-                      if (success && mounted) {
-                        nav.pop();
+                      if (_formKey.currentState?.validate() ?? false) {
+                        final nav = Navigator.of(context);
+                        final success = await context.read<HrCubit>().generateStaffPayrollPeriod(
+                              month: _selectedMonth,
+                              year: _selectedYear,
+                            );
+                        if (success && mounted) {
+                          nav.pop();
+                        }
                       }
                     },
                   ),
@@ -160,4 +153,3 @@ class _GeneratePayrollPeriodDialogState extends State<GeneratePayrollPeriodDialo
     );
   }
 }
-

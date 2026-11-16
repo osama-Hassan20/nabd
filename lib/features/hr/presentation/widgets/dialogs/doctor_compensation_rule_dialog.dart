@@ -6,6 +6,7 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
@@ -37,10 +38,26 @@ class _DoctorCompensationRuleDialogState extends State<DoctorCompensationRuleDia
   late TextEditingController _fixedFeeController;
   late TextEditingController _baseSalaryController;
   late TextEditingController _notesController;
+  late TextEditingController _typeController;
 
   CompensationTypeEnum _selectedType = CompensationTypeEnum.percentage;
   DateTime _effectiveFrom = CairoTimeHelper.now();
   bool _payForFreeVisits = false;
+
+  String _compTypeLabel(CompensationTypeEnum type) {
+    switch (type) {
+      case CompensationTypeEnum.percentage:
+        return 'hr_comp_type_percentage'.tr();
+      case CompensationTypeEnum.fixedPerVisit:
+        return 'hr_comp_type_fixed'.tr();
+      case CompensationTypeEnum.salaryOnly:
+        return 'hr_comp_type_salary'.tr();
+      case CompensationTypeEnum.salaryPlusPercentage:
+        return 'hr_comp_type_salary_plus_pct'.tr();
+      case CompensationTypeEnum.salaryPlusFixed:
+        return 'hr_comp_type_salary_plus_fixed'.tr();
+    }
+  }
 
   @override
   void initState() {
@@ -57,6 +74,7 @@ class _DoctorCompensationRuleDialogState extends State<DoctorCompensationRuleDia
     );
     _notesController = TextEditingController(text: r?.notes ?? '');
     _selectedType = r?.compensationType ?? CompensationTypeEnum.percentage;
+    _typeController = TextEditingController(text: _compTypeLabel(_selectedType));
     _effectiveFrom = r?.effectiveFrom ?? CairoTimeHelper.now();
     _payForFreeVisits = r?.payForFreeVisits ?? false;
   }
@@ -69,6 +87,7 @@ class _DoctorCompensationRuleDialogState extends State<DoctorCompensationRuleDia
     _fixedFeeController.dispose();
     _baseSalaryController.dispose();
     _notesController.dispose();
+    _typeController.dispose();
     super.dispose();
   }
 
@@ -142,44 +161,23 @@ class _DoctorCompensationRuleDialogState extends State<DoctorCompensationRuleDia
                     const SizedBox(height: 14),
 
                     // Compensation Type Selector
-                    DropdownButtonFormField<CompensationTypeEnum>(
+                    CustomStackSelector<CompensationTypeEnum>(
                       key: const Key('dropdown_compensation_type'),
-                      isExpanded: true,
-                      initialValue: _selectedType,
-                      decoration: InputDecoration(
-                        labelText: 'hr_compensation_type_label'.tr(),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        filled: true,
-                        fillColor: AppColors.surfaceLevel1,
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: CompensationTypeEnum.percentage,
-                          child: Text('hr_comp_type_percentage'.tr()),
-                        ),
-                        DropdownMenuItem(
-                          value: CompensationTypeEnum.fixedPerVisit,
-                          child: Text('hr_comp_type_fixed'.tr()),
-                        ),
-                        DropdownMenuItem(
-                          value: CompensationTypeEnum.salaryOnly,
-                          child: Text('hr_comp_type_salary'.tr()),
-                        ),
-                        DropdownMenuItem(
-                          value: CompensationTypeEnum.salaryPlusPercentage,
-                          child: Text('hr_comp_type_salary_plus_pct'.tr()),
-                        ),
-                        DropdownMenuItem(
-                          value: CompensationTypeEnum.salaryPlusFixed,
-                          child: Text('hr_comp_type_salary_plus_fixed'.tr()),
-                        ),
+                      controller: _typeController,
+                      header: 'hr_compensation_type_label'.tr(),
+                      list: const [
+                        CompensationTypeEnum.percentage,
+                        CompensationTypeEnum.fixedPerVisit,
+                        CompensationTypeEnum.salaryOnly,
+                        CompensationTypeEnum.salaryPlusPercentage,
+                        CompensationTypeEnum.salaryPlusFixed,
                       ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedType = val;
-                          });
-                        }
+                      itemAsString: _compTypeLabel,
+                      changeValue: (val) {
+                        setState(() {
+                          _selectedType = val;
+                          _typeController.text = _compTypeLabel(val);
+                        });
                       },
                     ),
                     const SizedBox(height: 14),

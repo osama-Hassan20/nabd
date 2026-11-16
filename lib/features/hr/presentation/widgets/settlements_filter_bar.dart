@@ -3,19 +3,55 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
+import '../../../../shared/widgets/custom_stack_selector.dart';
 import '../../data/models/enums/settlement_status_enum.dart';
 import '../manager/hr_cubit.dart';
 import '../manager/hr_state.dart';
 import 'dialogs/calculate_settlement_draft_dialog.dart';
 import 'dialogs/doctor_compensation_rule_dialog.dart';
 
-class SettlementsFilterBar extends StatelessWidget {
+class SettlementsFilterBar extends StatefulWidget {
   const SettlementsFilterBar({super.key});
+
+  @override
+  State<SettlementsFilterBar> createState() => _SettlementsFilterBarState();
+}
+
+class _SettlementsFilterBarState extends State<SettlementsFilterBar> {
+  late final TextEditingController _statusController;
+
+  @override
+  void initState() {
+    super.initState();
+    _statusController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _statusController.dispose();
+    super.dispose();
+  }
+
+  String _statusLabel(SettlementStatusEnum? s) {
+    if (s == null) return 'hr_all_statuses'.tr();
+    switch (s) {
+      case SettlementStatusEnum.draft:
+        return 'hr_status_draft'.tr();
+      case SettlementStatusEnum.confirmed:
+        return 'hr_status_confirmed'.tr();
+      case SettlementStatusEnum.paid:
+        return 'hr_status_paid'.tr();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HrCubit, HrState>(
       builder: (context, state) {
+        if (_statusController.text.isEmpty && state.filterSettlementStatus != null) {
+          _statusController.text = _statusLabel(state.filterSettlementStatus);
+        }
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
@@ -46,32 +82,24 @@ class SettlementsFilterBar extends StatelessWidget {
                 const SizedBox(width: 12),
 
                 // Status Filter Dropdown
-                DropdownButton<SettlementStatusEnum?>(
-                  key: const Key('filter_status'),
-                  value: state.filterSettlementStatus,
-                  hint: Text('hr_filter_status'.tr(), style: CustomAppFontStyle.regular13),
-                  underline: const SizedBox(),
-                  items: [
-                    DropdownMenuItem<SettlementStatusEnum?>(
-                      value: null,
-                      child: Text('hr_all_statuses'.tr()),
-                    ),
-                    DropdownMenuItem(
-                      value: SettlementStatusEnum.draft,
-                      child: Text('hr_status_draft'.tr()),
-                    ),
-                    DropdownMenuItem(
-                      value: SettlementStatusEnum.confirmed,
-                      child: Text('hr_status_confirmed'.tr()),
-                    ),
-                    DropdownMenuItem(
-                      value: SettlementStatusEnum.paid,
-                      child: Text('hr_status_paid'.tr()),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    context.read<HrCubit>().setStatusFilter(val);
-                  },
+                SizedBox(
+                  width: 170,
+                  child: CustomStackSelector<SettlementStatusEnum?>(
+                    key: const Key('filter_status'),
+                    controller: _statusController,
+                    hintText: 'hr_filter_status'.tr(),
+                    list: const [
+                      null,
+                      SettlementStatusEnum.draft,
+                      SettlementStatusEnum.confirmed,
+                      SettlementStatusEnum.paid,
+                    ],
+                    itemAsString: _statusLabel,
+                    changeValue: (val) {
+                      _statusController.text = _statusLabel(val);
+                      context.read<HrCubit>().setStatusFilter(val);
+                    },
+                  ),
                 ),
 
                 const SizedBox(width: 32),

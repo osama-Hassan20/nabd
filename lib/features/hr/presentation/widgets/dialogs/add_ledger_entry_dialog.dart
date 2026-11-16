@@ -10,6 +10,7 @@ import 'package:eyadty/features/hr/data/models/enums/ledger_entry_type_enum.dart
 import 'package:eyadty/features/hr/presentation/manager/hr_cubit.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_state.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
@@ -31,9 +32,21 @@ class _AddLedgerEntryDialogState extends State<AddLedgerEntryDialog> {
   late TextEditingController _employeeIdController;
   late TextEditingController _amountController;
   late TextEditingController _reasonController;
+  late TextEditingController _typeController;
 
   LedgerEntryTypeEnum _selectedType = LedgerEntryTypeEnum.advance;
   final EmployeeTypeEnum _selectedEmployeeType = EmployeeTypeEnum.staff;
+
+  String _entryTypeLabel(LedgerEntryTypeEnum type) {
+    switch (type) {
+      case LedgerEntryTypeEnum.advance:
+        return 'hr_entry_type_advance'.tr();
+      case LedgerEntryTypeEnum.deduction:
+        return 'hr_entry_type_deduction'.tr();
+      default:
+        return type.name;
+    }
+  }
 
   @override
   void initState() {
@@ -41,6 +54,7 @@ class _AddLedgerEntryDialogState extends State<AddLedgerEntryDialog> {
     _employeeIdController = TextEditingController(text: widget.initialEmployeeId ?? '');
     _amountController = TextEditingController();
     _reasonController = TextEditingController();
+    _typeController = TextEditingController(text: _entryTypeLabel(_selectedType));
   }
 
   @override
@@ -48,6 +62,7 @@ class _AddLedgerEntryDialogState extends State<AddLedgerEntryDialog> {
     _employeeIdController.dispose();
     _amountController.dispose();
     _reasonController.dispose();
+    _typeController.dispose();
     super.dispose();
   }
 
@@ -106,30 +121,20 @@ class _AddLedgerEntryDialogState extends State<AddLedgerEntryDialog> {
                   const SizedBox(height: 14),
 
                   // Entry Type Dropdown
-                  DropdownButtonFormField<LedgerEntryTypeEnum>(
+                  CustomStackSelector<LedgerEntryTypeEnum>(
                     key: const Key('dropdown_entry_type'),
-                    isExpanded: true,
-                    initialValue: _selectedType,
-                    decoration: InputDecoration(
-                      labelText: 'hr_entry_type_label'.tr(),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      filled: true,
-                      fillColor: AppColors.surfaceLevel1,
-                    ),
-                    items: [
-                      DropdownMenuItem(
-                        value: LedgerEntryTypeEnum.advance,
-                        child: Text('hr_entry_type_advance'.tr()),
-                      ),
-                      DropdownMenuItem(
-                        value: LedgerEntryTypeEnum.deduction,
-                        child: Text('hr_entry_type_deduction'.tr()),
-                      ),
+                    controller: _typeController,
+                    header: 'hr_entry_type_label'.tr(),
+                    list: const [
+                      LedgerEntryTypeEnum.advance,
+                      LedgerEntryTypeEnum.deduction,
                     ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedType = val);
-                      }
+                    itemAsString: _entryTypeLabel,
+                    changeValue: (val) {
+                      setState(() {
+                        _selectedType = val;
+                        _typeController.text = _entryTypeLabel(val);
+                      });
                     },
                   ),
                   const SizedBox(height: 14),

@@ -21,7 +21,7 @@ This skill defines the **non-negotiable** patterns for every dialog form in this
 4. **ZERO raw `SvgPicture.asset`.** Always use `CustomAssetImage(path: AppIcons.xxx)` for every icon/image asset.
 5. **ZERO floating `Text` labels above form fields.** Every `CustomTextFormField` has its own `headerText` parameter — use it. Never place a `Text(...)` widget directly above a field as a label.
 6. **ZERO `ElevatedButton` / `TextButton` / `OutlinedButton` for primary/secondary actions.** Always use `CustomPushButton`.
-7. **ZERO dropdown modals built from scratch.** Always use `CustomStackSelector<T>` for every dropdown/select field.
+7. **ZERO `DropdownButton` / `DropdownButtonFormField` or custom dropdown modals.** Flutter's raw `DropdownButton` and `DropdownButtonFormField` are strictly forbidden across the entire application (in all dialogs, forms, and filter bars). Always use `CustomStackSelector<T>` (`lib/shared/widgets/custom_stack_selector.dart`) for every dropdown or select control.
 8. **ONE Cubit per feature.** Never create a separate cubit, provider, or notifier for a dialog/form.
 9. **ZERO `ScaffoldMessenger` / `SnackBar` (STRICT LAW).** NEVER EVER use `ScaffoldMessenger.of(context).showSnackBar(...)` anywhere! ALWAYS use `CustomToast` from `lib/shared/widgets/custom_toast.dart`. For validation guards/errors use `CustomToast(context: context, header: '...').showErrorToast();`. For success/info use `CustomToast(context: context, header: '...').showTopToast();`. Violating this is strictly forbidden.
 10. **ZERO `onChanged` on `CustomTextFormField` when using `TextEditingController`.** NEVER use `onChanged: (val) => cubit.updateForm...(val)` on text inputs that have a controller! Doing so emits Cubit states on every keystroke, causing unnecessary widget rebuilds that mess up cursors and typing experience. The `TextEditingController` already manages and holds the text. Read the controller's `.text` directly on form submission (e.g. `cubit.submitForm(field: controller.text.trim())`) or use local controller listeners if calculations between controllers are needed.
@@ -199,6 +199,7 @@ static Future<void> show({
 - `_parseTimeOfDay(String hhmm)` helper.
 
 ### Forbidden in `_XxxDialogState`:
+- `DropdownButton` or `DropdownButtonFormField` (strictly forbidden; always use `CustomStackSelector<T>`).
 - `ValueNotifier<DateTime>`, `ValueNotifier<TimeOfDay>`, any `ValueNotifier` for business data.
 - Local fields mirroring Cubit state (`BookingCustomerOption? _selectedCustomer`).
 - Business logic (time diff, price calculation, validation rules).

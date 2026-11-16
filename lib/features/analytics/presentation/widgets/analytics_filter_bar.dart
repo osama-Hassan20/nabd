@@ -1,15 +1,67 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
+import '../../../../shared/widgets/custom_stack_selector.dart';
 import '../../data/models/enums/analytics_tab_enum.dart';
 import '../../data/models/enums/analytics_time_range_enum.dart';
 import '../manager/analytics_cubit.dart';
 import '../manager/analytics_state.dart';
 
-class AnalyticsFilterBar extends StatelessWidget {
+class AnalyticsFilterBar extends StatefulWidget {
   const AnalyticsFilterBar({super.key});
+
+  @override
+  State<AnalyticsFilterBar> createState() => _AnalyticsFilterBarState();
+}
+
+class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
+  late final TextEditingController _timeRangeController;
+  late final TextEditingController _branchController;
+
+  static const List<(String?, String)> _branches = [
+    (null, 'analytics_all_branches'),
+    ('branch_1', 'branch_main'),
+    ('branch_2', 'branch_second'),
+    ('branch_3', 'branch_third'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _timeRangeController = TextEditingController();
+    _branchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _timeRangeController.dispose();
+    _branchController.dispose();
+    super.dispose();
+  }
+
+  String _getTimeRangeTitle(AnalyticsTimeRangeEnum range) {
+    switch (range) {
+      case AnalyticsTimeRangeEnum.today:
+        return 'analytics_time_today'.tr();
+      case AnalyticsTimeRangeEnum.thisWeek:
+        return 'analytics_time_this_week'.tr();
+      case AnalyticsTimeRangeEnum.thisMonth:
+        return 'analytics_time_this_month'.tr();
+      case AnalyticsTimeRangeEnum.lastMonth:
+        return 'analytics_time_last_month'.tr();
+      case AnalyticsTimeRangeEnum.custom:
+        return 'analytics_time_custom'.tr();
+    }
+  }
+
+  String _getBranchLabel(String? branchId) {
+    final match = _branches.where((b) => b.$1 == branchId);
+    if (match.isNotEmpty) return match.first.$2.tr();
+    return 'analytics_all_branches'.tr();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +71,9 @@ class AnalyticsFilterBar extends StatelessWidget {
           prev.selectedTimeRange != curr.selectedTimeRange ||
           prev.selectedBranchId != curr.selectedBranchId,
       builder: (context, state) {
+        _timeRangeController.text = _getTimeRangeTitle(state.selectedTimeRange);
+        _branchController.text = _getBranchLabel(state.selectedBranchId);
+
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -92,124 +147,53 @@ class AnalyticsFilterBar extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       // Time Range Dropdown
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBackground,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.grayE2E8F0),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<AnalyticsTimeRangeEnum>(
-                            key: const Key('filter_time_range'),
-                            value: state.selectedTimeRange,
-                            icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.gray),
-                            style: CustomAppFontStyle.regular13.copyWith(color: AppColors.darkText),
-                            items: AnalyticsTimeRangeEnum.values.map((range) {
-                              return DropdownMenuItem<AnalyticsTimeRangeEnum>(
-                                value: range,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.gray),
-                                    const SizedBox(width: 8),
-                                    Text(_getTimeRangeTitle(range)),
-                                  ],
+                      SizedBox(
+                        width: 170,
+                        child: CustomStackSelector<AnalyticsTimeRangeEnum>(
+                          key: const Key('filter_time_range'),
+                          controller: _timeRangeController,
+                          hintText: _getTimeRangeTitle(state.selectedTimeRange),
+                          list: AnalyticsTimeRangeEnum.values,
+                          itemAsString: (range) => _getTimeRangeTitle(range),
+                          changeValue: (newRange) async {
+                            if (newRange == AnalyticsTimeRangeEnum.custom) {
+                              final now = CairoTimeHelper.now();
+                              final picked = await showDateRangePicker(
+                                context: context,
+                                firstDate: DateTime(now.year - 2),
+                                lastDate: DateTime(now.year + 1),
+                                initialDateRange: DateTimeRange(
+                                  start: state.customStartDate ??
+                                      now.subtract(const Duration(days: 7)),
+                                  end: state.customEndDate ?? now,
                                 ),
                               );
-                            }).toList(),
-                            onChanged: (newRange) async {
-                              if (newRange == null) return;
-                              if (newRange == AnalyticsTimeRangeEnum.custom) {
-                                final now = DateTime.now();
-                                final picked = await showDateRangePicker(
-                                  context: context,
-                                  firstDate: DateTime(now.year - 2),
-                                  lastDate: DateTime(now.year + 1),
-                                  initialDateRange: DateTimeRange(
-                                    start: state.customStartDate ?? now.subtract(const Duration(days: 7)),
-                                    end: state.customEndDate ?? now,
-                                  ),
-                                );
-                                if (picked != null && context.mounted) {
-                                  context.read<AnalyticsCubit>().setTimeRange(
-                                        newRange,
-                                        customStart: picked.start,
-                                        customEnd: picked.end,
-                                      );
-                                }
-                              } else {
-                                context.read<AnalyticsCubit>().setTimeRange(newRange);
+                              if (picked != null && context.mounted) {
+                                context.read<AnalyticsCubit>().setTimeRange(
+                                      newRange,
+                                      customStart: picked.start,
+                                      customEnd: picked.end,
+                                    );
                               }
-                            },
-                          ),
+                            } else {
+                              context.read<AnalyticsCubit>().setTimeRange(newRange);
+                            }
+                          },
                         ),
                       ),
 
                       // Branch Dropdown
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBackground,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.grayE2E8F0),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String?>(
-                            key: const Key('filter_branch'),
-                            value: state.selectedBranchId,
-                            icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.gray),
-                            style: CustomAppFontStyle.regular13.copyWith(color: AppColors.darkText),
-                            items: [
-                              DropdownMenuItem<String?>(
-                                value: null,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.apartment_rounded, size: 16, color: AppColors.primary),
-                                    const SizedBox(width: 8),
-                                    Text('analytics_all_branches'.tr()),
-                                  ],
-                                ),
-                              ),
-                              DropdownMenuItem<String?>(
-                                value: 'branch_1',
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.location_on_outlined, size: 16, color: AppColors.gray),
-                                    const SizedBox(width: 8),
-                                    Text('branch_main'.tr()),
-                                  ],
-                                ),
-                              ),
-                              DropdownMenuItem<String?>(
-                                value: 'branch_2',
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.location_on_outlined, size: 16, color: AppColors.gray),
-                                    const SizedBox(width: 8),
-                                    Text('branch_second'.tr()),
-                                  ],
-                                ),
-                              ),
-                              DropdownMenuItem<String?>(
-                                value: 'branch_3',
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.location_on_outlined, size: 16, color: AppColors.gray),
-                                    const SizedBox(width: 8),
-                                    Text('branch_third'.tr()),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            onChanged: (newBranch) {
-                              context.read<AnalyticsCubit>().setBranchId(newBranch);
-                            },
-                          ),
+                      SizedBox(
+                        width: 170,
+                        child: CustomStackSelector<(String?, String)>(
+                          key: const Key('filter_branch'),
+                          controller: _branchController,
+                          hintText: 'analytics_all_branches'.tr(),
+                          list: _branches,
+                          itemAsString: (b) => b.$2.tr(),
+                          changeValue: (newBranch) {
+                            context.read<AnalyticsCubit>().setBranchId(newBranch.$1);
+                          },
                         ),
                       ),
                     ],
@@ -259,21 +243,6 @@ class AnalyticsFilterBar extends StatelessWidget {
         return 'analytics_tab_clinical'.tr();
       case AnalyticsTabEnum.doctors:
         return 'analytics_tab_doctors'.tr();
-    }
-  }
-
-  String _getTimeRangeTitle(AnalyticsTimeRangeEnum range) {
-    switch (range) {
-      case AnalyticsTimeRangeEnum.today:
-        return 'analytics_time_today'.tr();
-      case AnalyticsTimeRangeEnum.thisWeek:
-        return 'analytics_time_this_week'.tr();
-      case AnalyticsTimeRangeEnum.thisMonth:
-        return 'analytics_time_this_month'.tr();
-      case AnalyticsTimeRangeEnum.lastMonth:
-        return 'analytics_time_last_month'.tr();
-      case AnalyticsTimeRangeEnum.custom:
-        return 'analytics_time_custom'.tr();
     }
   }
 }

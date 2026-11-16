@@ -9,6 +9,7 @@ import 'package:eyadty/features/branches/data/models/branch_model.dart';
 import 'package:eyadty/features/branches/data/models/copy_branch_settings_param.dart';
 import 'package:eyadty/features/branches/presentation/cubit/branches_cubit.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 
 class CopyBranchSettingsDialog extends StatefulWidget {
@@ -28,21 +29,36 @@ class CopyBranchSettingsDialog extends StatefulWidget {
 
 class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
   String? _selectedSourceBranchId;
+  late final TextEditingController _branchController;
   bool _copyWorkingHours = true;
   bool _copySpecialHolidays = true;
   bool _copyMedicalServices = true;
   bool _copyDoctorSchedules = false;
   bool _isLoading = false;
 
+  String _branchName(BranchModel b) {
+    return (b.nameKey != null && b.nameKey!.isNotEmpty)
+        ? b.nameKey!.tr()
+        : (b.name ?? '');
+  }
+
   @override
   void initState() {
     super.initState();
+    _branchController = TextEditingController();
     final eligible = widget.allBranches
         .where((b) => b.id != widget.targetBranch.id && b.isBranchActive)
         .toList();
     if (eligible.isNotEmpty) {
       _selectedSourceBranchId = eligible.first.id;
+      _branchController.text = _branchName(eligible.first);
     }
+  }
+
+  @override
+  void dispose() {
+    _branchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -138,44 +154,19 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'source_branch'.tr(),
-                      style: CustomAppFontStyle.semiBold13.copyWith(
-                        color: AppColors.darkText,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
                     // Source Branch Dropdown
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.grayE2E8F0),
-                        color: AppColors.fillDisableColor.withValues(alpha: 0.2),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedSourceBranchId,
-                          isExpanded: true,
-                          hint: Text('select_branch'.tr(),
-                              style: CustomAppFontStyle.regular13),
-                          items: eligibleSources.map((b) {
-                            final name = (b.nameKey != null &&
-                                    b.nameKey!.isNotEmpty)
-                                ? b.nameKey!.tr()
-                                : (b.name ?? '');
-                            return DropdownMenuItem<String>(
-                              value: b.id,
-                              child: Text(name,
-                                  style: CustomAppFontStyle.medium13),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            setState(() => _selectedSourceBranchId = val);
-                          },
-                        ),
-                      ),
+                    CustomStackSelector<BranchModel>(
+                      controller: _branchController,
+                      header: 'source_branch'.tr(),
+                      hintText: 'select_branch'.tr(),
+                      list: eligibleSources,
+                      itemAsString: _branchName,
+                      changeValue: (b) {
+                        setState(() {
+                          _selectedSourceBranchId = b.id;
+                          _branchController.text = _branchName(b);
+                        });
+                      },
                     ),
                     const SizedBox(height: 18),
 

@@ -7,6 +7,7 @@ import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_period_model.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_cubit.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_state.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'dialogs/generate_payroll_period_dialog.dart';
 import 'staff_payroll_table.dart';
 
@@ -24,6 +25,22 @@ class StaffPayrollTab extends StatefulWidget {
 
 class _StaffPayrollTabState extends State<StaffPayrollTab> {
   StaffPayrollPeriodModel? _activePeriod;
+  late final TextEditingController _periodController;
+
+  @override
+  void initState() {
+    super.initState();
+    _periodController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _periodController.dispose();
+    super.dispose();
+  }
+
+  String _periodLabel(StaffPayrollPeriodModel? p) =>
+      p != null ? '${p.year} / ${p.month} (${p.status?.name ?? ''})' : '';
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +79,9 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
 
         final periods = state.payrollPeriods;
         final currentPeriod = _activePeriod ?? (periods.isNotEmpty ? periods.first : null);
+        if (currentPeriod != null && _periodController.text.isEmpty) {
+          _periodController.text = _periodLabel(currentPeriod);
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -82,23 +102,21 @@ class _StaffPayrollTabState extends State<StaffPayrollTab> {
                     children: [
                       // Periods Selector
                       if (periods.isNotEmpty) ...[
-                        DropdownButton<StaffPayrollPeriodModel>(
-                          key: const Key('dropdown_select_payroll_period'),
-                          value: currentPeriod,
-                          hint: Text('hr_month_label'.tr()),
-                          underline: const SizedBox(),
-                          items: periods.map((p) {
-                            return DropdownMenuItem(
-                              value: p,
-                              child: Text(
-                                '${p.year} / ${p.month} (${p.status?.name ?? ''})',
-                                style: CustomAppFontStyle.medium13,
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            setState(() => _activePeriod = val);
-                          },
+                        SizedBox(
+                          width: 220,
+                          child: CustomStackSelector<StaffPayrollPeriodModel>(
+                            key: const Key('dropdown_select_payroll_period'),
+                            controller: _periodController,
+                            hintText: 'hr_month_label'.tr(),
+                            list: periods,
+                            itemAsString: _periodLabel,
+                            changeValue: (val) {
+                              setState(() {
+                                _activePeriod = val;
+                                _periodController.text = _periodLabel(val);
+                              });
+                            },
+                          ),
                         ),
                         const SizedBox(width: 24),
                       ],

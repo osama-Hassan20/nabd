@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
+import '../../../../shared/widgets/custom_stack_selector.dart';
 import '../manager/visits_cubit.dart';
 import '../manager/visits_state.dart';
 
-class VisitsFilterBar extends StatelessWidget {
+class VisitsFilterBar extends StatefulWidget {
   final VisitsCubit cubit;
   final VisitsState state;
   final bool isAdminOrOwner;
@@ -25,8 +26,42 @@ class VisitsFilterBar extends StatelessWidget {
   ];
 
   @override
+  State<VisitsFilterBar> createState() => _VisitsFilterBarState();
+}
+
+class _VisitsFilterBarState extends State<VisitsFilterBar> {
+  late final TextEditingController _doctorController;
+
+  @override
+  void initState() {
+    super.initState();
+    _doctorController = TextEditingController(text: _getDoctorLabel(widget.state.filterDoctorId));
+  }
+
+  @override
+  void didUpdateWidget(covariant VisitsFilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state.filterDoctorId != widget.state.filterDoctorId) {
+      _doctorController.text = _getDoctorLabel(widget.state.filterDoctorId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _doctorController.dispose();
+    super.dispose();
+  }
+
+  String _getDoctorLabel(String? doctorId) {
+    if (doctorId == null) return 'visits_queue_all_doctors'.tr();
+    final match = VisitsFilterBar.knownDoctors.where((d) => d.$1 == doctorId);
+    if (match.isNotEmpty) return match.first.$2;
+    return doctorId;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currentDate = state.filterDate ?? CairoTimeHelper.now();
+    final currentDate = widget.state.filterDate ?? CairoTimeHelper.now();
     final isToday = CairoTimeHelper.isSameDay(currentDate, CairoTimeHelper.now());
 
     return Container(
@@ -52,7 +87,7 @@ class VisitsFilterBar extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   final prevDay = currentDate.subtract(const Duration(days: 1));
-                  cubit.loadDoctorQueue(date: prevDay);
+                  widget.cubit.loadDoctorQueue(date: prevDay);
                 },
                 icon: const Icon(Icons.chevron_left, size: 20),
                 tooltip: 'previous_day'.tr(),
@@ -67,7 +102,7 @@ class VisitsFilterBar extends StatelessWidget {
                     lastDate: DateTime(2030),
                   );
                   if (picked != null) {
-                    cubit.loadDoctorQueue(date: picked);
+                    widget.cubit.loadDoctorQueue(date: picked);
                   }
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -108,7 +143,7 @@ class VisitsFilterBar extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   final nextDay = currentDate.add(const Duration(days: 1));
-                  cubit.loadDoctorQueue(date: nextDay);
+                  widget.cubit.loadDoctorQueue(date: nextDay);
                 },
                 icon: const Icon(Icons.chevron_right, size: 20),
                 tooltip: 'next_day'.tr(),
@@ -122,50 +157,23 @@ class VisitsFilterBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Doctor Filter (Admin/Owner only)
-              if (isAdminOrOwner) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFFCBD5E1),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String?>(
-                      value: state.filterDoctorId,
-                      hint: Text(
-                        'visits_queue_all_doctors'.tr(),
-                        style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.gray,
-                        ),
-                      ),
-                      icon: const Icon(Icons.arrow_drop_down, size: 18),
-                      items: [
-                        DropdownMenuItem<String?>(
-                          value: null,
-                          child: Text(
-                            'visits_queue_all_doctors'.tr(),
-                            style: CustomAppFontStyle.medium12,
-                          ),
-                        ),
-                        ...knownDoctors.map(
-                          (d) => DropdownMenuItem<String?>(
-                            value: d.$1,
-                            child: Text(
-                              d.$2,
-                              style: CustomAppFontStyle.medium12,
-                            ),
-                          ),
-                        ),
-                      ],
-                      onChanged: (val) {
-                        cubit.setFilterDoctorId(val);
-                      },
-                    ),
+              if (widget.isAdminOrOwner) ...[
+                SizedBox(
+                  width: 190,
+                  child: CustomStackSelector<(String, String)?>(
+                    controller: _doctorController,
+                    hintText: 'visits_queue_all_doctors'.tr(),
+                    list: const [null, ...VisitsFilterBar.knownDoctors],
+                    itemAsString: (item) =>
+                        item != null ? item.$2 : 'visits_queue_all_doctors'.tr(),
+                    changeValue: (val) {
+                      setState(() {
+                        _doctorController.text = val != null
+                            ? val.$2
+                            : 'visits_queue_all_doctors'.tr();
+                      });
+                      widget.cubit.setFilterDoctorId(val?.$1);
+                    },
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -173,7 +181,7 @@ class VisitsFilterBar extends StatelessWidget {
 
               // Refresh Button
               IconButton(
-                onPressed: () => cubit.loadDoctorQueue(),
+                onPressed: () => widget.cubit.loadDoctorQueue(),
                 icon: const Icon(Icons.refresh, size: 18),
                 tooltip: 'refresh'.tr(),
                 color: AppColors.gray,

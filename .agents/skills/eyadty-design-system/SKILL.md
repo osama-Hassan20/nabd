@@ -158,6 +158,10 @@ class AppDecorations {
 ### 5.4 Search Fields:
 - Full pill search input (`height: 48–52px`), subtle border, magnifying glass icon in a circular background.
 
+### 5.5 Select & Dropdown Controls:
+- **Mandatory Unified Component:** Every select menu, dropdown, and category picker across the application MUST use `CustomStackSelector<T>` (`lib/shared/widgets/custom_stack_selector.dart`).
+- **Forbidden:** Raw Flutter `DropdownButton` and `DropdownButtonFormField` are strictly prohibited everywhere.
+
 ---
 
 ## 6. Implementation Checklist for Eyadty Screens:
@@ -166,3 +170,4 @@ class AppDecorations {
 - [ ] Is primary action using the rich terracotta `#E0583E` or deep pitch black `#111111`?
 - [ ] Is depth achieved through `#F6F6F8` tone-on-tone container backgrounds rather than heavy dropshadows?
 - [ ] Are numbers and metrics clean and prominent with warm secondary labels?
+- [ ] Are all dropdown and selection inputs using `CustomStackSelector<T>` (never raw `DropdownButton`)?

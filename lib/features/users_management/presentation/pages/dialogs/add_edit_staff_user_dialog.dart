@@ -7,6 +7,7 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
@@ -34,6 +35,8 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
   late final TextEditingController _phoneController;
   late final TextEditingController _jobTitleController;
   late final TextEditingController _tempPasswordController;
+  late final TextEditingController _primaryBranchController;
+  late final TextEditingController _linkedDoctorController;
 
   String _primaryBranchId = 'branch_1';
   final Set<String> _selectedRoles = {};
@@ -84,6 +87,15 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
     } else {
       _selectedRoles.add(RoleIds.reception);
     }
+
+    final branchMatch = _availableBranches.where((b) => b.$1 == _primaryBranchId);
+    _primaryBranchController = TextEditingController(
+      text: branchMatch.isNotEmpty ? branchMatch.first.$2.tr() : _primaryBranchId,
+    );
+    final docMatch = _availableDoctors.where((d) => d.$1 == _linkedDoctorId);
+    _linkedDoctorController = TextEditingController(
+      text: docMatch.isNotEmpty ? docMatch.first.$2 : '',
+    );
   }
 
   @override
@@ -93,6 +105,8 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
     _phoneController.dispose();
     _jobTitleController.dispose();
     _tempPasswordController.dispose();
+    _primaryBranchController.dispose();
+    _linkedDoctorController.dispose();
     super.dispose();
   }
 
@@ -290,43 +304,17 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                   ],
 
                   // ─── Primary Branch ──────────────────────────────────────
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'primary_branch'.tr(),
-                        style: CustomAppFontStyle.semiBold13.copyWith(
-                          color: AppColors.darkText,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBackground,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.grayE2E8F0),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _primaryBranchId,
-                            isExpanded: true,
-                            items: _availableBranches.map((b) {
-                              return DropdownMenuItem<String>(
-                                value: b.$1,
-                                child: Text(b.$2.tr()),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _primaryBranchId = val);
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
+                  CustomStackSelector<(String, String)>(
+                    controller: _primaryBranchController,
+                    header: 'primary_branch'.tr(),
+                    list: _availableBranches,
+                    itemAsString: (b) => b.$2.tr(),
+                    changeValue: (b) {
+                      setState(() {
+                        _primaryBranchId = b.$1;
+                        _primaryBranchController.text = b.$2.tr();
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
 
@@ -412,38 +400,20 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            height: 48,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF93C5FD)),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String?>(
-                                value: _linkedDoctorId,
-                                isExpanded: true,
-                                hint: Text(
-                                  'select_doctor_profile'.tr(),
-                                  style: CustomAppFontStyle.regular12.copyWith(
-                                    color: AppColors.gray71717A,
-                                  ),
-                                ),
-                                items: _availableDoctors.map((doc) {
-                                  return DropdownMenuItem<String?>(
-                                    value: doc.$1,
-                                    child: Text(
-                                      doc.$2,
-                                      style: CustomAppFontStyle.regular12,
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (val) {
-                                  setState(() => _linkedDoctorId = val);
-                                },
-                              ),
-                            ),
+                          CustomStackSelector<(String, String)?>(
+                            controller: _linkedDoctorController,
+                            hintText: 'select_doctor_profile'.tr(),
+                            list: const [null, ..._availableDoctors],
+                            itemAsString: (doc) =>
+                                doc != null ? doc.$2 : 'select_doctor_profile'.tr(),
+                            changeValue: (doc) {
+                              setState(() {
+                                _linkedDoctorId = doc?.$1;
+                                _linkedDoctorController.text = doc != null
+                                    ? doc.$2
+                                    : 'select_doctor_profile'.tr();
+                              });
+                            },
                           ),
                         ],
                       ),
