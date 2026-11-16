@@ -215,7 +215,9 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<SessionCubit>(
     () => SessionCubit(SessionState.initial()),
   );
+  getIt.registerLazySingleton<CurrentUserProvider>(() => getIt<SessionCubit>());
   getIt.registerLazySingleton<CurrentRoleProvider>(() => getIt<SessionCubit>());
+  getIt.registerLazySingleton<RolesProvider>(() => getIt<SessionCubit>());
   getIt.registerLazySingleton<PermissionEvaluator>(
     () => getIt<SessionCubit>().permissionEvaluator,
   );
@@ -577,7 +579,7 @@ Future<void> setupGetIt() async {
     () => UpdatePrintSettingsUseCase(
       repo: getIt<SettingsRepo>(),
       permissionEvaluator: getIt<PermissionEvaluator>(),
-      currentUserProvider: getIt<SessionCubit>(),
+      currentUserProvider: getIt<CurrentUserProvider>(),
       auditLogger: getIt<AuditLogger>(),
     ),
   );

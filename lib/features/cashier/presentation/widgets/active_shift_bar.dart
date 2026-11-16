@@ -1,9 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
+import 'package:eyadty/features/cashier/presentation/helpers/adaptive_shift_report_pdf_generator.dart';
+import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
+import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'dialogs/close_shift_dialog.dart';
 import 'dialogs/open_shift_dialog.dart';
@@ -259,6 +264,50 @@ class ActiveShiftBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+
+              // Print Current Shift Button
+              CustomPushButton(
+                key: const Key('print_active_shift_btn'),
+                height: 40,
+                backgroundColor: AppColors.white,
+                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                onTap: () async {
+                  try {
+                    CompanySettingsModel? settings;
+                    try {
+                      final res =
+                          await getIt<SettingsRepo>().getCompanySettings();
+                      settings =
+                          res.getOrElse(() => const CompanySettingsModel());
+                    } catch (_) {}
+                    final bytes =
+                        await AdaptiveShiftReportPdfGenerator.generate(
+                      shift: shift,
+                      settings: settings,
+                    );
+                    await Printing.layoutPdf(
+                      onLayout: (format) async => bytes,
+                    );
+                  } catch (_) {}
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.print_outlined,
+                        color: AppColors.darkText, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'print'.tr(),
+                      style: CustomAppFontStyle.medium13.copyWith(
+                        color: AppColors.darkText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
 
               // Record Expense Button
               CustomPushButton(

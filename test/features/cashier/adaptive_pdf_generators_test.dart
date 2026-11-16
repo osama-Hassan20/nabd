@@ -137,6 +137,42 @@ void main() {
       expect(bytes.isNotEmpty, isTrue);
     });
 
+    test('works seamlessly when fontData is omitted via disk font fallback', () async {
+      final bytes = await AdaptiveReceiptPdfGenerator.generate(
+        payment: samplePayment,
+        settings: clinicSettings,
+      );
+
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
+      expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+    });
+
+    test('handles completely sparse PaymentTransactionModel with all optional fields null', () async {
+      const sparsePayment = PaymentTransactionModel(
+        id: null,
+        bookingId: null,
+        shiftId: null,
+        branchId: null,
+        patientName: null,
+        amountPiastres: null,
+        paymentMethod: null,
+        cashierUserId: null,
+        cashierName: null,
+        createdAt: null,
+        notes: null,
+      );
+
+      final bytes = await AdaptiveReceiptPdfGenerator.generate(
+        payment: sparsePayment,
+        settings: null,
+        fontData: fontData,
+      );
+
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
+    });
+
     test('renders payment notes cleanly in both A4 and thermal formats', () async {
       final paymentWithNotes = samplePayment.copyWith(
         notes: 'ملاحظة خاصة: دفعة كشف استشاري ومتابعة فندقية',
@@ -405,6 +441,79 @@ void main() {
         expect(bytes, isNotNull);
         expect(bytes.isNotEmpty, isTrue);
       }
+    });
+    test('works seamlessly when fontData is omitted via disk font fallback', () async {
+      final bytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: sampleShift,
+        settings: clinicSettings,
+      );
+
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
+      expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+    });
+
+    test('handles completely sparse CashierShiftModel with all optional fields null', () async {
+      const sparseShift = CashierShiftModel(
+        id: null,
+        branchId: null,
+        cashierUserId: null,
+        cashierName: null,
+        status: null,
+        openedAt: null,
+        closedAt: null,
+        openingBalancePiastres: null,
+        totalCashCollectedPiastres: null,
+        totalCardCollectedPiastres: null,
+        totalBankTransferPiastres: null,
+        totalExpensesPiastres: null,
+        totalRefundsPiastres: null,
+        expectedCashPiastres: null,
+        actualCashCountPiastres: null,
+        cashDifferencePiastres: null,
+        shortageReason: null,
+        isShortageApproved: null,
+        shortageApprovedByUserId: null,
+        forceCloseReason: null,
+        forceClosedByUserId: null,
+        closingNotes: null,
+        transactionCount: null,
+      );
+
+      final a4Bytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: sparseShift,
+        settings: null,
+        format: PrintFormat.a4,
+        fontData: fontData,
+      );
+      expect(a4Bytes, isNotNull);
+      expect(a4Bytes.isNotEmpty, isTrue);
+
+      final thermalBytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: sparseShift,
+        settings: null,
+        format: PrintFormat.thermal80,
+        fontData: fontData,
+      );
+      expect(thermalBytes, isNotNull);
+      expect(thermalBytes.isNotEmpty, isTrue);
+    });
+
+    test('handles extreme zero, large, and negative balances accurately without overflow', () async {
+      final extremeShift = sampleShift.copyWith(
+        openingBalancePiastres: 0,
+        totalCashCollectedPiastres: 100000000, // 1,000,000 EGP
+        totalExpensesPiastres: 50000000,
+        cashDifferencePiastres: -2500000, // -25,000 EGP
+      );
+
+      final bytes = await AdaptiveShiftReportPdfGenerator.generate(
+        shift: extremeShift,
+        settings: clinicSettings,
+        fontData: fontData,
+      );
+      expect(bytes, isNotNull);
+      expect(bytes.isNotEmpty, isTrue);
     });
   });
 }

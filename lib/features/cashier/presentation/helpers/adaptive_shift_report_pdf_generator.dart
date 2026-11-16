@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -29,7 +31,21 @@ class AdaptiveShiftReportPdfGenerator {
         final data = await rootBundle.load('assets/fonts/madani.ttf');
         ttfFont = pw.Font.ttf(data);
       } catch (_) {
-        ttfFont = null;
+        if (!kIsWeb) {
+          try {
+            final file = File('assets/fonts/madani.ttf');
+            if (file.existsSync()) {
+              ttfFont =
+                  pw.Font.ttf(ByteData.view(file.readAsBytesSync().buffer));
+            } else {
+              ttfFont = null;
+            }
+          } catch (_) {
+            ttfFont = null;
+          }
+        } else {
+          ttfFont = null;
+        }
       }
     }
 

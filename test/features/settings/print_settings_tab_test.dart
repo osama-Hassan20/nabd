@@ -65,6 +65,23 @@ class FailingSettingsRepo implements SettingsRepo {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class UpdateFailingSettingsRepo implements SettingsRepo {
+  @override
+  Future<Either<Failures, CompanySettingsModel>> getCompanySettings() async {
+    return const Right(CompanySettingsModel());
+  }
+
+  @override
+  Future<Either<Failures, CompanySettingsModel>> updateCompanySettings(
+    CompanySettingsModel settings,
+  ) async {
+    return const Left(ServerFailure(errMessage: 'db_write_error'));
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 Widget _buildLocalizedTab({
   required Widget child,
   required SettingsCubit settingsCubit,
@@ -304,6 +321,50 @@ void main() {
         (_) => fail('Should have returned Left'),
       );
       expect(auditLogger.getLogs(eventType: 'print_settings_updated'), isEmpty);
+    });
+
+    test('propagates failure when repo.updateCompanySettings fails and logs zero audit', () async {
+      final failingUseCase = UpdatePrintSettingsUseCase(
+        repo: UpdateFailingSettingsRepo(),
+        permissionEvaluator: permissionEvaluator,
+        currentUserProvider: userProvider,
+        auditLogger: auditLogger,
+      );
+
+      final result = await failingUseCase(
+        const UpdatePrintSettingsParams(receiptPrintFormat: 'thermal80'),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure.errMessage, 'db_write_error'),
+        (_) => fail('Should have returned Left'),
+      );
+      expect(auditLogger.getLogs(eventType: 'print_settings_updated'), isEmpty);
+    });
+
+    test('owner user without explicit accessSettings role can update print settings successfully', () async {
+      userProvider.user = const StaffUserModel(
+        id: 'owner_user_99',
+        fullName: 'المالك المؤسس',
+        isOwner: true,
+        isActive: true,
+        isDeleted: false,
+        branchAssignments: [],
+      );
+
+      final result = await updatePrintSettingsUseCase(
+        const UpdatePrintSettingsParams(
+          receiptPrintFormat: 'thermal80',
+          shiftReportPrintFormat: 'thermal80',
+          prescriptionPrintFormat: 'thermal80',
+        ),
+      );
+
+      expect(result.isRight(), isTrue);
+      final logs = auditLogger.getLogs(eventType: 'print_settings_updated');
+      expect(logs.length, 1);
+      expect(logs.first.performedByUserId, 'owner_user_99');
     });
   });
 
@@ -649,6 +710,58 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
+
+      await cubit.close();
+    });
+
+    testWidgets('handles actionStatus failure cleanly and shows error notification', (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final getSettingsUseCase = GetCompanySettingsUseCase(repo: repo);
+      final updateCompanySettingsUseCase = UpdateCompanySettingsUseCase(repo: repo);
+
+      final cubit = SettingsCubit(
+        getCompanySettingsUseCase: getSettingsUseCase,
+        updateCompanySettingsUseCase: updateCompanySettingsUseCase,
+        addSpecialHolidayUseCase: AddSpecialHolidayUseCase(repo: repo),
+        deleteSpecialHolidayUseCase: DeleteSpecialHolidayUseCase(repo: repo),
+        changePasswordUseCase: ChangePasswordUseCase(repo: repo),
+        updatePrintSettingsUseCase: updatePrintSettingsUseCase,
+      );
+
+      cubit.emit(
+        cubit.state.copyWith(
+          status: RequestStatusEnum.success,
+          actionStatus: RequestStatusEnum.initial,
+          settings: const CompanySettingsModel(
+            receiptPrintFormat: 'a4',
+            shiftReportPrintFormat: 'a4',
+            prescriptionPrintFormat: 'a4',
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedTab(
+          settingsCubit: cubit,
+          child: PrintSettingsTab(settingsCubit: cubit),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      cubit.emit(
+        cubit.state.copyWith(
+          actionStatus: RequestStatusEnum.failure,
+          errMessage: 'settings_permission_denied',
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 4));
+
+      // Widget remains stable without crashing
+      expect(find.byType(PrintSettingsTab), findsOneWidget);
 
       await cubit.close();
     });

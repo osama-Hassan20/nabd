@@ -62,6 +62,9 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
   Widget build(BuildContext context) {
     return BlocConsumer<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
+      listenWhen: (prev, curr) =>
+          (!_initialized && curr.settings != null) ||
+          prev.actionStatus != curr.actionStatus,
       listener: (context, state) {
         if (!_initialized && state.settings != null) {
           setState(() {
@@ -81,7 +84,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
         } else if (state.actionStatus == RequestStatusEnum.failure) {
           CustomToast(
             context: context,
-            header: (state.errMessage ?? 'error').tr(),
+            header: (state.errMessage ?? 'error_occurred').tr(),
             type: ToastificationType.error,
           ).showTopToast();
         }

@@ -1,6 +1,9 @@
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+
 import '../../../../core/enums/payment_method.dart';
 import '../../../settings/data/models/company_settings_model.dart';
 import '../../../settings/data/models/enums/print_format_enum.dart';
@@ -16,9 +19,8 @@ class AdaptiveReceiptPdfGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final effectiveFormat = format ??
-        settings?.effectiveReceiptPrintFormat ??
-        PrintFormat.a4;
+    final effectiveFormat =
+        format ?? settings?.effectiveReceiptPrintFormat ?? PrintFormat.a4;
 
     pw.Font? ttfFont;
     if (fontData != null) {
@@ -28,7 +30,21 @@ class AdaptiveReceiptPdfGenerator {
         final data = await rootBundle.load('assets/fonts/madani.ttf');
         ttfFont = pw.Font.ttf(data);
       } catch (_) {
-        ttfFont = null;
+        if (!kIsWeb) {
+          try {
+            final file = File('assets/fonts/madani.ttf');
+            if (file.existsSync()) {
+              ttfFont =
+                  pw.Font.ttf(ByteData.view(file.readAsBytesSync().buffer));
+            } else {
+              ttfFont = null;
+            }
+          } catch (_) {
+            ttfFont = null;
+          }
+        } else {
+          ttfFont = null;
+        }
       }
     }
 
@@ -66,7 +82,8 @@ class AdaptiveReceiptPdfGenerator {
     CompanySettingsModel? settings,
   ) {
     final money = Money.fromPiastres(payment.amountPiastres ?? 0);
-    final clinicName = (settings?.companyName != null &&
+    final clinicName =
+        (settings?.companyName != null &&
             settings!.companyName!.trim().isNotEmpty)
         ? settings.companyName!
         : 'المركز الطبي';
@@ -95,12 +112,18 @@ class AdaptiveReceiptPdfGenerator {
                   if (address.isNotEmpty)
                     pw.Text(
                       address,
-                      style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                      style: const pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.grey700,
+                      ),
                     ),
                   if (phone.isNotEmpty)
                     pw.Text(
                       phone,
-                      style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                      style: const pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.grey700,
+                      ),
                     ),
                 ],
               ),
@@ -170,15 +193,24 @@ class AdaptiveReceiptPdfGenerator {
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text('البيان', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    child: pw.Text(
+                      'البيان',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text('طريقة الدفع', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    child: pw.Text(
+                      'طريقة الدفع',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text('المبلغ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    child: pw.Text(
+                      'المبلغ',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -203,7 +235,10 @@ class AdaptiveReceiptPdfGenerator {
           if (payment.notes != null && payment.notes!.trim().isNotEmpty) ...[
             pw.SizedBox(height: 10),
             pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
               decoration: const pw.BoxDecoration(
                 color: PdfColors.grey100,
                 borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
@@ -213,12 +248,18 @@ class AdaptiveReceiptPdfGenerator {
                 children: [
                   pw.Text(
                     'ملاحظات: ',
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 10,
+                    ),
                   ),
                   pw.Expanded(
                     child: pw.Text(
                       payment.notes!.trim(),
-                      style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
+                      style: const pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.grey800,
+                      ),
                     ),
                   ),
                 ],
@@ -231,7 +272,10 @@ class AdaptiveReceiptPdfGenerator {
           pw.Align(
             alignment: pw.Alignment.centerLeft,
             child: pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
+              ),
               decoration: const pw.BoxDecoration(
                 color: PdfColors.green50,
                 borderRadius: pw.BorderRadius.all(pw.Radius.circular(8)),
@@ -278,7 +322,8 @@ class AdaptiveReceiptPdfGenerator {
     CompanySettingsModel? settings,
   ) {
     final money = Money.fromPiastres(payment.amountPiastres ?? 0);
-    final clinicName = (settings?.companyName != null &&
+    final clinicName =
+        (settings?.companyName != null &&
             settings!.companyName!.trim().isNotEmpty)
         ? settings.companyName!
         : 'المركز الطبي';
@@ -315,7 +360,10 @@ class AdaptiveReceiptPdfGenerator {
           _thermalRow('الحجز:', payment.bookingId ?? '-'),
           _thermalRow('الكاشير:', payment.cashierName ?? '-'),
           _thermalRow('الوقت:', _formatDateTime(payment.createdAt)),
-          _thermalRow('طريقة الدفع:', _paymentMethodArabic(payment.paymentMethod)),
+          _thermalRow(
+            'طريقة الدفع:',
+            _paymentMethodArabic(payment.paymentMethod),
+          ),
           if (payment.notes != null && payment.notes!.trim().isNotEmpty)
             _thermalRow('ملاحظات:', payment.notes!.trim()),
           pw.SizedBox(height: 6),
@@ -327,11 +375,17 @@ class AdaptiveReceiptPdfGenerator {
             children: [
               pw.Text(
                 'المدفوع:',
-                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.Text(
                 money.formatEgp(),
-                style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -395,4 +449,3 @@ class AdaptiveReceiptPdfGenerator {
     return '$y-$m-$d $h:$min';
   }
 }
-
