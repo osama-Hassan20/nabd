@@ -1,3 +1,6 @@
+import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
+import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/shared/cubit/basic_cubit.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/custom_drawer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +12,7 @@ import 'package:eyadty/core/utils/constants/app_list.dart';
 import 'package:eyadty/shared/app_layout/presentation/widgets/header_layout.dart';
 import 'package:eyadty/shared/widgets/custom_full_screen_loading.dart';
 import 'package:eyadty/shared/widgets/error_page.dart';
+import 'package:eyadty/shared/widgets/local_passcode_lock_screen.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:flutter/material.dart';
@@ -44,92 +48,109 @@ class _AppLayoutState extends State<AppLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BasicCubit, BasicState>(
-      builder: (context, state) {
-        if (state.profileStatus == RequestStatusEnum.loading) {
-          return const Scaffold(
-            body: CustomFullScreenLoading(
-              isLoading: true,
-              typedText: "جار تحميل صلاحياتك",
-              child: SizedBox.expand(),
-            ),
-          );
+    final passcodeCubit = getIt.isRegistered<LocalPasscodeCubit>()
+        ? getIt<LocalPasscodeCubit>()
+        : null;
+
+    return BlocBuilder<LocalPasscodeCubit, LocalPasscodeState>(
+      bloc: passcodeCubit,
+      builder: (context, passcodeState) {
+        if (passcodeState.isLocked) {
+          return const LocalPasscodeLockScreen();
         }
 
-        if (state.profileStatus == RequestStatusEnum.failure) {
-          return Scaffold(
-            body: Center(
-              child: ErrorPage(
-                errorMessage: state.errMessage ?? 'فشل في تحميل البيانات',
-                onPressed: () => context.read<BasicCubit>().getProfile(),
-              ),
-            ),
-          );
-        }
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => passcodeCubit?.recordActivity(),
+          onPointerHover: (_) => passcodeCubit?.recordActivity(),
+          child: BlocBuilder<BasicCubit, BasicState>(
+            builder: (context, state) {
+              if (state.profileStatus == RequestStatusEnum.loading) {
+                return const Scaffold(
+                  body: CustomFullScreenLoading(
+                    isLoading: true,
+                    typedText: "جار تحميل صلاحياتك",
+                    child: SizedBox.expand(),
+                  ),
+                );
+              }
 
-        return Scaffold(
-          key: scaffoldKey,
-          drawer: CustomDrawer(
-            scaffoldKey: scaffoldKey,
-            items: layoutItems(context),
-          ),
-          body: SafeArea(
-            bottom: false,
-
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ScreenAdaptiveLayout(
-                  mobileLayout: (context) => const SizedBox.shrink(),
-                  tabletLayout: (context) => const SizedBox.shrink(),
-                  desktopLayout: (context) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: isCollapsed ? 100 : 270,
-                    child: CustomSideBarList(
-                      scaffoldKey: scaffoldKey,
-                      isMobile: false,
-                      isTablet: isCollapsed,
-                      items: layoutItems(context),
-                      onToggle: () {
-                        setState(() {
-                          isCollapsed = !isCollapsed;
-                        });
-                      },
+              if (state.profileStatus == RequestStatusEnum.failure) {
+                return Scaffold(
+                  body: Center(
+                    child: ErrorPage(
+                      errorMessage: state.errMessage ?? 'فشل في تحميل البيانات',
+                      onPressed: () => context.read<BasicCubit>().getProfile(),
                     ),
                   ),
+                );
+              }
+
+              return Scaffold(
+                key: scaffoldKey,
+                drawer: CustomDrawer(
+                  scaffoldKey: scaffoldKey,
+                  items: layoutItems(context),
                 ),
-                Expanded(
-                  child: Column(
-                    spacing: 16,
+                body: SafeArea(
+                  bottom: false,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        height: AdaptiveLayout.getResponsiveValue(
-                          context: context,
-                          mobile: 82,
-                          tablet: 82,
-                          desktop: 75,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: CustomHeaderLayout(
-                            isLogin: isLogin,
+                      ScreenAdaptiveLayout(
+                        mobileLayout: (context) => const SizedBox.shrink(),
+                        tabletLayout: (context) => const SizedBox.shrink(),
+                        desktopLayout: (context) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: isCollapsed ? 100 : 270,
+                          child: CustomSideBarList(
                             scaffoldKey: scaffoldKey,
-                            title: widget.title,
-                            subtitle: widget.subtitle,
+                            isMobile: false,
+                            isTablet: isCollapsed,
+                            items: layoutItems(context),
+                            onToggle: () {
+                              setState(() {
+                                isCollapsed = !isCollapsed;
+                              });
+                            },
                           ),
                         ),
                       ),
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: widget.child,
+                        child: Column(
+                          spacing: 16,
+                          children: [
+                            SizedBox(
+                              height: AdaptiveLayout.getResponsiveValue(
+                                context: context,
+                                mobile: 82,
+                                tablet: 82,
+                                desktop: 75,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: CustomHeaderLayout(
+                                  isLogin: isLogin,
+                                  scaffoldKey: scaffoldKey,
+                                  title: widget.title,
+                                  subtitle: widget.subtitle,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: widget.child,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },

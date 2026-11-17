@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../enums/staff_permission_enum.dart';
 import '../enums/user_role_enum.dart';
 import '../services/permission_evaluator.dart';
+import '../storage/cache_helper.dart';
+import '../utils/constants/app_constants.dart';
 import '../../features/users_management/data/models/branch_assignment_model.dart';
 import '../../features/users_management/data/models/role_definition_model.dart';
 import '../../features/users_management/data/models/staff_user_model.dart';
@@ -183,6 +185,8 @@ class SessionCubit extends Cubit<SessionState>
   }
 
   void logout() {
+    AppSharedPreferences.remove(key: AppConstants.userId);
+    AppSharedPreferences.remove(key: AppConstants.accessToken);
     emit(
       const SessionState(
         currentUser: null,

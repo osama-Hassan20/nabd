@@ -43,4 +43,9 @@ class AppConstants {
 
   static const String remeberMeKey = 'remeberMeKey';
   static const String remeberMePassword = 'remeberMePassword';
+
+  // Local Passcode Keys
+  static const String localPasscodeKey = 'localPasscode';
+  static const String isLocalPasscodeEnabledKey = 'isLocalPasscodeEnabled';
+  static const String localPasscodeAutoLockMinutesKey = 'localPasscodeAutoLockMinutes';
 }

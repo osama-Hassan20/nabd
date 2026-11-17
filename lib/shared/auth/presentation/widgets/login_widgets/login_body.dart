@@ -804,7 +804,116 @@ class _LoginFormFields extends StatelessWidget {
               },
             ),
           ),
+
+          // ─── Direct Demo Role Accounts Section ─────────────────────────────
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              const Expanded(child: Divider(color: AppColors.grayE2E8F0)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  'demo_accounts_title'.tr(),
+                  style: CustomAppFontStyle.regular12.copyWith(
+                    color: AppColors.gray71717A,
+                  ),
+                ),
+              ),
+              const Expanded(child: Divider(color: AppColors.grayE2E8F0)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildRoleDemoChip(
+                label: 'demo_owner'.tr(),
+                email: 'owner@eyadty.com',
+                color: AppColors.primary,
+                icon: Icons.workspace_premium_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_med_dir'.tr(),
+                email: 'med_dir@eyadty.com',
+                color: const Color(0xFF0284C7),
+                icon: Icons.health_and_safety_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_manager'.tr(),
+                email: 'manager@eyadty.com',
+                color: AppColors.secondary,
+                icon: Icons.business_center_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_doctor'.tr(),
+                email: 'doctor@eyadty.com',
+                color: const Color(0xFF059669),
+                icon: Icons.medical_services_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_nurse'.tr(),
+                email: 'nurse@eyadty.com',
+                color: const Color(0xFFEC4899),
+                icon: Icons.favorite_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_reception'.tr(),
+                email: 'reception@eyadty.com',
+                color: AppColors.warning,
+                icon: Icons.support_agent_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_cashier'.tr(),
+                email: 'cashier@eyadty.com',
+                color: const Color(0xFF10B981),
+                icon: Icons.account_balance_wallet_rounded,
+              ),
+              _buildRoleDemoChip(
+                label: 'demo_hr'.tr(),
+                email: 'hr@eyadty.com',
+                color: const Color(0xFF8B5CF6),
+                icon: Icons.badge_rounded,
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRoleDemoChip({
+    required String label,
+    required String email,
+    required Color color,
+    required IconData icon,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () {
+        identifierController.text = email;
+        passwordController.text = '123456';
+        onSubmit();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: CustomAppFontStyle.medium12.copyWith(color: color),
+            ),
+          ],
+        ),
       ),
     );
   }
