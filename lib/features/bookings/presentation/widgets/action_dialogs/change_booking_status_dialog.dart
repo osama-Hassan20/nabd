@@ -10,6 +10,7 @@ import 'package:eyadty/features/bookings/presentation/helpers/booking_time_forma
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
+import 'package:eyadty/shared/widgets/app_date_time_picker.dart';
 
 class ChangeBookingStatusDialog extends StatefulWidget {
   final BookingStatusEnum selectedStatus;
@@ -76,11 +77,13 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
 
   Future<void> _pickPostponeDate(BuildContext context) async {
     final now = CairoTimeHelper.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: widget.postponeDate ?? now.add(const Duration(days: 1)),
+    final picked = await showAppDatePicker(
+      context,
+      initial: widget.postponeDate ?? now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      title: 'تحديد موعد التأجيل الجديد',
+      allowFuture: true,
     );
     if (picked != null) {
       widget.onPickPostponeDate?.call(picked);

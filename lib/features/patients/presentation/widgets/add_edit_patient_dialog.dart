@@ -23,6 +23,7 @@ import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/shared/widgets/app_date_time_picker.dart';
 import 'dialogs/duplicate_phone_warning_dialog.dart';
 import 'form_components/blood_group_selector.dart';
 import 'form_components/kinship_chips_selector.dart';
@@ -123,12 +124,12 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
     DateTime? current,
   ) async {
     final now = CairoTimeHelper.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: current ?? DateTime(now.year - 25, 1, 1),
+    final picked = await showAppDatePicker(
+      context,
+      initial: current ?? DateTime(now.year - 25, 1, 1),
       firstDate: DateTime(1900, 1, 1),
       lastDate: now,
-      locale: const Locale('ar', 'EG'),
+      title: 'تاريخ الميلاد',
     );
     if (picked != null) {
       patientsCubit.updateFormDateOfBirth(picked);
@@ -147,12 +148,12 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         ? now
         : (initial.isBefore(firstAllowed) ? firstAllowed : initial);
 
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: safeInitial,
+    final picked = await showAppDatePicker(
+      context,
+      initial: safeInitial,
       firstDate: firstAllowed,
       lastDate: now,
-      locale: const Locale('ar', 'EG'),
+      title: 'تاريخ آخر دورة شهرية (LMP)',
     );
     if (picked != null) {
       patientsCubit.updateFormLastMenstrualPeriodDate(picked);

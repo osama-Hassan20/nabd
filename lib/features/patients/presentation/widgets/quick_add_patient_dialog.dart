@@ -19,6 +19,7 @@ import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/shared/widgets/app_date_time_picker.dart';
 import 'dialogs/duplicate_phone_warning_dialog.dart';
 
 class QuickAddPatientDialog extends StatelessWidget {
@@ -91,12 +92,12 @@ class QuickAddPatientDialog extends StatelessWidget {
 
   Future<void> _selectDateOfBirth(BuildContext context, DateTime? current) async {
     final now = CairoTimeHelper.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: current ?? DateTime(now.year - 25, 1, 1),
+    final picked = await showAppDatePicker(
+      context,
+      initial: current ?? DateTime(now.year - 25, 1, 1),
       firstDate: DateTime(1900, 1, 1),
       lastDate: now,
-      locale: const Locale('ar', 'EG'),
+      title: 'تاريخ الميلاد',
     );
     if (picked != null) {
       cubit.updateFormDateOfBirth(picked);

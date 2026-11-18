@@ -19,6 +19,7 @@ import 'package:eyadty/features/doctors/domain/helpers/doctor_availability_helpe
 import 'package:eyadty/features/doctors/presentation/widgets/dialogs/doctor_schedule_editor_dialog.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
+import 'package:eyadty/shared/widgets/app_date_time_picker.dart';
 
 class BookingFormSlotPickerSection extends StatelessWidget {
   const BookingFormSlotPickerSection({super.key});
@@ -200,11 +201,13 @@ class BookingFormSlotPickerSection extends StatelessWidget {
             message: 'pick_another_date'.tr(),
             child: InkWell(
               onTap: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate,
+                final picked = await showAppDatePicker(
+                  context,
+                  initial: selectedDate,
                   firstDate: today,
                   lastDate: today.add(const Duration(days: 90)),
+                  title: 'اختيار موعد الحجز',
+                  allowFuture: true,
                 );
                 if (picked != null) {
                   cubit.updateFormDate(picked);
