@@ -129,6 +129,34 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
     // ═══════════════════════════════════════════════════════════════════════════
     SideBarItemModel(
       groupTitle: 'nav_group_settings'.tr(),
+      staffPermission: null,
+      title: 'profile'.tr(),
+      iconPath: AppIcons.user,
+      id: 'profile',
+      selectedIconPath: AppIcons.user,
+      routePath: AppRouter.profile,
+      header: 'profile'.tr(),
+      subtitle: 'بيانات الحساب الشخصي والأمان',
+      onTap: () {
+        context.go(AppRouter.profile);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_settings'.tr(),
+      staffPermission: null,
+      title: 'notifications'.tr(),
+      iconPath: AppIcons.notification,
+      id: 'notifications',
+      selectedIconPath: AppIcons.notification,
+      routePath: AppRouter.notifications,
+      header: 'notifications'.tr(),
+      subtitle: 'تنبيهات النظام وإشارات الاستقبال',
+      onTap: () {
+        context.go(AppRouter.notifications);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_settings'.tr(),
       staffPermission: StaffPermissionEnum.accessSettings,
       title: 'nav_settings'.tr(),
       iconPath: AppIcons.settings,

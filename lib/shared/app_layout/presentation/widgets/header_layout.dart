@@ -1,12 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
-import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
-import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -15,6 +12,8 @@ import 'package:eyadty/shared/widgets/custom_list_tile.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 
 import 'header_branch_switcher.dart';
+import 'header_reception_signal_widget.dart';
+import 'header_user_profile_widget.dart';
 
 class CustomHeaderLayout extends StatelessWidget
     implements PreferredSizeWidget {
@@ -81,19 +80,23 @@ class CustomHeaderLayout extends StatelessWidget
               ),
             ),
             const SizedBox(width: 8),
-            // Quick Lock Button (Telegram-style lock icon)
+            // Reception Buzzer Signal Button (Matches Images 1 & 2)
+            const HeaderReceptionSignalWidget(),
+            const SizedBox(width: 8),
+            // Quick Lock Button (Telegram-style lock icon - Matches Image 9)
             _buildQuickLockButton(context),
             const SizedBox(width: 8),
             // Branch Switcher on Mobile/Tablet
             const HeaderBranchSwitcher(),
             const SizedBox(width: 8),
-            _buildProfileAvatar(context),
+            // User Profile Widget (Matches Image 4)
+            const HeaderUserProfileWidget(),
           ],
         ),
       );
     }
 
-    // Desktop: Render Full Header Layout with Branch Switcher & Quick Lock
+    // Desktop: Render Full Header Layout with Signal, Branch Switcher & Quick Lock
     return Padding(
       padding: const EdgeInsetsDirectional.only(top: 12),
       child: CustomListTile(
@@ -112,12 +115,14 @@ class CustomHeaderLayout extends StatelessWidget
           mainAxisSize: MainAxisSize.min,
           spacing: 12,
           children: [
-            // Telegram-style Quick Passcode Lock Button
+            // Reception Buzzer Signal Button (Matches Images 1 & 2)
+            const HeaderReceptionSignalWidget(),
+            // Telegram-style Quick Passcode Lock Button (Matches Image 9)
             _buildQuickLockButton(context),
             // Branch Switcher (only shows if user has multiple branches)
             const HeaderBranchSwitcher(),
-            // User Avatar & Settings/Logout
-            _buildProfileAvatar(context),
+            // User Profile Widget (Initials + Name + Dropdown - Matches Image 4)
+            const HeaderUserProfileWidget(),
           ],
         ),
       ),
@@ -164,99 +169,6 @@ class CustomHeaderLayout extends StatelessWidget
           ),
         );
       },
-    );
-  }
-
-  Widget _buildProfileAvatar(BuildContext context) {
-    return PopupMenuButton<String>(
-      tooltip: 'profile'.tr(),
-      offset: const Offset(0, 50),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.grayE2E8F0),
-      ),
-      onSelected: (value) {
-        if (value == 'settings') {
-          context.go(AppRouter.settings);
-        } else if (value == 'logout') {
-          getIt<SessionCubit>().logout();
-          context.go(AppRouter.login);
-        }
-      },
-      itemBuilder: (ctx) {
-        final session = getIt<SessionCubit>();
-        final userName = session.currentUser?.fullName ?? session.state.userName ?? 'المستخدم';
-        final jobTitle = session.currentUser?.jobTitle ?? '';
-
-        return [
-          PopupMenuItem<String>(
-            enabled: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  userName,
-                  style: CustomAppFontStyle.bold14.copyWith(
-                    color: AppColors.darkText,
-                  ),
-                ),
-                if (jobTitle.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    jobTitle,
-                    style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
-                    ),
-                  ),
-                ],
-                const Divider(color: AppColors.grayE2E8F0),
-              ],
-            ),
-          ),
-          PopupMenuItem<String>(
-            value: 'settings',
-            child: Row(
-              children: [
-                const Icon(Icons.settings_outlined, size: 20, color: AppColors.gray71717A),
-                const SizedBox(width: 12),
-                Text('settings'.tr(), style: CustomAppFontStyle.medium14),
-              ],
-            ),
-          ),
-          PopupMenuItem<String>(
-            value: 'logout',
-            child: Row(
-              children: [
-                const Icon(Icons.logout_rounded, size: 20, color: AppColors.error),
-                const SizedBox(width: 12),
-                Text(
-                  'log_out'.tr(),
-                  style: CustomAppFontStyle.medium14.copyWith(
-                    color: AppColors.error,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ];
-      },
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.fillDisableColor, width: 2),
-          color: AppColors.primaryLight,
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.person_rounded,
-            color: AppColors.primary,
-            size: 24,
-          ),
-        ),
-      ),
     );
   }
 }

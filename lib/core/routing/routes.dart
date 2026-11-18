@@ -37,6 +37,8 @@ class AppRouter {
   static const String settings = '/settings';
   static const String usersManagement = '/settings/users';
   static const String auditLogs = '/settings/audit-logs';
+  static const String profile = '/profile';
+  static const String notifications = '/notifications';
 
   // 9. Drugs & Medical Catalog
   static const String drugs = '/drugs';

@@ -23,6 +23,8 @@ import 'package:eyadty/features/visits/presentation/pages/doctor_consultation_sc
 import 'package:eyadty/features/visits/presentation/pages/visits_page.dart';
 import 'package:eyadty/features/users_management/presentation/pages/users_management_page.dart';
 import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
+import 'package:eyadty/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:eyadty/features/profile/presentation/pages/profile_page.dart';
 import 'package:eyadty/shared/app_layout/presentation/pages/app_layout.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
@@ -611,6 +613,34 @@ List<RouteBase> getAppRoutes() => [
               ),
             ),
           ],
+        ),
+
+        // 9. Staff Profile & Account Information
+        GoRoute(
+          path: AppRouter.profile,
+          name: AppRouter.profile,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const ProfilePage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // 10. Live Notifications & Reception Signals
+        GoRoute(
+          path: AppRouter.notifications,
+          name: AppRouter.notifications,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const NotificationsPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
         ),
       ],
     ),

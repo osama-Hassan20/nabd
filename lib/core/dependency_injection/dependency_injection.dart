@@ -7,6 +7,7 @@ import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
+import 'package:eyadty/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/notification_service.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
@@ -218,6 +219,12 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<LocalPasscodeCubit>(
     () => LocalPasscodeCubit(),
+  );
+  getIt.registerLazySingleton<NotificationsCubit>(
+    () => NotificationsCubit(
+      auditLogger:
+          getIt.isRegistered<AuditLogger>() ? getIt<AuditLogger>() : null,
+    ),
   );
   getIt.registerLazySingleton<CurrentUserProvider>(() => getIt<SessionCubit>());
   getIt.registerLazySingleton<CurrentRoleProvider>(() => getIt<SessionCubit>());
