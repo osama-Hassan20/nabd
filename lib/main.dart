@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app.dart';
 import 'core/bloc_observer.dart';
 import 'core/cubits/session_cubit.dart';
+import 'core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'core/dependency_injection/dependency_injection.dart';
 import 'core/services/navigation_mode_service.dart';
 import 'core/storage/cache_helper.dart';
@@ -47,6 +48,7 @@ void main() async {
         providers: [
           BlocProvider(create: (context) => getIt<BasicCubit>()),
           BlocProvider.value(value: getIt<SessionCubit>()),
+          BlocProvider.value(value: getIt<LocalPasscodeCubit>()),
         ],
         child: const MyApp(),
       ),

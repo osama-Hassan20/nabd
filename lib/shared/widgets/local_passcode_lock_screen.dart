@@ -49,7 +49,7 @@ class _LocalPasscodeLockScreenState extends State<LocalPasscodeLockScreen> {
       return;
     }
 
-    final cubit = context.read<LocalPasscodeCubit>();
+    final cubit = getIt<LocalPasscodeCubit>();
     final success = cubit.unlock(text);
     if (!success) {
       setState(() {
@@ -66,7 +66,7 @@ class _LocalPasscodeLockScreenState extends State<LocalPasscodeLockScreen> {
 
   void _handleLogout() {
     // Logout user, disable lock view, navigate to login
-    context.read<LocalPasscodeCubit>().unlock(''); // force clear state
+    getIt<LocalPasscodeCubit>().unlock(''); // force clear state
     getIt<SessionCubit>().logout();
     context.go(AppRouter.login);
   }
@@ -81,6 +81,7 @@ class _LocalPasscodeLockScreenState extends State<LocalPasscodeLockScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: BlocBuilder<LocalPasscodeCubit, LocalPasscodeState>(
+              bloc: getIt<LocalPasscodeCubit>(),
               builder: (context, state) {
                 final displayError = _localError ??
                     (state.errorMessage != null ? state.errorMessage!.tr() : null);

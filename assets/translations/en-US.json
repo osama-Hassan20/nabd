@@ -1531,5 +1531,7 @@
   "demo_nurse": "Nurse",
   "demo_reception": "Reception",
   "demo_cashier": "Cashier",
-  "demo_hr": "HR"
+  "demo_hr": "HR",
+  "profile": "Profile",
+  "log_out": "Log out"
 }

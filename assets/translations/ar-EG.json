@@ -1531,5 +1531,7 @@
   "demo_nurse": "تمريض",
   "demo_reception": "استقبال",
   "demo_cashier": "محاسب",
-  "demo_hr": "موارد بشرية"
+  "demo_hr": "موارد بشرية",
+  "profile": "الملف الشخصي",
+  "log_out": "تسجيل الخروج"
 }
