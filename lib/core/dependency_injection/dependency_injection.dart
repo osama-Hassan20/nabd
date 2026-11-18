@@ -422,6 +422,7 @@ Future<void> setupGetIt() async {
       getDoctorBookingsForDateUseCase: getIt<GetDoctorBookingsForDateUseCase>(),
       applyBookingDiscountUseCase: getIt<ApplyBookingDiscountUseCase>(),
       removeBookingDiscountUseCase: getIt<RemoveBookingDiscountUseCase>(),
+      sessionCubit: getIt<SessionCubit>(),
     ),
   );
 

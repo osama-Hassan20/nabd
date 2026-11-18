@@ -1,10 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
+import 'package:eyadty/features/settings/data/models/enums/clinic_type_enum.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_state.dart';
 import 'package:eyadty/features/settings/presentation/widgets/dialogs/change_password_dialog.dart';
@@ -29,6 +32,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
+  late ClinicTypeEnum _selectedClinicType;
 
   @override
   void initState() {
@@ -39,6 +43,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
       text: CustomPhoneField.extractLocalDigits(settings?.phone),
     );
     _addressController = TextEditingController(text: settings?.address ?? '');
+    _selectedClinicType = settings?.clinicType ?? ClinicTypeEnum.polyclinic;
   }
 
   @override
@@ -51,6 +56,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
         settings.phone,
       );
       _addressController.text = settings.address ?? '';
+      _selectedClinicType = settings.clinicType;
     }
   }
 
@@ -131,10 +137,14 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
       name: _nameController.text.trim(),
       phone: formattedPhone,
       address: _addressController.text.trim(),
+      clinicType: _selectedClinicType,
     );
 
     if (mounted) {
       if (success) {
+        if (getIt.isRegistered<BookingsCubit>()) {
+          getIt<BookingsCubit>().fetchCompanySettings();
+        }
         CustomToast(
           context: context,
           header: 'settings_saved_successfully'.tr(),
@@ -289,6 +299,44 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                       ),
                       const SizedBox(height: 24),
 
+                      // Facility Operating Mode
+                      Text(
+                        'فئة ونوع المنشأة الطبية',
+                        style: CustomAppFontStyle.semiBold14,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'تحدد طريقة تسجيل المواعيد وسلوك نموذج الحجز وتلقائية اختيار الأطباء وتحديد الأسعار.',
+                        style: CustomAppFontStyle.regular12.copyWith(
+                          color: AppColors.gray71717A,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildClinicTypeOption(
+                              type: ClinicTypeEnum.polyclinic,
+                              title: 'مركز طبي / مجمع عيادات',
+                              subtitle:
+                                  'أطباء وتخصصات متعددة؛ الاستقبال يحدد الطبيب، والأطباء يُملأ لهم طبيبهم الافتراضي مع إمكانية التحويل.',
+                              icon: Icons.local_hospital_outlined,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildClinicTypeOption(
+                              type: ClinicTypeEnum.singleDoctor,
+                              title: 'عيادة فردية (طبيب واحد)',
+                              subtitle:
+                                  'طبيب واحد مع سكرتارية؛ إخفاء قائمة الأطباء وتعبئة كشف الطبيب وسعره تلقائياً دون أي خطوات إضافية.',
+                              icon: Icons.person_outline_rounded,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // Save Button
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
@@ -434,6 +482,91 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildClinicTypeOption({
+    required ClinicTypeEnum type,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedClinicType == type;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedClinicType = type;
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryLight.withValues(alpha: 0.4)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.grayE2E8F0.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected ? AppColors.white : AppColors.gray71717A,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: CustomAppFontStyle.semiBold14.copyWith(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.darkText,
+                          ),
+                        ),
+                      ),
+                      if (isSelected)
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: CustomAppFontStyle.regular12.copyWith(
+                      color: AppColors.gray71717A,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

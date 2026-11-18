@@ -30,6 +30,8 @@ import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 
+import '../../../../core/utils/theme/custom_app_font_styles.dart';
+
 class AddEditBookingDialog extends StatefulWidget {
   final BookingModel? initialBooking;
 
@@ -123,19 +125,17 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
 
     final isEdit = widget.initialBooking != null;
 
-    // In Add Mode: start completely fresh without prefilled customer/tech/times
+    // In Add Mode: pre-fill doctor & service if cubit initialized them
     _customerSelectorController = TextEditingController(
       text: isEdit ? (form?.customer?.name ?? '') : '',
     );
     final initialTechs = form?.technicians ?? [];
     _technicianSelectorController = TextEditingController(
-      text: isEdit
-          ? (initialTechs.length == 1
-                ? initialTechs.first.name
-                : (initialTechs.isNotEmpty
-                      ? '${initialTechs.length} أطباء (${initialTechs.map((t) => t.name).join('، ')})'
-                      : ''))
-          : '',
+      text: initialTechs.length == 1
+          ? initialTechs.first.name
+          : (initialTechs.isNotEmpty
+                ? '${initialTechs.length} أطباء (${initialTechs.map((t) => t.name).join('، ')})'
+                : ''),
     );
     _bookingTypeSelectorController = TextEditingController(
       text: form?.bookingType.label ?? BookingTypeEnum.oneTime.label,
@@ -152,21 +152,21 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     _endTimeController = TextEditingController();
 
     _serviceSelectorController = TextEditingController(
-      text: isEdit ? (form?.serviceName ?? '') : '',
+      text: form?.serviceName ?? '',
     );
     _serviceController = TextEditingController(
-      text: isEdit ? (form?.serviceName ?? '') : '',
+      text: form?.serviceName ?? '',
     );
     _notesController = TextEditingController(
-      text: isEdit ? (form?.notes ?? '') : '',
+      text: form?.notes ?? '',
     );
     _hourlyRateController = TextEditingController(
-      text: isEdit && form != null && (form.consultationFee > 0 || form.hourlyRate > 0)
+      text: form != null && (form.consultationFee > 0 || form.hourlyRate > 0)
           ? (form.consultationFee > 0 ? form.consultationFee : form.hourlyRate).toString()
           : '',
     );
     _totalPriceController = TextEditingController(
-      text: isEdit && form != null && form.totalPrice > 0
+      text: form != null && form.totalPrice > 0
           ? form.totalPrice.toString()
           : '',
     );
@@ -265,6 +265,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
 
     final cubit = context.read<BookingsCubit>();
     final form = cubit.state.formState;
+
     if (form?.serviceId != null) {
       final currentService = cubit.state.medicalServices.firstWhere(
         (s) => s.id == form!.serviceId,
@@ -274,11 +275,28 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
           currentService.assignedDoctorId!.isNotEmpty &&
           !techs.any((t) => t.id == currentService.assignedDoctorId)) {
         _serviceSelectorController.text = '';
+        _hourlyRateController.text = '';
+        _totalPriceController.text = '';
         CustomToast(
           context: context,
           header: 'service_changed_doctor_warning'.tr(),
         ).showErrorToast();
+        return;
       }
+    }
+
+    // Sync service and pricing controllers if Cubit auto-selected a default service
+    if (form?.serviceName.isNotEmpty ?? false) {
+      _serviceSelectorController.text = form!.serviceName;
+      _hourlyRateController.text =
+          (form.consultationFee > 0 ? form.consultationFee : form.hourlyRate)
+              .toString();
+      _totalPriceController.text =
+          form.totalPrice > 0 ? form.totalPrice.toString() : '';
+    } else if (techs.isEmpty) {
+      _serviceSelectorController.text = '';
+      _hourlyRateController.text = '';
+      _totalPriceController.text = '';
     }
   }
 
@@ -392,6 +410,46 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     final cubit = context.read<BookingsCubit>();
     final form = state.formState;
     final selectedDoctorId = form?.technician?.id;
+
+    if (!state.isSingleDoctorMode &&
+        (selectedDoctorId == null || selectedDoctorId.isEmpty)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${'select_medical_service'.tr()} *',
+            style: CustomAppFontStyle.bold14,
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.grayE2E8F0.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.grayE2E8F0),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  size: 18,
+                  color: AppColors.gray71717A,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'يرجى اختيار الطبيب المعالج أولاً لعرض الخدمات والأسعار المتاحة لهذا الطبيب.',
+                    style: CustomAppFontStyle.regular13.copyWith(
+                      color: AppColors.gray71717A,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
 
     final availableServices = state.medicalServices
         .where((s) => s.isServiceActive)

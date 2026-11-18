@@ -6,6 +6,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../branches/data/models/branch_model.dart';
 import '../../domain/repo/settings_repo.dart';
 import '../models/company_settings_model.dart';
+import '../models/enums/clinic_type_enum.dart';
 import '../models/special_holiday_model.dart';
 
 class SettingsMockRepoImpl implements SettingsRepo {
@@ -70,6 +71,7 @@ class SettingsMockRepoImpl implements SettingsRepo {
       logo: 'assets/icons/app_logo.png',
       phone: '+20 2 2750 8800',
       address: 'مصر - القاهرة، المعادي، شارع النصر',
+      clinicType: ClinicTypeEnum.polyclinic,
       defaultHourlyRate: 250,
       workingDays: const [
         'saturday',
@@ -92,6 +94,7 @@ class SettingsMockRepoImpl implements SettingsRepo {
       logo: 'assets/icons/app_logo.png',
       phone: '+20 2 3749 1100',
       address: 'مصر - الجيزة، المهندسين، شارع سوريا',
+      clinicType: ClinicTypeEnum.singleDoctor,
       defaultHourlyRate: 250,
       workingDays: const [
         'saturday',

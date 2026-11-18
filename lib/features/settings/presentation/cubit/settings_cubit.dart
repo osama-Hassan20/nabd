@@ -3,6 +3,7 @@ import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import '../../data/models/company_settings_model.dart';
+import '../../data/models/enums/clinic_type_enum.dart';
 import '../../data/models/special_holiday_model.dart';
 import '../../domain/use_cases/add_special_holiday_use_case.dart';
 import '../../domain/use_cases/change_password_use_case.dart';
@@ -77,6 +78,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
     required String phone,
     required String address,
     String? logo,
+    ClinicTypeEnum? clinicType,
   }) async {
     emit(
       state.copyWith(
@@ -92,6 +94,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
       phone: phone,
       address: address,
       logo: logo ?? current.logo,
+      clinicType: clinicType ?? current.clinicType,
     );
 
     final result = await updateCompanySettingsUseCase(updated);

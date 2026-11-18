@@ -1,3 +1,4 @@
+import 'enums/clinic_type_enum.dart';
 import 'enums/print_format_enum.dart';
 import 'special_holiday_model.dart';
 
@@ -7,6 +8,7 @@ class CompanySettingsModel {
   final String? logo;
   final String? phone;
   final String? address;
+  final ClinicTypeEnum clinicType;
   final num? defaultHourlyRate;
   final List<String>? workingDays;
   final String? openingTime;
@@ -26,6 +28,7 @@ class CompanySettingsModel {
     this.logo,
     this.phone,
     this.address,
+    this.clinicType = ClinicTypeEnum.polyclinic,
     this.defaultHourlyRate,
     this.workingDays,
     this.openingTime,
@@ -39,6 +42,8 @@ class CompanySettingsModel {
     this.doctorSettlementPrintFormat,
     this.staffPayrollPrintFormat,
   });
+
+  bool get isSingleDoctorClinic => clinicType == ClinicTypeEnum.singleDoctor;
 
   PrintFormat get effectiveReceiptPrintFormat =>
       PrintFormat.fromString(receiptPrintFormat);
@@ -59,6 +64,7 @@ class CompanySettingsModel {
       logo: json['logo'] as String?,
       phone: json['phone'] as String?,
       address: json['address'] as String?,
+      clinicType: ClinicTypeEnum.fromValue(json['clinicType'] as String?),
       defaultHourlyRate: json['defaultHourlyRate'] as num?,
       workingDays: (json['workingDays'] as List<dynamic>?)
           ?.map((e) => e.toString())
@@ -85,6 +91,7 @@ class CompanySettingsModel {
       if (logo != null) 'logo': logo,
       if (phone != null) 'phone': phone,
       if (address != null) 'address': address,
+      'clinicType': clinicType.value,
       if (defaultHourlyRate != null) 'defaultHourlyRate': defaultHourlyRate,
       if (workingDays != null) 'workingDays': workingDays,
       if (openingTime != null) 'openingTime': openingTime,
@@ -114,6 +121,7 @@ class CompanySettingsModel {
     String? logo,
     String? phone,
     String? address,
+    ClinicTypeEnum? clinicType,
     num? defaultHourlyRate,
     List<String>? workingDays,
     String? openingTime,
@@ -133,6 +141,7 @@ class CompanySettingsModel {
       logo: logo ?? this.logo,
       phone: phone ?? this.phone,
       address: address ?? this.address,
+      clinicType: clinicType ?? this.clinicType,
       defaultHourlyRate: defaultHourlyRate ?? this.defaultHourlyRate,
       workingDays: workingDays ?? this.workingDays,
       openingTime: openingTime ?? this.openingTime,

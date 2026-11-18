@@ -12,6 +12,7 @@ import 'package:eyadty/features/bookings/data/models/time_slot_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_leave_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_schedule_model.dart';
 import 'package:eyadty/features/doctors/data/models/enums/doctor_availability_enum.dart';
+import 'package:eyadty/features/settings/data/models/enums/clinic_type_enum.dart';
 import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
 import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
 
@@ -256,7 +257,13 @@ class BookingsState extends Equatable {
   final BookingModel? patientSameDayBooking;
   final bool isPatientConflictConfirmed;
 
+  final ClinicTypeEnum clinicType;
+
+  bool get isSingleDoctorMode =>
+      clinicType == ClinicTypeEnum.singleDoctor || technicians.length == 1;
+
   const BookingsState({
+    this.clinicType = ClinicTypeEnum.polyclinic,
     this.summaryStatus = RequestStatusEnum.initial,
     this.bookingsStatus = RequestStatusEnum.initial,
     this.detailsStatus = RequestStatusEnum.initial,
@@ -303,6 +310,7 @@ class BookingsState extends Equatable {
   });
 
   BookingsState copyWith({
+    ClinicTypeEnum? clinicType,
     RequestStatusEnum? summaryStatus,
     RequestStatusEnum? bookingsStatus,
     RequestStatusEnum? detailsStatus,
@@ -365,6 +373,7 @@ class BookingsState extends Equatable {
     bool? isPatientConflictConfirmed,
   }) {
     return BookingsState(
+      clinicType: clinicType ?? this.clinicType,
       summaryStatus: summaryStatus ?? this.summaryStatus,
       bookingsStatus: bookingsStatus ?? this.bookingsStatus,
       detailsStatus: detailsStatus ?? this.detailsStatus,
@@ -444,6 +453,7 @@ class BookingsState extends Equatable {
 
   @override
   List<Object?> get props => [
+        clinicType,
         summaryStatus,
         bookingsStatus,
         detailsStatus,

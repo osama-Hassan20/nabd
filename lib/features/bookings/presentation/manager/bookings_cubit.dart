@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:eyadty/core/base/safe_cubit.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/mixins/search_mixin.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
@@ -26,6 +28,7 @@ import 'package:eyadty/features/bookings/domain/use_cases/remove_booking_discoun
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/patients/domain/use_cases/get_patients_use_case.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/get_doctors_use_case.dart';
+import 'package:eyadty/features/settings/data/models/enums/clinic_type_enum.dart';
 import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/features/bookings/data/models/enums/slot_status_enum.dart';
@@ -64,6 +67,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
   final GetDoctorBookingsForDateUseCase? getDoctorBookingsForDateUseCase;
   final ApplyBookingDiscountUseCase? applyBookingDiscountUseCase;
   final RemoveBookingDiscountUseCase? removeBookingDiscountUseCase;
+  final SessionCubit? sessionCubit;
 
   Timer? _noShowTimer;
 
@@ -87,12 +91,14 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     this.getDoctorLeavesUseCase,
     this.getCompanySettingsUseCase,
     this.getDoctorBookingsForDateUseCase,
+    this.sessionCubit,
   })  : getDoctorsUseCase = getDoctorsUseCase ?? getTechniciansUseCase,
         getPatientsUseCase = getPatientsUseCase ?? getCustomersUseCase,
         super(const BookingsState()) {
     _initBranchListener();
     _startPeriodicNoShowTimer();
     _initFormOptions();
+    fetchCompanySettings();
     fetchTechnicians();
     fetchCustomers();
     fetchMedicalServices();
@@ -112,6 +118,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     final newBranch = AppBranchService.instance.currentBranchId;
     if (state.selectedBranchId != newBranch) {
       emit(state.copyWith(selectedBranchId: newBranch, currentPage: 1));
+      fetchCompanySettings();
       fetchBookingSummary();
       fetchBookings(resetPage: true);
     }
@@ -150,6 +157,21 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
             ? state.technicians
             : BookingsState.initialTechnicians,
       ),
+    );
+  }
+
+  Future<void> fetchCompanySettings() async {
+    final useCase = getCompanySettingsUseCase ??
+        (getIt.isRegistered<GetCompanySettingsUseCase>()
+            ? getIt<GetCompanySettingsUseCase>()
+            : null);
+    if (useCase == null) return;
+    final res = await useCase(NoParams());
+    res.fold(
+      (_) {},
+      (settings) {
+        emit(state.copyWith(clinicType: settings.clinicType));
+      },
     );
   }
 
@@ -555,20 +577,94 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
       );
       loadSlotsForCurrentForm();
     } else {
+      final session = sessionCubit ??
+          (getIt.isRegistered<SessionCubit>() ? getIt<SessionCubit>() : null);
+      final currentUser = session?.state.currentUser;
+      final currentRole = session?.currentRole ?? UserRoleEnum.admin;
+
+      List<BookingTechnicianOption> defaultTechs = const [];
+      MedicalServiceModel? defaultService;
+
+      if (state.isSingleDoctorMode) {
+        // Single Doctor Mode: automatically select the single doctor
+        if (state.technicians.isNotEmpty) {
+          final singleDoc = state.technicians.first;
+          defaultTechs = [singleDoc];
+          // Look up doctor's default service or clinic primary service
+          defaultService = state.medicalServices.firstWhere(
+            (s) =>
+                s.isServiceActive &&
+                (s.assignedDoctorId == singleDoc.id ||
+                    s.assignedDoctorId == null ||
+                    s.assignedDoctorId!.isEmpty),
+            orElse: () => state.medicalServices.firstWhere(
+              (s) => s.isServiceActive,
+              orElse: () => const MedicalServiceModel(),
+            ),
+          );
+        }
+      } else {
+        // Multi-Doctor Center Mode (Polyclinic):
+        final isDoctor = currentUser?.isPracticingDoctor == true ||
+            (currentUser?.linkedDoctorId != null &&
+                currentUser!.linkedDoctorId!.isNotEmpty) ||
+            currentRole == UserRoleEnum.doctor;
+
+        if (isDoctor) {
+          // Attending doctor: default doctor is the logged-in doctor
+          final docId = currentUser?.linkedDoctorId;
+          final matchedDoc = state.technicians.firstWhere(
+            (t) => t.id == docId,
+            orElse: () => state.technicians.firstWhere(
+              (t) =>
+                  currentUser?.fullName != null &&
+                  t.name.contains(currentUser!.fullName!),
+              orElse: () => state.technicians.isNotEmpty
+                  ? state.technicians.first
+                  : const BookingTechnicianOption(id: '', name: ''),
+            ),
+          );
+          if (matchedDoc.id.isNotEmpty) {
+            defaultTechs = [matchedDoc];
+            defaultService = state.medicalServices.firstWhere(
+              (s) => s.isServiceActive && (s.assignedDoctorId == matchedDoc.id),
+              orElse: () => state.medicalServices.firstWhere(
+                (s) =>
+                    s.isServiceActive &&
+                    (s.assignedDoctorId == null ||
+                        s.assignedDoctorId!.isEmpty),
+                orElse: () => const MedicalServiceModel(),
+              ),
+            );
+          }
+        } else if (currentRole == UserRoleEnum.reception) {
+          // Receptionist: MUST select doctor, starts empty
+          defaultTechs = const [];
+          defaultService = null;
+        } else {
+          // Admin / Owner: starts empty
+          defaultTechs = const [];
+          defaultService = null;
+        }
+      }
+
+      final fee = defaultService?.consultationFee ?? 0;
+      final dur = defaultService?.durationMinutes ?? 0;
+
       emit(
         state.copyWith(
           formState: BookingFormState(
             customer: null,
-            technicians: const [],
-            serviceId: null,
-            serviceName: '',
+            technicians: defaultTechs,
+            serviceId: defaultService?.id,
+            serviceName: defaultService?.name ?? '',
             bookingType: state.activeBookingTypeTab,
             date: CairoTimeHelper.now(),
             startTime: '',
             endTime: '',
-            durationMinutes: 0,
-            consultationFee: 0,
-            totalPrice: 0,
+            durationMinutes: dur,
+            consultationFee: fee,
+            totalPrice: fee,
             status: BookingStatusEnum.waiting,
             paymentStatus: PaymentStatusEnum.unpaid,
             notes: '',
@@ -583,6 +679,10 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
           clearPatientSameDayBooking: true,
         ),
       );
+
+      if (defaultTechs.isNotEmpty) {
+        loadSlotsForCurrentForm();
+      }
     }
   }
 
@@ -619,6 +719,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
       state.formState!.technicians,
     );
     final index = current.indexWhere((t) => t.id == technician.id);
+    final wasAdded = index < 0;
     if (index >= 0) {
       current.removeAt(index);
     } else {
@@ -649,6 +750,26 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
         return;
       }
     }
+
+    // Auto-select doctor's default service if none currently selected
+    if (wasAdded &&
+        (state.formState?.serviceId == null ||
+            state.formState!.serviceId!.isEmpty)) {
+      final docService = state.medicalServices.firstWhere(
+        (s) => s.isServiceActive && (s.assignedDoctorId == technician.id),
+        orElse: () => state.medicalServices.firstWhere(
+          (s) =>
+              s.isServiceActive &&
+              (s.assignedDoctorId == null || s.assignedDoctorId!.isEmpty),
+          orElse: () => const MedicalServiceModel(),
+        ),
+      );
+      if (docService.id != null && docService.id!.isNotEmpty) {
+        updateFormService(docService);
+        return;
+      }
+    }
+
     loadSlotsForCurrentForm();
   }
 
