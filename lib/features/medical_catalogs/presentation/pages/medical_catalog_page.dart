@@ -217,7 +217,7 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
                 const Icon(Icons.add_rounded, size: 18, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'إضافة عنصر جديد',
+                  widget.kind.addItemButtonTitle,
                   style: CustomAppFontStyle.bold13.copyWith(
                     color: AppColors.white,
                   ),
@@ -361,39 +361,44 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: state.availableCategories.map((category) {
-                  final isSelected = state.selectedCategory == category;
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => _cubit.onCategorySelected(category),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.grayF8FAFC,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
+                children: [
+                  ...state.availableCategories.map((category) {
+                    final isSelected = state.selectedCategory == category;
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () => _cubit.onCategorySelected(category),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.primary
-                                : AppColors.grayE2E8F0,
+                                : AppColors.grayF8FAFC,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.grayE2E8F0,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          category,
-                          style: CustomAppFontStyle.medium12.copyWith(
-                            color: isSelected ? Colors.white : AppColors.darkText,
+                          child: Text(
+                            category,
+                            style: CustomAppFontStyle.medium12.copyWith(
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppColors.darkText,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }),
+                  _buildAddCategoryChip(context),
+                ],
               ),
             ),
           ],
@@ -449,7 +454,7 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
                   );
                 },
                 child: Text(
-                  'إضافة عنصر الآن',
+                  widget.kind.addItemButtonTitle,
                   style: CustomAppFontStyle.bold13.copyWith(
                     color: AppColors.white,
                   ),
@@ -680,6 +685,82 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAddCategoryChip(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => _showAddCategoryDialog(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.add, size: 16, color: AppColors.primary),
+            const SizedBox(width: 4),
+            Text(
+              'إضافة تصنيف',
+              style: CustomAppFontStyle.semiBold12.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddCategoryDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'إضافة تصنيف جديد لـ ${widget.kind.title}',
+          style: CustomAppFontStyle.bold16.copyWith(color: AppColors.darkText),
+        ),
+        content: SizedBox(
+          width: 360,
+          child: CustomTextFormField(
+            controller: controller,
+            headerText: 'اسم التصنيف',
+            hintText: 'مثال: ${widget.kind.defaultCategories.first}',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: Text('cancel'.tr(),
+                style: const TextStyle(color: AppColors.gray71717A)),
+          ),
+          CustomPushButton(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+            backgroundColor: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                _cubit.addCategory(text);
+                Navigator.of(dialogCtx).pop();
+              }
+            },
+            child: Text(
+              'إضافة',
+              style: CustomAppFontStyle.bold13.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }

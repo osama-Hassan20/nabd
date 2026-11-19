@@ -5,6 +5,7 @@ import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/features/patients/data/models/medical_catalog_item_model.dart';
 import 'package:eyadty/features/patients/domain/repo/medical_catalog_repo.dart';
+import '../../data/models/drug_category_model.dart';
 import '../../data/models/drug_model.dart';
 import '../../data/models/enums/review_status_enum.dart';
 import '../../data/models/prescription_template_model.dart';
@@ -126,6 +127,19 @@ class DrugsCubit extends SafeCubit<DrugsState> {
     } else {
       emit(state.copyWith(selectedCategoryId: categoryId));
     }
+  }
+
+  void addCategory(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    final newCat = DrugCategoryModel(
+      id: 'cat_${DateTime.now().millisecondsSinceEpoch}',
+      nameAr: trimmed,
+      nameEn: trimmed,
+    );
+    final updated = List<DrugCategoryModel>.from(state.categories)..add(newCat);
+    emit(state.copyWith(categories: updated));
+    setSelectedCategory(newCat.id);
   }
 
   void setReviewFilter(String filter) {

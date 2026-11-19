@@ -49,7 +49,6 @@ class _AddEditMedicalCatalogDialogState
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _nameController;
-  late final TextEditingController _codeController;
   late final TextEditingController _categoryController;
   late final TextEditingController _notesController;
 
@@ -61,7 +60,6 @@ class _AddEditMedicalCatalogDialogState
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.entry?.name ?? '');
-    _codeController = TextEditingController(text: widget.entry?.code ?? '');
     _categoryController = TextEditingController(
       text: widget.entry?.category ?? widget.kind.defaultCategories.first,
     );
@@ -71,7 +69,6 @@ class _AddEditMedicalCatalogDialogState
   @override
   void dispose() {
     _nameController.dispose();
-    _codeController.dispose();
     _categoryController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -86,7 +83,6 @@ class _AddEditMedicalCatalogDialogState
     if (isEditing) {
       final updated = widget.entry!.copyWith(
         name: _nameController.text.trim(),
-        code: _codeController.text.trim(),
         category: _categoryController.text.trim(),
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
@@ -96,7 +92,6 @@ class _AddEditMedicalCatalogDialogState
     } else {
       success = await widget.cubit.addEntry(
         name: _nameController.text.trim(),
-        code: _codeController.text.trim(),
         category: _categoryController.text.trim(),
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
@@ -112,13 +107,67 @@ class _AddEditMedicalCatalogDialogState
     }
   }
 
+  void _showAddNewCategoryDialog() {
+    final catController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'إضافة تصنيف طبي جديد',
+          style: CustomAppFontStyle.bold16.copyWith(color: AppColors.darkText),
+        ),
+        content: SizedBox(
+          width: 360,
+          child: CustomTextFormField(
+            controller: catController,
+            headerText: 'اسم التصنيف',
+            hintText: 'مثال: فحوصات خاصة، رعاية مركزة...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('cancel'.tr(),
+                style: const TextStyle(color: AppColors.gray71717A)),
+          ),
+          CustomPushButton(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+            backgroundColor: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              final newCat = catController.text.trim();
+              if (newCat.isNotEmpty) {
+                widget.cubit.addCategory(newCat);
+                setState(() {
+                  _categoryController.text = newCat;
+                });
+                Navigator.of(ctx).pop();
+              }
+            },
+            child: Text(
+              'إضافة',
+              style: CustomAppFontStyle.bold13.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Collect all available categories excluding 'الكل'
+    final categories = widget.cubit.state.availableCategories
+        .where((c) => c != 'الكل')
+        .toList();
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Container(
-        width: 520,
+        width: 500,
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
@@ -165,7 +214,7 @@ class _AddEditMedicalCatalogDialogState
                         Text(
                           isEditing
                               ? 'تعديل بيانات ${widget.kind.title}'
-                              : 'إضافة إلى ${widget.kind.title}',
+                              : widget.kind.addItemButtonTitle,
                           style: CustomAppFontStyle.bold16.copyWith(
                             color: AppColors.darkText,
                           ),
@@ -200,48 +249,58 @@ class _AddEditMedicalCatalogDialogState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Name
+                      // Item Name (Customized per Kind)
                       CustomTextFormField(
                         controller: _nameController,
-                        headerText: 'الاسم الطبي / الفحص *',
-                        hintText: 'مثال: ${widget.kind.defaultCategories.first}',
+                        headerText: '${widget.kind.itemNameLabel} *',
+                        hintText: 'اكتب الاسم الطبي بدقة...',
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'يرجى إدخال الاسم';
+                            return 'يرجى إدخال ${widget.kind.itemNameLabel}';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Code & Category Row
+                      // Category Selector with Add Button beside header
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Code
-                          Expanded(
-                            child: CustomTextFormField(
-                              controller: _codeController,
-                              headerText: 'الكود / الرمز',
-                              hintText: 'مثال: ${widget.kind.codePrefix}-01',
+                          Text(
+                            'التصنيف الطبي *',
+                            style: CustomAppFontStyle.semiBold14.copyWith(
+                              color: AppColors.darkText,
                             ),
                           ),
-                          const SizedBox(width: 14),
-
-                          // Category Selector
-                          Expanded(
-                            child: CustomStackSelector<String>(
-                              controller: _categoryController,
-                              header: 'التصنيف الطبي *',
-                              list: widget.kind.defaultCategories,
-                              itemAsString: (s) => s,
-                              displayStringForController: (s) => s,
-                              hintText: 'اختر التصنيف',
-                              enableSearch: true,
-                              changeValue: (s) => _categoryController.text = s,
+                          InkWell(
+                            onTap: _showAddNewCategoryDialog,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.add_circle_outline,
+                                    size: 15, color: AppColors.primary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'تصنيف جديد',
+                                  style:
+                                      CustomAppFontStyle.medium12.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 6),
+                      CustomStackSelector<String>(
+                        controller: _categoryController,
+                        list: categories,
+                        itemAsString: (s) => s,
+                        displayStringForController: (s) => s,
+                        hintText: 'اختر التصنيف',
+                        enableSearch: true,
+                        changeValue: (s) => _categoryController.text = s,
                       ),
                       const SizedBox(height: 16),
 
@@ -249,7 +308,7 @@ class _AddEditMedicalCatalogDialogState
                       CustomTextFormField(
                         controller: _notesController,
                         headerText: 'ملاحظات وتفاصيل إضافية',
-                        hintText: 'وصف مختصر أو إرشادات تحضيرية...',
+                        hintText: 'إرشادات تحضيرية، تعليمات قبل الفحص، أو توصيات خاصة...',
                         maxLine: 3,
                       ),
                     ],
@@ -298,7 +357,9 @@ class _AddEditMedicalCatalogDialogState
                     borderRadius: BorderRadius.circular(10),
                     onTap: _isSubmitting ? null : _submit,
                     child: Text(
-                      isEditing ? 'حفظ التعديلات' : 'إضافة الآن',
+                      isEditing
+                          ? 'حفظ التعديلات'
+                          : widget.kind.addItemButtonTitle,
                       style: CustomAppFontStyle.bold13.copyWith(
                         color: AppColors.white,
                       ),

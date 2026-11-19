@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
+import '../../../../../shared/widgets/custom_push_container_button.dart';
 import '../../../../../shared/widgets/custom_text_field.dart';
 import '../../../data/models/enums/review_status_enum.dart';
 import '../../manager/drugs_cubit.dart';
@@ -52,60 +53,33 @@ class DrugsCatalogTab extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Filter row: Review status & Categories
+              // Filter row: Categories only (All + Categories + Add Category Button)
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    // Status filters
+                    // All categories chip
                     _buildFilterChip(
-                      label: 'drugs_filter_all'.tr(),
-                      isSelected: state.reviewFilter == 'all',
-                      onTap: () => cubit.setReviewFilter('all'),
+                      label: 'drugs_filter_all_categories'.tr(),
+                      isSelected: state.selectedCategoryId == null,
+                      onTap: () => cubit.setSelectedCategory(null),
                     ),
                     const SizedBox(width: 8),
-                    _buildFilterChip(
-                      label: 'drugs_filter_pending'.tr(),
-                      isSelected: state.reviewFilter == 'pending',
-                      badgeCount: state.drugs
-                          .where((d) => d.reviewStatus == ReviewStatusEnum.pending)
-                          .length,
-                      onTap: () => cubit.setReviewFilter('pending'),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(
-                      label: 'drugs_filter_approved'.tr(),
-                      isSelected: state.reviewFilter == 'approved',
-                      onTap: () => cubit.setReviewFilter('approved'),
-                    ),
 
-                    if (categories.isNotEmpty) ...[
-                      const SizedBox(width: 16),
-                      Container(
-                        height: 24,
-                        width: 1,
-                        color: const Color(0xFFE2E8F0),
-                      ),
-                      const SizedBox(width: 16),
+                    // Category chips
+                    ...categories.map((c) {
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: _buildFilterChip(
+                          label: c.nameAr ?? c.nameEn ?? c.id ?? '',
+                          isSelected: state.selectedCategoryId == c.id,
+                          onTap: () => cubit.setSelectedCategory(c.id),
+                        ),
+                      );
+                    }),
 
-                      // Category chips
-                      _buildFilterChip(
-                        label: 'drugs_filter_all_categories'.tr(),
-                        isSelected: state.selectedCategoryId == null,
-                        onTap: () => cubit.setSelectedCategory(null),
-                      ),
-                      const SizedBox(width: 8),
-                      ...categories.map((c) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _buildFilterChip(
-                            label: c.nameAr ?? c.nameEn ?? c.id ?? '',
-                            isSelected: state.selectedCategoryId == c.id,
-                            onTap: () => cubit.setSelectedCategory(c.id),
-                          ),
-                        );
-                      }),
-                    ],
+                    // Add new category button at the end
+                    _buildAddCategoryChip(context, cubit),
                   ],
                 ),
               ),
@@ -368,6 +342,82 @@ class DrugsCatalogTab extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAddCategoryChip(BuildContext context, DrugsCubit cubit) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => _showAddCategoryDialog(context, cubit),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.add, size: 16, color: AppColors.primary),
+            const SizedBox(width: 4),
+            Text(
+              'إضافة تصنيف',
+              style: CustomAppFontStyle.semiBold12.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddCategoryDialog(BuildContext context, DrugsCubit cubit) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'إضافة تصنيف دوائي جديد',
+          style: CustomAppFontStyle.bold16.copyWith(color: AppColors.darkText),
+        ),
+        content: SizedBox(
+          width: 380,
+          child: CustomTextFormField(
+            controller: controller,
+            headerText: 'اسم التصنيف',
+            hintText: 'مثال: أدوية العيون، أدوية الجلدية...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('cancel'.tr(),
+                style: const TextStyle(color: AppColors.gray71717A)),
+          ),
+          CustomPushButton(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+            backgroundColor: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                cubit.addCategory(text);
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            child: Text(
+              'إضافة',
+              style: CustomAppFontStyle.bold13.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }

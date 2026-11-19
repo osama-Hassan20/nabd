@@ -8,6 +8,8 @@ enum MedicalCatalogKindEnum {
     subtitle: 'إدارة وتصنيف أنواع الأشعة السينية، الرنين، والمقطعية',
     iconPath: AppIcons.radiology,
     codePrefix: 'RAD',
+    addItemButtonTitle: 'إضافة فحص شعاعي',
+    itemNameLabel: 'اسم الفحص الشعاعي',
     defaultCategories: [
       'أشعة سينية (X-Ray)',
       'أشعة مقطعية (CT)',
@@ -24,6 +26,8 @@ enum MedicalCatalogKindEnum {
     subtitle: 'إدارة وتصنيف تحاليل الدم، كيمياء الجسم، والمختبرات',
     iconPath: AppIcons.labTests,
     codePrefix: 'LAB',
+    addItemButtonTitle: 'إضافة فحص مختبري',
+    itemNameLabel: 'اسم الفحص المختبري',
     defaultCategories: [
       'أمراض الدم (Hematology)',
       'كيمياء الدم (Biochemistry)',
@@ -40,6 +44,8 @@ enum MedicalCatalogKindEnum {
     subtitle: 'إدارة وتصنيف الأمراض المزمنة لمتابعة سجلات المرضى',
     iconPath: AppIcons.chronicDiseases,
     codePrefix: 'CHR',
+    addItemButtonTitle: 'إضافة مرض مزمن',
+    itemNameLabel: 'اسم المرض المزمن',
     defaultCategories: [
       'أمراض القلب والشرايين',
       'أمراض الغدد والسكري',
@@ -57,6 +63,8 @@ enum MedicalCatalogKindEnum {
     subtitle: 'إدارة مسببات الحساسية الدوائية والغذائية والبيئية لحماية المرضى',
     iconPath: AppIcons.allergies,
     codePrefix: 'ALL',
+    addItemButtonTitle: 'إضافة مسبب حساسية',
+    itemNameLabel: 'اسم مسبب الحساسية',
     defaultCategories: [
       'حساسية دوائية',
       'حساسية غذائية',
@@ -72,6 +80,8 @@ enum MedicalCatalogKindEnum {
     subtitle: 'إدارة وتصنيف التدخلات الجراحية وإجراءات غرف العمليات',
     iconPath: AppIcons.surgeries,
     codePrefix: 'SUR',
+    addItemButtonTitle: 'إضافة عملية جراحية',
+    itemNameLabel: 'اسم العملية الجراحية',
     defaultCategories: [
       'جراحة عامة ومناظير',
       'جراحة العظام والمفاصل',
@@ -90,6 +100,8 @@ enum MedicalCatalogKindEnum {
   final String subtitle;
   final String iconPath;
   final String codePrefix;
+  final String addItemButtonTitle;
+  final String itemNameLabel;
   final List<String> defaultCategories;
 
   const MedicalCatalogKindEnum({
@@ -99,6 +111,8 @@ enum MedicalCatalogKindEnum {
     required this.subtitle,
     required this.iconPath,
     required this.codePrefix,
+    required this.addItemButtonTitle,
+    required this.itemNameLabel,
     required this.defaultCategories,
   });
 

@@ -39,6 +39,21 @@ class MedicalCatalogsCubit extends SafeCubit<MedicalCatalogsState> {
     loadEntries();
   }
 
+  void addCategory(String category) {
+    final trimmed = category.trim();
+    if (trimmed.isEmpty) return;
+    if (!state.availableCategories.contains(trimmed)) {
+      final updated = List<String>.from(state.availableCategories)..add(trimmed);
+      emit(state.copyWith(
+        availableCategories: updated,
+        selectedCategory: trimmed,
+      ));
+      loadEntries();
+    } else {
+      onCategorySelected(trimmed);
+    }
+  }
+
   Future<void> loadEntries() async {
     emit(state.copyWith(status: RequestStatusEnum.loading, clearMessages: true));
     final res = await _repo.getEntries(
@@ -69,7 +84,7 @@ class MedicalCatalogsCubit extends SafeCubit<MedicalCatalogsState> {
 
   Future<bool> addEntry({
     required String name,
-    required String code,
+    String code = '',
     required String category,
     String? notes,
   }) async {
