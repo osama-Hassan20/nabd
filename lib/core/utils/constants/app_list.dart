@@ -57,7 +57,95 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
     ),
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 2. المال (Finance)
+    // 2. الإدارة الطبية (Medical Management)
+    // ═══════════════════════════════════════════════════════════════════════════
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_drugs'.tr(),
+      iconPath: AppIcons.drugs,
+      id: 'drugs',
+      selectedIconPath: AppIcons.drugs,
+      routePath: AppRouter.drugs,
+      header: 'nav_drugs_header'.tr(),
+      subtitle: 'nav_drugs_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.drugs);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_radiology'.tr(),
+      iconPath: AppIcons.radiology,
+      id: 'radiology',
+      selectedIconPath: AppIcons.radiology,
+      routePath: AppRouter.radiology,
+      header: 'nav_radiology_header'.tr(),
+      subtitle: 'nav_radiology_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.radiology);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_lab_tests'.tr(),
+      iconPath: AppIcons.labTests,
+      id: 'lab_tests',
+      selectedIconPath: AppIcons.labTests,
+      routePath: AppRouter.labTests,
+      header: 'nav_lab_tests_header'.tr(),
+      subtitle: 'nav_lab_tests_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.labTests);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_chronic_diseases'.tr(),
+      iconPath: AppIcons.chronicDiseases,
+      id: 'chronic_diseases',
+      selectedIconPath: AppIcons.chronicDiseases,
+      routePath: AppRouter.chronicDiseases,
+      header: 'nav_chronic_diseases_header'.tr(),
+      subtitle: 'nav_chronic_diseases_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.chronicDiseases);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_allergies'.tr(),
+      iconPath: AppIcons.allergies,
+      id: 'allergies',
+      selectedIconPath: AppIcons.allergies,
+      routePath: AppRouter.allergies,
+      header: 'nav_allergies_header'.tr(),
+      subtitle: 'nav_allergies_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.allergies);
+      },
+    ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_surgeries'.tr(),
+      iconPath: AppIcons.surgeries,
+      id: 'surgeries',
+      selectedIconPath: AppIcons.surgeries,
+      routePath: AppRouter.surgeries,
+      header: 'nav_surgeries_header'.tr(),
+      subtitle: 'nav_surgeries_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.surgeries);
+      },
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 3. المال (Finance)
     // ═══════════════════════════════════════════════════════════════════════════
     SideBarItemModel(
       groupTitle: 'nav_group_finance'.tr(),

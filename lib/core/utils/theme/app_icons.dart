@@ -100,4 +100,15 @@ abstract class AppIcons {
   static const String company = 'assets/icons/company.svg';
 
   static const String info = 'assets/icons/info.svg';
+
+  // ─── Medical Management Icons ──────────────────────────────────────────────
+  static const String drugs = 'assets/icons/drugs.svg';
+  static const String prescriptions = 'assets/icons/prescriptions.svg';
+  static const String radiology = 'assets/icons/radiology.svg';
+  static const String labTests = 'assets/icons/lab_tests.svg';
+  static const String chronicDiseases = 'assets/icons/chronic_diseases.svg';
+  static const String allergies = 'assets/icons/allergies.svg';
+  static const String surgeries = 'assets/icons/surgeries.svg';
+  static const String medicalManagement =
+      'assets/icons/medical_management.svg';
 }

@@ -98,6 +98,7 @@ class AddEditPatientDialog extends StatefulWidget {
 
 class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
   late final TextEditingController _governorateController;
+  late final TextEditingController _cityController;
 
   PatientsCubit get patientsCubit => widget.patientsCubit;
   PatientModel? get patient => widget.patient;
@@ -111,11 +112,15 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
     _governorateController = TextEditingController(
       text: (govKey != null && govKey.isNotEmpty) ? govKey.tr() : '',
     );
+    _cityController = TextEditingController(
+      text: form?.city ?? '',
+    );
   }
 
   @override
   void dispose() {
     _governorateController.dispose();
+    _cityController.dispose();
     super.dispose();
   }
 
@@ -182,6 +187,9 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               (govKey != null && govKey.isNotEmpty) ? govKey.tr() : '';
           if (_governorateController.text != govText) {
             _governorateController.text = govText;
+          }
+          if (_cityController.text != (form.city ?? '')) {
+            _cityController.text = form.city ?? '';
           }
         }
         if (state.actionStatus == RequestStatusEnum.success) {
@@ -1120,16 +1128,32 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
           displayStringForController: (key) => key.tr(),
           hintText: 'select_governorate'.tr(),
           enableSearch: true,
-          changeValue: (key) => patientsCubit.updateFormGovernorate(key),
+          changeValue: (key) {
+            patientsCubit.updateFormGovernorate(key);
+            final newCities = EgyptianGovernorates.getCitiesForGovernorate(key);
+            if (!newCities.contains(_cityController.text)) {
+              _cityController.clear();
+              patientsCubit.updateFormCity('');
+            }
+          },
         ),
         const SizedBox(height: 16),
 
-        // City
-        CustomTextFormField(
-          initialValue: form.city,
-          headerText: 'city'.tr(),
+        // City / District (Filtered per Governorate with CustomStackSelector)
+        CustomStackSelector<String>(
+          controller: _cityController,
+          header: 'city'.tr(),
+          list: EgyptianGovernorates.getCitiesForGovernorate(form.governorate),
+          itemAsString: (city) => city,
+          displayStringForController: (city) => city,
           hintText: 'city_hint'.tr(),
-          onChanged: (v) => patientsCubit.updateFormCity(v ?? ''),
+          enableSearch: true,
+          prefixWidget: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Icon(Icons.location_city_outlined,
+                size: 18, color: AppColors.primary),
+          ),
+          changeValue: (city) => patientsCubit.updateFormCity(city),
         ),
         const SizedBox(height: 16),
 

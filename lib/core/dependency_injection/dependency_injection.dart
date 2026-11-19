@@ -66,6 +66,11 @@ import 'package:eyadty/features/drugs/domain/use_cases/update_allergy_aliases_us
 import 'package:eyadty/features/drugs/domain/use_cases/import_drugs_use_case.dart';
 import 'package:eyadty/features/drugs/presentation/manager/drugs_cubit.dart';
 
+// Medical Catalogs Feature
+import 'package:eyadty/features/medical_catalogs/data/repo/medical_catalogs_mock_repo_impl.dart';
+import 'package:eyadty/features/medical_catalogs/domain/repo/medical_catalogs_repo.dart';
+import 'package:eyadty/features/medical_catalogs/presentation/manager/medical_catalogs_cubit.dart';
+
 // Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
@@ -900,6 +905,16 @@ Future<void> setupGetIt() async {
       permissionEvaluator: getIt<PermissionEvaluator>(),
       userProvider: getIt<CurrentUserProvider>(),
       auditLogger: getIt<AuditLogger>(),
+    ),
+  );
+
+  // ─── Medical Catalogs Feature ──────────────────────────────────────────────
+  getIt.registerLazySingleton<MedicalCatalogsRepo>(
+    () => MedicalCatalogsMockRepoImpl(),
+  );
+  getIt.registerFactory<MedicalCatalogsCubit>(
+    () => MedicalCatalogsCubit(
+      repo: getIt<MedicalCatalogsRepo>(),
     ),
   );
 

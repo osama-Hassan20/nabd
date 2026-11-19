@@ -13,6 +13,8 @@ import 'package:eyadty/features/bookings/presentation/pages/booking_details_page
 import 'package:eyadty/features/bookings/presentation/pages/bookings_page.dart';
 import 'package:eyadty/features/cashier/presentation/pages/cashier_page.dart';
 import 'package:eyadty/features/drugs/presentation/pages/drugs_page.dart';
+import 'package:eyadty/features/medical_catalogs/data/models/enums/medical_catalog_kind_enum.dart';
+import 'package:eyadty/features/medical_catalogs/presentation/pages/medical_catalog_page.dart';
 import 'package:eyadty/features/patients/presentation/pages/patient_details_page.dart';
 import 'package:eyadty/features/patients/presentation/pages/patients_page.dart';
 import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
@@ -302,7 +304,8 @@ StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
   if (location.startsWith(AppRouter.settings)) {
     return StaffPermissionEnum.accessSettings;
   }
-  if (location.startsWith(AppRouter.drugs)) {
+  if (location.startsWith(AppRouter.drugs) ||
+      location.startsWith('/medical-catalogs')) {
     return StaffPermissionEnum.manageDrugCatalog;
   }
   return null;
@@ -540,6 +543,78 @@ List<RouteBase> getAppRoutes() => [
           pageBuilder: (context, state) => buildAnimatedPage(
             key: state.pageKey,
             child: const DrugsPage(),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // Medical Catalogs & Health Guides
+        GoRoute(
+          path: AppRouter.radiology,
+          name: AppRouter.radiology,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const MedicalCatalogPage(
+              kind: MedicalCatalogKindEnum.radiology,
+            ),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+        GoRoute(
+          path: AppRouter.labTests,
+          name: AppRouter.labTests,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const MedicalCatalogPage(
+              kind: MedicalCatalogKindEnum.labTests,
+            ),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+        GoRoute(
+          path: AppRouter.chronicDiseases,
+          name: AppRouter.chronicDiseases,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const MedicalCatalogPage(
+              kind: MedicalCatalogKindEnum.chronicDiseases,
+            ),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+        GoRoute(
+          path: AppRouter.allergies,
+          name: AppRouter.allergies,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const MedicalCatalogPage(
+              kind: MedicalCatalogKindEnum.allergies,
+            ),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+        GoRoute(
+          path: AppRouter.surgeries,
+          name: AppRouter.surgeries,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const MedicalCatalogPage(
+              kind: MedicalCatalogKindEnum.surgeries,
+            ),
             animationType: checkIsIOS()
                 ? AnimationType.cupertino
                 : AnimationType.slideFromLeft,

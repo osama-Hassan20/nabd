@@ -50,6 +50,8 @@ class AppColors {
   static const Color gray6C6C6C = Color(0xFF7A7A82);
   static const Color gray334155 = Color(0xFF333336);
   static const Color grayE2E8F0 = Color(0xFFEAEAEA);
+  static const Color grayF1F5F9 = Color(0xFFF1F5F9);
+  static const Color grayF8FAFC = Color(0xFFF8FAFC);
   static const Color grayMuted = Color(0xFFA6A6AE);
   static const Color grayDim = Color(0xFF7A7A82);
   static const Color grayAccent = Color(0xFF8F8F96);
@@ -113,6 +115,7 @@ class AppColors {
 
   // ─── Red Variants ──────────────────────────────────────────────────────────
   static const Color red = Color(0xFFE54848);
+  static const Color redED = Color(0xFFE54848);
   static const Color errorLight = Color(0x1FE54848);
   static const Color red02 = Color(0xFFE54848);
   static const Color red1A = Color.fromRGBO(229, 72, 72, 0.1);

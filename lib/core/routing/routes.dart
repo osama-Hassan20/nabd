@@ -40,8 +40,13 @@ class AppRouter {
   static const String profile = '/profile';
   static const String notifications = '/notifications';
 
-  // 9. Drugs & Medical Catalog
+  // 9. Medical Management & Catalogs
   static const String drugs = '/drugs';
+  static const String radiology = '/medical-catalogs/radiology';
+  static const String labTests = '/medical-catalogs/lab-tests';
+  static const String chronicDiseases = '/medical-catalogs/chronic-diseases';
+  static const String allergies = '/medical-catalogs/allergies';
+  static const String surgeries = '/medical-catalogs/surgeries';
 
   // 10. Security & Access Errors
   static const String forbidden = '/forbidden';
