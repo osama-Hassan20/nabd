@@ -4,8 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_gradient.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
+import 'package:eyadty/shared/widgets/custom_cards/summary_card.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 import 'package:eyadty/shared/widgets/custom_text_field.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
@@ -231,93 +234,79 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
   }
 
   Widget _buildStatCards(MedicalCatalogsState state) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildMetricCard(
-            title: 'إجمالي ${widget.kind.title}',
-            value: state.totalCount.toString(),
-            subtitle: 'عنصر مسجل في النظام',
-            color: AppColors.primary,
-            icon: Icons.folder_copy_outlined,
-          ),
+    final items = [
+      SummaryCard(
+        title: '${state.totalCount}',
+        subTitle: 'إجمالي ${widget.kind.title}',
+        iconPath: widget.kind.iconPath,
+        gradient: AppGradient.primaryGradient,
+        activeBorderColor: AppColors.white,
+        isSelected: state.statusFilter == 'all',
+        onTap: () => _cubit.setStatusFilter('all'),
+      ),
+      SummaryCard(
+        title: '${state.activeCount}',
+        subTitle: 'عناصر نشطة ومتاحة',
+        iconPath: AppIcons.checkmarkCircle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2E9A68), Color(0xFF15803D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildMetricCard(
-            title: 'عناصر نشطة ومتاحة',
-            value: state.activeCount.toString(),
-            subtitle: 'مفعلة في ملفات المرضى',
-            color: const Color(0xFF059669),
-            icon: Icons.check_circle_outline_rounded,
-          ),
+        activeBorderColor: AppColors.white,
+        isSelected: state.statusFilter == 'active',
+        onTap: () => _cubit.toggleStatusFilter('active'),
+      ),
+      SummaryCard(
+        title: '${state.inactiveCount}',
+        subTitle: 'معطلة / غير مستخدمة',
+        iconPath: AppIcons.close,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE54848), Color(0xFFB91C1C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildMetricCard(
-            title: 'معطلة / غير مستخدمة',
-            value: state.inactiveCount.toString(),
-            subtitle: 'تم إيقاف تفعيلها مؤقتاً',
-            color: AppColors.gray71717A,
-            icon: Icons.pause_circle_outline_rounded,
-          ),
-        ),
-      ],
-    );
-  }
+        activeBorderColor: AppColors.white,
+        isSelected: state.statusFilter == 'inactive',
+        onTap: () => _cubit.toggleStatusFilter('inactive'),
+      ),
+    ];
 
-  Widget _buildMetricCard({
-    required String title,
-    required String value,
-    required String subtitle,
-    required Color color,
-    required IconData icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.grayE2E8F0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: CustomAppFontStyle.medium12.copyWith(
-                  color: AppColors.gray71717A,
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 720) {
+          return SizedBox(
+            height: 98,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => SizedBox(
+                width: 220,
+                child: items[index],
               ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: CustomAppFontStyle.bold22.copyWith(
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: CustomAppFontStyle.regular11.copyWith(
-                  color: AppColors.gray,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-        ],
-      ),
+          );
+        }
+
+        return Row(
+          children: items
+              .map(
+                (card) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: SizedBox(
+                      height: 98,
+                      child: card,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 
@@ -412,7 +401,9 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (state.entries.isEmpty) {
+    final displayed = state.displayedEntries;
+
+    if (displayed.isEmpty) {
       return Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -539,11 +530,11 @@ class _MedicalCatalogPageState extends State<MedicalCatalogPage> {
             // Table Rows
             Expanded(
               child: ListView.separated(
-                itemCount: state.entries.length,
+                itemCount: displayed.length,
                 separatorBuilder: (_, __) =>
                     const Divider(height: 1, color: AppColors.grayF1F5F9),
                 itemBuilder: (context, index) {
-                  final entry = state.entries[index];
+                  final entry = displayed[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 12),

@@ -23,10 +23,23 @@ class MedicalCatalogsCubit extends SafeCubit<MedicalCatalogsState> {
       kind: newKind,
       selectedCategory: 'الكل',
       searchQuery: '',
+      statusFilter: 'all',
       availableCategories: ['الكل', ...newKind.defaultCategories],
       clearMessages: true,
     ));
     loadEntries();
+  }
+
+  void setStatusFilter(String filter) {
+    emit(state.copyWith(statusFilter: filter));
+  }
+
+  void toggleStatusFilter(String filter) {
+    if (state.statusFilter == filter) {
+      emit(state.copyWith(statusFilter: 'all'));
+    } else {
+      emit(state.copyWith(statusFilter: filter));
+    }
   }
 
   void onSearchChanged(String query) {

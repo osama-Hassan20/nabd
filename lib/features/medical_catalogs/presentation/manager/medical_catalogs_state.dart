@@ -10,6 +10,7 @@ class MedicalCatalogsState extends Equatable {
   final List<String> availableCategories;
   final String selectedCategory;
   final String searchQuery;
+  final String statusFilter; // 'all', 'active', 'inactive'
   final RequestStatusEnum actionStatus;
   final String? errMessage;
   final String? successMessage;
@@ -21,6 +22,7 @@ class MedicalCatalogsState extends Equatable {
     this.availableCategories = const ['الكل'],
     this.selectedCategory = 'الكل',
     this.searchQuery = '',
+    this.statusFilter = 'all',
     this.actionStatus = RequestStatusEnum.initial,
     this.errMessage,
     this.successMessage,
@@ -30,6 +32,15 @@ class MedicalCatalogsState extends Equatable {
   int get activeCount => entries.where((e) => e.isActive).length;
   int get inactiveCount => entries.where((e) => !e.isActive).length;
 
+  List<MedicalCatalogEntryModel> get displayedEntries {
+    if (statusFilter == 'active') {
+      return entries.where((e) => e.isActive).toList();
+    } else if (statusFilter == 'inactive') {
+      return entries.where((e) => !e.isActive).toList();
+    }
+    return entries;
+  }
+
   MedicalCatalogsState copyWith({
     RequestStatusEnum? status,
     MedicalCatalogKindEnum? kind,
@@ -37,6 +48,7 @@ class MedicalCatalogsState extends Equatable {
     List<String>? availableCategories,
     String? selectedCategory,
     String? searchQuery,
+    String? statusFilter,
     RequestStatusEnum? actionStatus,
     String? errMessage,
     String? successMessage,
@@ -49,6 +61,7 @@ class MedicalCatalogsState extends Equatable {
       availableCategories: availableCategories ?? this.availableCategories,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       searchQuery: searchQuery ?? this.searchQuery,
+      statusFilter: statusFilter ?? this.statusFilter,
       actionStatus: actionStatus ?? this.actionStatus,
       errMessage: clearMessages ? null : (errMessage ?? this.errMessage),
       successMessage:
@@ -64,6 +77,7 @@ class MedicalCatalogsState extends Equatable {
         availableCategories,
         selectedCategory,
         searchQuery,
+        statusFilter,
         actionStatus,
         errMessage,
         successMessage,
