@@ -24,6 +24,7 @@ import '../../data/models/enums/gender_enum.dart';
 import '../../data/models/enums/medical_catalog_type_enum.dart';
 import '../../data/models/medical_catalog_item_model.dart';
 import '../../data/models/patient_model.dart';
+import '../../data/models/patient_treatment_plan_model.dart';
 import '../../domain/repo/patients_repo.dart';
 import '../../domain/use_cases/add_medical_catalog_item_use_case.dart';
 import '../../domain/use_cases/add_patient_use_case.dart';
@@ -52,6 +53,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
   final ChangeBookingStatusUseCase changeBookingStatusUseCase;
   final ReassignTechnicianUseCase reassignTechnicianUseCase;
   final DeleteBookingUseCase deleteBookingUseCase;
+  final PatientsRepo? patientsRepo;
 
   PatientsCubit({
     required this.getPatientsUseCase,
@@ -68,6 +70,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
     required this.changeBookingStatusUseCase,
     required this.reassignTechnicianUseCase,
     required this.deleteBookingUseCase,
+    this.patientsRepo,
   }) : super(const PatientsState());
 
   PaginationParams paginationParams = PaginationParams(page: 1, limit: 10);
@@ -1011,6 +1014,163 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
         if (state.selectedPatient?.id != null) {
           fetchPatientDetails(state.selectedPatient!.id!);
         }
+        return true;
+      },
+    );
+  }
+
+  // ─── Treatment Plans & Multi-Session Services ─────────────────────────────────
+  Future<bool> addTreatmentPlan(PatientTreatmentPlanModel plan) async {
+    final patientId = state.selectedPatient?.id;
+    if (patientId == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+    final repo = patientsRepo ?? getIt<PatientsRepo>();
+    final result = await repo.addTreatmentPlan(patientId: patientId, plan: plan);
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            actionErrMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (newPlan) {
+        final currentPlans = List<PatientTreatmentPlanModel>.from(
+          state.selectedPatient?.treatmentPlans ?? [],
+        )..insert(0, newPlan);
+        final updatedPatient = state.selectedPatient!.copyWith(
+          treatmentPlans: currentPlans,
+        );
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            selectedPatient: updatedPatient,
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> updateTreatmentPlan(PatientTreatmentPlanModel plan) async {
+    final patientId = state.selectedPatient?.id;
+    if (patientId == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+    final repo = patientsRepo ?? getIt<PatientsRepo>();
+    final result = await repo.updateTreatmentPlan(patientId: patientId, plan: plan);
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            actionErrMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (updatedPlan) {
+        final currentPlans = List<PatientTreatmentPlanModel>.from(
+          state.selectedPatient?.treatmentPlans ?? [],
+        );
+        final idx = currentPlans.indexWhere((p) => p.id == updatedPlan.id);
+        if (idx != -1) currentPlans[idx] = updatedPlan;
+        final updatedPatient = state.selectedPatient!.copyWith(
+          treatmentPlans: currentPlans,
+        );
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            selectedPatient: updatedPatient,
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> recordTreatmentSession({
+    required String planId,
+    required TreatmentSessionRecordModel session,
+  }) async {
+    final patientId = state.selectedPatient?.id;
+    if (patientId == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+    final repo = patientsRepo ?? getIt<PatientsRepo>();
+    final result = await repo.recordTreatmentSession(
+      patientId: patientId,
+      planId: planId,
+      session: session,
+    );
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            actionErrMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (updatedPlan) {
+        final currentPlans = List<PatientTreatmentPlanModel>.from(
+          state.selectedPatient?.treatmentPlans ?? [],
+        );
+        final idx = currentPlans.indexWhere((p) => p.id == updatedPlan.id);
+        if (idx != -1) currentPlans[idx] = updatedPlan;
+        final updatedPatient = state.selectedPatient!.copyWith(
+          treatmentPlans: currentPlans,
+        );
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            selectedPatient: updatedPatient,
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> recordTreatmentPayment({
+    required String planId,
+    required TreatmentPaymentRecordModel payment,
+  }) async {
+    final patientId = state.selectedPatient?.id;
+    if (patientId == null) return false;
+    emit(state.copyWith(actionStatus: RequestStatusEnum.loading));
+    final repo = patientsRepo ?? getIt<PatientsRepo>();
+    final result = await repo.recordTreatmentPayment(
+      patientId: patientId,
+      planId: planId,
+      payment: payment,
+    );
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            actionErrMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (updatedPlan) {
+        final currentPlans = List<PatientTreatmentPlanModel>.from(
+          state.selectedPatient?.treatmentPlans ?? [],
+        );
+        final idx = currentPlans.indexWhere((p) => p.id == updatedPlan.id);
+        if (idx != -1) currentPlans[idx] = updatedPlan;
+        final updatedPatient = state.selectedPatient!.copyWith(
+          treatmentPlans: currentPlans,
+        );
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            selectedPatient: updatedPatient,
+          ),
+        );
         return true;
       },
     );

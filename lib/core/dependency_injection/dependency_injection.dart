@@ -71,6 +71,11 @@ import 'package:eyadty/features/medical_catalogs/data/repo/medical_catalogs_mock
 import 'package:eyadty/features/medical_catalogs/domain/repo/medical_catalogs_repo.dart';
 import 'package:eyadty/features/medical_catalogs/presentation/manager/medical_catalogs_cubit.dart';
 
+// Inventory Feature
+import 'package:eyadty/features/inventory/data/repo/inventory_mock_repo_impl.dart';
+import 'package:eyadty/features/inventory/domain/repo/inventory_repo.dart';
+import 'package:eyadty/features/inventory/presentation/cubit/inventory_cubit.dart';
+
 // Patients Feature
 import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
 import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
@@ -569,6 +574,7 @@ Future<void> setupGetIt() async {
       changeBookingStatusUseCase: getIt<ChangeBookingStatusUseCase>(),
       reassignTechnicianUseCase: getIt<ReassignTechnicianUseCase>(),
       deleteBookingUseCase: getIt<DeleteBookingUseCase>(),
+      patientsRepo: getIt<PatientsRepo>(),
     ),
   );
 
@@ -915,6 +921,16 @@ Future<void> setupGetIt() async {
   getIt.registerFactory<MedicalCatalogsCubit>(
     () => MedicalCatalogsCubit(
       repo: getIt<MedicalCatalogsRepo>(),
+    ),
+  );
+
+  // ─── Inventory & Medical Supplies Feature ────────────────────────────────────
+  getIt.registerLazySingleton<InventoryRepo>(
+    () => InventoryMockRepoImpl(),
+  );
+  getIt.registerFactory<InventoryCubit>(
+    () => InventoryCubit(
+      repo: getIt<InventoryRepo>(),
     ),
   );
 

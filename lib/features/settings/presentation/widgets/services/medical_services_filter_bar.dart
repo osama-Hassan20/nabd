@@ -56,7 +56,7 @@ class MedicalServicesFilterBar extends StatelessWidget {
       border: Border.all(color: AppColors.grayE2E8F0),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 620;
+          final isNarrow = constraints.maxWidth < 720;
           if (isNarrow) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -68,7 +68,7 @@ class MedicalServicesFilterBar extends StatelessWidget {
                     Expanded(child: _buildStatusFilterChips()),
                     if (isAdmin) ...[
                       const SizedBox(width: 12),
-                      _buildAddButton(compact: constraints.maxWidth < 450),
+                      _buildAddButton(compact: constraints.maxWidth < 520),
                     ],
                   ],
                 ),
@@ -199,7 +199,8 @@ class MedicalServicesFilterBar extends StatelessWidget {
   Widget _buildAddButton({required bool compact}) {
     return CustomPushButton(
       height: 42,
-      width: compact ? 42 : 140,
+      width: compact ? 42 : null,
+      padding: compact ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 16),
       backgroundColor: AppColors.primary,
       borderRadius: BorderRadius.circular(8),
       onTap: onAddService,

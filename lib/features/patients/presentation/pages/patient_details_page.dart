@@ -14,6 +14,7 @@ import 'package:eyadty/features/patients/presentation/widgets/patient_details_se
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_details_shimmer.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_profile_card_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_stats_cards_section.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_treatment_plans_section.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/error_page.dart';
 
@@ -114,6 +115,10 @@ class PatientDetailsPage extends StatelessWidget {
                     const SliverToBoxAdapter(child: SizedBox(height: 16)),
                     const SliverToBoxAdapter(
                       child: PatientStatsCardsSection(),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    const SliverToBoxAdapter(
+                      child: PatientTreatmentPlansSection(),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
                     const SliverToBoxAdapter(

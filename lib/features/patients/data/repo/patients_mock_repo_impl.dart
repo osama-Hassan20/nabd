@@ -15,6 +15,7 @@ import '../models/enums/blood_group_enum.dart';
 import '../../domain/contracts/patient_balance_lookup.dart';
 import '../models/enums/gender_enum.dart';
 import '../models/patient_model.dart';
+import '../models/patient_treatment_plan_model.dart';
 import '../models/patients_response_model.dart';
 
 class PatientsMockRepoImpl implements PatientsRepo {
@@ -164,6 +165,70 @@ class PatientsMockRepoImpl implements PatientsRepo {
         insuranceCoveragePercent: 80,
         internalNotes: 'متابعة باطنة دورية وتاريخ عائلي للسكري',
         isArchived: false,
+        treatmentPlans: [
+          PatientTreatmentPlanModel(
+            id: 'TRP-101',
+            patientId: 'PAT-000101',
+            serviceId: 'SRV-09',
+            serviceName: 'باقة ليزر إزالة شعر - جسم كامل (6 جلسات)',
+            category: 'جلدية وليزر',
+            doctorName: 'د. سارة عادل',
+            totalAgreedPrice: 4500,
+            totalPaidAmount: 3000,
+            totalSessions: 6,
+            completedSessions: 4,
+            paymentMode: 'flexibleInstallments',
+            status: 'active',
+            startDate: now.subtract(const Duration(days: 60)),
+            notes: 'خطة ليزر شهرية بنظام التبريد الفائق مع رتوش مجانية بعد الجلسة الرابعة',
+            sessions: [
+              TreatmentSessionRecordModel(
+                id: 'SES-01',
+                sessionNumber: 1,
+                date: now.subtract(const Duration(days: 60)),
+                doctorNotes: 'جلسة ليزر أولى تجريبية واختبار حساسية الجلد - ممتازة بدون تحسس',
+                performedBy: 'د. سارة عادل',
+              ),
+              TreatmentSessionRecordModel(
+                id: 'SES-02',
+                sessionNumber: 2,
+                date: now.subtract(const Duration(days: 45)),
+                doctorNotes: 'جلسة ثانية بكفاءة أعلى 16 جول',
+                performedBy: 'د. سارة عادل',
+              ),
+              TreatmentSessionRecordModel(
+                id: 'SES-03',
+                sessionNumber: 3,
+                date: now.subtract(const Duration(days: 30)),
+                doctorNotes: 'جلسة ثالثة - استجابة ممتازة ونقص كثافة الشعر بنسبة 40%',
+                performedBy: 'د. سارة عادل',
+              ),
+              TreatmentSessionRecordModel(
+                id: 'SES-04',
+                sessionNumber: 4,
+                date: now.subtract(const Duration(days: 15)),
+                doctorNotes: 'جلسة رابعة شاملة الرتوش في المناطق الحساسة',
+                performedBy: 'د. سارة عادل',
+              ),
+            ],
+            payments: [
+              TreatmentPaymentRecordModel(
+                id: 'PAY-01',
+                amount: 2000,
+                date: now.subtract(const Duration(days: 60)),
+                paymentMethod: 'نقدي',
+                notes: 'دفعة أولى عند فتح الخطة العلاجية',
+              ),
+              TreatmentPaymentRecordModel(
+                id: 'PAY-02',
+                amount: 1000,
+                date: now.subtract(const Duration(days: 30)),
+                paymentMethod: 'إنستاباي',
+                notes: 'دفعة ثانية مرنة بعد الجلسة الثالثة',
+              ),
+            ],
+          ),
+        ],
         createdAt: now.subtract(const Duration(days: 180)),
         updatedAt: now.subtract(const Duration(days: 2)),
       ),
@@ -195,6 +260,56 @@ class PatientsMockRepoImpl implements PatientsRepo {
         insuranceCoveragePercent: 0,
         internalNotes: 'عليه مديونية سابقة قدرها 300 ج.م لكشف مستعجل',
         isArchived: false,
+        treatmentPlans: [
+          PatientTreatmentPlanModel(
+            id: 'TRP-102',
+            patientId: 'PAT-000102',
+            serviceId: 'SRV-11',
+            serviceName: 'علاج جذور وحشو عصب ضرس سفلي (3 جلسات)',
+            category: 'طب الأسنان',
+            doctorName: 'د. طارق المنشاوي',
+            totalAgreedPrice: 2200,
+            totalPaidAmount: 1500,
+            totalSessions: 3,
+            completedSessions: 2,
+            paymentMode: 'perSession',
+            status: 'active',
+            startDate: now.subtract(const Duration(days: 14)),
+            notes: 'تم تعديل السعر من 1800 إلى 2200 ج.م نظراً لوجود قناة إضافية منحنية وحاجة لدعامة فايبر بوست',
+            sessions: [
+              TreatmentSessionRecordModel(
+                id: 'SES-10',
+                sessionNumber: 1,
+                date: now.subtract(const Duration(days: 14)),
+                doctorNotes: 'فتح الحجرة اللبية وسحب العصب وتوسيع القنوات وحشو مؤقت',
+                performedBy: 'د. طارق المنشاوي',
+              ),
+              TreatmentSessionRecordModel(
+                id: 'SES-11',
+                sessionNumber: 2,
+                date: now.subtract(const Duration(days: 7)),
+                doctorNotes: 'تعقيم القنوات بأجهزة الروتاري وتحديد الطول الإلكتروني بدقة Apex Locator',
+                performedBy: 'د. طارق المنشاوي',
+              ),
+            ],
+            payments: [
+              TreatmentPaymentRecordModel(
+                id: 'PAY-10',
+                amount: 1000,
+                date: now.subtract(const Duration(days: 14)),
+                paymentMethod: 'نقدي',
+                notes: 'سداد دفعة الجلسة الأولى',
+              ),
+              TreatmentPaymentRecordModel(
+                id: 'PAY-11',
+                amount: 500,
+                date: now.subtract(const Duration(days: 7)),
+                paymentMethod: 'بطاقة بنكية',
+                notes: 'سداد جزئي للجلسة الثانية',
+              ),
+            ],
+          ),
+        ],
         createdAt: now.subtract(const Duration(days: 240)),
         updatedAt: now.subtract(const Duration(days: 5)),
       ),
@@ -796,6 +911,128 @@ class PatientsMockRepoImpl implements PatientsRepo {
       return const Right(false);
     } catch (e) {
       return Left(ServerFailure(errMessage: 'تعذر التحقق من تكرار البيانات'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, PatientTreatmentPlanModel>> addTreatmentPlan({
+    required String patientId,
+    required PatientTreatmentPlanModel plan,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      final index = _patients.indexWhere((p) => p.id == patientId);
+      if (index == -1) {
+        return Left(ServerFailure(errMessage: 'المريض غير موجود'));
+      }
+      final currentPlans = List<PatientTreatmentPlanModel>.from(_patients[index].treatmentPlans ?? []);
+      currentPlans.insert(0, plan);
+      _patients[index] = _patients[index].copyWith(
+        treatmentPlans: currentPlans,
+        updatedAt: CairoTimeHelper.now(),
+      );
+      return Right(plan);
+    } catch (e) {
+      return Left(ServerFailure(errMessage: 'فشل إضافة الخطة العلاجية للمريض'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, PatientTreatmentPlanModel>> updateTreatmentPlan({
+    required String patientId,
+    required PatientTreatmentPlanModel plan,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      final index = _patients.indexWhere((p) => p.id == patientId);
+      if (index == -1) {
+        return Left(ServerFailure(errMessage: 'المريض غير موجود'));
+      }
+      final currentPlans = List<PatientTreatmentPlanModel>.from(_patients[index].treatmentPlans ?? []);
+      final planIndex = currentPlans.indexWhere((p) => p.id == plan.id);
+      if (planIndex == -1) {
+        return Left(ServerFailure(errMessage: 'الخطة العلاجية غير موجودة'));
+      }
+      currentPlans[planIndex] = plan;
+      _patients[index] = _patients[index].copyWith(
+        treatmentPlans: currentPlans,
+        updatedAt: CairoTimeHelper.now(),
+      );
+      return Right(plan);
+    } catch (e) {
+      return Left(ServerFailure(errMessage: 'فشل تعديل الخطة العلاجية'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, PatientTreatmentPlanModel>> recordTreatmentSession({
+    required String patientId,
+    required String planId,
+    required TreatmentSessionRecordModel session,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      final index = _patients.indexWhere((p) => p.id == patientId);
+      if (index == -1) {
+        return Left(ServerFailure(errMessage: 'المريض غير موجود'));
+      }
+      final currentPlans = List<PatientTreatmentPlanModel>.from(_patients[index].treatmentPlans ?? []);
+      final planIndex = currentPlans.indexWhere((p) => p.id == planId);
+      if (planIndex == -1) {
+        return Left(ServerFailure(errMessage: 'الخطة العلاجية غير موجودة'));
+      }
+      final targetPlan = currentPlans[planIndex];
+      final newSessions = List<TreatmentSessionRecordModel>.from(targetPlan.sessions)..add(session);
+      final newCompletedCount = (targetPlan.completedSessions + 1).clamp(0, targetPlan.totalSessions);
+      final isNowCompleted = newCompletedCount >= targetPlan.totalSessions;
+      final updatedPlan = targetPlan.copyWith(
+        completedSessions: newCompletedCount,
+        status: isNowCompleted ? 'completed' : targetPlan.status,
+        sessions: newSessions,
+      );
+      currentPlans[planIndex] = updatedPlan;
+      _patients[index] = _patients[index].copyWith(
+        treatmentPlans: currentPlans,
+        updatedAt: CairoTimeHelper.now(),
+      );
+      return Right(updatedPlan);
+    } catch (e) {
+      return Left(ServerFailure(errMessage: 'فشل تسجيل الجلسة المنجزة'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, PatientTreatmentPlanModel>> recordTreatmentPayment({
+    required String patientId,
+    required String planId,
+    required TreatmentPaymentRecordModel payment,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      final index = _patients.indexWhere((p) => p.id == patientId);
+      if (index == -1) {
+        return Left(ServerFailure(errMessage: 'المريض غير موجود'));
+      }
+      final currentPlans = List<PatientTreatmentPlanModel>.from(_patients[index].treatmentPlans ?? []);
+      final planIndex = currentPlans.indexWhere((p) => p.id == planId);
+      if (planIndex == -1) {
+        return Left(ServerFailure(errMessage: 'الخطة العلاجية غير موجودة'));
+      }
+      final targetPlan = currentPlans[planIndex];
+      final newPayments = List<TreatmentPaymentRecordModel>.from(targetPlan.payments)..add(payment);
+      final newPaidAmount = targetPlan.totalPaidAmount + payment.amount;
+      final updatedPlan = targetPlan.copyWith(
+        totalPaidAmount: newPaidAmount,
+        payments: newPayments,
+      );
+      currentPlans[planIndex] = updatedPlan;
+      _patients[index] = _patients[index].copyWith(
+        treatmentPlans: currentPlans,
+        updatedAt: CairoTimeHelper.now(),
+      );
+      return Right(updatedPlan);
+    } catch (e) {
+      return Left(ServerFailure(errMessage: 'فشل تسجيل الدفعة المالية'));
     }
   }
 }

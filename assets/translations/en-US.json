@@ -1533,5 +1533,8 @@
   "demo_cashier": "Cashier",
   "demo_hr": "HR",
   "profile": "Profile",
-  "log_out": "Log out"
+  "log_out": "Log out",
+  "nav_inventory": "Clinic Inventory",
+  "nav_inventory_header": "Medical Inventory & Supplies",
+  "nav_inventory_subtitle": "Track clinic consumables, laser tips/gas, and low-stock alerts"
 }

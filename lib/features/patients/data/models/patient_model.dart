@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'enums/blood_group_enum.dart';
 import 'enums/gender_enum.dart';
+import 'patient_treatment_plan_model.dart';
 
 class PatientModel extends Equatable {
   // 1. المعرفات الأساسية
@@ -57,6 +58,7 @@ class PatientModel extends Equatable {
   final DateTime? nextAppointmentDate;
   final num? totalPaidAmount;
   final num? outstandingBalance;
+  final List<PatientTreatmentPlanModel>? treatmentPlans;
 
   // 10. طوابع الوقت
   final DateTime? createdAt;
@@ -99,6 +101,7 @@ class PatientModel extends Equatable {
     this.nextAppointmentDate,
     this.totalPaidAmount,
     this.outstandingBalance,
+    this.treatmentPlans,
     this.createdAt,
     this.updatedAt,
   });
@@ -262,6 +265,9 @@ class PatientModel extends Equatable {
           json['total_spent'] as num?,
       outstandingBalance: json['outstandingBalance'] as num? ??
           json['outstanding_balance'] as num?,
+      treatmentPlans: (json['treatmentPlans'] as List<dynamic>?)
+          ?.map((e) => PatientTreatmentPlanModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString())
           : (json['created_at'] != null
@@ -323,6 +329,8 @@ class PatientModel extends Equatable {
       if (totalPaidAmount != null) 'total_paid_amount': totalPaidAmount,
       if (outstandingBalance != null)
         'outstanding_balance': outstandingBalance,
+      if (treatmentPlans != null)
+        'treatmentPlans': treatmentPlans!.map((e) => e.toJson()).toList(),
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt?.toIso8601String(),
     };
@@ -366,6 +374,7 @@ class PatientModel extends Equatable {
     DateTime? nextAppointmentDate,
     num? totalPaidAmount,
     num? outstandingBalance,
+    List<PatientTreatmentPlanModel>? treatmentPlans,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -412,6 +421,7 @@ class PatientModel extends Equatable {
       nextAppointmentDate: nextAppointmentDate ?? this.nextAppointmentDate,
       totalPaidAmount: totalPaidAmount ?? this.totalPaidAmount,
       outstandingBalance: outstandingBalance ?? this.outstandingBalance,
+      treatmentPlans: treatmentPlans ?? this.treatmentPlans,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -455,6 +465,7 @@ class PatientModel extends Equatable {
         nextAppointmentDate,
         totalPaidAmount,
         outstandingBalance,
+        treatmentPlans,
         createdAt,
         updatedAt,
       ];

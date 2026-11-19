@@ -47,6 +47,7 @@ class AppRouter {
   static const String chronicDiseases = '/medical-catalogs/chronic-diseases';
   static const String allergies = '/medical-catalogs/allergies';
   static const String surgeries = '/medical-catalogs/surgeries';
+  static const String inventory = '/inventory';
 
   // 10. Security & Access Errors
   static const String forbidden = '/forbidden';

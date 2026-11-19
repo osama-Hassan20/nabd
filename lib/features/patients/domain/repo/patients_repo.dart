@@ -4,6 +4,7 @@ import 'package:eyadty/core/uses_cases/params.dart';
 import '../../data/models/enums/blood_group_enum.dart';
 import '../../data/models/enums/gender_enum.dart';
 import '../../data/models/patient_model.dart';
+import '../../data/models/patient_treatment_plan_model.dart';
 import '../../data/models/patients_response_model.dart';
 
 abstract class PatientsRepo {
@@ -51,5 +52,27 @@ abstract class PatientsRepo {
   Future<Either<Failures, bool>> checkDuplicate({
     String? phone,
     String? excludePatientId,
+  });
+
+  Future<Either<Failures, PatientTreatmentPlanModel>> addTreatmentPlan({
+    required String patientId,
+    required PatientTreatmentPlanModel plan,
+  });
+
+  Future<Either<Failures, PatientTreatmentPlanModel>> updateTreatmentPlan({
+    required String patientId,
+    required PatientTreatmentPlanModel plan,
+  });
+
+  Future<Either<Failures, PatientTreatmentPlanModel>> recordTreatmentSession({
+    required String patientId,
+    required String planId,
+    required TreatmentSessionRecordModel session,
+  });
+
+  Future<Either<Failures, PatientTreatmentPlanModel>> recordTreatmentPayment({
+    required String patientId,
+    required String planId,
+    required TreatmentPaymentRecordModel payment,
   });
 }

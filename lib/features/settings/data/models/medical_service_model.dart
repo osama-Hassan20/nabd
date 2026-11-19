@@ -9,6 +9,9 @@ class MedicalServiceModel extends Equatable {
   final String? assignedDoctorId;
   final String? assignedDoctorName;
   final String? description;
+  final bool? isMultiSession;
+  final int? sessionsCount;
+  final String? category;
 
   const MedicalServiceModel({
     this.id,
@@ -19,9 +22,13 @@ class MedicalServiceModel extends Equatable {
     this.assignedDoctorId,
     this.assignedDoctorName,
     this.description,
+    this.isMultiSession,
+    this.sessionsCount,
+    this.category,
   });
 
   bool get isServiceActive => isActive ?? true;
+  bool get isMultiSessionService => isMultiSession ?? false;
 
   factory MedicalServiceModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const MedicalServiceModel();
@@ -34,6 +41,9 @@ class MedicalServiceModel extends Equatable {
       assignedDoctorId: json['assignedDoctorId']?.toString(),
       assignedDoctorName: json['assignedDoctorName'] as String?,
       description: json['description'] as String?,
+      isMultiSession: json['isMultiSession'] as bool?,
+      sessionsCount: json['sessionsCount'] as int?,
+      category: json['category'] as String?,
     );
   }
 
@@ -47,6 +57,9 @@ class MedicalServiceModel extends Equatable {
       if (assignedDoctorId != null) 'assignedDoctorId': assignedDoctorId,
       if (assignedDoctorName != null) 'assignedDoctorName': assignedDoctorName,
       if (description != null) 'description': description,
+      if (isMultiSession != null) 'isMultiSession': isMultiSession,
+      if (sessionsCount != null) 'sessionsCount': sessionsCount,
+      if (category != null) 'category': category,
     };
   }
 
@@ -60,6 +73,9 @@ class MedicalServiceModel extends Equatable {
     bool clearAssignedDoctor = false,
     String? assignedDoctorName,
     String? description,
+    bool? isMultiSession,
+    int? sessionsCount,
+    String? category,
   }) {
     return MedicalServiceModel(
       id: id ?? this.id,
@@ -74,6 +90,9 @@ class MedicalServiceModel extends Equatable {
           ? null
           : (assignedDoctorName ?? this.assignedDoctorName),
       description: description ?? this.description,
+      isMultiSession: isMultiSession ?? this.isMultiSession,
+      sessionsCount: sessionsCount ?? this.sessionsCount,
+      category: category ?? this.category,
     );
   }
 
@@ -87,6 +106,9 @@ class MedicalServiceModel extends Equatable {
         assignedDoctorId,
         assignedDoctorName,
         description,
+        isMultiSession,
+        sessionsCount,
+        category,
       ];
 }
 

@@ -15,6 +15,7 @@ import 'package:eyadty/features/cashier/presentation/pages/cashier_page.dart';
 import 'package:eyadty/features/drugs/presentation/pages/drugs_page.dart';
 import 'package:eyadty/features/medical_catalogs/data/models/enums/medical_catalog_kind_enum.dart';
 import 'package:eyadty/features/medical_catalogs/presentation/pages/medical_catalog_page.dart';
+import 'package:eyadty/features/inventory/presentation/pages/inventory_page.dart';
 import 'package:eyadty/features/patients/presentation/pages/patient_details_page.dart';
 import 'package:eyadty/features/patients/presentation/pages/patients_page.dart';
 import 'package:eyadty/features/hr/presentation/pages/hr_page.dart';
@@ -615,6 +616,20 @@ List<RouteBase> getAppRoutes() => [
             child: const MedicalCatalogPage(
               kind: MedicalCatalogKindEnum.surgeries,
             ),
+            animationType: checkIsIOS()
+                ? AnimationType.cupertino
+                : AnimationType.slideFromLeft,
+            duration: const Duration(milliseconds: 600),
+          ),
+        ),
+
+        // Clinic Inventory & Medical Supplies
+        GoRoute(
+          path: AppRouter.inventory,
+          name: AppRouter.inventory,
+          pageBuilder: (context, state) => buildAnimatedPage(
+            key: state.pageKey,
+            child: const InventoryPage(),
             animationType: checkIsIOS()
                 ? AnimationType.cupertino
                 : AnimationType.slideFromLeft,

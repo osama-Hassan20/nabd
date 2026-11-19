@@ -143,6 +143,20 @@ List<SideBarItemModel> layoutItems(BuildContext context) {
         context.go(AppRouter.surgeries);
       },
     ),
+    SideBarItemModel(
+      groupTitle: 'nav_group_medical'.tr(),
+      staffPermission: StaffPermissionEnum.manageDrugCatalog,
+      title: 'nav_inventory'.tr(),
+      iconPath: AppIcons.totalOrders,
+      id: 'inventory',
+      selectedIconPath: AppIcons.totalOrders,
+      routePath: AppRouter.inventory,
+      header: 'nav_inventory_header'.tr(),
+      subtitle: 'nav_inventory_subtitle'.tr(),
+      onTap: () {
+        context.go(AppRouter.inventory);
+      },
+    ),
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 3. المال (Finance)
