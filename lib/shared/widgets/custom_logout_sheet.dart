@@ -1,4 +1,6 @@
-﻿import 'package:eyadty/core/storage/cache_helper.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
@@ -93,13 +95,20 @@ class CustomLogOutSheet extends StatelessWidget {
                         height: 48,
                         isLoading: isLoading,
                         onTap: () {
-                          onTap();
+                          final nav = Navigator.of(context, rootNavigator: true);
+                          if (getIt.isRegistered<SessionCubit>()) {
+                            getIt<SessionCubit>().logout();
+                          }
                           try {
                             getIt<NotificationService>()
                                 .removeTokenFromBackend();
                           } catch (_) {}
                           AppSharedPreferences.clearAll();
-                          context.read<BasicCubit>().clearData();
+                          try {
+                            context.read<BasicCubit>().clearData();
+                          } catch (_) {}
+                          nav.pop();
+                          onTap();
                         },
                         backgroundColor: AppColors.red02,
                         padding: const EdgeInsets.symmetric(vertical: 13.5),

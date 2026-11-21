@@ -1,3 +1,5 @@
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/customer_action_button.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
@@ -121,10 +123,11 @@ class CustomSideBarList extends StatelessWidget {
                       }
                     }
 
-                    final isSelected =
-                        item.routePath != null &&
-                        effectivePath.startsWith(item.routePath!) &&
-                        (item.routePath == '/' ? effectivePath == '/' : true);
+                    final isSelected = _isRouteSelected(
+                      item.routePath,
+                      effectivePath,
+                      items,
+                    );
 
                     if (isTablet) {
                       return Padding(
@@ -235,7 +238,7 @@ class CustomSideBarList extends StatelessWidget {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) => CustomLogOutSheet(
+                        builder: (_) => CustomLogOutSheet(
                           onTap: () => context.go(AppRouter.login),
                         ),
                       );
@@ -256,7 +259,7 @@ class CustomSideBarList extends StatelessWidget {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => CustomLogOutSheet(
+                          builder: (_) => CustomLogOutSheet(
                             onTap: () => context.go(AppRouter.login),
                           ),
                         );
@@ -281,6 +284,28 @@ class CustomSideBarList extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  bool _isRouteSelected(
+    String? itemRoute,
+    String effectivePath,
+    List<SideBarItemModel> allItems,
+  ) {
+    if (itemRoute == null) return false;
+    if (itemRoute == '/') return effectivePath == '/';
+    if (effectivePath == itemRoute) return true;
+    if (effectivePath.startsWith('$itemRoute/')) {
+      final hasMoreSpecificMatch = allItems.any(
+        (other) =>
+            other.routePath != null &&
+            other.routePath != itemRoute &&
+            other.routePath!.length > itemRoute.length &&
+            (effectivePath == other.routePath ||
+                effectivePath.startsWith('${other.routePath}/')),
+      );
+      return !hasMoreSpecificMatch;
+    }
+    return false;
   }
 }
 

@@ -2,7 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/routing/app_router.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/animation/slide_transition_animation.dart';
 import 'package:eyadty/core/animation/scale_transition_animation.dart';
@@ -153,7 +155,15 @@ class _LoginBodyState extends State<LoginBody> {
             header: 'login_welcome_message'.tr(),
           ).showTopToast();
           final from = GoRouterState.of(context).uri.queryParameters['from'];
-          context.go((from != null && from.isNotEmpty) ? from : AppRouter.bookings);
+          final session = getIt<SessionCubit>();
+          if (from != null && from.isNotEmpty) {
+            final reqPerm = getRequiredPermissionForRoute(from);
+            if (reqPerm == null || session.can(reqPerm)) {
+              context.go(from);
+              return;
+            }
+          }
+          context.go(getDefaultRouteForSession(session));
         } else if (state is FailedLoginPushState) {
           CustomToast(
             context: context,
@@ -170,7 +180,10 @@ class _LoginBodyState extends State<LoginBody> {
                   await getIt<StaffUsersRepo>().getStaffUserById(state.userId);
               if (!context.mounted) return;
               userRes.fold(
-                (_) => context.go(AppRouter.bookings),
+                (_) {
+                  final session = getIt<SessionCubit>();
+                  context.go(getDefaultRouteForSession(session));
+                },
                 (user) => context
                     .read<LoginCubit>()
                     .handlePasswordChangedSuccess(user),

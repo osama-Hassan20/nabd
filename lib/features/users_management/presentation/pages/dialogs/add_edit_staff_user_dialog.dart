@@ -39,7 +39,7 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
   late final TextEditingController _linkedDoctorController;
 
   String _primaryBranchId = 'branch_1';
-  final Set<String> _selectedRoles = {};
+  String _selectedRoleId = RoleIds.reception;
   String? _linkedDoctorId;
   bool _isLoading = false;
 
@@ -79,13 +79,13 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
             : const BranchAssignmentModel(branchId: 'branch_1'),
       );
       _primaryBranchId = primary?.branchId ?? 'branch_1';
-      for (final assignment in (u.branchAssignments ?? [])) {
-        if (assignment.roleIds != null) {
-          _selectedRoles.addAll(assignment.roleIds!);
-        }
+      if (primary?.roleIds != null && primary!.roleIds!.isNotEmpty) {
+        _selectedRoleId = primary.roleIds!.first;
+      } else {
+        _selectedRoleId = RoleIds.reception;
       }
     } else {
-      _selectedRoles.add(RoleIds.reception);
+      _selectedRoleId = RoleIds.reception;
     }
 
     final branchMatch = _availableBranches.where((b) => b.$1 == _primaryBranchId);
@@ -118,7 +118,7 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
     final cubit = context.read<StaffUsersCubit>();
     final state = cubit.state;
 
-    final isDoctorRoleSelected = _selectedRoles.contains(RoleIds.doctor);
+    final isDoctorRoleSelected = _selectedRoleId == RoleIds.doctor;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -318,12 +318,12 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ─── Assign Roles ────────────────────────────────────────
+                  // ─── Assign Role (Single Primary Role) ──────────────────
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'assigned_roles'.tr(),
+                        'الدور الوظيفي والصلاحية',
                         style: CustomAppFontStyle.semiBold13.copyWith(
                           color: AppColors.darkText,
                         ),
@@ -333,19 +333,17 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                         spacing: 8,
                         runSpacing: 8,
                         children: state.roles.map((r) {
-                          final isSelected = _selectedRoles.contains(r.id);
-                          return FilterChip(
+                          final isSelected = _selectedRoleId == r.id;
+                          return ChoiceChip(
                             label: Text(r.nameAr ?? r.id ?? ''),
                             selected: isSelected,
-                            selectedColor: AppColors.primaryLight,
-                            checkmarkColor: AppColors.primary,
-                            labelStyle: CustomAppFontStyle.regular12.copyWith(
+                            selectedColor: AppColors.primary,
+                            showCheckmark: isSelected,
+                            checkmarkColor: AppColors.white,
+                            labelStyle: CustomAppFontStyle.semiBold12.copyWith(
                               color: isSelected
-                                  ? AppColors.primaryDark
+                                  ? AppColors.white
                                   : AppColors.darkText,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
                             ),
                             backgroundColor: AppColors.lightBackground,
                             side: BorderSide(
@@ -354,18 +352,14 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                                   : AppColors.grayE2E8F0,
                             ),
                             onSelected: (selected) {
-                              setState(() {
-                                if (selected) {
-                                  _selectedRoles.add(r.id!);
-                                } else {
-                                  if (_selectedRoles.length > 1) {
-                                    _selectedRoles.remove(r.id!);
-                                    if (r.id == RoleIds.doctor) {
-                                      _linkedDoctorId = null;
-                                    }
+                              if (selected) {
+                                setState(() {
+                                  _selectedRoleId = r.id!;
+                                  if (_selectedRoleId != RoleIds.doctor) {
+                                    _linkedDoctorId = null;
                                   }
-                                }
-                              });
+                                });
+                              }
                             },
                           );
                         }).toList(),
@@ -474,7 +468,7 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                                     BranchAssignmentModel(
                                       branchId: _primaryBranchId,
                                       isPrimary: true,
-                                      roleIds: _selectedRoles.toList(),
+                                      roleIds: [_selectedRoleId],
                                     ),
                                   ];
 

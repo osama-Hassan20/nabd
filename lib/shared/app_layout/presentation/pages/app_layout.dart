@@ -1,5 +1,6 @@
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/shared/cubit/basic_cubit.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/custom_drawer.dart';
@@ -86,69 +87,76 @@ class _AppLayoutState extends State<AppLayout> {
                 );
               }
 
-              return Scaffold(
-                key: scaffoldKey,
-                drawer: CustomDrawer(
-                  scaffoldKey: scaffoldKey,
-                  items: layoutItems(context),
-                ),
-                body: SafeArea(
-                  bottom: false,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ScreenAdaptiveLayout(
-                        mobileLayout: (context) => const SizedBox.shrink(),
-                        tabletLayout: (context) => const SizedBox.shrink(),
-                        desktopLayout: (context) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: isCollapsed ? 100 : 270,
-                          child: CustomSideBarList(
-                            scaffoldKey: scaffoldKey,
-                            isMobile: false,
-                            isTablet: isCollapsed,
-                            items: layoutItems(context),
-                            onToggle: () {
-                              setState(() {
-                                isCollapsed = !isCollapsed;
-                              });
-                            },
+              return BlocBuilder<SessionCubit, SessionState>(
+                bloc: getIt.isRegistered<SessionCubit>()
+                    ? getIt<SessionCubit>()
+                    : null,
+                builder: (context, sessionState) {
+                  return Scaffold(
+                    key: scaffoldKey,
+                    drawer: CustomDrawer(
+                      scaffoldKey: scaffoldKey,
+                      items: layoutItems(context),
+                    ),
+                    body: SafeArea(
+                      bottom: false,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ScreenAdaptiveLayout(
+                            mobileLayout: (context) => const SizedBox.shrink(),
+                            tabletLayout: (context) => const SizedBox.shrink(),
+                            desktopLayout: (context) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: isCollapsed ? 100 : 270,
+                              child: CustomSideBarList(
+                                scaffoldKey: scaffoldKey,
+                                isMobile: false,
+                                isTablet: isCollapsed,
+                                items: layoutItems(context),
+                                onToggle: () {
+                                  setState(() {
+                                    isCollapsed = !isCollapsed;
+                                  });
+                                },
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          spacing: 16,
-                          children: [
-                            SizedBox(
-                              height: AdaptiveLayout.getResponsiveValue(
-                                context: context,
-                                mobile: 82,
-                                tablet: 82,
-                                desktop: 75,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                child: CustomHeaderLayout(
-                                  isLogin: isLogin,
-                                  scaffoldKey: scaffoldKey,
-                                  title: widget.title,
-                                  subtitle: widget.subtitle,
+                          Expanded(
+                            child: Column(
+                              spacing: 16,
+                              children: [
+                                SizedBox(
+                                  height: AdaptiveLayout.getResponsiveValue(
+                                    context: context,
+                                    mobile: 82,
+                                    tablet: 82,
+                                    desktop: 75,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: CustomHeaderLayout(
+                                      isLogin: isLogin,
+                                      scaffoldKey: scaffoldKey,
+                                      title: widget.title,
+                                      subtitle: widget.subtitle,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: widget.child,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                child: widget.child,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           ),

@@ -312,6 +312,31 @@ StaffPermissionEnum? getRequiredPermissionForRoute(String location) {
   return null;
 }
 
+String getDefaultRouteForSession(SessionCubit session) {
+  if (session.can(StaffPermissionEnum.accessLiveQueue)) {
+    return AppRouter.bookings;
+  }
+  if (session.can(StaffPermissionEnum.accessCashier)) {
+    return AppRouter.cashier;
+  }
+  if (session.can(StaffPermissionEnum.accessHr)) {
+    return AppRouter.hr;
+  }
+  if (session.can(StaffPermissionEnum.accessDoctors)) {
+    return AppRouter.doctors;
+  }
+  if (session.can(StaffPermissionEnum.accessPatients)) {
+    return AppRouter.patients;
+  }
+  if (session.can(StaffPermissionEnum.manageRolesAndPermissions)) {
+    return AppRouter.usersManagement;
+  }
+  if (session.can(StaffPermissionEnum.accessSettings)) {
+    return AppRouter.settings;
+  }
+  return AppRouter.profile;
+}
+
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
@@ -396,7 +421,12 @@ List<RouteBase> getAppRoutes() => [
       routes: [
         GoRoute(
           path: AppRouter.appLayout,
-          redirect: (context, state) => AppRouter.bookings,
+          redirect: (context, state) {
+            if (getIt.isRegistered<SessionCubit>()) {
+              return getDefaultRouteForSession(getIt<SessionCubit>());
+            }
+            return AppRouter.bookings;
+          },
         ),
 
         // 1. Live Queue & Appointments
@@ -769,10 +799,16 @@ GoRouter createAppRouter({
         return '${AppRouter.login}?from=${Uri.encodeComponent(location)}';
       }
 
-      // 2. Authenticated users on /login redirected to destination or bookings
+      // 2. Authenticated users on /login redirected to destination or role-based default route
       if (isLogin) {
         final from = state.uri.queryParameters['from'];
-        return (from != null && from.isNotEmpty) ? from : AppRouter.bookings;
+        if (from != null && from.isNotEmpty) {
+          final reqPerm = getRequiredPermissionForRoute(from);
+          if (reqPerm == null || currentSession.can(reqPerm)) {
+            return from;
+          }
+        }
+        return getDefaultRouteForSession(currentSession);
       }
 
       // 3. User on /forbidden: re-evaluate if their permissions changed (e.g. role switch)

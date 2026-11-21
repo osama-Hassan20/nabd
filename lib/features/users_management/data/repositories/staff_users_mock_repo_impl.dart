@@ -194,7 +194,7 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
       StaffUserModel(
         id: accId,
         fullName: 'محمد كمال (محاسب)',
-        email: 'accountant@eyadty.com',
+        email: 'cashier@eyadty.com',
         phone: '01000000006',
         jobTitle: 'المحاسب المالي ومسؤول الخزينة',
         isOwner: false,
@@ -249,7 +249,7 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
       (
         'DOC-01',
         'د. حسام الدين مصطفى',
-        'hossam@eyadty.com',
+        'doctor@eyadty.com',
         '+20 10 1122 3344',
         'استشاري باطنة وقلب'
       ),
@@ -330,6 +330,10 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
       (u) =>
           u.isDeleted != true &&
           (u.email?.trim().toLowerCase() == cleanId ||
+              (cleanId == 'doctor@eyadty.com' && u.id == 'USER-DOC-01') ||
+              (cleanId == 'hossam@eyadty.com' && u.id == 'USER-DOC-01') ||
+              (cleanId == 'cashier@eyadty.com' && u.id == 'USER-ACC') ||
+              (cleanId == 'accountant@eyadty.com' && u.id == 'USER-ACC') ||
               u.phone?.replaceAll(RegExp(r'\s+'), '') ==
                   cleanId.replaceAll(RegExp(r'\s+'), '')),
       orElse: () => const StaffUserModel(),
