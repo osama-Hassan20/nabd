@@ -9,6 +9,7 @@ import 'app.dart';
 import 'core/bloc_observer.dart';
 import 'core/cubits/session_cubit.dart';
 import 'core/cubits/local_passcode/local_passcode_cubit.dart';
+import 'core/cubits/theme/app_theme_cubit.dart';
 import 'features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'core/dependency_injection/dependency_injection.dart';
 import 'core/services/navigation_mode_service.dart';
@@ -51,6 +52,7 @@ void main() async {
           BlocProvider.value(value: getIt<SessionCubit>()),
           BlocProvider.value(value: getIt<LocalPasscodeCubit>()),
           BlocProvider.value(value: getIt<NotificationsCubit>()),
+          BlocProvider.value(value: getIt<AppThemeCubit>()),
         ],
         child: const MyApp(),
       ),

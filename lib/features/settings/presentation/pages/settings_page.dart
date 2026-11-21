@@ -16,6 +16,7 @@ import 'package:eyadty/features/settings/presentation/widgets/services/medical_s
 import 'package:eyadty/features/settings/presentation/widgets/doctors_schedule/doctors_schedule_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/print_settings_tab.dart';
 import 'package:eyadty/features/settings/presentation/widgets/tabs/security_privacy_tab.dart';
+import 'package:eyadty/features/settings/presentation/widgets/tabs/theme_appearance_tab.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
@@ -58,6 +59,7 @@ class _SettingsViewState extends State<SettingsView>
     AppIcons.calendar,
     AppIcons.transactions,
     AppIcons.lock,
+    AppIcons.change,
   ];
 
   List<String> get _tabs => [
@@ -70,6 +72,7 @@ class _SettingsViewState extends State<SettingsView>
     'tab_doctors_schedule'.tr(),
     'tab_print_settings'.tr(),
     'tab_security_privacy'.tr(),
+    'tab_theme_appearance'.tr(),
     // 'tab_notifications'.tr(),
   ];
 
@@ -180,6 +183,7 @@ class _SettingsViewState extends State<SettingsView>
                     const DoctorsScheduleTab(),
                     PrintSettingsTab(settingsCubit: cubit),
                     const SecurityPrivacyTab(),
+                    const ThemeAppearanceTab(),
                     // NotificationsTab(settingsCubit: cubit),
                   ],
                 ),

@@ -37,10 +37,11 @@ class CustomSideBarList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final isDark = context.isDarkMode;
     final effectivePath = currentPath ?? GoRouterState.of(context).uri.path;
     return ColoredBox(
-      color: AppColors.white,
+      color: colors.cardBackground,
       child: Column(
         spacing: 16,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,14 +141,16 @@ class CustomSideBarList extends StatelessWidget {
                           onPressed: item.onTap,
                           tooltip: item.title,
                           gradient: isSelected
-                              ? AppGradient.greenGradient
+                              ? LinearGradient(
+                                  colors: [colors.primary, colors.primaryHover],
+                                  begin: Alignment.centerRight,
+                                  end: Alignment.centerLeft,
+                                )
                               : null,
                           color: isSelected ? null : Colors.transparent,
                           iconColor: isSelected
-                              ? AppColors.white
-                              : (isDark
-                                    ? AppColors.white
-                                    : AppColors.gray7A828E),
+                              ? colors.textInverse
+                              : colors.textSecondary,
                         ),
                       );
                     }
@@ -163,7 +166,13 @@ class CustomSideBarList extends StatelessWidget {
                           topLeft: Radius.circular(2),
                           bottomLeft: Radius.circular(2),
                         ),
-                        gradient: isSelected ? AppGradient.greenGradient : null,
+                        gradient: isSelected
+                            ? LinearGradient(
+                                colors: [colors.primary, colors.primaryHover],
+                                begin: Alignment.centerRight,
+                                end: Alignment.centerLeft,
+                              )
+                            : null,
                       ),
                       child: CustomListTile(
                         enableSelectableText: false,
@@ -185,14 +194,14 @@ class CustomSideBarList extends StatelessWidget {
                               ? item.selectedIconPath
                               : item.iconPath,
                           color: isSelected
-                              ? AppColors.white
-                              : AppColors.gray7A828E,
+                              ? colors.textInverse
+                              : colors.textSecondary,
                         ),
                         title: item.title,
                         titleTextStyle: CustomAppFontStyle.regular14.copyWith(
                           color: isSelected
-                              ? AppColors.white
-                              : AppColors.gray7A828E,
+                              ? colors.textInverse
+                              : colors.textSecondary,
                         ),
                       ),
                     );

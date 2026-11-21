@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -43,16 +44,16 @@ class CustomHeaderLayout extends StatelessWidget
         height: 70,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.fillDisableColor),
+          border: Border.all(color: context.themeColors.borderSubtle),
         ),
         child: Row(
           children: [
             // Menu / Drawer Button for Mobile & Tablet
             IconButton.filled(
               style: IconButton.styleFrom(
-                backgroundColor: AppColors.fillDisableColor,
+                backgroundColor: context.themeColors.surfaceLevel1,
                 fixedSize: const Size(44, 44),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -63,9 +64,9 @@ class CustomHeaderLayout extends StatelessWidget
               onPressed: () {
                 scaffoldKey.currentState?.openDrawer();
               },
-              icon: const CustomAssetImage(
+              icon: CustomAssetImage(
                 path: AppIcons.drawer,
-                color: AppColors.gray7A828E,
+                color: context.themeColors.textSecondary,
               ),
             ),
             const SizedBox(width: 12),
@@ -73,7 +74,7 @@ class CustomHeaderLayout extends StatelessWidget
               child: Text(
                 title ?? 'dashboard'.tr(),
                 style: CustomAppFontStyle.bold18.copyWith(
-                  color: AppColors.black,
+                  color: context.themeColors.textPrimary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -106,10 +107,10 @@ class CustomHeaderLayout extends StatelessWidget
         title: title ?? 'dashboard_header'.tr(),
         subtitle: subtitle ?? 'dashboard_subtitle'.tr(),
         titleTextStyle: CustomAppFontStyle.regular24.copyWith(
-          color: AppColors.black,
+          color: context.themeColors.textPrimary,
         ),
         subTitleStyle: CustomAppFontStyle.regular14.copyWith(
-          color: AppColors.gray7A828E,
+          color: context.themeColors.textSecondary,
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

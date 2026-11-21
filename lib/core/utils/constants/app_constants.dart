@@ -38,6 +38,7 @@ class AppConstants {
   static const String phoneCode = '+20'; // in egyptian phone code testing
   static const String mapAssetPath = 'assets/map_styles/black_white.json';
   static const String isDarkMode = 'isDarkMode';
+  static const String themeMode = 'appThemeMode';
   static const String tearcherImage =
       "https://teacherrecruit.s3.amazonaws.com/media/blog-images/Teacher_Headshot_3.jpeg";
 

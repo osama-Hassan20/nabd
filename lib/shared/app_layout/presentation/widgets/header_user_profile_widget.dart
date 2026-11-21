@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:popover/popover.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/cubits/theme/app_theme_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_theme_mode.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/settings/presentation/widgets/dialogs/local_passcode_dialogs.dart';
 
@@ -30,16 +32,17 @@ class HeaderUserProfileWidget extends StatelessWidget {
     String jobTitle,
   ) {
     final isDark = buttonContext.isDarkMode;
+    final colors = buttonContext.themeColors;
 
     showPopover(
       context: buttonContext,
       direction: PopoverDirection.bottom,
-      width: 250,
-      height: 310,
+      width: 270,
+      height: 390,
       arrowHeight: 10,
       arrowWidth: 20,
       radius: 16,
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.white,
+      backgroundColor: colors.cardBackground,
       barrierColor: Colors.black26,
       bodyBuilder: (popoverCtx) => SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -143,6 +146,16 @@ class HeaderUserProfileWidget extends StatelessWidget {
               color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
             ),
 
+            // 4.5 تبديل النمط السريع (Theme Quick Switch)
+            _buildThemeSelectorItem(
+              popoverCtx: popoverCtx,
+              buttonContext: buttonContext,
+            ),
+            Divider(
+              height: 1,
+              color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
+            ),
+
             // 5. تسجيل الخروج (Log out - Red)
             _buildMenuItem(
               popoverCtx: popoverCtx,
@@ -218,9 +231,9 @@ class HeaderUserProfileWidget extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: context.themeColors.borderSubtle),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -229,15 +242,15 @@ class HeaderUserProfileWidget extends StatelessWidget {
                 Container(
                   width: 34,
                   height: 34,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFFCCFBF1), // Mint Teal (Matches Image 4)
+                    color: context.themeColors.primaryLight,
                   ),
                   child: Center(
                     child: Text(
                       initials,
                       style: CustomAppFontStyle.bold13.copyWith(
-                        color: const Color(0xFF0F766E), // Dark Teal
+                        color: context.themeColors.primary,
                       ),
                     ),
                   ),
@@ -248,16 +261,16 @@ class HeaderUserProfileWidget extends StatelessWidget {
                 Text(
                   userName,
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.darkText,
+                    color: context.themeColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 4),
 
                 // Down Chevron
-                const Icon(
+                Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 18,
-                  color: AppColors.gray71717A,
+                  color: context.themeColors.textSecondary,
                 ),
               ],
             ),
@@ -265,5 +278,108 @@ class HeaderUserProfileWidget extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildThemeSelectorItem({
+    required BuildContext popoverCtx,
+    required BuildContext buttonContext,
+  }) {
+    if (!getIt.isRegistered<AppThemeCubit>()) {
+      return const SizedBox.shrink();
+    }
+
+    final cubit = getIt<AppThemeCubit>();
+    final currentMode = buttonContext.appThemeMode;
+    final colors = buttonContext.themeColors;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.palette_outlined, size: 16, color: colors.primary),
+              const SizedBox(width: 8),
+              Text(
+                'المظهر (Multi Mode)',
+                style: CustomAppFontStyle.medium13.copyWith(
+                  color: colors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: AppThemeMode.values.map((mode) {
+              final isSelected = mode == currentMode;
+              final modeColors = AppThemeColors.forMode(mode);
+
+              return Tooltip(
+                message: _getThemeName(mode),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    cubit.setThemeMode(mode);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: modeColors.scaffoldBackground,
+                      border: Border.all(
+                        color: isSelected
+                            ? modeColors.primary
+                            : modeColors.borderSubtle,
+                        width: isSelected ? 2.5 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: modeColors.primary.withValues(alpha: 0.4),
+                                blurRadius: 6,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: modeColors.primary,
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check, size: 8, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getThemeName(AppThemeMode mode) {
+    switch (mode) {
+      case AppThemeMode.light:
+        return 'نهاري';
+      case AppThemeMode.dark:
+        return 'داكن';
+      case AppThemeMode.sunny:
+        return 'مشمس';
+      case AppThemeMode.night:
+        return 'ليلي';
+      case AppThemeMode.emerald:
+        return 'زمردي';
+    }
   }
 }

@@ -59,7 +59,9 @@ class CustomContainer extends StatelessWidget {
             borderRadius ??
             BorderRadius.all(Radius.circular(borderRaduis ?? 12)),
         gradient: gradient,
-        color: gradient == null ? (backGroundColor ?? (AppColors.white)) : null,
+        color: gradient == null
+            ? (backGroundColor ?? Theme.of(context).cardColor)
+            : null,
       ),
       child: child,
     );
