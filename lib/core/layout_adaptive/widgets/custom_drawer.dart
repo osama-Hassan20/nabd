@@ -29,6 +29,7 @@ class CustomDrawer extends StatelessWidget {
           isMobile: false,
           isTablet: false,
           items: items,
+          currentPath: currentPath,
           scaffoldKey: scaffoldKey,
           onToggle: () {
             Navigator.of(context).pop();

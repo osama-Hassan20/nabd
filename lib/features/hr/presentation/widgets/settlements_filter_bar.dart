@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_stack_selector.dart';
@@ -48,6 +49,7 @@ class _SettlementsFilterBarState extends State<SettlementsFilterBar> {
   Widget build(BuildContext context) {
     return BlocBuilder<HrCubit, HrState>(
       builder: (context, state) {
+        final colors = context.themeColors;
         if (_statusController.text.isEmpty && state.filterSettlementStatus != null) {
           _statusController.text = _statusLabel(state.filterSettlementStatus);
         }
@@ -55,9 +57,9 @@ class _SettlementsFilterBarState extends State<SettlementsFilterBar> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,

@@ -1,6 +1,6 @@
 import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/core/routing/app_router.dart';
 import 'package:eyadty/core/routing/routes.dart';
-import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 
@@ -30,99 +30,121 @@ class CustomLogOutSheet extends StatelessWidget {
   final void Function() onTap;
   final bool isLoading;
   final String? title, description, cancelText, logoutText;
+
   @override
   Widget build(BuildContext context) {
-    bool isDark = context.isDarkMode;
+    final colors = context.themeColors;
+
     return SafeArea(
       child: Dialog(
-        backgroundColor: AppColors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        constraints: BoxConstraints(maxWidth: 650),
-
+        backgroundColor: colors.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.borderSubtle),
+        ),
+        constraints: const BoxConstraints(maxWidth: 520),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            spacing: 16,
             children: [
-              Center(
-                child: CustomAssetImage(
-                  path: AppIcons.logoutSheet,
-                  width: 40,
-                  height: 40,
-                  color: AppColors.red,
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.red.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: CustomAssetImage(
+                    path: AppIcons.logoutSheet,
+                    width: 32,
+                    height: 32,
+                    color: AppColors.red,
+                  ),
                 ),
               ),
-              const SizedBox(),
+              const SizedBox(height: 18),
               Text(
                 title ?? "هل أنت متأكد من تسجيل الخروج؟",
-                style: CustomAppFontStyle.regular24,
-              ),
-              Text(
-                description ?? "سيتم إنهاء جلستك الحالية، وستحتاج إلى تسجيل الدخول مرة أخرى.",
-                style: CustomAppFontStyle.regular16.copyWith(
-                  color: AppColors.gray334155,
+                style: CustomAppFontStyle.bold18.copyWith(
+                  color: colors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: Row(
-                  spacing: 8,
-                  children: [
-                    Expanded(
-                      child: CustomPushButton(
-                        height: 48,
-
-                        onTap: isLoading ? null : () => context.pop(),
-                        backgroundColor: isDark
-                            ? AppColors.darkBackground
-                            : AppColors.grayf2,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        radius: 24,
-
-                        child: Text(
-                          cancelText ?? "إلغاء",
-                          style: CustomAppFontStyle.regular16.copyWith(
-                            color: AppColors.gray334155,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: CustomPushButton(
-                        height: 48,
-                        isLoading: isLoading,
-                        onTap: () {
-                          final nav = Navigator.of(context, rootNavigator: true);
-                          if (getIt.isRegistered<SessionCubit>()) {
-                            getIt<SessionCubit>().logout();
-                          }
-                          try {
-                            getIt<NotificationService>()
-                                .removeTokenFromBackend();
-                          } catch (_) {}
-                          AppSharedPreferences.clearAll();
-                          try {
-                            context.read<BasicCubit>().clearData();
-                          } catch (_) {}
-                          nav.pop();
-                          onTap();
-                        },
-                        backgroundColor: AppColors.red02,
-                        padding: const EdgeInsets.symmetric(vertical: 13.5),
-                        radius: 24,
-                        child: Center(
-                          child: Text(
-                            logoutText ?? "تأكيد تسجيل الخروج",
-                            style: CustomAppFontStyle.regular16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 8),
+              Text(
+                description ??
+                    "سيتم إنهاء جلستك الحالية، وستحتاج إلى تسجيل الدخول مرة أخرى.",
+                style: CustomAppFontStyle.regular14.copyWith(
+                  color: colors.textSecondary,
                 ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomPushButton(
+                      height: 44,
+                      onTap: isLoading ? null : () => context.pop(),
+                      backgroundColor: colors.surfaceLevel1,
+                      boxBorder: Border.all(color: colors.borderSubtle),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      radius: 12,
+                      child: Text(
+                        cancelText ?? "إلغاء",
+                        style: CustomAppFontStyle.medium14.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: CustomPushButton(
+                      height: 44,
+                      isLoading: isLoading,
+                      onTap: () {
+                        // 1. Close dialog cleanly first
+                        Navigator.of(context, rootNavigator: true).pop();
+
+                        // 2. Perform session logout
+                        if (getIt.isRegistered<SessionCubit>()) {
+                          getIt<SessionCubit>().logout();
+                        }
+                        try {
+                          getIt<NotificationService>().removeTokenFromBackend();
+                        } catch (_) {}
+                        try {
+                          context.read<BasicCubit>().clearData();
+                        } catch (_) {}
+
+                        // 3. Callback
+                        try {
+                          onTap();
+                        } catch (_) {}
+
+                        // 4. Force router redirect
+                        try {
+                          appRouter.go(AppRouter.login);
+                        } catch (_) {}
+                      },
+                      backgroundColor: AppColors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      radius: 12,
+                      child: Center(
+                        child: Text(
+                          logoutText ?? "تأكيد تسجيل الخروج",
+                          style: CustomAppFontStyle.semiBold14.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -303,6 +303,18 @@ class CustomSideBarList extends StatelessWidget {
     if (itemRoute == null) return false;
     if (itemRoute == '/') return effectivePath == '/';
     if (effectivePath == itemRoute) return true;
+
+    // If another sidebar item matches the current path exactly, do not match as prefix!
+    final hasExactMatchOther = allItems.any(
+      (other) =>
+          other.routePath != null &&
+          other.routePath != itemRoute &&
+          other.routePath == effectivePath,
+    );
+    if (hasExactMatchOther) {
+      return false;
+    }
+
     if (effectivePath.startsWith('$itemRoute/')) {
       final hasMoreSpecificMatch = allItems.any(
         (other) =>

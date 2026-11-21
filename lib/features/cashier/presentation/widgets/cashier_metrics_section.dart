@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
@@ -103,13 +104,14 @@ class CashierMetricsSection extends StatelessWidget {
             mainAxisExtent: 96,
           ),
           itemBuilder: (context, index) {
+            final colors = context.themeColors;
             final c = cards[index];
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: colors.cardBackground,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: colors.borderSubtle),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -138,7 +140,7 @@ class CashierMetricsSection extends StatelessWidget {
                         Text(
                           c.title,
                           style: CustomAppFontStyle.regular11.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -147,7 +149,7 @@ class CashierMetricsSection extends StatelessWidget {
                         Text(
                           c.amount,
                           style: CustomAppFontStyle.bold15.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

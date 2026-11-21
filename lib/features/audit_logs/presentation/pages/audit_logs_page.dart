@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_empty_widget.dart';
@@ -30,8 +31,9 @@ class _AuditLogsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: colors.scaffoldBackground,
       body: BlocBuilder<AuditLogsCubit, AuditLogsState>(
         builder: (context, state) {
           final cubit = context.read<AuditLogsCubit>();
@@ -72,12 +74,13 @@ class _AuditLogsView extends StatelessWidget {
     AuditLogsCubit cubit,
     AuditLogsState state,
   ) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -85,12 +88,12 @@ class _AuditLogsView extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: colors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.shield_outlined,
-              color: AppColors.primary,
+              color: colors.primary,
               size: 24,
             ),
           ),
@@ -102,14 +105,14 @@ class _AuditLogsView extends StatelessWidget {
                 Text(
                   'audit_logs_title'.tr(),
                   style: CustomAppFontStyle.bold18.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'audit_logs_desc'.tr(),
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -117,7 +120,7 @@ class _AuditLogsView extends StatelessWidget {
           ),
           IconButton(
             tooltip: 'تحديث',
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+            icon: Icon(Icons.refresh_rounded, color: colors.primary),
             onPressed: () => cubit.loadLogs(),
           ),
         ],
@@ -163,7 +166,7 @@ class _AuditLogsView extends StatelessWidget {
             runSpacing: 10,
             children: items.map((it) => SizedBox(
               width: (constraints.maxWidth - 10) / 2,
-              child: _buildStatCard(it),
+              child: _buildStatCard(context, it),
             )).toList(),
           );
         }
@@ -173,7 +176,7 @@ class _AuditLogsView extends StatelessWidget {
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: _buildStatCard(it),
+                child: _buildStatCard(context, it),
               ),
             );
           }).toList(),
@@ -182,13 +185,14 @@ class _AuditLogsView extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(_StatCardItem item) {
+  Widget _buildStatCard(BuildContext context, _StatCardItem item) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -210,7 +214,7 @@ class _AuditLogsView extends StatelessWidget {
                 Text(
                   item.title,
                   style: CustomAppFontStyle.regular11.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -218,7 +222,7 @@ class _AuditLogsView extends StatelessWidget {
                 Text(
                   '${item.count}',
                   style: CustomAppFontStyle.bold16.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ],
@@ -234,6 +238,8 @@ class _AuditLogsView extends StatelessWidget {
     AuditLogsCubit cubit,
     AuditLogsState state,
   ) {
+    final colors = context.themeColors;
+
     if (state.status == RequestStatusEnum.loading && state.logs.isEmpty) {
       return ListView.separated(
         shrinkWrap: true,
@@ -262,7 +268,7 @@ class _AuditLogsView extends StatelessWidget {
         subtitle: Text(
           'no_audit_logs_desc'.tr(),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       );
@@ -270,9 +276,9 @@ class _AuditLogsView extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: AuditLogsTable(logs: filtered),
     );

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -76,16 +77,18 @@ class BookingsTable extends StatelessWidget {
   }
 
   List<Widget> _buildRow(BuildContext context, BookingModel item, int index) {
+    final colors = context.themeColors;
+
     // 0: Queue # (Prominent Squircle/Circle Pill)
     final cell0 = Center(
       child: Container(
         width: 34,
         height: 34,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.12),
+          color: colors.primary.withValues(alpha: 0.12),
           shape: BoxShape.circle,
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.35),
+            color: colors.primary.withValues(alpha: 0.35),
             width: 1.5,
           ),
         ),
@@ -93,7 +96,7 @@ class BookingsTable extends StatelessWidget {
           child: Text(
             '#${item.queueNumber ?? index}',
             style: CustomAppFontStyle.bold14.copyWith(
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
         ),
@@ -113,7 +116,7 @@ class BookingsTable extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: CustomAppFontStyle.semiBold14.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
@@ -123,7 +126,7 @@ class BookingsTable extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textDirection: TextDirection.ltr,
             style: CustomAppFontStyle.regular12.copyWith(
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
           ),
         ],
@@ -140,7 +143,7 @@ class BookingsTable extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: CustomAppFontStyle.medium14.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 2),
@@ -149,7 +152,7 @@ class BookingsTable extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: CustomAppFontStyle.regular12.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       ],
@@ -230,16 +233,16 @@ class BookingsTable extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.access_time_rounded,
               size: 13,
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
             const SizedBox(width: 4),
             Text(
               item.startTime ?? '--:--',
               style: CustomAppFontStyle.medium13.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
           ],
@@ -259,7 +262,7 @@ class BookingsTable extends StatelessWidget {
               ? '0 ${'currency'.tr()}'
               : '${MonyHelper.formatMoney(item.netAmount)} ${'currency'.tr()}',
           style: CustomAppFontStyle.semiBold14.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 2),

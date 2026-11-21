@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/inventory/data/models/inventory_item_model.dart';
@@ -43,9 +44,9 @@ class _InventoryView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: context.themeColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: context.themeColors.borderSubtle),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -61,7 +62,7 @@ class _InventoryView extends StatelessWidget {
                   Text(
                     'هل أنت متأكد من رغبتك في حذف "${item.name}" من سجلات المستلزمات الطبية؟',
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.darkText,
+                      color: context.themeColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -71,10 +72,16 @@ class _InventoryView extends StatelessWidget {
                       CustomPushButton(
                         height: 38,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
-                        backgroundColor: AppColors.surfaceLevel1,
+                        backgroundColor: context.themeColors.surfaceLevel1,
+                        boxBorder: Border.all(color: context.themeColors.borderSubtle),
                         borderRadius: BorderRadius.circular(8),
                         onTap: () => Navigator.of(dlgContext).pop(),
-                        child: Text('إلغاء', style: CustomAppFontStyle.medium13),
+                        child: Text(
+                          'إلغاء',
+                          style: CustomAppFontStyle.medium13.copyWith(
+                            color: context.themeColors.textSecondary,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       CustomPushButton(
@@ -113,9 +120,10 @@ class _InventoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<InventoryCubit>();
+    final colors = context.themeColors;
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: colors.scaffoldBackground,
       body: BlocBuilder<InventoryCubit, InventoryState>(
         builder: (context, state) {
           final isLoading = state.status == RequestStatusEnum.loading;
@@ -135,13 +143,13 @@ class _InventoryView extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: colors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         padding: const EdgeInsets.all(8),
-                        child: const Icon(
+                        child: Icon(
                           Icons.inventory_2_outlined,
-                          color: AppColors.primary,
+                          color: colors.primary,
                           size: 24,
                         ),
                       ),
@@ -153,14 +161,14 @@ class _InventoryView extends StatelessWidget {
                             Text(
                               'المخزون والمستلزمات الطبية',
                               style: CustomAppFontStyle.bold20.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'إدارة مستهلكات الأسنان، أجهزة ومواد الليزر والجلدية، ونواقص العيادات وتنبيهات إعادة الطلب',
                               style: CustomAppFontStyle.regular13.copyWith(
-                                color: AppColors.gray71717A,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],

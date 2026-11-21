@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
@@ -20,6 +21,7 @@ class CalendarYearDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final now = CairoTimeHelper.now();
     final effectiveStartYear = startYear ?? (now.year - 5);
     final effectiveEndYear = endYear ?? (now.year + 5);
@@ -32,10 +34,10 @@ class CalendarYearDropdown extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(
         popupMenuTheme: PopupMenuThemeData(
-          color: AppColors.white,
+          color: colors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: AppColors.grayE2E8F0),
+            side: BorderSide(color: colors.borderSubtle),
           ),
           elevation: 4,
         ),
@@ -57,7 +59,7 @@ class CalendarYearDropdown extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color:
-                      isCurrent ? AppColors.primaryLight : Colors.transparent,
+                      isCurrent ? colors.primaryLight : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -67,14 +69,14 @@ class CalendarYearDropdown extends StatelessWidget {
                       year.toString(),
                       style: CustomAppFontStyle.semiBold13.copyWith(
                         color:
-                            isCurrent ? AppColors.primary : AppColors.darkText,
+                            isCurrent ? colors.primary : colors.textPrimary,
                       ),
                     ),
                     if (isCurrent)
-                      const Icon(
+                      Icon(
                         Icons.check_rounded,
                         size: 16,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                   ],
                 ),
@@ -86,9 +88,9 @@ class CalendarYearDropdown extends StatelessWidget {
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: AppColors.grayf2,
+            color: colors.surfaceLevel1,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -96,14 +98,14 @@ class CalendarYearDropdown extends StatelessWidget {
               Text(
                 selectedYear.toString(),
                 style: CustomAppFontStyle.semiBold13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 16,
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ],
           ),

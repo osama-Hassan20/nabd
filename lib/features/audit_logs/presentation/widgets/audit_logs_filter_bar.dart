@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
@@ -90,12 +91,14 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
         state.startDate != null ||
         state.endDate != null;
 
+    final colors = context.themeColors;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -107,14 +110,14 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
                 child: CustomTextFormField(
                   controller: _searchController,
                   hintText: 'search_audit_logs_hint'.tr(),
-                  prefixWidget: const Icon(
+                  prefixWidget: Icon(
                     Icons.search_rounded,
                     size: 18,
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                   suffixWidget: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 16),
+                          icon: Icon(Icons.close_rounded, size: 16, color: colors.textSecondary),
                           onPressed: () {
                             _searchController.clear();
                             cubit.setSearchQuery('');
@@ -134,9 +137,9 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
               CustomPushButton(
                 height: 40,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                backgroundColor: AppColors.white,
+                backgroundColor: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(8),
-                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                boxBorder: Border.all(color: colors.borderSubtle),
                 onTap: () async {
                   final ok = await cubit.exportLogs();
                   if (ok && context.mounted) {
@@ -149,12 +152,12 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.download_rounded, size: 16, color: AppColors.primary),
+                    Icon(Icons.download_rounded, size: 16, color: colors.primary),
                     const SizedBox(width: 6),
                     Text(
                       'export_audit_logs'.tr(),
                       style: CustomAppFontStyle.medium12.copyWith(
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                     ),
                   ],
@@ -165,7 +168,7 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
                 const SizedBox(width: 8),
                 IconButton(
                   tooltip: 'مسح التصفية',
-                  icon: const Icon(Icons.filter_alt_off_rounded, size: 18, color: AppColors.gray71717A),
+                  icon: Icon(Icons.filter_alt_off_rounded, size: 18, color: colors.textSecondary),
                   onPressed: () {
                     _searchController.clear();
                     cubit.clearFilters();
@@ -238,13 +241,13 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: (state.startDate != null || state.endDate != null)
-                        ? AppColors.primary.withValues(alpha: 0.08)
-                        : AppColors.fillDisableColor.withValues(alpha: 0.3),
+                        ? colors.primary.withValues(alpha: 0.12)
+                        : colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: (state.startDate != null || state.endDate != null)
-                          ? AppColors.primary
-                          : AppColors.grayE2E8F0,
+                          ? colors.primary
+                          : colors.borderSubtle,
                     ),
                   ),
                   child: Row(
@@ -254,8 +257,8 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
                         Icons.date_range_rounded,
                         size: 16,
                         color: (state.startDate != null || state.endDate != null)
-                            ? AppColors.primary
-                            : AppColors.gray71717A,
+                            ? colors.primary
+                            : colors.textSecondary,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -264,8 +267,8 @@ class _AuditLogsFilterBarState extends State<AuditLogsFilterBar> {
                             : 'filter_date_range'.tr(),
                         style: CustomAppFontStyle.medium12.copyWith(
                           color: (state.startDate != null || state.endDate != null)
-                              ? AppColors.primary
-                              : AppColors.darkText,
+                              ? colors.primary
+                              : colors.textPrimary,
                         ),
                       ),
                     ],

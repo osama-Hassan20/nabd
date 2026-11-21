@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_stack_selector.dart';
@@ -80,13 +81,14 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 1024;
+    final colors = context.themeColors;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grayE2E8F0, width: 1),
+        border: Border.all(color: colors.borderSubtle, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -138,19 +140,20 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
   }
 
   Widget _buildSearchField() {
+    final colors = context.themeColors;
     return CustomTextFormField(
       key: const Key('input_search_staff_users'),
       controller: _searchController,
       hintText: 'search_staff_users_hint'.tr(),
-      prefixWidget: const Icon(
+      prefixWidget: Icon(
         Icons.search_rounded,
-        color: AppColors.gray71717A,
+        color: colors.textSecondary,
         size: 20,
       ),
       suffixWidget: _searchController.text.isNotEmpty
           ? IconButton(
-              icon: const Icon(Icons.clear_rounded, size: 18),
-              color: AppColors.gray71717A,
+              icon: Icon(Icons.clear_rounded, size: 18, color: colors.textSecondary),
+              color: colors.textSecondary,
               onPressed: () {
                 _searchController.clear();
                 widget.cubit.setSearchQuery('');
@@ -199,13 +202,14 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
   }
 
   Widget _buildStatusTabs() {
+    final colors = context.themeColors;
     return Container(
       height: 48,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.lightBackground,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -235,6 +239,7 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final colors = context.themeColors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -242,7 +247,7 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.white : Colors.transparent,
+          color: isSelected ? colors.cardBackground : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           boxShadow: isSelected
               ? [
@@ -257,7 +262,7 @@ class _StaffUsersFilterBarState extends State<StaffUsersFilterBar> {
         child: Text(
           title,
           style: CustomAppFontStyle.medium13.copyWith(
-            color: isSelected ? AppColors.primary : AppColors.gray71717A,
+            color: isSelected ? colors.primary : colors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),

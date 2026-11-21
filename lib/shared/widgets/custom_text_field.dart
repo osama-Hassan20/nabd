@@ -1,3 +1,4 @@
+import '../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../core/utils/theme/app_colors.dart';
 import '../../core/utils/theme/custom_app_font_styles.dart';
 
@@ -131,11 +132,19 @@ class CustomTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+    final isDark = context.isDarkMode;
+
     final Color effectiveBorderColor =
-        borderColor ?? AppColors.lightBackground.withValues(alpha: 0.1);
+        borderColor ?? (isDark ? colors.borderSubtle : AppColors.lightBackground.withValues(alpha: 0.1));
 
     final Color effectiveFocusBorderColor =
-        focusBorderColor ?? AppColors.darkBackground.withValues(alpha: 0.1);
+        focusBorderColor ?? colors.primary;
+
+    final Color resolvedFillColor = backgroundColor ??
+        (fillDisableColor != null && fillDisableColor != AppColors.fillDisableColor
+            ? fillDisableColor!
+            : colors.surfaceLevel1);
 
     return Column(
       spacing: spacing,
@@ -153,7 +162,7 @@ class CustomTextFormField extends StatelessWidget {
                   style:
                       headerTextStyle ??
                       CustomAppFontStyle.regular14.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                 ),
               ),
@@ -194,17 +203,16 @@ class CustomTextFormField extends StatelessWidget {
               maxLines: maxLine,
               textAlign: textAlign ?? TextAlign.start,
               keyboardType: textInputType,
-              cursorColor: tempColor ?? (AppColors.primary),
+              cursorColor: tempColor ?? colors.primary,
               style:
-                  textStyle ??
+                  (textStyle ??
                   CustomAppFontStyle.medium14.copyWith(
                     fontSize: 14,
-                    color: (AppColors.black),
-                  ),
+                  )).copyWith(color: textStyle?.color ?? colors.textPrimary),
               onFieldSubmitted: onFieldSubmitted,
               decoration: InputDecoration(
                 fillColor: WidgetStateColor.resolveWith((states) {
-                  return AppColors.fillDisableColor;
+                  return resolvedFillColor;
                 }),
                 isCollapsed: isCollapsed,
                 filled: enableFill,
@@ -216,7 +224,7 @@ class CustomTextFormField extends StatelessWidget {
                 hintStyle:
                     hintStyle ??
                     CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.grayBlue,
+                      color: colors.textMuted,
                     ),
                 contentPadding:
                     contentPadding ??

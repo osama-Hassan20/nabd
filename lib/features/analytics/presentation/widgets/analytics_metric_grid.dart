@@ -2,11 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../cashier/domain/helpers/money.dart';
 import '../manager/analytics_cubit.dart';
 import '../manager/analytics_state.dart';
-import 'analytics_metric_card.dart';
+import 'analytics_metric_card.dart' hide AppColors, SizedBox;
 import 'shimmers/analytics_grid_shimmer.dart';
 
 class AnalyticsMetricGrid extends StatelessWidget {
@@ -24,12 +25,13 @@ class AnalyticsMetricGrid extends StatelessWidget {
         }
 
         if (state.summaryStatus == RequestStatusEnum.failure && state.summary == null) {
+          final colors = context.themeColors;
           return Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               children: [
@@ -90,7 +92,7 @@ class AnalyticsMetricGrid extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                mainAxisExtent: 155,
+                mainAxisExtent: 165,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),

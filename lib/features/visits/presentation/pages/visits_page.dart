@@ -6,6 +6,7 @@ import '../../../../core/cubits/session_cubit.dart';
 import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_toast.dart';
@@ -78,6 +79,7 @@ class _VisitsPageState extends State<VisitsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final sessionCubit = getIt.isRegistered<SessionCubit>()
         ? getIt<SessionCubit>()
         : (context.read<SessionCubit?>());
@@ -94,7 +96,7 @@ class _VisitsPageState extends State<VisitsPage> {
       child: BlocBuilder<VisitsCubit, VisitsState>(
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF8FAFC),
+            backgroundColor: colors.scaffoldBackground,
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -105,14 +107,14 @@ class _VisitsPageState extends State<VisitsPage> {
                     Text(
                       'visits_page_title'.tr(),
                       style: CustomAppFontStyle.bold24.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'visits_page_subtitle'.tr(),
                       style: CustomAppFontStyle.regular14.copyWith(
-                        color: AppColors.gray,
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 20),

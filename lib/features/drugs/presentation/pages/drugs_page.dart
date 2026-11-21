@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_push_container_button.dart';
@@ -71,10 +72,11 @@ class _DrugsPageState extends State<DrugsPage>
           }
         },
         builder: (context, state) {
+          final colors = context.themeColors;
           final canManage = _cubit.canManageCatalog;
 
           return Scaffold(
-            backgroundColor: const Color(0xFFF8FAFC),
+            backgroundColor: colors.scaffoldBackground,
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -91,14 +93,14 @@ class _DrugsPageState extends State<DrugsPage>
                             Text(
                               'drugs_title'.tr(),
                               style: CustomAppFontStyle.bold24.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'drugs_page_subtitle'.tr(),
                               style: CustomAppFontStyle.regular13.copyWith(
-                                color: AppColors.gray71717A,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],
@@ -110,13 +112,12 @@ class _DrugsPageState extends State<DrugsPage>
                               if (_tabController.index == 0) ...[
                                 CustomPushButton(
                                   height: 40,
-                                  border: const BorderSide(
-                                      color: Color(0xFFCBD5E1)),
+                                  border: BorderSide(color: colors.borderSubtle),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 14,
                                     vertical: 8,
                                   ),
-                                  backgroundColor: AppColors.white,
+                                  backgroundColor: colors.surfaceLevel1,
                                   borderRadius: BorderRadius.circular(8),
                                   onTap: () {
                                     ImportDrugsDialog.show(
@@ -127,14 +128,14 @@ class _DrugsPageState extends State<DrugsPage>
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.file_upload_outlined,
-                                          color: AppColors.primary, size: 18),
+                                      Icon(Icons.file_upload_outlined,
+                                          color: colors.primary, size: 18),
                                       const SizedBox(width: 6),
                                       Text(
                                         'drugs_import_btn'.tr(),
                                         style:
                                             CustomAppFontStyle.bold13.copyWith(
-                                          color: AppColors.primary,
+                                          color: colors.primary,
                                         ),
                                       ),
                                     ],
@@ -147,7 +148,7 @@ class _DrugsPageState extends State<DrugsPage>
                                     horizontal: 16,
                                     vertical: 8,
                                   ),
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: colors.primary,
                                   borderRadius: BorderRadius.circular(8),
                                   onTap: () {
                                     AddDrugDialog.show(
@@ -159,13 +160,13 @@ class _DrugsPageState extends State<DrugsPage>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const Icon(Icons.add,
-                                          color: AppColors.white, size: 18),
+                                          color: Colors.white, size: 18),
                                       const SizedBox(width: 6),
                                       Text(
                                         'drugs_add_drug'.tr(),
                                         style:
                                             CustomAppFontStyle.bold13.copyWith(
-                                          color: AppColors.white,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ],
@@ -178,7 +179,7 @@ class _DrugsPageState extends State<DrugsPage>
                                     horizontal: 16,
                                     vertical: 8,
                                   ),
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: colors.primary,
                                   borderRadius: BorderRadius.circular(8),
                                   onTap: () {
                                     AddEditPrescriptionTemplateDialog.show(
@@ -190,13 +191,13 @@ class _DrugsPageState extends State<DrugsPage>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const Icon(Icons.bookmark_add_outlined,
-                                          color: AppColors.white, size: 18),
+                                          color: Colors.white, size: 18),
                                       const SizedBox(width: 6),
                                       Text(
                                         'إضافة وصفة جاهزة',
                                         style:
                                             CustomAppFontStyle.bold13.copyWith(
-                                          color: AppColors.white,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ],
@@ -212,18 +213,18 @@ class _DrugsPageState extends State<DrugsPage>
                     // ─── TabBar ──────────────────────────────────────────────
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE2E8F0),
+                        color: colors.surfaceLevel1,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
-                          color: AppColors.primary,
+                          color: colors.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: AppColors.white,
-                        unselectedLabelColor: AppColors.darkText,
+                        labelColor: Colors.white,
+                        unselectedLabelColor: colors.textSecondary,
                         labelStyle: CustomAppFontStyle.bold14,
                         unselectedLabelStyle: CustomAppFontStyle.medium14,
                         dividerColor: Colors.transparent,

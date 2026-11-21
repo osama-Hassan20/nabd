@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/animation/fade_transition_animation.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/app_theme_mode.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_cubit.dart';
 import 'package:eyadty/features/hr/presentation/manager/hr_state.dart';
@@ -62,6 +64,7 @@ class _HrPageView extends StatelessWidget {
       },
       child: BlocBuilder<HrCubit, HrState>(
         builder: (context, state) {
+          final colors = context.themeColors;
           return FadeTransitionAnimation(
             duration: const Duration(milliseconds: 300),
             child: Column(
@@ -69,7 +72,7 @@ class _HrPageView extends StatelessWidget {
               children: [
                 // Tab Header
                 Container(
-                  color: AppColors.white,
+                  color: colors.cardBackground,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   child: Row(
                     children: [
@@ -78,6 +81,7 @@ class _HrPageView extends StatelessWidget {
                         tab: HrTabEnum.settlements,
                         label: 'hr_tab_settlements'.tr(),
                         isSelected: state.selectedTab == HrTabEnum.settlements,
+                        colors: colors,
                       ),
                       const SizedBox(width: 8),
                       _buildTabButton(
@@ -85,6 +89,7 @@ class _HrPageView extends StatelessWidget {
                         tab: HrTabEnum.staffPayroll,
                         label: 'hr_tab_staff_payroll'.tr(),
                         isSelected: state.selectedTab == HrTabEnum.staffPayroll,
+                        colors: colors,
                       ),
                       const SizedBox(width: 8),
                       _buildTabButton(
@@ -92,11 +97,12 @@ class _HrPageView extends StatelessWidget {
                         tab: HrTabEnum.employeeLedger,
                         label: 'hr_tab_employee_ledger'.tr(),
                         isSelected: state.selectedTab == HrTabEnum.employeeLedger,
+                        colors: colors,
                       ),
                     ],
                   ),
                 ),
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
 
                 // Active Tab Content
                 Expanded(
@@ -115,11 +121,12 @@ class _HrPageView extends StatelessWidget {
     required HrTabEnum tab,
     required String label,
     required bool isSelected,
+    required AppThemeColors colors,
   }) {
     return TextButton(
       style: TextButton.styleFrom(
-        backgroundColor: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
-        foregroundColor: isSelected ? AppColors.primary : AppColors.gray71717A,
+        backgroundColor: isSelected ? colors.primary.withValues(alpha: 0.1) : Colors.transparent,
+        foregroundColor: isSelected ? colors.primary : colors.textSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       ),

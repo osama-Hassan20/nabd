@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../core/utils/theme/app_theme_mode.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../../shared/widgets/custom_push_container_button.dart';
 import '../../../../../shared/widgets/custom_text_field.dart';
@@ -22,6 +24,7 @@ class DrugsCatalogTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final filteredDrugs = state.filteredDrugs;
     final categories = state.categories;
     final canManage = cubit.canManageCatalog;
@@ -33,9 +36,9 @@ class DrugsCatalogTab extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +48,7 @@ class DrugsCatalogTab extends StatelessWidget {
                   Expanded(
                     child: CustomTextFormField(
                       hintText: 'drugs_search_hint'.tr(),
-                      prefixWidget: const Icon(Icons.search, color: AppColors.gray),
+                      prefixWidget: Icon(Icons.search, color: colors.textSecondary),
                       onChanged: (val) => cubit.setSearchQuery(val ?? ''),
                     ),
                   ),
@@ -62,6 +65,7 @@ class DrugsCatalogTab extends StatelessWidget {
                     _buildFilterChip(
                       label: 'drugs_filter_all_categories'.tr(),
                       isSelected: state.selectedCategoryId == null,
+                      colors: colors,
                       onTap: () => cubit.setSelectedCategory(null),
                     ),
                     const SizedBox(width: 8),
@@ -73,13 +77,14 @@ class DrugsCatalogTab extends StatelessWidget {
                         child: _buildFilterChip(
                           label: c.nameAr ?? c.nameEn ?? c.id ?? '',
                           isSelected: state.selectedCategoryId == c.id,
+                          colors: colors,
                           onTap: () => cubit.setSelectedCategory(c.id),
                         ),
                       );
                     }),
 
                     // Add new category button at the end
-                    _buildAddCategoryChip(context, cubit),
+                    _buildAddCategoryChip(context, cubit, colors),
                   ],
                 ),
               ),
@@ -92,22 +97,22 @@ class DrugsCatalogTab extends StatelessWidget {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: filteredDrugs.isEmpty
                 ? Center(
                     child: Text(
                       'drugs_not_found'.tr(),
                       style: CustomAppFontStyle.medium14.copyWith(
-                        color: AppColors.gray,
+                        color: colors.textSecondary,
                       ),
                     ),
                   )
                 : ListView.separated(
                     itemCount: filteredDrugs.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => Divider(height: 1, color: colors.borderSubtle),
                     itemBuilder: (context, index) {
                       final drug = filteredDrugs[index];
                       final isPending =
@@ -123,7 +128,7 @@ class DrugsCatalogTab extends StatelessWidget {
                             Text(
                               drug.name ?? '',
                               style: CustomAppFontStyle.bold15.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                             if (drug.concentration != null &&
@@ -135,13 +140,13 @@ class DrugsCatalogTab extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: colors.surfaceLevel1,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   drug.concentration!,
                                   style: CustomAppFontStyle.regular12.copyWith(
-                                    color: AppColors.gray71717A,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -179,7 +184,7 @@ class DrugsCatalogTab extends StatelessWidget {
                               Text(
                                 '${'drugs_scientific_name'.tr()}: ${drug.scientificName}',
                                 style: CustomAppFontStyle.regular12.copyWith(
-                                  color: AppColors.gray71717A,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -190,7 +195,7 @@ class DrugsCatalogTab extends StatelessWidget {
                               Text(
                                 '${drug.defaultDosage ?? ''} • ${drug.defaultFrequency ?? ''} • ${drug.defaultDuration ?? ''}',
                                 style: CustomAppFontStyle.regular11.copyWith(
-                                  color: AppColors.gray,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -303,6 +308,7 @@ class DrugsCatalogTab extends StatelessWidget {
   Widget _buildFilterChip({
     required String label,
     required bool isSelected,
+    required AppThemeColors colors,
     int? badgeCount,
     required VoidCallback onTap,
   }) {
@@ -312,7 +318,7 @@ class DrugsCatalogTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : const Color(0xFFF1F5F9),
+          color: isSelected ? colors.primary : colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -321,7 +327,7 @@ class DrugsCatalogTab extends StatelessWidget {
             Text(
               label,
               style: CustomAppFontStyle.semiBold12.copyWith(
-                color: isSelected ? AppColors.white : AppColors.darkText,
+                color: isSelected ? Colors.white : colors.textPrimary,
               ),
             ),
             if (badgeCount != null && badgeCount > 0) ...[
@@ -329,13 +335,13 @@ class DrugsCatalogTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.white : const Color(0xFFFCD34D),
+                  color: isSelected ? Colors.white : const Color(0xFFFCD34D),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '$badgeCount',
                   style: CustomAppFontStyle.bold11.copyWith(
-                    color: isSelected ? AppColors.primary : const Color(0xFF92400E),
+                    color: isSelected ? colors.primary : const Color(0xFF92400E),
                   ),
                 ),
               ),
@@ -346,28 +352,32 @@ class DrugsCatalogTab extends StatelessWidget {
     );
   }
 
-  Widget _buildAddCategoryChip(BuildContext context, DrugsCubit cubit) {
+  Widget _buildAddCategoryChip(
+    BuildContext context,
+    DrugsCubit cubit,
+    AppThemeColors colors,
+  ) {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () => _showAddCategoryDialog(context, cubit),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.primaryLight,
+          color: colors.primaryLight,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: colors.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add, size: 16, color: AppColors.primary),
+            Icon(Icons.add, size: 16, color: colors.primary),
             const SizedBox(width: 4),
             Text(
               'إضافة تصنيف',
               style: CustomAppFontStyle.semiBold12.copyWith(
-                color: AppColors.primary,
+                color: colors.primary,
               ),
             ),
           ],

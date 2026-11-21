@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../manager/analytics_cubit.dart';
@@ -19,6 +20,8 @@ class RevenueTrendChartCard extends StatelessWidget {
           prev.trendStatus != current.trendStatus ||
           prev.revenueTrend != current.revenueTrend,
       builder: (context, state) {
+        final colors = context.themeColors;
+
         if (state.trendStatus == RequestStatusEnum.loading && state.revenueTrend.isEmpty) {
           return const AnalyticsChartShimmer(height: 340);
         }
@@ -28,9 +31,9 @@ class RevenueTrendChartCard extends StatelessWidget {
             height: 200,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Center(
               child: Column(
@@ -59,9 +62,9 @@ class RevenueTrendChartCard extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -85,14 +88,14 @@ class RevenueTrendChartCard extends StatelessWidget {
                       Text(
                         'analytics_revenue_trend_title'.tr(),
                         style: CustomAppFontStyle.bold16.copyWith(
-                          color: AppColors.pitchBlack,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'analytics_revenue_trend_subtitle'.tr(),
                         style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ],

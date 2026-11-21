@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/egyptian_phone_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -60,6 +61,7 @@ class PatientsTable extends StatelessWidget {
     PatientModel patient,
     int index,
   ) {
+    final colors = context.themeColors;
     final age = patient.calculateAgeYears();
     final genderText = patient.gender == GenderEnum.female
         ? 'gender_female'.tr()
@@ -73,7 +75,7 @@ class PatientsTable extends StatelessWidget {
         child: Text(
           index.toString(),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       ),
@@ -93,15 +95,15 @@ class PatientsTable extends StatelessWidget {
               width: 34,
               height: 34,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: colors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Center(
+              child: Center(
                 child: CustomAssetImage(
                   path: AppIcons.user,
                   width: 16,
                   height: 16,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
               ),
             ),
@@ -120,7 +122,7 @@ class PatientsTable extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ),
@@ -156,14 +158,14 @@ class PatientsTable extends StatelessWidget {
                         Text(
                           '$age ${'age_years'.tr()}',
                           style: CustomAppFontStyle.regular11.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                         if (genderText.isNotEmpty)
                           Text(
                             ' • $genderText',
                             style: CustomAppFontStyle.regular11.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                       ],
@@ -205,7 +207,7 @@ class PatientsTable extends StatelessWidget {
               EgyptianPhoneHelper.formatDisplay(patient.phone),
               textDirection: TextDirection.ltr,
               style: CustomAppFontStyle.regular13.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             if (patient.phoneHasWhatsapp == true) ...[
@@ -229,11 +231,11 @@ class PatientsTable extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CustomAssetImage(
+            CustomAssetImage(
               path: AppIcons.location,
               width: 14,
               height: 14,
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
             const SizedBox(width: 6),
             Flexible(
@@ -242,7 +244,7 @@ class PatientsTable extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
             ),
@@ -255,13 +257,13 @@ class PatientsTable extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.primaryLight,
+            color: colors.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             '${patient.totalBookings ?? 0}',
             style: CustomAppFontStyle.medium12.copyWith(
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
         ),
@@ -289,7 +291,7 @@ class PatientsTable extends StatelessWidget {
             : Text(
                 '-',
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
       ),
@@ -300,7 +302,7 @@ class PatientsTable extends StatelessWidget {
         child: Text(
           "${MonyHelper.formatMoney(patient.totalSpent ?? 0)} ${'currency'.tr()}",
           style: CustomAppFontStyle.semiBold13.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
       ),

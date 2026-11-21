@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
@@ -61,16 +62,17 @@ class _VisitsFilterBarState extends State<VisitsFilterBar> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final currentDate = widget.state.filterDate ?? CairoTimeHelper.now();
     final isToday = CairoTimeHelper.isSameDay(currentDate, CairoTimeHelper.now());
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE2E8F0),
+          color: colors.borderSubtle,
           width: 0.8,
         ),
       ),
@@ -91,7 +93,7 @@ class _VisitsFilterBarState extends State<VisitsFilterBar> {
                 },
                 icon: const Icon(Icons.chevron_left, size: 20),
                 tooltip: 'previous_day'.tr(),
-                color: AppColors.gray,
+                color: colors.textSecondary,
               ),
               InkWell(
                 onTap: () async {
@@ -112,20 +114,20 @@ class _VisitsFilterBarState extends State<VisitsFilterBar> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: const Color(0xFFCBD5E1),
+                      color: colors.borderSubtle,
                       width: 0.8,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.calendar_today_outlined,
                         size: 16,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -133,7 +135,7 @@ class _VisitsFilterBarState extends State<VisitsFilterBar> {
                             ? '${'today'.tr()} (${DateFormat('d MMM', 'ar').format(currentDate)})'
                             : DateFormat('EEEE d MMMM y', 'ar').format(currentDate),
                         style: CustomAppFontStyle.bold14.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -147,7 +149,7 @@ class _VisitsFilterBarState extends State<VisitsFilterBar> {
                 },
                 icon: const Icon(Icons.chevron_right, size: 20),
                 tooltip: 'next_day'.tr(),
-                color: AppColors.gray,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -184,7 +186,7 @@ class _VisitsFilterBarState extends State<VisitsFilterBar> {
                 onPressed: () => widget.cubit.loadDoctorQueue(),
                 icon: const Icon(Icons.refresh, size: 18),
                 tooltip: 'refresh'.tr(),
-                color: AppColors.gray,
+                color: colors.textSecondary,
               ),
             ],
           ),

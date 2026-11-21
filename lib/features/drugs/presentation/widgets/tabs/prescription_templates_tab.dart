@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../../shared/widgets/custom_push_container_button.dart';
@@ -20,6 +21,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final templates = state.templates;
 
     return Column(
@@ -29,29 +31,29 @@ class PrescriptionTemplatesTab extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.bookmarks_outlined,
-                      size: 20, color: AppColors.primary),
+                  Icon(Icons.bookmarks_outlined,
+                      size: 20, color: colors.primary),
                   const SizedBox(width: 8),
                   Text(
                     'الوصفات الطبية المحفوظة (${templates.length})',
                     style: CustomAppFontStyle.bold14.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     '• نماذج جاهزة لتسريع كتابة الروشتة',
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -60,7 +62,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                 height: 38,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                backgroundColor: AppColors.primary,
+                backgroundColor: colors.primary,
                 borderRadius: BorderRadius.circular(8),
                 onTap: () {
                   AddEditPrescriptionTemplateDialog.show(
@@ -95,37 +97,37 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                     width: 440,
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: colors.cardBackground,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.grayE2E8F0),
+                      border: Border.all(color: colors.borderSubtle),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(16),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryLight,
+                          decoration: BoxDecoration(
+                            color: colors.primaryLight,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.bookmark_add_outlined,
                             size: 40,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'لا توجد وصفات طبية جاهزة بعد',
                           style: CustomAppFontStyle.bold16.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'قم بإنشاء بروتوكول علاجي جاهز (مثل: علاج مغص معوي، نزلة برد) لإضافته بنقرة واحدة في الروشتة.',
                           style: CustomAppFontStyle.regular13.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -134,7 +136,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                           height: 40,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 8),
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: colors.primary,
                           borderRadius: BorderRadius.circular(8),
                           onTap: () {
                             AddEditPrescriptionTemplateDialog.show(
@@ -163,9 +165,9 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.white,
+                        color: colors.cardBackground,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.grayE2E8F0),
+                        border: Border.all(color: colors.borderSubtle),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +198,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                                         template.name ?? '',
                                         style:
                                             CustomAppFontStyle.bold15.copyWith(
-                                          color: AppColors.darkText,
+                                          color: colors.textPrimary,
                                         ),
                                       ),
                                       if (template.description != null &&
@@ -206,7 +208,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                                           template.description!,
                                           style: CustomAppFontStyle.regular12
                                               .copyWith(
-                                            color: AppColors.gray71717A,
+                                            color: colors.textSecondary,
                                           ),
                                         ),
                                       ],
@@ -246,7 +248,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          const Divider(height: 1, color: AppColors.grayF1F5F9),
+                          Divider(height: 1, color: colors.borderSubtle),
                           const SizedBox(height: 12),
 
                           // Drugs Included Tags
@@ -260,22 +262,22 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.grayF8FAFC,
+                                  color: colors.surfaceLevel1,
                                   borderRadius: BorderRadius.circular(8),
                                   border:
-                                      Border.all(color: AppColors.grayE2E8F0),
+                                      Border.all(color: colors.borderSubtle),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.medication_outlined,
-                                        size: 14, color: AppColors.primary),
+                                    Icon(Icons.medication_outlined,
+                                        size: 14, color: colors.primary),
                                     const SizedBox(width: 6),
                                     Text(
                                       item.drugName ?? '',
                                       style:
                                           CustomAppFontStyle.semiBold12.copyWith(
-                                        color: AppColors.darkText,
+                                        color: colors.textPrimary,
                                       ),
                                     ),
                                     const SizedBox(width: 6),
@@ -284,7 +286,7 @@ class PrescriptionTemplatesTab extends StatelessWidget {
                                       '${item.instructions != null ? ' - ${item.instructions}' : ''}',
                                       style:
                                           CustomAppFontStyle.regular11.copyWith(
-                                        color: AppColors.gray71717A,
+                                        color: colors.textSecondary,
                                       ),
                                     ),
                                   ],

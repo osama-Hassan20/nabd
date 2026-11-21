@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../manager/analytics_cubit.dart';
@@ -32,6 +33,8 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
           prev.trafficStatus != current.trafficStatus ||
           prev.hourlyTraffic != current.hourlyTraffic,
       builder: (context, state) {
+        final colors = context.themeColors;
+
         if (state.trafficStatus == RequestStatusEnum.loading && state.hourlyTraffic.isEmpty) {
           return const AnalyticsChartShimmer(height: 280);
         }
@@ -41,9 +44,9 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
             height: 180,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Center(
               child: Column(
@@ -72,9 +75,9 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -95,12 +98,12 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
                       children: [
                         Text(
                           'analytics_peak_hours_title'.tr(),
-                          style: CustomAppFontStyle.bold16.copyWith(color: AppColors.pitchBlack),
+                          style: CustomAppFontStyle.bold16.copyWith(color: colors.textPrimary),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'analytics_peak_hours_subtitle'.tr(),
-                          style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray),
+                          style: CustomAppFontStyle.regular12.copyWith(color: colors.textSecondary),
                         ),
                       ],
                     ),

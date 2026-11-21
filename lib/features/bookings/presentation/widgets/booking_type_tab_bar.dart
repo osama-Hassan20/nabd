@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
@@ -21,13 +22,14 @@ class BookingTypeTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(100),
         border: Border.all(
-          color: AppColors.grayE2E8F0,
+          color: colors.borderSubtle,
           width: 1,
         ),
         boxShadow: [
@@ -94,6 +96,7 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -104,12 +107,12 @@ class _TabItem extends StatelessWidget {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Colors.transparent,
+            color: isSelected ? colors.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(100),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
+                      color: colors.primary.withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -123,13 +126,13 @@ class _TabItem extends StatelessWidget {
                 path: icon,
                 width: 16,
                 height: 16,
-                color: isSelected ? AppColors.white : AppColors.gray71717A,
+                color: isSelected ? AppColors.white : colors.textSecondary,
               ),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: CustomAppFontStyle.semiBold13.copyWith(
-                  color: isSelected ? AppColors.white : AppColors.gray71717A,
+                  color: isSelected ? AppColors.white : colors.textSecondary,
                 ),
               ),
               if (badgeCount != null) ...[
@@ -139,13 +142,13 @@ class _TabItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.white.withValues(alpha: 0.25)
-                        : AppColors.grayE2E8F0,
+                        : colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '$badgeCount',
                     style: CustomAppFontStyle.bold11.copyWith(
-                      color: isSelected ? AppColors.white : AppColors.darkText,
+                      color: isSelected ? AppColors.white : colors.textPrimary,
                     ),
                   ),
                 ),

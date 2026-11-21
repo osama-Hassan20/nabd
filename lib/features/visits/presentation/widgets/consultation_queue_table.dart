@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import '../../../../core/layout_adaptive/widgets/cutom_table.dart';
 import '../../../../core/services/permission_evaluator.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../data/models/consultation_queue_item_model.dart';
@@ -40,6 +41,7 @@ class ConsultationQueueTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     if (items.isEmpty) {
       return Center(
         child: Padding(
@@ -50,13 +52,13 @@ class ConsultationQueueTable extends StatelessWidget {
               Icon(
                 Icons.event_available_outlined,
                 size: 48,
-                color: AppColors.gray.withValues(alpha: 0.5),
+                color: colors.textSecondary.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 12),
               Text(
                 'visits_no_active_visits'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.gray,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -87,16 +89,18 @@ class ConsultationQueueTable extends StatelessWidget {
     final booking = item.booking;
     final visit = item.visit;
 
+    final colors = context.themeColors;
+
     // 0: Queue Number Badge
     final cell0 = Center(
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
+          color: colors.primary.withValues(alpha: 0.1),
           shape: BoxShape.circle,
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: colors.primary.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -104,7 +108,7 @@ class ConsultationQueueTable extends StatelessWidget {
           child: Text(
             '#${booking?.queueNumber ?? '—'}',
             style: CustomAppFontStyle.bold12.copyWith(
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
         ),
@@ -119,7 +123,7 @@ class ConsultationQueueTable extends StatelessWidget {
         Text(
           booking?.patientName ?? '—',
           style: CustomAppFontStyle.bold14.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -129,7 +133,7 @@ class ConsultationQueueTable extends StatelessWidget {
           Text(
             booking!.patientPhone!,
             style: CustomAppFontStyle.regular12.copyWith(
-              color: AppColors.gray,
+              color: colors.textSecondary,
             ),
             textDirection: TextDirection.ltr,
           ),
@@ -145,7 +149,7 @@ class ConsultationQueueTable extends StatelessWidget {
         Text(
           booking?.doctorName ?? '—',
           style: CustomAppFontStyle.medium14.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -155,7 +159,7 @@ class ConsultationQueueTable extends StatelessWidget {
           Text(
             booking!.specialty!,
             style: CustomAppFontStyle.regular12.copyWith(
-              color: AppColors.gray,
+              color: colors.textSecondary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -173,7 +177,7 @@ class ConsultationQueueTable extends StatelessWidget {
       child: Text(
         timeStr,
         style: CustomAppFontStyle.medium12.copyWith(
-          color: AppColors.gray,
+          color: colors.textSecondary,
         ),
       ),
     );

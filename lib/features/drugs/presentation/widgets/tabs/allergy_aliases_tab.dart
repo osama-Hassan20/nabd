@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../../core/utils/theme/app_colors.dart';
 import '../../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../manager/drugs_cubit.dart';
@@ -18,6 +19,7 @@ class AllergyAliasesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final allergyItems = state.allergyItems;
     final canManage = cubit.canManageCatalog;
 
@@ -31,9 +33,9 @@ class AllergyAliasesTab extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,14 +64,14 @@ class AllergyAliasesTab extends StatelessWidget {
                           Text(
                             item.name ?? '',
                             style: CustomAppFontStyle.bold16.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             item.id ?? '',
                             style: CustomAppFontStyle.regular12.copyWith(
-                              color: AppColors.gray,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
@@ -86,7 +88,7 @@ class AllergyAliasesTab extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        side: BorderSide(color: colors.borderSubtle),
                       ),
                       onPressed: () {
                         EditAliasesDialog.show(
@@ -95,29 +97,29 @@ class AllergyAliasesTab extends StatelessWidget {
                           item: item,
                         );
                       },
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.edit_note_rounded,
                         size: 18,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                       label: Text(
                         'drugs_edit_aliases'.tr(),
                         style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                     ),
                 ],
               ),
               const SizedBox(height: 12),
-              const Divider(height: 1),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 12),
 
               // Aliases chips
               Text(
                 '${'drugs_protected_aliases'.tr()} (${aliases.length}):',
                 style: CustomAppFontStyle.semiBold12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -126,7 +128,7 @@ class AllergyAliasesTab extends StatelessWidget {
                 Text(
                   'drugs_no_aliases'.tr(),
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray,
+                    color: colors.textSecondary,
                     fontStyle: FontStyle.italic,
                   ),
                 )
@@ -141,14 +143,14 @@ class AllergyAliasesTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: colors.surfaceLevel1,
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: colors.borderSubtle),
                       ),
                       child: Text(
                         alias,
                         style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     );

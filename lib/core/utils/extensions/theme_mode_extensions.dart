@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme_mode.dart';
 
+export '../theme/app_theme_mode.dart';
+
 extension ThemeModeExtensions on BuildContext {
   /// True when current theme brightness is dark (Dark or Night modes)
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;

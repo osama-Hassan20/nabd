@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/animation/fade_transition_animation.dart';
 import '../../../../core/cubits/session_cubit.dart';
 import '../../../../core/dependency_injection/dependency_injection.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../data/models/enums/analytics_tab_enum.dart';
@@ -53,17 +54,18 @@ class _AnalyticsPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return FadeTransitionAnimation(
       duration: const Duration(milliseconds: 300),
       child: Scaffold(
-        backgroundColor: AppColors.lightBackground,
+        backgroundColor: colors.scaffoldBackground,
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Page Header
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 18),
 
               // Filter & Navigation Tabs Bar
@@ -85,20 +87,21 @@ class _AnalyticsPageView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final colors = context.themeColors;
     return Row(
       children: [
         Container(
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: colors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Center(
+          child: Center(
             child: Icon(
               Icons.analytics_rounded,
-              color: AppColors.primary,
+              color: colors.primary,
               size: 24,
             ),
           ),
@@ -110,12 +113,12 @@ class _AnalyticsPageView extends StatelessWidget {
             children: [
               Text(
                 'analytics_title'.tr(),
-                style: CustomAppFontStyle.bold20.copyWith(color: AppColors.darkText),
+                style: CustomAppFontStyle.bold20.copyWith(color: colors.textPrimary),
               ),
               const SizedBox(height: 4),
               Text(
                 'analytics_subtitle'.tr(),
-                style: CustomAppFontStyle.regular13.copyWith(color: AppColors.gray),
+                style: CustomAppFontStyle.regular13.copyWith(color: colors.textSecondary),
               ),
             ],
           ),

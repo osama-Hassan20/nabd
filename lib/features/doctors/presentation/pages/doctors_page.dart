@@ -5,6 +5,7 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/pagination_table.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/extensions/sliver_extentions.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_state.dart';
 import 'package:eyadty/features/doctors/presentation/widgets/adaptive_doctors_view.dart';
@@ -22,9 +23,11 @@ class DoctorsPage extends StatelessWidget {
       create: (context) => getIt<DoctorsCubit>()..init(),
       child: BlocBuilder<DoctorsCubit, DoctorsState>(
         builder: (context, state) {
+          final colors = context.themeColors;
           final cubit = context.read<DoctorsCubit>();
 
           return Scaffold(
+            backgroundColor: colors.scaffoldBackground,
             body: Column(
               children: [
                 Expanded(
@@ -49,7 +52,7 @@ class DoctorsPage extends StatelessWidget {
                           SliverFillRemaining(
                             hasScrollBody: false,
                             child: ColoredBox(
-                              color: Colors.white,
+                              color: colors.cardBackground,
                               child: CustomEmptyWidget(
                                 title: 'no_technicians_found'.tr(),
                               ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/enums/payment_method.dart';
 import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/layout_adaptive/widgets/cutom_table.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../cashier/domain/helpers/money.dart';
@@ -24,6 +25,7 @@ class SettlementsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     if (settlements.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(40),
@@ -31,11 +33,11 @@ class SettlementsTable extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.description_outlined, size: 48, color: AppColors.gray71717A),
+            Icon(Icons.description_outlined, size: 48, color: colors.textSecondary),
             const SizedBox(height: 12),
             Text(
               'hr_empty_settlements'.tr(),
-              style: CustomAppFontStyle.medium14.copyWith(color: AppColors.gray71717A),
+              style: CustomAppFontStyle.medium14.copyWith(color: colors.textSecondary),
             ),
           ],
         ),

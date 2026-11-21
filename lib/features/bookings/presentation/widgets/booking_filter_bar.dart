@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/animation/hover_scale_animation.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
@@ -45,15 +46,16 @@ class BookingFilterBar extends StatelessWidget {
     BookingsCubit cubit,
     BookingsState state,
   ) {
+    final colors = context.themeColors;
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppColors.grayE2E8F0),
+      border: Border.all(color: colors.borderSubtle),
       child: Row(
         children: [
           // Search Field (Flex 3)
-          Expanded(flex: 3, child: _buildSearchField(cubit)),
+          Expanded(flex: 3, child: _buildSearchField(context, cubit)),
           const SizedBox(width: 12),
 
           // Status Dropdown
@@ -88,17 +90,18 @@ class BookingFilterBar extends StatelessWidget {
     BookingsCubit cubit,
     BookingsState state,
   ) {
+    final colors = context.themeColors;
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
       padding: const EdgeInsets.all(14),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppColors.grayE2E8F0),
+      border: Border.all(color: colors.borderSubtle),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              Expanded(child: _buildSearchField(cubit)),
+              Expanded(child: _buildSearchField(context, cubit)),
               const SizedBox(width: 12),
               _AddBookingButton(onTap: onAddNewBooking, width: 160),
             ],
@@ -133,15 +136,16 @@ class BookingFilterBar extends StatelessWidget {
     BookingsCubit cubit,
     BookingsState state,
   ) {
+    final colors = context.themeColors;
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
       padding: const EdgeInsets.all(12),
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: AppColors.grayE2E8F0),
+      border: Border.all(color: colors.borderSubtle),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSearchField(cubit),
+          _buildSearchField(context, cubit),
           const SizedBox(height: 8),
           _StatusDropdown(
             selectedStatus: state.selectedStatus,
@@ -161,20 +165,17 @@ class BookingFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchField(BookingsCubit cubit) {
+  Widget _buildSearchField(BuildContext context, BookingsCubit cubit) {
+    final colors = context.themeColors;
     return CustomTextFormField(
       hintText: 'search_patient_hint'.tr(),
       controller: cubit.searchController,
-      tempColor: AppColors.fillDisableColor.withValues(alpha: 0.5),
-      prefixWidget: const Icon(
+      prefixWidget: Icon(
         Icons.search_rounded,
-        color: AppColors.gray71717A,
+        color: colors.textSecondary,
         size: 20,
       ),
       enableFill: true,
-      textStyle: CustomAppFontStyle.regular13.copyWith(
-        color: AppColors.darkText,
-      ),
     );
   }
 }
@@ -219,6 +220,7 @@ class _StatusDropdownState extends State<_StatusDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final list = <BookingStatusEnum?>[null, ...BookingStatusEnum.values];
     return CustomStackSelector<BookingStatusEnum?>(
       controller: _controller,
@@ -232,7 +234,7 @@ class _StatusDropdownState extends State<_StatusDropdown> {
             child: Text(
               'all_statuses'.tr(),
               style: CustomAppFontStyle.medium14.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
           );
@@ -254,7 +256,7 @@ class _StatusDropdownState extends State<_StatusDropdown> {
                 child: Text(
                   s.label,
                   style: CustomAppFontStyle.medium14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),
@@ -278,39 +280,40 @@ class _DateFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final formattedDate = BookingTimeFormatter.formatCompactDate(date, context);
 
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: colors.primaryLight,
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.calendar_today_rounded,
             size: 14,
-            color: AppColors.primary,
+            color: colors.primary,
           ),
           const SizedBox(width: 6),
           Text(
             formattedDate,
             style: CustomAppFontStyle.medium12.copyWith(
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
           const SizedBox(width: 6),
           InkWell(
             onTap: onClear,
             borderRadius: BorderRadius.circular(10),
-            child: const Icon(
+            child: Icon(
               Icons.close_rounded,
               size: 14,
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
         ],

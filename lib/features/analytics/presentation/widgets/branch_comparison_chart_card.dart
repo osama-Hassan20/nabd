@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../cashier/domain/helpers/money.dart';
@@ -27,6 +28,8 @@ class BranchComparisonChartCard extends StatelessWidget {
           prev.branchesStatus != current.branchesStatus ||
           prev.branchComparisons != current.branchComparisons,
       builder: (context, state) {
+        final colors = context.themeColors;
+
         if (state.branchesStatus == RequestStatusEnum.loading && state.branchComparisons.isEmpty) {
           return const AnalyticsChartShimmer(height: 340);
         }
@@ -36,9 +39,9 @@ class BranchComparisonChartCard extends StatelessWidget {
             height: 200,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Center(
               child: Column(
@@ -67,9 +70,9 @@ class BranchComparisonChartCard extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -83,12 +86,12 @@ class BranchComparisonChartCard extends StatelessWidget {
             children: [
               Text(
                 'analytics_branch_comparison_title'.tr(),
-                style: CustomAppFontStyle.bold16.copyWith(color: AppColors.pitchBlack),
+                style: CustomAppFontStyle.bold16.copyWith(color: colors.textPrimary),
               ),
               const SizedBox(height: 4),
               Text(
                 'analytics_branch_comparison_subtitle'.tr(),
-                style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray),
+                style: CustomAppFontStyle.regular12.copyWith(color: colors.textSecondary),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -97,7 +100,7 @@ class BranchComparisonChartCard extends StatelessWidget {
                     ? Center(
                         child: Text(
                           'no_data'.tr(),
-                          style: CustomAppFontStyle.regular13.copyWith(color: AppColors.gray),
+                          style: CustomAppFontStyle.regular13.copyWith(color: colors.textSecondary),
                         ),
                       )
                     : BarChart(
@@ -121,7 +124,7 @@ class BranchComparisonChartCard extends StatelessWidget {
                                       padding: const EdgeInsets.only(top: 6.0),
                                       child: Text(
                                         short,
-                                        style: CustomAppFontStyle.bold11.copyWith(color: AppColors.pitchBlack),
+                                        style: CustomAppFontStyle.bold11.copyWith(color: colors.textPrimary),
                                       ),
                                     );
                                   }
@@ -148,7 +151,7 @@ class BranchComparisonChartCard extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: 16),
-              const Divider(color: AppColors.grayE2E8F0, height: 1),
+              Divider(color: colors.borderSubtle, height: 1),
               const SizedBox(height: 16),
               // Branch breakdown legends
               for (int i = 0; i < branches.length; i++)

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/users_management/data/models/security_audit_log_model.dart';
@@ -17,6 +18,7 @@ class AuditLogsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final dateFormat = DateFormat('yyyy/MM/dd - hh:mm a', 'ar');
 
     final headers = [
@@ -51,13 +53,13 @@ class AuditLogsTable extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.access_time_rounded, size: 14, color: AppColors.gray71717A),
+            Icon(Icons.access_time_rounded, size: 14, color: colors.textSecondary),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 formattedTime,
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -79,7 +81,7 @@ class AuditLogsTable extends StatelessWidget {
             Text(
               log.performedByUserName ?? log.performedByUserId ?? 'النظام',
               style: CustomAppFontStyle.semiBold12.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -88,7 +90,7 @@ class AuditLogsTable extends StatelessWidget {
               Text(
                 log.performedByUserId!,
                 style: CustomAppFontStyle.regular10.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
           ],
@@ -102,7 +104,7 @@ class AuditLogsTable extends StatelessWidget {
             Text(
               log.targetUserName ?? log.targetUserId ?? '-',
               style: CustomAppFontStyle.medium12.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -111,7 +113,7 @@ class AuditLogsTable extends StatelessWidget {
               Text(
                 log.targetUserId!,
                 style: CustomAppFontStyle.regular10.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
           ],
@@ -121,7 +123,7 @@ class AuditLogsTable extends StatelessWidget {
         Text(
           log.branchName ?? log.branchId ?? 'المنشأة',
           style: CustomAppFontStyle.regular12.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -131,7 +133,7 @@ class AuditLogsTable extends StatelessWidget {
         Text(
           log.details ?? '-',
           style: CustomAppFontStyle.regular12.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -141,7 +143,7 @@ class AuditLogsTable extends StatelessWidget {
         Text(
           log.ipAddress ?? '-',
           style: CustomAppFontStyle.medium12.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -149,10 +151,10 @@ class AuditLogsTable extends StatelessWidget {
 
         // 7: Actions
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.remove_red_eye_outlined,
             size: 18,
-            color: AppColors.primary,
+            color: colors.primary,
           ),
           tooltip: 'view_details'.tr(),
           onPressed: () {

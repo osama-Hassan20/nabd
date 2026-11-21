@@ -5,6 +5,7 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/pagination_table.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/extensions/sliver_extentions.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/features/patients/presentation/manager/patients_cubit.dart';
 import 'package:eyadty/features/patients/presentation/manager/patients_state.dart';
 import 'package:eyadty/features/patients/presentation/widgets/adaptive_patients_view.dart';
@@ -19,6 +20,7 @@ class PatientsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.themeColors.scaffoldBackground,
       body: BlocProvider(
         create: (context) => getIt<PatientsCubit>()..init(),
         child: BlocBuilder<PatientsCubit, PatientsState>(
@@ -49,7 +51,7 @@ class PatientsPage extends StatelessWidget {
                           SliverFillRemaining(
                             hasScrollBody: false,
                             child: ColoredBox(
-                              color: Colors.white,
+                              color: context.themeColors.cardBackground,
                               child: CustomEmptyWidget(
                                 title: 'no_data_found'.tr(),
                               ),

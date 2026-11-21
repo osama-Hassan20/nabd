@@ -1,4 +1,5 @@
-﻿import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_gradient.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
 import 'package:flutter/material.dart';
@@ -33,26 +34,14 @@ class EnhancedTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dividerColor =
-        rowDividerColor ??
-        (isDark
-            ? AppColors.gray334155.withValues(alpha: .4)
-            : AppColors.gray334155.withValues(alpha: .6));
+    final colors = context.themeColors;
+    final dividerColor = rowDividerColor ?? colors.borderSubtle;
 
     return CustomContainer(
       padding: EdgeInsets.zero,
+      backGroundColor: colors.cardBackground,
       enableShadow: boxShadow == null,
-      boxShadow:
-          boxShadow ??
-          [
-            BoxShadow(
-              color: isDark
-                  ? AppColors.black.withValues(alpha: .3)
-                  : AppColors.gray334155.withValues(alpha: .07),
-              blurRadius: 24,
-              offset: const Offset(0, 6),
-            ),
-          ],
+      boxShadow: boxShadow,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: LayoutBuilder(
@@ -70,7 +59,7 @@ class EnhancedTable extends StatelessWidget {
                   children: [
                     // ── Header ─────────────────────────────────────────────
                     header,
-                    const Divider(height: 1),
+                    Divider(height: 1, color: dividerColor),
                     // ── Rows ───────────────────────────────────────────────
                     ...rows.asMap().entries.map((entry) {
                       final isLast = entry.key == rows.length - 1;

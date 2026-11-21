@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -20,26 +21,28 @@ class DoctorActionsMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return PopupMenuButton<String>(
       icon: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: AppColors.grayf2,
+          color: colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.more_vert,
-          color: AppColors.gray71717A,
+          color: colors.textSecondary,
           size: 18,
         ),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.grayE2E8F0),
+        side: BorderSide(color: colors.borderSubtle),
       ),
-      color: AppColors.white,
-      elevation: 0,
+      color: colors.cardBackground,
+      elevation: 4,
       offset: const Offset(0, 36),
       onSelected: (action) {
         final cubit = context.read<DoctorsCubit>();
@@ -79,17 +82,17 @@ class DoctorActionsMenu extends StatelessWidget {
           value: 'view',
           child: Row(
             children: [
-              const CustomAssetImage(
+              CustomAssetImage(
                 path: AppIcons.user,
                 width: 16,
                 height: 16,
-                color: AppColors.primary,
+                color: colors.primary,
               ),
               const SizedBox(width: 10),
               Text(
                 'view_details'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -109,7 +112,7 @@ class DoctorActionsMenu extends StatelessWidget {
               Text(
                 'edit'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -129,13 +132,13 @@ class DoctorActionsMenu extends StatelessWidget {
               Text(
                 'add_leave'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
           ),
         ),
-        const PopupMenuDivider(height: 1),
+        PopupMenuDivider(height: 1),
         PopupMenuItem(
           value: 'delete',
           child: Row(

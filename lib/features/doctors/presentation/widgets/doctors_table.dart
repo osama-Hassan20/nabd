@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/doctors/data/models/enums/doctor_gender_enum.dart';
@@ -56,13 +57,15 @@ class DoctorsTable extends StatelessWidget {
     DoctorModel doc,
     int index,
   ) {
+    final colors = context.themeColors;
+
     return [
       // 0: Index
       Center(
         child: Text(
           index.toString(),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       ),
@@ -83,7 +86,7 @@ class DoctorsTable extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: CustomAppFontStyle.semiBold13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               if (doc.specialty != null && doc.specialty!.isNotEmpty)
@@ -92,7 +95,7 @@ class DoctorsTable extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                 ),
             ],
@@ -106,7 +109,7 @@ class DoctorsTable extends StatelessWidget {
           doc.phone ?? '-',
           textDirection: TextDirection.ltr,
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
       ),
@@ -118,7 +121,7 @@ class DoctorsTable extends StatelessWidget {
           decoration: BoxDecoration(
             color: doc.gender == DoctorGenderEnum.female
                 ? const Color(0xFFFDF2F8)
-                : AppColors.primaryLight,
+                : colors.primaryLight,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -126,7 +129,7 @@ class DoctorsTable extends StatelessWidget {
             style: CustomAppFontStyle.medium12.copyWith(
               color: doc.gender == DoctorGenderEnum.female
                   ? const Color(0xFFDB2777)
-                  : AppColors.primary,
+                  : colors.primary,
             ),
           ),
         ),
@@ -144,13 +147,13 @@ class DoctorsTable extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.grayf2,
+            color: colors.surfaceLevel1,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             '${doc.todayTasksCount ?? 0} ${'tasks'.tr()}',
             style: CustomAppFontStyle.semiBold12.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
         ),
@@ -161,7 +164,7 @@ class DoctorsTable extends StatelessWidget {
         child: Text(
           '${doc.upcomingBookingsCount ?? 0}',
           style: CustomAppFontStyle.semiBold13.copyWith(
-            color: AppColors.primary,
+            color: colors.primary,
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_stack_selector.dart';
@@ -72,14 +73,15 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
           prev.selectedBranchId != curr.selectedBranchId,
       builder: (context, state) {
         _timeRangeController.text = _getTimeRangeTitle(state.selectedTimeRange);
+        final colors = context.themeColors;
         _branchController.text = _getBranchLabel(state.selectedBranchId);
 
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -108,17 +110,17 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary
-                                : AppColors.lightBackground,
+                                ? colors.primary
+                                : colors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+                              color: isSelected ? colors.primary : colors.borderSubtle,
                             ),
                           ),
                           child: Text(
                             _getTabTitle(tab),
                             style: CustomAppFontStyle.medium14.copyWith(
-                              color: isSelected ? AppColors.white : AppColors.darkText,
+                              color: isSelected ? colors.textInverse : colors.textPrimary,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
@@ -130,7 +132,7 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
               ),
 
               const SizedBox(height: 14),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 14),
 
               // 2. Control Row: Time Range, Branch Selector, and Refresh Button
@@ -207,18 +209,18 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.lightBackground,
+                        color: colors.surfaceLevel1,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.grayE2E8F0),
+                        border: Border.all(color: colors.borderSubtle),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.refresh_rounded, size: 18, color: AppColors.primary),
+                          Icon(Icons.refresh_rounded, size: 18, color: colors.primary),
                           const SizedBox(width: 6),
                           Text(
                             'refresh'.tr(),
-                            style: CustomAppFontStyle.medium13.copyWith(color: AppColors.primary),
+                            style: CustomAppFontStyle.medium13.copyWith(color: colors.primary),
                           ),
                         ],
                       ),

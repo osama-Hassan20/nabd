@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:printing/printing.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
@@ -35,12 +36,13 @@ class ActiveShiftBar extends StatelessWidget {
   }
 
   Widget _buildNoActiveShiftBanner(BuildContext context) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -55,12 +57,12 @@ class ActiveShiftBar extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.12),
+              color: colors.secondary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.lock_clock_rounded,
-              color: AppColors.secondary,
+              color: colors.secondary,
               size: 26,
             ),
           ),
@@ -73,14 +75,14 @@ class ActiveShiftBar extends StatelessWidget {
                 Text(
                   'cashier_no_active_shift'.tr(),
                   style: CustomAppFontStyle.bold16.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'cashier_open_shift_prompt'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -89,7 +91,7 @@ class ActiveShiftBar extends StatelessWidget {
           const SizedBox(width: 16),
           CustomPushButton(
             height: 42,
-            backgroundColor: AppColors.primary,
+            backgroundColor: colors.primary,
             borderRadius: BorderRadius.circular(10),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             onTap: () {
@@ -122,6 +124,7 @@ class ActiveShiftBar extends StatelessWidget {
   }
 
   Widget _buildActiveShiftBanner(BuildContext context, CashierShiftModel shift) {
+    final colors = context.themeColors;
     final dateFormat = DateFormat('yyyy/MM/dd - hh:mm a');
     final formattedTime =
         shift.openedAt != null ? dateFormat.format(shift.openedAt!) : '-';
@@ -131,12 +134,12 @@ class ActiveShiftBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.05),
+            color: colors.primary.withValues(alpha: 0.05),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -156,12 +159,12 @@ class ActiveShiftBar extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.point_of_sale_rounded,
-                  color: AppColors.primary,
+                  color: colors.primary,
                   size: 24,
                 ),
               ),
@@ -176,7 +179,7 @@ class ActiveShiftBar extends StatelessWidget {
                       Text(
                         'cashier_active_shift_title'.tr(),
                         style: CustomAppFontStyle.bold16.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -199,7 +202,7 @@ class ActiveShiftBar extends StatelessWidget {
                         Text(
                           '#${shift.id}',
                           style: CustomAppFontStyle.medium12.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -209,23 +212,23 @@ class ActiveShiftBar extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.person_outline_rounded,
-                          size: 14, color: AppColors.gray71717A),
+                      Icon(Icons.person_outline_rounded,
+                          size: 14, color: colors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
                         shift.cashierName ?? 'كاشير',
                         style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 14),
-                      const Icon(Icons.access_time_rounded,
-                          size: 14, color: AppColors.gray71717A),
+                      Icon(Icons.access_time_rounded,
+                          size: 14, color: colors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
                         formattedTime,
                         style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ],
@@ -244,10 +247,10 @@ class ActiveShiftBar extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
+                  color: colors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.2)),
+                      color: colors.primary.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -256,14 +259,14 @@ class ActiveShiftBar extends StatelessWidget {
                     Text(
                       'cashier_expected_cash'.tr(),
                       style: CustomAppFontStyle.regular11.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       expectedCashFormatted,
                       style: CustomAppFontStyle.bold16.copyWith(
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                     ),
                   ],
@@ -275,8 +278,8 @@ class ActiveShiftBar extends StatelessWidget {
               CustomPushButton(
                 key: const Key('print_active_shift_btn'),
                 height: 40,
-                backgroundColor: AppColors.white,
-                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                backgroundColor: colors.cardBackground,
+                boxBorder: Border.all(color: colors.borderSubtle),
                 borderRadius: BorderRadius.circular(10),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 onTap: () async {
@@ -301,13 +304,13 @@ class ActiveShiftBar extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.print_outlined,
-                        color: AppColors.darkText, size: 16),
+                    Icon(Icons.print_outlined,
+                        color: colors.textPrimary, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'print'.tr(),
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -318,8 +321,8 @@ class ActiveShiftBar extends StatelessWidget {
               // Record Expense Button
               CustomPushButton(
                 height: 40,
-                backgroundColor: AppColors.white,
-                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                backgroundColor: colors.cardBackground,
+                boxBorder: Border.all(color: colors.borderSubtle),
                 borderRadius: BorderRadius.circular(10),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 onTap: () {
@@ -339,13 +342,13 @@ class ActiveShiftBar extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.receipt_long_rounded,
-                        color: AppColors.darkText, size: 16),
+                    Icon(Icons.receipt_long_rounded,
+                        color: colors.textPrimary, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'cashier_record_movement_btn'.tr(),
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/domain/helpers/money.dart';
@@ -68,6 +69,7 @@ class _EmployeeLedgerTabState extends State<EmployeeLedgerTab> {
           );
         }
 
+        final colors = context.themeColors;
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -77,9 +79,9 @@ class _EmployeeLedgerTabState extends State<EmployeeLedgerTab> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: colors.cardBackground,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,

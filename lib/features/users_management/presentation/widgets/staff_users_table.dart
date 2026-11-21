@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import '../../../../core/layout_adaptive/widgets/cutom_table.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/helpers/egyptian_phone_helper.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
@@ -72,6 +73,7 @@ class StaffUsersTable extends StatelessWidget {
     StaffUserModel user,
     int index,
   ) {
+    final colors = context.themeColors;
     final isOwner = user.isOwner == true;
     final isActive = user.isActive == true;
 
@@ -110,7 +112,7 @@ class StaffUsersTable extends StatelessWidget {
         child: Text(
           index.toString(),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       ),
@@ -136,7 +138,7 @@ class StaffUsersTable extends StatelessWidget {
                       child: Text(
                         user.fullName ?? 'unnamed_user'.tr(),
                         style: CustomAppFontStyle.semiBold14.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -160,7 +162,7 @@ class StaffUsersTable extends StatelessWidget {
                   Text(
                     user.jobTitle!,
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -189,7 +191,7 @@ class StaffUsersTable extends StatelessWidget {
                     Text(
                       'no_roles_assigned'.tr(),
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ]
@@ -212,7 +214,7 @@ class StaffUsersTable extends StatelessWidget {
                 Text(
                   'no_branches'.tr(),
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
               ]
@@ -221,14 +223,14 @@ class StaffUsersTable extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                   decoration: BoxDecoration(
-                    color: AppColors.lightBackground,
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.grayE2E8F0),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Text(
                     bName,
                     style: CustomAppFontStyle.regular11.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 );
@@ -243,15 +245,15 @@ class StaffUsersTable extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.phone_rounded,
-                  size: 13, color: AppColors.gray71717A),
+              Icon(Icons.phone_rounded,
+                  size: 13, color: colors.textSecondary),
               const SizedBox(width: 4),
               Directionality(
                 textDirection: TextDirection.ltr,
                 child: Text(
                   formattedPhone.isNotEmpty ? formattedPhone : '—',
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),
@@ -262,14 +264,14 @@ class StaffUsersTable extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.email_outlined,
-                    size: 13, color: AppColors.gray71717A),
+                Icon(Icons.email_outlined,
+                    size: 13, color: colors.textSecondary),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     user.email!,
                     style: CustomAppFontStyle.regular11.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

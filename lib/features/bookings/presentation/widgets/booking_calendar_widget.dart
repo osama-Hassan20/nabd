@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -39,6 +40,7 @@ class BookingCalendarWidget extends StatelessWidget {
           prev.selectedDate != curr.selectedDate ||
           prev.selectedMonth != curr.selectedMonth,
       builder: (context, state) {
+        final colors = context.themeColors;
         final focusedMonth =
             state.selectedMonth ??
             selectedDate ??
@@ -58,9 +60,10 @@ class BookingCalendarWidget extends StatelessWidget {
         final offset = (firstDayWeekday % 7);
 
         return CustomContainer(
-          backGroundColor: AppColors.white,
+          backGroundColor: colors.cardBackground,
           padding: const EdgeInsets.all(16),
           borderRaduis: 12,
+          border: Border.all(color: colors.borderSubtle),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -75,7 +78,7 @@ class BookingCalendarWidget extends StatelessWidget {
                       Text(
                         DateFormat('MMMM', locale).format(focusedMonth),
                         style: CustomAppFontStyle.semiBold16.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -104,7 +107,7 @@ class BookingCalendarWidget extends StatelessWidget {
                           path: AppIcons.arrowForward,
                           width: 16,
                           height: 16,
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                         onPressed: cubit.previousCalendarMonth,
                       ),
@@ -120,7 +123,7 @@ class BookingCalendarWidget extends StatelessWidget {
                           path: AppIcons.arrowBack,
                           width: 16,
                           height: 16,
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                         onPressed: cubit.nextCalendarMonth,
                       ),
@@ -138,7 +141,7 @@ class BookingCalendarWidget extends StatelessWidget {
                       child: Text(
                         day,
                         style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -168,14 +171,14 @@ class BookingCalendarWidget extends StatelessWidget {
                     dayNumber,
                   );
                   final isToday =
-                      cellDate.year == today.year &&
-                      cellDate.month == today.month &&
-                      cellDate.day == today.day;
+                    cellDate.year == today.year &&
+                    cellDate.month == today.month &&
+                    cellDate.day == today.day;
                   final isSelected =
-                      effectiveSelectedDate != null &&
-                      cellDate.year == effectiveSelectedDate.year &&
-                      cellDate.month == effectiveSelectedDate.month &&
-                      cellDate.day == effectiveSelectedDate.day;
+                    effectiveSelectedDate != null &&
+                    cellDate.year == effectiveSelectedDate.year &&
+                    cellDate.month == effectiveSelectedDate.month &&
+                    cellDate.day == effectiveSelectedDate.day;
 
                   return InkWell(
                     onTap: () {
@@ -197,13 +200,13 @@ class BookingCalendarWidget extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary
+                            ? colors.primary
                             : (isToday
-                                  ? AppColors.primaryLight
+                                  ? colors.primaryLight
                                   : Colors.transparent),
                         borderRadius: BorderRadius.circular(8),
                         border: isToday && !isSelected
-                            ? Border.all(color: AppColors.primary, width: 1.2)
+                            ? Border.all(color: colors.primary, width: 1.2)
                             : null,
                       ),
                       child: Center(
@@ -211,10 +214,10 @@ class BookingCalendarWidget extends StatelessWidget {
                           dayNumber.toString(),
                           style: CustomAppFontStyle.medium13.copyWith(
                             color: isSelected
-                                ? AppColors.white
+                                ? Colors.white
                                 : (isToday
-                                      ? AppColors.primary
-                                      : AppColors.darkText),
+                                      ? colors.primary
+                                      : colors.textPrimary),
                             fontWeight: (isSelected || isToday)
                                 ? FontWeight.w700
                                 : FontWeight.w400,
@@ -240,8 +243,9 @@ class BookingCalendarWidget extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.fillDisableColor,
+                      color: colors.surfaceLevel1,
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: colors.borderSubtle),
                     ),
                     child: Center(
                       child: Text(

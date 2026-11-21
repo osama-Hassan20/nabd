@@ -6,6 +6,7 @@ import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_gradient.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -55,6 +56,7 @@ class ProfilePage extends StatelessWidget {
               children: [
                 // ─── Profile Hero Header Card (Full Width) ─────────────────
                 _buildHeroCard(
+                  context: context,
                   fullName: fullName,
                   jobTitle: jobTitle,
                   initials: initials,
@@ -75,11 +77,13 @@ class ProfilePage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             _buildSectionHeader(
+                              context,
                               'البيانات الشخصية وبيانات الاتصال',
                               Icons.person_outline_rounded,
                             ),
                             const SizedBox(height: 10),
                             _buildPersonalInfoCard(
+                              context: context,
                               email: email,
                               phone: phone,
                               branchName: branchName,
@@ -96,6 +100,7 @@ class ProfilePage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             _buildSectionHeader(
+                              context,
                               'الأمان والخصوصية',
                               Icons.shield_outlined,
                             ),
@@ -114,11 +119,13 @@ class ProfilePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildSectionHeader(
+                        context,
                         'البيانات الشخصية وبيانات الاتصال',
                         Icons.person_outline_rounded,
                       ),
                       const SizedBox(height: 10),
                       _buildPersonalInfoCard(
+                        context: context,
                         email: email,
                         phone: phone,
                         branchName: branchName,
@@ -126,6 +133,7 @@ class ProfilePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       _buildSectionHeader(
+                        context,
                         'الأمان والخصوصية',
                         Icons.shield_outlined,
                       ),
@@ -145,15 +153,16 @@ class ProfilePage extends StatelessWidget {
   }
 
   // ─── Section Header ────────────────────────────────────────────────────────
-  Widget _buildSectionHeader(String title, IconData icon) {
+  Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
+    final colors = context.themeColors;
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
+        Icon(icon, size: 20, color: colors.primary),
         const SizedBox(width: 8),
         Text(
           title,
           style: CustomAppFontStyle.bold16.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
       ],
@@ -162,6 +171,7 @@ class ProfilePage extends StatelessWidget {
 
   // ─── Hero Card ─────────────────────────────────────────────────────────────
   Widget _buildHeroCard({
+    required BuildContext context,
     required String fullName,
     required String jobTitle,
     required String initials,
@@ -169,11 +179,12 @@ class ProfilePage extends StatelessWidget {
     required bool isDesktop,
     required String branchName,
   }) {
+    final colors = context.themeColors;
     return CustomContainer(
       padding: const EdgeInsets.all(24),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppColors.grayE2E8F0),
-      backGroundColor: AppColors.white,
+      border: Border.all(color: colors.borderSubtle),
+      backGroundColor: colors.cardBackground,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -186,7 +197,7 @@ class ProfilePage extends StatelessWidget {
               gradient: AppGradient.primaryGradient,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.28),
+                  color: colors.primary.withValues(alpha: 0.28),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -216,7 +227,7 @@ class ProfilePage extends StatelessWidget {
                     Text(
                       fullName,
                       style: CustomAppFontStyle.bold20.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     if (isOwner)
@@ -253,7 +264,7 @@ class ProfilePage extends StatelessWidget {
                 Text(
                   jobTitle,
                   style: CustomAppFontStyle.regular14.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -286,9 +297,9 @@ class ProfilePage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.surfaceLevel1,
+                color: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,20 +307,20 @@ class ProfilePage extends StatelessWidget {
                   Text(
                     'الفرع المتصل به حالياً',
                     style: CustomAppFontStyle.regular11.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.location_on_rounded,
-                          size: 14, color: AppColors.primary),
+                      Icon(Icons.location_on_rounded,
+                          size: 14, color: colors.primary),
                       const SizedBox(width: 4),
                       Text(
                         branchName,
                         style: CustomAppFontStyle.bold13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -325,37 +336,43 @@ class ProfilePage extends StatelessWidget {
 
   // ─── Personal Info Card ────────────────────────────────────────────────────
   Widget _buildPersonalInfoCard({
+    required BuildContext context,
     required String email,
     required String phone,
     required String branchName,
     required bool isOwner,
   }) {
+    final colors = context.themeColors;
     return CustomContainer(
       padding: const EdgeInsets.all(20),
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: AppColors.grayE2E8F0),
-      backGroundColor: AppColors.white,
+      border: Border.all(color: colors.borderSubtle),
+      backGroundColor: colors.cardBackground,
       child: Column(
         children: [
           _buildInfoRow(
+            context: context,
             icon: Icons.email_outlined,
             label: 'البريد الإلكتروني',
             value: email,
           ),
-          const Divider(color: AppColors.grayE2E8F0, height: 24),
+          Divider(color: colors.borderSubtle, height: 24),
           _buildInfoRow(
+            context: context,
             icon: Icons.phone_outlined,
             label: 'رقم الهاتف',
             value: phone,
           ),
-          const Divider(color: AppColors.grayE2E8F0, height: 24),
+          Divider(color: colors.borderSubtle, height: 24),
           _buildInfoRow(
+            context: context,
             icon: Icons.business_outlined,
             label: 'الفرع الرئيسي التابع له',
             value: branchName,
           ),
-          const Divider(color: AppColors.grayE2E8F0, height: 24),
+          Divider(color: colors.borderSubtle, height: 24),
           _buildInfoRow(
+            context: context,
             icon: Icons.verified_user_outlined,
             label: 'مستوى الصلاحية بالنظام',
             value: isOwner
@@ -369,14 +386,15 @@ class ProfilePage extends StatelessWidget {
 
   // ─── Security Card ─────────────────────────────────────────────────────────
   Widget _buildSecurityCard(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<LocalPasscodeCubit, LocalPasscodeState>(
       bloc: getIt<LocalPasscodeCubit>(),
       builder: (context, passcodeState) {
         return CustomContainer(
           padding: const EdgeInsets.all(20),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
-          backGroundColor: AppColors.white,
+          border: Border.all(color: colors.borderSubtle),
+          backGroundColor: colors.cardBackground,
           child: Column(
             children: [
               // Row 1: Local Passcode
@@ -391,8 +409,8 @@ class ProfilePage extends StatelessWidget {
                           height: 40,
                           decoration: BoxDecoration(
                             color: passcodeState.isEnabled
-                                ? AppColors.primaryLight
-                                : AppColors.fillDisableColor,
+                                ? colors.primary.withValues(alpha: 0.12)
+                                : colors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
@@ -400,8 +418,8 @@ class ProfilePage extends StatelessWidget {
                                 ? Icons.lock_rounded
                                 : Icons.lock_open_rounded,
                             color: passcodeState.isEnabled
-                                ? AppColors.primary
-                                : AppColors.gray71717A,
+                                ? colors.primary
+                                : colors.textSecondary,
                             size: 20,
                           ),
                         ),
@@ -413,7 +431,7 @@ class ProfilePage extends StatelessWidget {
                               Text(
                                 'رمز القفل المحلي (Local Passcode)',
                                 style: CustomAppFontStyle.semiBold14.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -422,7 +440,7 @@ class ProfilePage extends StatelessWidget {
                                     ? 'مفعّل - القفل التلقائي بعد ${passcodeState.autoLockMinutes} دقيقة'
                                     : 'معطّل - انقر لإنشاء رمز قفل لحماية الشاشة',
                                 style: CustomAppFontStyle.regular12.copyWith(
-                                  color: AppColors.gray71717A,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -436,12 +454,12 @@ class ProfilePage extends StatelessWidget {
                     height: 36,
                     radius: 8,
                     backgroundColor: passcodeState.isEnabled
-                        ? AppColors.surfaceLevel1
-                        : AppColors.primary,
+                        ? colors.surfaceLevel1
+                        : colors.primary,
                     boxBorder: Border.all(
                       color: passcodeState.isEnabled
-                          ? AppColors.grayE2E8F0
-                          : AppColors.primary,
+                          ? colors.borderSubtle
+                          : colors.primary,
                     ),
                     onTap: () {
                       if (passcodeState.isEnabled) {
@@ -457,8 +475,8 @@ class ProfilePage extends StatelessWidget {
                           passcodeState.isEnabled ? 'إدارة' : 'تفعيل',
                           style: CustomAppFontStyle.semiBold13.copyWith(
                             color: passcodeState.isEnabled
-                                ? AppColors.darkText
-                                : AppColors.white,
+                                ? colors.textPrimary
+                                : colors.textInverse,
                           ),
                         ),
                       ),
@@ -466,7 +484,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ],
               ),
-              const Divider(color: AppColors.grayE2E8F0, height: 28),
+              Divider(color: colors.borderSubtle, height: 28),
 
               // Row 2: Account Password
               Row(
@@ -479,12 +497,12 @@ class ProfilePage extends StatelessWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: colors.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.key_rounded,
-                            color: AppColors.primary,
+                            color: colors.primary,
                             size: 20,
                           ),
                         ),
@@ -496,14 +514,14 @@ class ProfilePage extends StatelessWidget {
                               Text(
                                 'كلمة مرور الحساب',
                                 style: CustomAppFontStyle.semiBold14.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 'تحديث كلمة المرور الدخول للنظام والمنشأة',
                                 style: CustomAppFontStyle.regular12.copyWith(
-                                  color: AppColors.gray71717A,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -516,8 +534,8 @@ class ProfilePage extends StatelessWidget {
                   CustomPushButton(
                     height: 36,
                     radius: 8,
-                    backgroundColor: AppColors.surfaceLevel1,
-                    boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                    backgroundColor: colors.surfaceLevel1,
+                    boxBorder: Border.all(color: colors.borderSubtle),
                     onTap: () => ChangePasswordDialog.show(context: context),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -525,7 +543,7 @@ class ProfilePage extends StatelessWidget {
                         child: Text(
                           'تغيير',
                           style: CustomAppFontStyle.semiBold13.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ),
@@ -573,20 +591,22 @@ class ProfilePage extends StatelessWidget {
 
   // ─── Helper Info Row ───────────────────────────────────────────────────────
   Widget _buildInfoRow({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
   }) {
+    final colors = context.themeColors;
     return Row(
       children: [
         Container(
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.08),
+            color: colors.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: AppColors.primary),
+          child: Icon(icon, size: 18, color: colors.primary),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -596,14 +616,14 @@ class ProfilePage extends StatelessWidget {
               Text(
                 label,
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],

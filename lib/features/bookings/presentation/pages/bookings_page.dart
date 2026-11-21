@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/pagination_table.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
@@ -111,6 +112,7 @@ class _BookingsPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<BookingsCubit>();
+    final colors = context.themeColors;
 
     final horizontalPadding = AdaptiveLayout.getResponsiveValue(
       context: context,
@@ -137,6 +139,7 @@ class _BookingsPageView extends StatelessWidget {
         }
       },
       child: Scaffold(
+        backgroundColor: colors.scaffoldBackground,
         body: Column(
           children: [
             // Scrollable Content
@@ -201,9 +204,9 @@ class _BookingsPageView extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: colors.cardBackground,
                     border: Border(
-                      top: BorderSide(color: AppColors.grayE2E8F0, width: 1),
+                      top: BorderSide(color: colors.borderSubtle, width: 1),
                     ),
                     boxShadow: [
                       BoxShadow(

@@ -5,6 +5,7 @@ import 'package:eyadty/core/animation/fade_transition_animation.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
@@ -72,14 +73,15 @@ class _CashierPageViewState extends State<_CashierPageView>
       child: FadeTransitionAnimation(
         duration: const Duration(milliseconds: 300),
         child: Scaffold(
-          backgroundColor: AppColors.lightBackground,
+          backgroundColor: context.themeColors.scaffoldBackground,
           body: BlocBuilder<CashierCubit, CashierState>(
             builder: (context, state) {
+              final colors = context.themeColors;
               if (state.status == RequestStatusEnum.loading &&
                   state.activeShift == null &&
                   state.shiftHistory.isEmpty) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+                return Center(
+                  child: CircularProgressIndicator(color: colors.primary),
                 );
               }
 
@@ -125,6 +127,7 @@ class _CashierPageViewState extends State<_CashierPageView>
   }
 
   Widget _buildHeader(BuildContext context) {
+    final colors = context.themeColors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -135,22 +138,22 @@ class _CashierPageViewState extends State<_CashierPageView>
             Text(
               'nav_cashier_header'.tr(),
               style: CustomAppFontStyle.bold20.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'nav_cashier_subtitle'.tr(),
               style: CustomAppFontStyle.regular13.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ),
           ],
         ),
         CustomPushButton(
           height: 38,
-          backgroundColor: AppColors.white,
-          boxBorder: Border.all(color: AppColors.grayE2E8F0),
+          backgroundColor: colors.cardBackground,
+          boxBorder: Border.all(color: colors.borderSubtle),
           borderRadius: BorderRadius.circular(10),
           padding: const EdgeInsets.symmetric(horizontal: 14),
           onTap: () {
@@ -163,13 +166,13 @@ class _CashierPageViewState extends State<_CashierPageView>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.refresh_rounded,
-                  color: AppColors.darkText, size: 16),
+              Icon(Icons.refresh_rounded,
+                  color: colors.textPrimary, size: 16),
               const SizedBox(width: 6),
               Text(
                 'تحديث',
                 style: CustomAppFontStyle.medium12.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -180,11 +183,12 @@ class _CashierPageViewState extends State<_CashierPageView>
   }
 
   Widget _buildTabsSection(BuildContext context, CashierState state) {
+    final colors = context.themeColors;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -203,10 +207,10 @@ class _CashierPageViewState extends State<_CashierPageView>
               width: 380,
               child: TabBar(
                 controller: _tabController,
-                indicatorColor: AppColors.primary,
+                indicatorColor: colors.primary,
                 indicatorWeight: 3,
-                labelColor: AppColors.primary,
-                unselectedLabelColor: AppColors.gray71717A,
+                labelColor: colors.primary,
+                unselectedLabelColor: colors.textSecondary,
                 labelStyle: CustomAppFontStyle.bold14,
                 unselectedLabelStyle: CustomAppFontStyle.medium14,
                 tabs: [
@@ -216,7 +220,7 @@ class _CashierPageViewState extends State<_CashierPageView>
               ),
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: colors.borderSubtle),
 
           // Tab views
           SizedBox(

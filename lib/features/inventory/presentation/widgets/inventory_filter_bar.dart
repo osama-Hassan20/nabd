@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -36,19 +37,21 @@ class InventoryFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = AdaptiveLayout.isMobile(context);
 
+    final colors = context.themeColors;
+
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildSearchField(),
           const SizedBox(height: 10),
-          _buildCategoryChips(),
+          _buildCategoryChips(context),
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: _buildLowStockFilterChip()),
+              Expanded(child: _buildLowStockFilterChip(context)),
               const SizedBox(width: 8),
-              _buildAddButton(compact: true),
+              _buildAddButton(context, compact: true),
             ],
           ),
         ],
@@ -56,10 +59,10 @@ class InventoryFilterBar extends StatelessWidget {
     }
 
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.grayE2E8F0),
+      border: Border.all(color: colors.borderSubtle),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -74,25 +77,25 @@ class InventoryFilterBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              _buildLowStockFilterChip(),
+              _buildLowStockFilterChip(context),
               const Spacer(),
               // View transactions
               CustomPushButton(
                 height: 40,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
-                backgroundColor: AppColors.surfaceLevel1,
-                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                backgroundColor: colors.surfaceLevel1,
+                boxBorder: Border.all(color: colors.borderSubtle),
                 borderRadius: BorderRadius.circular(8),
                 onTap: onViewTransactions,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.history, size: 16, color: AppColors.darkText),
+                    Icon(Icons.history, size: 16, color: colors.textPrimary),
                     const SizedBox(width: 6),
                     Text(
                       'سجل الحركات',
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -100,12 +103,12 @@ class InventoryFilterBar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               // Add Item Button
-              _buildAddButton(compact: false),
+              _buildAddButton(context, compact: false),
             ],
           ),
           const SizedBox(height: 12),
           // Bottom Row: Category Chips
-          _buildCategoryChips(),
+          _buildCategoryChips(context),
         ],
       ),
     );
@@ -132,7 +135,8 @@ class InventoryFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChips() {
+  Widget _buildCategoryChips(BuildContext context) {
+    final colors = context.themeColors;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -146,17 +150,17 @@ class InventoryFilterBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.surfaceLevel1,
+                  color: isSelected ? colors.primary : colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : AppColors.borderSubtle,
+                    color: isSelected ? colors.primary : colors.borderSubtle,
                   ),
                 ),
                 child: Text(
                   c['label']!,
                   style: isSelected
-                      ? CustomAppFontStyle.semiBold13.copyWith(color: AppColors.white)
-                      : CustomAppFontStyle.regular13.copyWith(color: AppColors.gray),
+                      ? CustomAppFontStyle.semiBold13.copyWith(color: colors.textInverse)
+                      : CustomAppFontStyle.regular13.copyWith(color: colors.textSecondary),
                 ),
               ),
             ),
@@ -166,7 +170,8 @@ class InventoryFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildLowStockFilterChip() {
+  Widget _buildLowStockFilterChip(BuildContext context) {
+    final colors = context.themeColors;
     final active = state.onlyLowStock;
     return InkWell(
       onTap: () => cubit.toggleOnlyLowStock(!active),
@@ -174,10 +179,10 @@ class InventoryFilterBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? Colors.orange.shade50 : AppColors.surfaceLevel1,
+          color: active ? Colors.orange.withValues(alpha: 0.15) : colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: active ? Colors.orange.shade600 : AppColors.grayE2E8F0,
+            color: active ? Colors.orange : colors.borderSubtle,
             width: active ? 1.5 : 1,
           ),
         ),
@@ -187,13 +192,13 @@ class InventoryFilterBar extends StatelessWidget {
             Icon(
               Icons.warning_amber_rounded,
               size: 16,
-              color: active ? Colors.orange.shade800 : AppColors.gray71717A,
+              color: active ? Colors.orange : colors.textSecondary,
             ),
             const SizedBox(width: 6),
             Text(
               'النواقص والتنبيهات الحرجة فقط (${state.totalWarningCount})',
               style: CustomAppFontStyle.medium12.copyWith(
-                color: active ? Colors.orange.shade900 : AppColors.darkText,
+                color: active ? Colors.orange : colors.textPrimary,
                 fontWeight: active ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -203,12 +208,13 @@ class InventoryFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton({required bool compact}) {
+  Widget _buildAddButton(BuildContext context, {required bool compact}) {
+    final colors = context.themeColors;
     return CustomPushButton(
       height: 40,
       width: compact ? 40 : null,
       padding: compact ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 16),
-      backgroundColor: AppColors.primary,
+      backgroundColor: colors.primary,
       borderRadius: BorderRadius.circular(8),
       onTap: onAddItem,
       child: Center(

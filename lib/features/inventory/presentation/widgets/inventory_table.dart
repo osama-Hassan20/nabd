@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/inventory/data/models/inventory_item_model.dart';
@@ -37,34 +38,36 @@ class InventoryTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     if (items.isEmpty) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Center(
           child: Column(
             children: [
-              const Icon(
+              Icon(
                 Icons.inventory_2_outlined,
                 size: 48,
-                color: AppColors.grayMid,
+                color: colors.textSecondary,
               ),
               const SizedBox(height: 12),
               Text(
                 'لا توجد أصناف مطابقة لخيارات البحث أو الفلتر',
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'جرب تغيير كلمة البحث أو إلغاء فلتر النواقص الحرجة',
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -95,7 +98,7 @@ class InventoryTable extends StatelessWidget {
           Text(
             '$index',
             style: CustomAppFontStyle.regular13.copyWith(
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
           ),
 
@@ -107,7 +110,7 @@ class InventoryTable extends StatelessWidget {
               Text(
                 item.name,
                 style: CustomAppFontStyle.semiBold13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -116,7 +119,7 @@ class InventoryTable extends StatelessWidget {
               Text(
                 'كود: ${item.code}',
                 style: CustomAppFontStyle.regular11.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -126,13 +129,13 @@ class InventoryTable extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: colors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               item.category,
               style: CustomAppFontStyle.medium12.copyWith(
-                color: AppColors.primary,
+                color: colors.primary,
               ),
             ),
           ),
@@ -148,8 +151,8 @@ class InventoryTable extends StatelessWidget {
                   color: item.isOutOfStock
                       ? AppColors.error
                       : (item.isLowStock
-                          ? Colors.orange.shade800
-                          : AppColors.darkText),
+                          ? Colors.orange.shade700
+                          : colors.textPrimary),
                 ),
               ),
               if (item.isOutOfStock) ...[
@@ -157,7 +160,7 @@ class InventoryTable extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
+                    color: AppColors.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -172,14 +175,14 @@ class InventoryTable extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
+                    color: Colors.orange.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.orange.shade300),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
                   ),
                   child: Text(
                     'أوشك على النفاد',
                     style: CustomAppFontStyle.bold11.copyWith(
-                      color: Colors.orange.shade900,
+                      color: Colors.orange.shade800,
                     ),
                   ),
                 ),
@@ -191,7 +194,7 @@ class InventoryTable extends StatelessWidget {
           Text(
             '${item.minStockAlert} ${item.unit}',
             style: CustomAppFontStyle.regular13.copyWith(
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
           ),
 
@@ -199,7 +202,7 @@ class InventoryTable extends StatelessWidget {
           Text(
             '${item.unitCost} ج.م',
             style: CustomAppFontStyle.medium13.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
 
@@ -207,7 +210,7 @@ class InventoryTable extends StatelessWidget {
           Text(
             item.shelfLocation.isNotEmpty ? item.shelfLocation : 'غير محدد',
             style: CustomAppFontStyle.regular12.copyWith(
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
             overflow: TextOverflow.ellipsis,
           ),

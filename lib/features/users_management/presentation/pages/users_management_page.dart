@@ -5,6 +5,7 @@ import '../../../../core/cubits/session_cubit.dart';
 import '../../../../core/dependency_injection/dependency_injection.dart';
 import '../../../../core/layout_adaptive/widgets/cutom_table.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_empty_widget.dart';
@@ -48,9 +49,10 @@ class _UsersManagementView extends StatelessWidget {
       builder: (context, sessionState) {
         final currentUser = sessionState.currentUser;
         final isOwner = currentUser?.isOwner == true;
+        final colors = context.themeColors;
 
         return Scaffold(
-          backgroundColor: AppColors.lightBackground,
+          backgroundColor: colors.scaffoldBackground,
           body: BlocConsumer<StaffUsersCubit, StaffUsersState>(
         listener: (context, state) {
           if (state.errMessage != null && state.errMessage!.isNotEmpty) {
@@ -100,6 +102,7 @@ class _UsersManagementView extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, {required bool isOwner}) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final colors = context.themeColors;
 
     return Row(
       crossAxisAlignment:
@@ -112,14 +115,14 @@ class _UsersManagementView extends StatelessWidget {
               Text(
                 'users_management'.tr(),
                 style: CustomAppFontStyle.bold24.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'users_management_desc'.tr(),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -134,7 +137,7 @@ class _UsersManagementView extends StatelessWidget {
                 height: 44,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                backgroundColor: AppColors.white,
+                backgroundColor: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(10),
                 boxBorder: Border.all(color: const Color(0xFF6366F1), width: 1),
                 onTap: () => _openRolesMatrixDialog(context),
@@ -161,7 +164,7 @@ class _UsersManagementView extends StatelessWidget {
             CustomPushButton(
               height: 44,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              backgroundColor: AppColors.primary,
+              backgroundColor: colors.primary,
               borderRadius: BorderRadius.circular(10),
               onTap: () => _openAddEditUserDialog(context),
               child: Row(
@@ -193,12 +196,14 @@ class _UsersManagementView extends StatelessWidget {
     StaffUsersCubit cubit,
     StaffUsersState state,
   ) {
+    final colors = context.themeColors;
+
     if (state.status == RequestStatusEnum.loading) {
       return Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
         ),
         padding: const EdgeInsets.all(16),
         child: CustomTableShimmer(
@@ -213,9 +218,9 @@ class _UsersManagementView extends StatelessWidget {
     if (state.status == RequestStatusEnum.failure) {
       return Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: ErrorPage(
           errorMessage: state.errMessage ?? 'failed_to_load'.tr(),
@@ -229,16 +234,16 @@ class _UsersManagementView extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: CustomEmptyWidget(
           title: 'no_users_found'.tr(),
           subtitle: Text(
             'no_users_found_desc'.tr(),
             style: CustomAppFontStyle.regular13.copyWith(
-              color: AppColors.gray71717A,
+              color: colors.textSecondary,
             ),
           ),
         ),
@@ -247,9 +252,9 @@ class _UsersManagementView extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),

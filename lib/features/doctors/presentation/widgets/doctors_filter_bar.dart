@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -44,8 +45,10 @@ class DoctorsFilterBar extends StatelessWidget {
     DoctorsCubit cubit,
     DoctorsState state,
   ) {
+    final colors = context.themeColors;
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
+      border: Border.all(color: colors.borderSubtle),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       borderRaduis: 12,
       child: Row(
@@ -82,8 +85,10 @@ class DoctorsFilterBar extends StatelessWidget {
     DoctorsCubit cubit,
     DoctorsState state,
   ) {
+    final colors = context.themeColors;
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
+      border: Border.all(color: colors.borderSubtle),
       padding: const EdgeInsets.all(14),
       borderRaduis: 12,
       child: Column(
@@ -126,8 +131,10 @@ class DoctorsFilterBar extends StatelessWidget {
     DoctorsCubit cubit,
     DoctorsState state,
   ) {
+    final colors = context.themeColors;
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
+      border: Border.all(color: colors.borderSubtle),
       padding: const EdgeInsets.all(12),
       borderRaduis: 12,
       child: Column(
