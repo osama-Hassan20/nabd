@@ -4,6 +4,7 @@ import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -43,12 +44,14 @@ class BookingPriceSummaryCard extends StatelessWidget {
     final net = booking.netAmount;
     final remaining = (net - paid).clamp(0, double.infinity);
 
+    final colors = context.themeColors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.02),
@@ -81,7 +84,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
                 child: Text(
                   'disc_price_summary_title'.tr(),
                   style: CustomAppFontStyle.semiBold16.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),
@@ -107,7 +110,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 16),
 
           // 1. Original Fee Row
@@ -117,13 +120,13 @@ class BookingPriceSummaryCard extends StatelessWidget {
               Text(
                 'disc_original_price'.tr(),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               Text(
                 AppFormatterHelper.formatCurrency(originalFee),
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -157,10 +160,10 @@ class BookingPriceSummaryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.5),
+              color: colors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.2),
+                color: colors.primary.withValues(alpha: 0.25),
               ),
             ),
             child: Row(
@@ -169,13 +172,13 @@ class BookingPriceSummaryCard extends StatelessWidget {
                 Text(
                   'disc_net_amount'.tr(),
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 Text(
                   AppFormatterHelper.formatCurrency(net),
                   style: CustomAppFontStyle.bold18.copyWith(
-                    color: AppColors.primaryDark,
+                    color: colors.primary,
                   ),
                 ),
               ],
@@ -190,13 +193,13 @@ class BookingPriceSummaryCard extends StatelessWidget {
               Text(
                 'disc_paid_amount'.tr(),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               Text(
                 AppFormatterHelper.formatCurrency(paid),
                 style: CustomAppFontStyle.medium13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -208,7 +211,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
               Text(
                 'disc_remaining'.tr(),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               Text(
@@ -223,7 +226,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
           // 5. Discount Metadata (Reason, Approver)
           if (hasDiscount) ...[
             const SizedBox(height: 12),
-            const Divider(height: 1),
+            Divider(height: 1, color: colors.borderSubtle),
             const SizedBox(height: 12),
             if (booking.discountReason != null &&
                 booking.discountReason!.isNotEmpty) ...[
@@ -233,14 +236,14 @@ class BookingPriceSummaryCard extends StatelessWidget {
                   Text(
                     '${'disc_reason_label'.tr()}: ',
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                   Expanded(
                     child: Text(
                       booking.discountReason!,
                       style: CustomAppFontStyle.medium12.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ),
@@ -254,7 +257,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
                   Text(
                     '${'disc_approved_by'.tr()}: ',
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                   Text(

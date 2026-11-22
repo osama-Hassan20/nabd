@@ -5,6 +5,7 @@ import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -59,7 +60,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
                 Text(
                   'slot_picker_title'.tr(),
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.darkText,
+                    color: context.themeColors.textPrimary,
                   ),
                 ),
                 const Text(
@@ -119,29 +120,30 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     BookingsState state, {
     required bool isEnabled,
   }) {
+    final colors = context.themeColors;
     if (!isEnabled) {
       return Container(
         height: 82,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: AppColors.grayf6,
+          color: colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.info_outline,
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
                 'select_doctor_and_service_first_hint'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -157,9 +159,9 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.grayf6,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -218,14 +220,14 @@ class BookingFormSlotPickerSection extends StatelessWidget {
                 width: 44,
                 height: 82,
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: context.themeColors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(color: context.themeColors.borderSubtle),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.calendar_month_outlined,
-                    color: AppColors.primary,
+                    color: context.themeColors.primary,
                     size: 22,
                   ),
                 ),
@@ -244,6 +246,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     required DoctorAvailabilityEnum availability,
     required VoidCallback onTap,
   }) {
+    final colors = context.themeColors;
     final isAvailable = availability == DoctorAvailabilityEnum.available;
 
     Color badgeBg;
@@ -267,8 +270,8 @@ class BookingFormSlotPickerSection extends StatelessWidget {
         badgeKey = 'facility_holiday';
         break;
       case DoctorAvailabilityEnum.notWorkingDay:
-        badgeBg = AppColors.grayE2E8F0;
-        badgeText = AppColors.gray71717A;
+        badgeBg = colors.surfaceLevel1;
+        badgeText = colors.textSecondary;
         badgeKey = 'off_day';
         break;
       case DoctorAvailabilityEnum.noSchedule:
@@ -289,12 +292,12 @@ class BookingFormSlotPickerSection extends StatelessWidget {
         width: 72,
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.white,
+          color: isSelected ? colors.primary.withValues(alpha: 0.12) : colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? AppColors.primary
-                : (isAvailable ? AppColors.grayE2E8F0 : AppColors.grayE2E8F0.withValues(alpha: 0.5)),
+                ? colors.primary
+                : (isAvailable ? colors.borderSubtle : colors.borderSubtle.withValues(alpha: 0.5)),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -306,7 +309,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: CustomAppFontStyle.medium11.copyWith(
-                color: isSelected ? AppColors.primary : AppColors.gray71717A,
+                color: isSelected ? colors.primary : colors.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -314,7 +317,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
             Text(
               dayNum,
               style: CustomAppFontStyle.bold14.copyWith(
-                color: isSelected ? AppColors.primary : AppColors.darkText,
+                color: isSelected ? colors.primary : colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -453,7 +456,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
         Text(
           title,
           style: CustomAppFontStyle.semiBold12.copyWith(
-            color: AppColors.darkText,
+            color: context.themeColors.textPrimary,
           ),
         ),
       ],
@@ -487,6 +490,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final colors = context.themeColors;
     final status = slot.status ?? SlotStatusEnum.available;
     final isClickable = slot.isAvailable || slot.isCurrentBookingSlot == true;
 
@@ -497,36 +501,36 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     String tooltipMsg = '';
 
     if (isSelected) {
-      bg = AppColors.primary;
-      border = AppColors.primary;
-      text = AppColors.white;
-      icon = const Icon(Icons.check, size: 14, color: AppColors.white);
+      bg = colors.primary;
+      border = colors.primary;
+      text = Colors.white;
+      icon = const Icon(Icons.check, size: 14, color: Colors.white);
       tooltipMsg = 'selected_slot_summary'.tr();
     } else if (slot.isCurrentBookingSlot == true) {
-      bg = AppColors.primary.withValues(alpha: 0.1);
-      border = AppColors.primary;
-      text = AppColors.primary;
+      bg = colors.primary.withValues(alpha: 0.12);
+      border = colors.primary;
+      text = colors.primary;
       tooltipMsg = 'current_appointment'.tr();
     } else {
       switch (status) {
         case SlotStatusEnum.available:
-          bg = AppColors.white;
-          border = AppColors.grayE2E8F0;
-          text = AppColors.darkText;
+          bg = colors.surfaceLevel1;
+          border = colors.borderSubtle;
+          text = colors.textPrimary;
           tooltipMsg = 'slot_available'.tr();
           break;
         case SlotStatusEnum.booked:
-          bg = AppColors.grayf6;
-          border = AppColors.grayE2E8F0;
-          text = AppColors.gray71717A;
-          icon = const Icon(Icons.lock_outline, size: 12, color: AppColors.gray71717A);
+          bg = colors.cardBackground;
+          border = colors.borderSubtle;
+          text = colors.textSecondary.withValues(alpha: 0.6);
+          icon = Icon(Icons.lock_outline, size: 12, color: colors.textSecondary);
           tooltipMsg = '${'slot_booked'.tr()}: ${slot.bookedPatientName ?? ''}';
           break;
         case SlotStatusEnum.past:
-          bg = AppColors.grayf6;
-          border = AppColors.grayE2E8F0.withValues(alpha: 0.5);
-          text = AppColors.gray71717A.withValues(alpha: 0.6);
-          icon = const Icon(Icons.history, size: 12, color: AppColors.gray71717A);
+          bg = colors.cardBackground;
+          border = colors.borderSubtle.withValues(alpha: 0.5);
+          text = colors.textSecondary.withValues(alpha: 0.4);
+          icon = Icon(Icons.history, size: 12, color: colors.textSecondary);
           tooltipMsg = 'slot_past'.tr();
           break;
         case SlotStatusEnum.breakTime:
@@ -537,10 +541,10 @@ class BookingFormSlotPickerSection extends StatelessWidget {
           tooltipMsg = 'slot_break_time'.tr();
           break;
         case SlotStatusEnum.insufficientTime:
-          bg = AppColors.grayf6;
-          border = AppColors.grayE2E8F0;
-          text = AppColors.gray71717A.withValues(alpha: 0.6);
-          icon = const Icon(Icons.hourglass_empty, size: 12, color: AppColors.gray71717A);
+          bg = colors.cardBackground;
+          border = colors.borderSubtle;
+          text = colors.textSecondary.withValues(alpha: 0.4);
+          icon = Icon(Icons.hourglass_empty, size: 12, color: colors.textSecondary);
           tooltipMsg = 'slot_insufficient_time'.tr();
           break;
       }
@@ -605,26 +609,27 @@ class BookingFormSlotPickerSection extends StatelessWidget {
 
   // ─── 3. مفتاح الألوان (Legend) ─────────────────────────────────────────────
   Widget _buildLegend(BuildContext context) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.grayf6,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Wrap(
         spacing: 14,
         runSpacing: 6,
         children: [
-          _buildLegendItem('slot_available'.tr(), AppColors.success),
-          _buildLegendItem('slot_booked'.tr(), AppColors.gray71717A),
-          _buildLegendItem('slot_break_time'.tr(), AppColors.warning),
-          _buildLegendItem('slot_past'.tr(), AppColors.grayE2E8F0),
+          _buildLegendItem('slot_available'.tr(), AppColors.success, colors),
+          _buildLegendItem('slot_booked'.tr(), colors.textSecondary, colors),
+          _buildLegendItem('slot_break_time'.tr(), AppColors.warning, colors),
+          _buildLegendItem('slot_past'.tr(), colors.borderSubtle, colors),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem(String label, Color color) {
+  Widget _buildLegendItem(String label, Color color, AppThemeColors colors) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -636,7 +641,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: CustomAppFontStyle.regular10.copyWith(color: AppColors.gray71717A),
+          style: CustomAppFontStyle.regular10.copyWith(color: colors.textSecondary),
         ),
       ],
     );
@@ -679,14 +684,14 @@ class BookingFormSlotPickerSection extends StatelessWidget {
               Text(
                 '${form.durationMinutes} ${'minutes'.tr()}',
                 style: CustomAppFontStyle.medium12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: context.themeColors.textSecondary,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 '${form.consultationFee} ${'currency'.tr()}',
                 style: CustomAppFontStyle.bold13.copyWith(
-                  color: AppColors.darkText,
+                  color: context.themeColors.textPrimary,
                 ),
               ),
             ],
@@ -725,7 +730,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
           Expanded(
             child: Text(
               'doctor_no_schedule_hint'.tr(),
-              style: CustomAppFontStyle.medium12.copyWith(color: AppColors.darkText),
+              style: CustomAppFontStyle.medium12.copyWith(color: context.themeColors.textPrimary),
             ),
           ),
           if (isAdmin && doctorId != null) ...[
@@ -812,7 +817,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
                 child: Text(
                   'confirm_conflict_and_proceed'.tr(),
                   style: CustomAppFontStyle.medium11.copyWith(
-                    color: AppColors.darkText,
+                    color: context.themeColors.textPrimary,
                   ),
                 ),
               ),

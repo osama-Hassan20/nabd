@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
@@ -36,16 +37,24 @@ class BookingDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     if (bookingsCubit != null) {
       return BlocProvider.value(
         value: bookingsCubit!..getBookingDetails(bookingId),
-        child: Scaffold(body: const _BookingDetailsView()),
+        child: Scaffold(
+          backgroundColor: colors.scaffoldBackground,
+          body: const _BookingDetailsView(),
+        ),
       );
     }
 
     return BlocProvider<BookingsCubit>(
       create: (context) => getIt<BookingsCubit>()..getBookingDetails(bookingId),
-      child: Scaffold(body: const _BookingDetailsView()),
+      child: Scaffold(
+        backgroundColor: colors.scaffoldBackground,
+        body: const _BookingDetailsView(),
+      ),
     );
   }
 }

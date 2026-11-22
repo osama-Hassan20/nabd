@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
@@ -17,10 +18,12 @@ class BookingFormFooterActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Divider(height: 1, color: AppColors.grayE2E8F0),
+        Divider(height: 1, color: colors.borderSubtle),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
@@ -32,14 +35,15 @@ class BookingFormFooterActions extends StatelessWidget {
               CustomPushButton(
                 height: 44,
                 width: 100,
-                backgroundColor: AppColors.grayf2,
+                backgroundColor: colors.surfaceLevel1,
+                boxBorder: Border.all(color: colors.borderSubtle),
                 borderRadius: BorderRadius.circular(8),
                 onTap: () => context.pop(),
                 child: Center(
                   child: Text(
                     'cancel'.tr(),
                     style: CustomAppFontStyle.medium14.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),

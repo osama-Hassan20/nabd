@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 
@@ -10,12 +11,14 @@ class BookingDetailsNotesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.02),
@@ -33,26 +36,26 @@ class BookingDetailsNotesSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.grayf2,
+                  color: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notes_rounded,
                   size: 18,
-                  color: AppColors.darkText,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'notes_label'.tr(),
                 style: CustomAppFontStyle.semiBold16.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 16),
 
           // Notes Content Box
@@ -60,14 +63,14 @@ class BookingDetailsNotesSection extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.grayf6,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Text(
               notes,
               style: CustomAppFontStyle.regular14.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
                 height: 1.5,
               ),
             ),

@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 
 class BookingFormHeader extends StatelessWidget {
@@ -10,6 +10,8 @@ class BookingFormHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -24,14 +26,14 @@ class BookingFormHeader extends StatelessWidget {
               Text(
                 isEdit ? 'edit_booking'.tr() : 'add_new_booking'.tr(),
                 style: CustomAppFontStyle.semiBold18.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
-              const CloseButton(),
+              CloseButton(color: colors.textSecondary),
             ],
           ),
         ),
-        const Divider(height: 1, color: AppColors.grayE2E8F0),
+        Divider(height: 1, color: colors.borderSubtle),
       ],
     );
   }

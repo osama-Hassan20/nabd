@@ -6,8 +6,10 @@ import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
+import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/shared/widgets/custom_stack_selector.dart';
@@ -76,13 +78,15 @@ class BookingDiscountSection extends StatelessWidget {
     final discountAmount = form?.discountAmount ?? 0;
     final netAmount = form?.netAmount ?? fee;
 
+    final colors = context.themeColors;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.borderSubtle,
+          color: colors.borderSubtle,
         ),
       ),
       child: Column(
@@ -90,17 +94,16 @@ class BookingDiscountSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.local_offer_outlined,
                 size: 18,
-                color: AppColors.primaryViolet,
+                color: colors.primary,
               ),
               const SizedBox(width: 8),
               Text(
                 'disc_section_title'.tr(),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                style: CustomAppFontStyle.bold15.copyWith(
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -228,8 +231,9 @@ class BookingDiscountSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLevel1,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Column(
               children: [
@@ -238,14 +242,17 @@ class BookingDiscountSection extends StatelessWidget {
                   children: [
                     Text(
                       'disc_original_price'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                     Text(
                       AppFormatterHelper.formatCurrency(fee),
-                      style: const TextStyle(fontSize: 13),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -256,39 +263,40 @@ class BookingDiscountSection extends StatelessWidget {
                     children: [
                       Text(
                         'disc_discount_amount'.tr(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                       Text(
                         '- ${AppFormatterHelper.formatCurrency(discountAmount)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.primaryViolet,
+                          color: colors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                 ],
-                const Divider(height: 16),
+                Divider(height: 16, color: colors.borderSubtle),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'disc_net_amount'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
                       ),
                     ),
                     Text(
                       AppFormatterHelper.formatCurrency(netAmount),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primaryViolet,
+                        color: colors.primary,
                       ),
                     ),
                   ],

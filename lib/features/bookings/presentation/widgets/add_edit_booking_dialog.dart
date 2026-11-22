@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
@@ -411,6 +412,7 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     final form = state.formState;
     final selectedDoctorId = form?.technician?.id;
 
+    final colors = context.themeColors;
     if (!state.isSingleDoctorMode &&
         (selectedDoctorId == null || selectedDoctorId.isEmpty)) {
       return Column(
@@ -418,29 +420,31 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
         children: [
           Text(
             '${'select_medical_service'.tr()} *',
-            style: CustomAppFontStyle.bold14,
+            style: CustomAppFontStyle.bold14.copyWith(
+              color: colors.textPrimary,
+            ),
           ),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.grayE2E8F0.withValues(alpha: 0.35),
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline_rounded,
                   size: 18,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'يرجى اختيار الطبيب المعالج أولاً لعرض الخدمات والأسعار المتاحة لهذا الطبيب.',
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),
@@ -503,14 +507,15 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
       },
       builder: (context, state) {
         final isLoading = state.actionStatus == RequestStatusEnum.loading;
+        final colors = context.themeColors;
 
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Container(
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Column(
               children: [

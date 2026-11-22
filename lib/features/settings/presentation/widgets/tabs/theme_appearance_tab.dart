@@ -154,31 +154,40 @@ class ThemeAppearanceTab extends StatelessWidget {
 
   Widget _buildThemesGrid(BuildContext context, AppThemeMode activeMode) {
     final cubit = getIt<AppThemeCubit>();
-    final isDesktop = AdaptiveLayout.isDesktop(context);
 
-    final cards = AppThemeMode.values.map((mode) {
-      final isSelected = mode == activeMode;
-      final modeColors = AppThemeColors.forMode(mode);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        int crossAxisCount = 1;
+        if (availableWidth >= 900) {
+          crossAxisCount = 3;
+        } else if (availableWidth >= 560) {
+          crossAxisCount = 2;
+        }
 
-      return _ThemeCardItem(
-        mode: mode,
-        isSelected: isSelected,
-        colors: modeColors,
-        onTap: () => cubit.setThemeMode(mode),
-      );
-    }).toList();
+        final itemWidth =
+            ((availableWidth - ((crossAxisCount - 1) * 16)) / crossAxisCount)
+                .clamp(230.0, 360.0);
 
-    if (isDesktop) {
-      return Wrap(
-        spacing: 16,
-        runSpacing: 16,
-        children: cards.map((c) => SizedBox(width: 280, child: c)).toList(),
-      );
-    }
+        return Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: AppThemeMode.values.map((mode) {
+            final isSelected = mode == activeMode;
+            final modeColors = AppThemeColors.forMode(mode);
 
-    return Column(
-      spacing: 12,
-      children: cards,
+            return SizedBox(
+              width: itemWidth,
+              child: _ThemeCardItem(
+                mode: mode,
+                isSelected: isSelected,
+                colors: modeColors,
+                onTap: () => cubit.setThemeMode(mode),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 

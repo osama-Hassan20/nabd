@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -31,12 +32,14 @@ class BookingDetailsTechniciansSection extends StatelessWidget {
                 ]
               : <TechnicianModel>[]);
 
+    final colors = context.themeColors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.02),
@@ -69,7 +72,7 @@ class BookingDetailsTechniciansSection extends StatelessWidget {
                 child: Text(
                   'assigned_technicians'.tr(),
                   style: CustomAppFontStyle.semiBold16.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),

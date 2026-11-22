@@ -104,7 +104,8 @@ class _CustomStackSelectorState<T> extends State<CustomStackSelector<T>> {
     FocusManager.instance.primaryFocus?.unfocus();
 
     if (widget.list.isNotEmpty || widget.isLoadingMore) {
-      final isDark = context.isDarkMode;
+      final colors = context.themeColors;
+    final isDark = context.isDarkMode;
       final baseHeight = widget.enableSearch ? 300.0 : 250.0;
       final extraHeight = !widget.closeOnSelect ? 50.0 : 0.0;
       showPopover(
@@ -115,7 +116,7 @@ class _CustomStackSelectorState<T> extends State<CustomStackSelector<T>> {
         height: baseHeight + extraHeight,
         arrowHeight: 10,
         arrowWidth: 20,
-        backgroundColor: isDark ? AppColors.darkBackground : AppColors.white,
+        backgroundColor: context.themeColors.cardBackground,
         barrierColor: Colors.black26,
       );
     }
@@ -252,6 +253,7 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final isDark = context.isDarkMode;
 
     return Column(
@@ -280,7 +282,7 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
           ),
           Divider(
             height: 1,
-            color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
+            color: colors.borderSubtle,
           ),
         ],
         if (_filteredList.isEmpty && !widget.isLoading)
@@ -297,7 +299,7 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
                       child: Text(
                         'no_search_results'.tr(),
                         style: CustomAppFontStyle.regular13.copyWith(
-                          color: isDark ? AppColors.grayE2E8F0 : AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -314,7 +316,7 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
                 itemCount: _filteredList.length + (widget.isLoading ? 1 : 0),
                 separatorBuilder: (context, index) => Divider(
                   height: 1,
-                  color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
+                  color: colors.borderSubtle,
                 ),
                 itemBuilder: (context, index) {
                   if (index == _filteredList.length) {
@@ -348,7 +350,7 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
                           : Text(
                               widget.itemAsString(item),
                               style: CustomAppFontStyle.regular14.copyWith(
-                                color: isDark ? AppColors.white : AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                     ),
@@ -360,7 +362,7 @@ class _PopoverContentBodyState<T> extends State<_PopoverContentBody<T>> {
         if (!widget.closeOnSelect) ...[
           Divider(
             height: 1,
-            color: isDark ? AppColors.gray334155 : AppColors.grayE2E8F0,
+            color: colors.borderSubtle,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

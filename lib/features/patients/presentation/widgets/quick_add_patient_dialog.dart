@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/helpers/egyptian_phone_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
@@ -189,14 +190,15 @@ class QuickAddPatientDialog extends StatelessWidget {
         final isDuplicate = hasError &&
             (state.actionErrMessage?.contains('مسجل بالفعل') ?? false);
 
+        final colors = context.themeColors;
         final content = Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius:
                 isFullScreen ? BorderRadius.zero : BorderRadius.circular(16),
             border:
-                isFullScreen ? null : Border.all(color: AppColors.grayE2E8F0),
+                isFullScreen ? null : Border.all(color: colors.borderSubtle),
             boxShadow: isFullScreen
                 ? null
                 : [
@@ -240,14 +242,14 @@ class QuickAddPatientDialog extends StatelessWidget {
                           Text(
                             'quick_add_patient'.tr(),
                             style: CustomAppFontStyle.semiBold18.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'quick_add_patient_desc'.tr(),
                             style: CustomAppFontStyle.regular12.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
@@ -398,7 +400,7 @@ class QuickAddPatientDialog extends StatelessWidget {
                       child: Text(
                         'phone_has_whatsapp'.tr(),
                         style: CustomAppFontStyle.regular13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
@@ -415,7 +417,7 @@ class QuickAddPatientDialog extends StatelessWidget {
                         Text(
                           '${'date_of_birth'.tr()} (${'optional_field'.tr()})',
                           style: CustomAppFontStyle.medium14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         if (form.ageYears != null) ...[
@@ -453,16 +455,16 @@ class QuickAddPatientDialog extends StatelessWidget {
                         height: 48,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
-                          color: AppColors.white,
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.grayE2E8F0),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.calendar_today_outlined,
                               size: 18,
-                              color: AppColors.primary,
+                              color: colors.primary,
                             ),
                             const SizedBox(width: 10),
                             Text(
@@ -471,8 +473,8 @@ class QuickAddPatientDialog extends StatelessWidget {
                                   : 'date_of_birth_hint'.tr(),
                               style: CustomAppFontStyle.regular14.copyWith(
                                 color: form.dateOfBirth != null
-                                    ? AppColors.darkText
-                                    : AppColors.gray71717A,
+                                    ? colors.textPrimary
+                                    : colors.textSecondary,
                               ),
                             ),
                           ],
@@ -492,7 +494,7 @@ class QuickAddPatientDialog extends StatelessWidget {
                         Text(
                           '${'gender'.tr()} (${'optional_field'.tr()})',
                           style: CustomAppFontStyle.medium14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ],
@@ -508,13 +510,13 @@ class QuickAddPatientDialog extends StatelessWidget {
                               height: 44,
                               decoration: BoxDecoration(
                                 color: form.gender == GenderEnum.male
-                                    ? AppColors.primaryLight
-                                    : AppColors.white,
+                                    ? colors.primary.withValues(alpha: 0.12)
+                                    : colors.surfaceLevel1,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: form.gender == GenderEnum.male
-                                      ? AppColors.primary
-                                      : AppColors.grayE2E8F0,
+                                      ? colors.primary
+                                      : colors.borderSubtle,
                                 ),
                               ),
                               child: Row(
@@ -524,16 +526,16 @@ class QuickAddPatientDialog extends StatelessWidget {
                                     Icons.male_rounded,
                                     size: 18,
                                     color: form.gender == GenderEnum.male
-                                        ? AppColors.primary
-                                        : AppColors.gray71717A,
+                                        ? colors.primary
+                                        : colors.textSecondary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'gender_male'.tr(),
                                     style: CustomAppFontStyle.medium14.copyWith(
                                       color: form.gender == GenderEnum.male
-                                          ? AppColors.primary
-                                          : AppColors.darkText,
+                                          ? colors.primary
+                                          : colors.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -550,13 +552,13 @@ class QuickAddPatientDialog extends StatelessWidget {
                               height: 44,
                               decoration: BoxDecoration(
                                 color: form.gender == GenderEnum.female
-                                    ? AppColors.primaryLight
-                                    : AppColors.white,
+                                    ? colors.primary.withValues(alpha: 0.12)
+                                    : colors.surfaceLevel1,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: form.gender == GenderEnum.female
-                                      ? AppColors.primary
-                                      : AppColors.grayE2E8F0,
+                                      ? colors.primary
+                                      : colors.borderSubtle,
                                 ),
                               ),
                               child: Row(
@@ -566,16 +568,16 @@ class QuickAddPatientDialog extends StatelessWidget {
                                     Icons.female_rounded,
                                     size: 18,
                                     color: form.gender == GenderEnum.female
-                                        ? AppColors.primary
-                                        : AppColors.gray71717A,
+                                        ? colors.primary
+                                        : colors.textSecondary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'gender_female'.tr(),
                                     style: CustomAppFontStyle.medium14.copyWith(
                                       color: form.gender == GenderEnum.female
-                                          ? AppColors.primary
-                                          : AppColors.darkText,
+                                          ? colors.primary
+                                          : colors.textPrimary,
                                     ),
                                   ),
                                 ],

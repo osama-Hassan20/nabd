@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart' as ez;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
-import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -319,6 +319,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final title = widget.title ?? 'تاريخ الميلاد';
 
     return Dialog(
@@ -329,12 +330,12 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 680),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -353,7 +354,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                       child: Text(
                         title,
                         style: CustomAppFontStyle.bold16.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
@@ -361,14 +362,14 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close_rounded, size: 20),
                       visualDensity: VisualDensity.compact,
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                       tooltip: 'إغلاق',
                     ),
                   ],
                 ),
               ),
 
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
 
               // ── Three-panel row (Right: Days | Mid: Months | Left: Years) ─
               SizedBox(
@@ -377,17 +378,17 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                   children: [
                     // Right panel (Days Calendar)
                     Expanded(flex: 5, child: _buildCalendarPanel()),
-                    Container(width: 1, color: AppColors.grayE2E8F0),
+                    Container(width: 1, color: colors.borderSubtle),
                     // Middle panel (Months)
                     Expanded(flex: 3, child: _buildMonthPanel()),
-                    Container(width: 1, color: AppColors.grayE2E8F0),
+                    Container(width: 1, color: colors.borderSubtle),
                     // Left panel (Years)
                     Expanded(flex: 3, child: _buildYearPanel()),
                   ],
                 ),
               ),
 
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
 
               // ── Bottom Bar ──────────────────────────────────────────────
               _buildBottomBar(),
@@ -401,6 +402,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
   // ─── Calendar Panel (Days) ──────────────────────────────────────────────────
 
   Widget _buildCalendarPanel() {
+    final colors = context.themeColors;
     final daysInMonth = _daysInMonth(_selectedYear, _selectedMonth);
     // Sunday is index 0 in _dayHeaders ('ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س')
     final firstWeekday = DateTime(_selectedYear, _selectedMonth, 1).weekday;
@@ -418,7 +420,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                       child: Text(
                         d,
                         style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -460,8 +462,8 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: isSelected
-                        ? const BoxDecoration(
-                            color: AppColors.primaryLight,
+                        ? BoxDecoration(
+                            color: colors.primary,
                             shape: BoxShape.circle,
                           )
                         : null,
@@ -469,12 +471,12 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                       '$day',
                       style: isSelected
                           ? CustomAppFontStyle.bold13.copyWith(
-                              color: AppColors.primary,
+                              color: Colors.white,
                             )
                           : CustomAppFontStyle.regular13.copyWith(
                               color: isDisabled
-                                  ? AppColors.grayE2E8F0
-                                  : AppColors.darkText,
+                                  ? colors.textMuted.withValues(alpha: 0.4)
+                                  : colors.textPrimary,
                             ),
                     ),
                   ),
@@ -490,6 +492,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
   // ─── Month Panel ────────────────────────────────────────────────────────────
 
   Widget _buildMonthPanel() {
+    final colors = context.themeColors;
     return ListView.builder(
       controller: _monthScrollController,
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -513,7 +516,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
           child: Container(
             alignment: Alignment.center,
             color: isSelected
-                ? AppColors.primaryLight.withValues(alpha: 0.5)
+                ? colors.primaryLight
                 : Colors.transparent,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
@@ -521,10 +524,10 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
               textAlign: TextAlign.center,
               style: isSelected
                   ? CustomAppFontStyle.bold13.copyWith(
-                      color: AppColors.primary,
+                      color: colors.primary,
                     )
                   : CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
             ),
           ),
@@ -536,6 +539,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
   // ─── Year Panel ─────────────────────────────────────────────────────────────
 
   Widget _buildYearPanel() {
+    final colors = context.themeColors;
     final firstYear = widget.firstDate.year;
     final lastYear = widget.lastDate.year;
     final totalYears = lastYear - firstYear + 1;
@@ -566,17 +570,17 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
           child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryLight : Colors.transparent,
+              color: isSelected ? colors.primaryLight : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '$year',
               style: isSelected
                   ? CustomAppFontStyle.bold13.copyWith(
-                      color: AppColors.primary,
+                      color: colors.primary,
                     )
                   : CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
             ),
           ),
@@ -588,6 +592,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
   // ─── Bottom Bar ─────────────────────────────────────────────────────────────
 
   Widget _buildBottomBar() {
+    final colors = context.themeColors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -605,7 +610,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
             child: Text(
               '-',
               style: CustomAppFontStyle.bold16.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -621,7 +626,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
             child: Text(
               '-',
               style: CustomAppFontStyle.bold16.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -645,22 +650,23 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
+                  color: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time_rounded,
                       size: 16,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       _selectedTime.format(context),
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -690,8 +696,8 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                disabledBackgroundColor: AppColors.grayE2E8F0,
+                backgroundColor: colors.primary,
+                disabledBackgroundColor: colors.fillDisabled,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -704,7 +710,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
               child: Text(
                 'confirm'.tr(),
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: AppColors.white,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -721,6 +727,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
     required ValueChanged<String> onSubmitted,
     ValueChanged<String>? onChanged,
   }) {
+    final colors = context.themeColors;
     return SizedBox(
       width: width,
       height: 38,
@@ -730,26 +737,29 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
         keyboardType: TextInputType.number,
         maxLength: maxLength,
         style: CustomAppFontStyle.bold14.copyWith(
-          color: AppColors.darkText,
+          color: colors.textPrimary,
         ),
+        cursorColor: colors.primary,
         decoration: InputDecoration(
           counterText: '',
           isDense: true,
+          filled: true,
+          fillColor: colors.inputBackground,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 4,
             vertical: 8,
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.grayE2E8F0),
+            borderSide: BorderSide(color: colors.inputBorder),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.grayE2E8F0),
+            borderSide: BorderSide(color: colors.inputBorder),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            borderSide: BorderSide(color: colors.primary, width: 1.5),
           ),
         ),
         onSubmitted: onSubmitted,

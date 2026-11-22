@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -37,9 +38,14 @@ class BookingActionsMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return PopupMenuButton<String>(
-      color: AppColors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      color: colors.cardBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colors.borderSubtle),
+      ),
       elevation: 6,
       icon: Icon(Icons.more_vert, size: iconSize, color: iconColor),
       onSelected: (value) {
@@ -168,15 +174,20 @@ class BookingActionsMenu extends StatelessWidget {
             value: 'view_details',
             child: Row(
               children: [
-                const CustomAssetImage(
+                CustomAssetImage(
                   path: AppIcons.visibileOn,
                   width: 16,
                   height: 16,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('view_details'.tr(), style: CustomAppFontStyle.regular13),
+                  child: Text(
+                    'view_details'.tr(),
+                    style: CustomAppFontStyle.regular13.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -194,7 +205,12 @@ class BookingActionsMenu extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('change_status'.tr(), style: CustomAppFontStyle.regular13),
+                  child: Text(
+                    'change_status'.tr(),
+                    style: CustomAppFontStyle.regular13.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -204,15 +220,20 @@ class BookingActionsMenu extends StatelessWidget {
             value: 'edit',
             child: Row(
               children: [
-                const CustomAssetImage(
+                CustomAssetImage(
                   path: AppIcons.edit,
                   width: 16,
                   height: 16,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('edit_medical_appointment'.tr(), style: CustomAppFontStyle.regular13),
+                  child: Text(
+                    'edit_medical_appointment'.tr(),
+                    style: CustomAppFontStyle.regular13.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -232,7 +253,9 @@ class BookingActionsMenu extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'transfer_doctor'.tr(),
-                    style: CustomAppFontStyle.regular13,
+                    style: CustomAppFontStyle.regular13.copyWith(
+                      color: colors.textPrimary,
+                    ),
                   ),
                 ),
               ],

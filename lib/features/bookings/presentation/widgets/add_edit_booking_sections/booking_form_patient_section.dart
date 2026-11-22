@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -102,29 +103,30 @@ class BookingFormPatientSection extends StatelessWidget {
                   );
                 },
                 itemBuilder: (context, c) {
+                  final colors = context.themeColors;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         c.name,
                         style: CustomAppFontStyle.semiBold14.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.phone_outlined,
                             size: 12,
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             c.phone,
                             textDirection: TextDirection.ltr,
                             style: CustomAppFontStyle.regular12.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],

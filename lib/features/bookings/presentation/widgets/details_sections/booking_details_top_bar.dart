@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -58,6 +59,7 @@ class BookingDetailsTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final status = booking.status ?? BookingStatusEnum.scheduled;
     final bookingType = booking.bookingType;
     final paymentStatus = booking.paymentStatus;
@@ -66,9 +68,9 @@ class BookingDetailsTopBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.03),
@@ -93,23 +95,23 @@ class BookingDetailsTopBar extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.grayf6,
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.grayE2E8F0),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.arrow_back_ios_new,
                         size: 14,
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'back_to_bookings'.tr(),
                         style: CustomAppFontStyle.medium13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -236,9 +238,9 @@ class BookingDetailsTopBar extends StatelessWidget {
                 height: 42,
                 width: isMobile ? double.infinity : null,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                backgroundColor: AppColors.white,
+                backgroundColor: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(8),
-                border: BorderSide(color: AppColors.grayE2E8F0),
+                border: BorderSide(color: colors.borderSubtle),
                 onTap: onChangeStatus,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -254,7 +256,7 @@ class BookingDetailsTopBar extends StatelessWidget {
                     Text(
                       'change_status'.tr(),
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -266,9 +268,9 @@ class BookingDetailsTopBar extends StatelessWidget {
                 height: 42,
                 width: isMobile ? double.infinity : null,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                backgroundColor: AppColors.white,
+                backgroundColor: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(8),
-                border: BorderSide(color: AppColors.grayE2E8F0),
+                border: BorderSide(color: colors.borderSubtle),
                 onTap: onReassign,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -284,7 +286,7 @@ class BookingDetailsTopBar extends StatelessWidget {
                     Text(
                       'reassign_technician'.tr(),
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],

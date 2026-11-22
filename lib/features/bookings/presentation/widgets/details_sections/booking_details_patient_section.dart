@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -31,12 +32,14 @@ class BookingDetailsPatientSection extends StatelessWidget {
     final patientPhone = booking.patientPhone ?? booking.customerPhone;
     final patientAddress = booking.customerAddress;
 
+    final colors = context.themeColors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.02),
@@ -68,13 +71,13 @@ class BookingDetailsPatientSection extends StatelessWidget {
               Text(
                 'patient_info'.tr(),
                 style: CustomAppFontStyle.semiBold16.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 16),
 
           // Patient Name & Avatar
@@ -100,7 +103,7 @@ class BookingDetailsPatientSection extends StatelessWidget {
                     Text(
                       patientName ?? 'patient_unassigned'.tr(),
                       style: CustomAppFontStyle.semiBold15.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     if (patientId != null) ...[
@@ -108,7 +111,7 @@ class BookingDetailsPatientSection extends StatelessWidget {
                       Text(
                         'ID: $patientId',
                         style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ],

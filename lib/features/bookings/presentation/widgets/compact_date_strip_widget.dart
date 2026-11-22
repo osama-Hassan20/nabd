@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -210,6 +211,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final locale = context.locale.languageCode;
     final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -235,9 +237,9 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -255,7 +257,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                   Text(
                     monthName,
                     style: CustomAppFontStyle.semiBold15.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -309,7 +311,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                           child: Text(
                             selectedDayDescription,
                             style: CustomAppFontStyle.regular12.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -386,23 +388,23 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary
+                          ? colors.primary
                           : (isToday
-                                ? AppColors.primaryLight
-                                : AppColors.white),
+                                ? colors.primaryLight
+                                : colors.surfaceLevel1),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected
-                            ? AppColors.primary
+                            ? colors.primary
                             : (isToday
-                                  ? AppColors.primary
-                                  : AppColors.grayE2E8F0),
+                                  ? colors.primary
+                                  : colors.borderSubtle),
                         width: (isSelected || isToday) ? 1.5 : 1.0,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppColors.primary.withValues(
+                                color: colors.primary.withValues(
                                   alpha: 0.22,
                                 ),
                                 blurRadius: 6,
@@ -418,10 +420,10 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                           dayName,
                           style: CustomAppFontStyle.regular11.copyWith(
                             color: isSelected
-                                ? AppColors.white.withValues(alpha: 0.85)
+                                ? Colors.white.withValues(alpha: 0.85)
                                 : (isToday
-                                      ? AppColors.primary
-                                      : AppColors.gray71717A),
+                                      ? colors.primary
+                                      : colors.textSecondary),
                           ),
                         ),
                         const SizedBox(height: 3),
@@ -429,10 +431,10 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                           dayNumber.toString(),
                           style: CustomAppFontStyle.bold15.copyWith(
                             color: isSelected
-                                ? AppColors.white
+                                ? Colors.white
                                 : (isToday
-                                      ? AppColors.primary
-                                      : AppColors.darkText),
+                                      ? colors.primary
+                                      : colors.textPrimary),
                           ),
                         ),
                         if (isToday) ...[
@@ -443,8 +445,8 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isSelected
-                                  ? AppColors.white
-                                  : AppColors.primary,
+                                  ? Colors.white
+                                  : colors.primary,
                             ),
                           ),
                         ],
@@ -474,13 +476,14 @@ class _NavigationGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return Container(
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
-        color: AppColors.grayf2,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -491,7 +494,11 @@ class _NavigationGroup extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-              child: CustomAssetImage(path: AppIcons.arrowForward, width: 12),
+              child: CustomAssetImage(
+                path: AppIcons.arrowForward,
+                width: 12,
+                color: colors.textPrimary,
+              ),
             ),
           ),
           Padding(
@@ -499,7 +506,7 @@ class _NavigationGroup extends StatelessWidget {
             child: Text(
               label,
               style: CustomAppFontStyle.medium11.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
           ),
@@ -509,7 +516,11 @@ class _NavigationGroup extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-              child: CustomAssetImage(path: AppIcons.arrowBack, width: 12),
+              child: CustomAssetImage(
+                path: AppIcons.arrowBack,
+                width: 12,
+                color: colors.textPrimary,
+              ),
             ),
           ),
         ],
@@ -526,6 +537,7 @@ class _TodayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -533,19 +545,19 @@ class _TodayButton extends StatelessWidget {
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: isToday ? AppColors.primaryLight : AppColors.grayf2,
+          color: isToday ? colors.primaryLight : colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isToday
-                ? AppColors.primary.withValues(alpha: 0.3)
-                : AppColors.grayE2E8F0,
+                ? colors.primary.withValues(alpha: 0.3)
+                : colors.borderSubtle,
           ),
         ),
         child: Center(
           child: Text(
             'today'.tr(),
             style: CustomAppFontStyle.medium11.copyWith(
-              color: isToday ? AppColors.primary : AppColors.gray71717A,
+              color: isToday ? colors.primary : colors.textSecondary,
             ),
           ),
         ),
@@ -570,7 +582,7 @@ class _ClearFilterButton extends StatelessWidget {
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: AppColors.red1A,
+            color: AppColors.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
           ),
