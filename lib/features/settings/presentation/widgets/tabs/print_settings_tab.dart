@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
@@ -90,6 +91,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
         }
       },
       builder: (context, state) {
+        final colors = context.themeColors;
         return SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -99,14 +101,14 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
               Text(
                 'print_settings_title'.tr(),
                 style: CustomAppFontStyle.bold20.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 'print_settings_desc'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -119,6 +121,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                 icon: Icons.receipt_long_outlined,
                 currentFormat: _receiptFormat,
                 onChanged: (f) => setState(() => _receiptFormat = f),
+                colors: colors,
               ),
               const SizedBox(height: 16),
 
@@ -130,6 +133,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                 icon: Icons.summarize_outlined,
                 currentFormat: _shiftReportFormat,
                 onChanged: (f) => setState(() => _shiftReportFormat = f),
+                colors: colors,
               ),
               const SizedBox(height: 16),
 
@@ -141,6 +145,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                 icon: Icons.medication_outlined,
                 currentFormat: _prescriptionFormat,
                 onChanged: (f) => setState(() => _prescriptionFormat = f),
+                colors: colors,
               ),
               const SizedBox(height: 28),
 
@@ -150,7 +155,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                 child: CustomPushButton(
                   key: const Key('print_settings_save_btn'),
                   height: 44,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                   borderRadius: BorderRadius.circular(10),
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   isLoading: state.actionStatus == RequestStatusEnum.loading,
@@ -166,7 +171,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                   child: Text(
                     'save'.tr(),
                     style: CustomAppFontStyle.semiBold14.copyWith(
-                      color: AppColors.white,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -185,13 +190,14 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
     required IconData icon,
     required PrintFormat currentFormat,
     required ValueChanged<PrintFormat> onChanged,
+    required dynamic colors,
   }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,10 +207,10 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: colors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 22),
+                child: Icon(icon, color: colors.primary, size: 22),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -214,14 +220,14 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                     Text(
                       title,
                       style: CustomAppFontStyle.bold16.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       desc,
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -230,7 +236,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
             ],
           ),
           const SizedBox(height: 18),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 18),
           Row(
             children: [
@@ -242,6 +248,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                   desc: 'print_format_a4_desc'.tr(),
                   isSelected: currentFormat == PrintFormat.a4,
                   onSelect: () => onChanged(PrintFormat.a4),
+                  colors: colors,
                 ),
               ),
               const SizedBox(width: 14),
@@ -253,6 +260,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                   desc: 'print_format_thermal80_desc'.tr(),
                   isSelected: currentFormat == PrintFormat.thermal80,
                   onSelect: () => onChanged(PrintFormat.thermal80),
+                  colors: colors,
                 ),
               ),
             ],
@@ -269,6 +277,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
     required String desc,
     required bool isSelected,
     required VoidCallback onSelect,
+    required dynamic colors,
   }) {
     return InkWell(
       key: key,
@@ -278,11 +287,11 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.05)
-              : AppColors.white,
+              ? colors.primaryLight
+              : colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+            color: isSelected ? colors.primary : colors.borderSubtle,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -293,7 +302,7 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
               isSelected
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked,
-              color: isSelected ? AppColors.primary : AppColors.gray71717A,
+              color: isSelected ? colors.primary : colors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 10),
@@ -304,14 +313,14 @@ class _PrintSettingsTabState extends State<PrintSettingsTab> {
                   Text(
                     label,
                     style: CustomAppFontStyle.semiBold14.copyWith(
-                      color: isSelected ? AppColors.primary : AppColors.darkText,
+                      color: isSelected ? colors.primary : colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     desc,
                     style: CustomAppFontStyle.regular11.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],

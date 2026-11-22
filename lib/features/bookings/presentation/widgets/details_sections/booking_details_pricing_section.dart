@@ -26,7 +26,7 @@ class BookingDetailsPricingSection extends StatelessWidget {
         border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -80,7 +80,7 @@ class BookingDetailsPricingSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 16),
 
           // Consultation Fee Row (if present)
@@ -92,13 +92,13 @@ class BookingDetailsPricingSection extends StatelessWidget {
                 Text(
                   'consultation_fee_label'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
                 Text(
                   '${MonyHelper.formatMoney(booking.consultationFee!)} ${'currency'.tr()}',
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ],
@@ -115,13 +115,13 @@ class BookingDetailsPricingSection extends StatelessWidget {
                 Text(
                   'duration'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
                 Text(
                   '${booking.durationMinutes} ${'minutes'.tr()}',
                   style: CustomAppFontStyle.medium13.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ],
@@ -129,17 +129,17 @@ class BookingDetailsPricingSection extends StatelessWidget {
             const SizedBox(height: 12),
           ],
 
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 14),
 
           // Total Price Container (Highlighted)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.5),
+              color: colors.primaryLight,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.2),
+                color: colors.primary.withValues(alpha: 0.2),
               ),
             ),
             child: Row(
@@ -147,17 +147,17 @@ class BookingDetailsPricingSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const CustomAssetImage(
+                    CustomAssetImage(
                       path: AppIcons.money,
                       width: 18,
                       height: 18,
-                      color: AppColors.primaryDark,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'total_price'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -165,7 +165,7 @@ class BookingDetailsPricingSection extends StatelessWidget {
                 Text(
                   '${MonyHelper.formatMoney(booking.totalPrice ?? 0)} ${'currency'.tr()}',
                   style: CustomAppFontStyle.bold18.copyWith(
-                    color: AppColors.primaryDark,
+                    color: colors.primary,
                   ),
                 ),
               ],

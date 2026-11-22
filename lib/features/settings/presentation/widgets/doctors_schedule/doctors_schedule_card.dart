@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -29,6 +30,7 @@ class DoctorsScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final isAdmin =
         getIt<CurrentRoleProvider>().currentRole == UserRoleEnum.admin;
     final workingDays = schedule?.workDays
@@ -50,9 +52,9 @@ class DoctorsScheduleCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -63,15 +65,15 @@ class DoctorsScheduleCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: colors.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
+                child: Center(
                   child: CustomAssetImage(
                     path: AppIcons.user,
                     width: 20,
                     height: 20,
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                 ),
               ),
@@ -83,14 +85,14 @@ class DoctorsScheduleCard extends StatelessWidget {
                     Text(
                       doctor.name ?? '',
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     if (doctor.specialty != null)
                       Text(
                         doctor.specialty!,
                         style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                   ],
@@ -112,26 +114,26 @@ class DoctorsScheduleCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
+                            color: colors.primaryLight,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
+                              color: colors.primary.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const CustomAssetImage(
+                              CustomAssetImage(
                                 path: AppIcons.edit,
                                 width: 12,
                                 height: 12,
-                                color: AppColors.primary,
+                                color: colors.primary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'set_schedule'.tr(),
                                 style: CustomAppFontStyle.medium11.copyWith(
-                                  color: AppColors.primary,
+                                  color: colors.primary,
                                 ),
                               ),
                             ],
@@ -157,19 +159,21 @@ class DoctorsScheduleCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 12),
           if (hasSchedule) ...[
             Row(
               children: [
                 Expanded(
                   child: _buildInfoItem(
+                    context: context,
                     label: 'work_days'.tr(),
                     value: '${workingDays.length} ${'days_work_count'.tr()}',
                   ),
                 ),
                 Expanded(
                   child: _buildInfoItem(
+                    context: context,
                     label: 'working_hours'.tr(),
                     value: hoursStr,
                   ),
@@ -181,6 +185,7 @@ class DoctorsScheduleCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildInfoItem(
+                    context: context,
                     label: 'slot_duration'.tr(),
                     value: AppFormatterHelper.formatMinutes(
                       schedule?.slotDurationMinutes ?? 20,
@@ -190,6 +195,7 @@ class DoctorsScheduleCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: _buildInfoItem(
+                    context: context,
                     label: 'buffer_duration'.tr(),
                     value: AppFormatterHelper.formatMinutes(
                       schedule?.bufferDurationMinutes ?? 5,
@@ -214,23 +220,23 @@ class DoctorsScheduleCard extends StatelessWidget {
                     height: 36,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceLevel1,
+                      color: colors.surfaceLevel1,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.grayE2E8F0),
+                      border: Border.all(color: colors.borderSubtle),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.event_note,
                           size: 15,
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           'upcoming_leaves'.tr(),
                           style: CustomAppFontStyle.medium12.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ],
@@ -243,7 +249,7 @@ class DoctorsScheduleCard extends StatelessWidget {
                 Expanded(
                   child: CustomPushButton(
                     height: 36,
-                    backgroundColor: AppColors.primaryLight,
+                    backgroundColor: colors.primaryLight,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () => DoctorScheduleEditorDialog.show(
                       context: context,
@@ -254,17 +260,17 @@ class DoctorsScheduleCard extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const CustomAssetImage(
+                        CustomAssetImage(
                           path: AppIcons.edit,
                           width: 14,
                           height: 14,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           'edit_schedule'.tr(),
                           style: CustomAppFontStyle.semiBold13.copyWith(
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ],
@@ -279,25 +285,29 @@ class DoctorsScheduleCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem({required String label, required String value}) {
+  Widget _buildInfoItem({
+    required BuildContext context,
+    required String label,
+    required String value,
+  }) {
+    final colors = context.themeColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: CustomAppFontStyle.regular12.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
           style: CustomAppFontStyle.semiBold13.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
       ],
     );
   }
 }
-

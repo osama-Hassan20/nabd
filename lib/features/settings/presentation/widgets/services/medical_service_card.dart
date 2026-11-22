@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -26,6 +27,7 @@ class MedicalServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final isAdmin = getIt<CurrentRoleProvider>().currentRole.canManageServices;
     final isActive = service.isServiceActive;
     final fee = service.consultationFee ?? 0;
@@ -39,8 +41,8 @@ class MedicalServiceCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 12),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.borderSubtle),
-      backGroundColor: AppColors.white,
+      border: Border.all(color: colors.borderSubtle),
+      backGroundColor: colors.cardBackground,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,7 +57,7 @@ class MedicalServiceCard extends StatelessWidget {
                     Text(
                       service.name ?? '',
                       style: CustomAppFontStyle.semiBold16.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     if (service.description != null &&
@@ -64,7 +66,7 @@ class MedicalServiceCard extends StatelessWidget {
                       Text(
                         service.description!,
                         style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray,
+                          color: colors.textSecondary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -78,13 +80,15 @@ class MedicalServiceCard extends StatelessWidget {
               if (isAdmin) ...[
                 const SizedBox(width: 4),
                 PopupMenuButton<String>(
-                  icon: const Icon(
+                  color: colors.cardBackground,
+                  icon: Icon(
                     Icons.more_vert,
                     size: 20,
-                    color: AppColors.grayMid,
+                    color: colors.textSecondary,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: colors.borderSubtle),
                   ),
                   onSelected: (val) {
                     if (val == 'toggle') {
@@ -123,7 +127,9 @@ class MedicalServiceCard extends StatelessWidget {
                             isActive
                                 ? 'service_deactivate'.tr()
                                 : 'service_activate'.tr(),
-                            style: CustomAppFontStyle.regular14,
+                            style: CustomAppFontStyle.regular14.copyWith(
+                              color: colors.textPrimary,
+                            ),
                           ),
                         ],
                       ),
@@ -132,16 +138,18 @@ class MedicalServiceCard extends StatelessWidget {
                       value: 'edit',
                       child: Row(
                         children: [
-                          const CustomAssetImage(
+                          CustomAssetImage(
                             path: AppIcons.edit,
                             width: 16,
                             height: 16,
-                            color: AppColors.gray334155,
+                            color: colors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'edit'.tr(),
-                            style: CustomAppFontStyle.regular14,
+                            style: CustomAppFontStyle.regular14.copyWith(
+                              color: colors.textPrimary,
+                            ),
                           ),
                         ],
                       ),
@@ -173,7 +181,7 @@ class MedicalServiceCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.borderSubtle),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 12),
 
           // ─── Details Row ────────────────────────────────────────────────
@@ -185,17 +193,17 @@ class MedicalServiceCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CustomAssetImage(
+                  CustomAssetImage(
                     path: AppIcons.money,
                     width: 14,
                     height: 14,
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     AppFormatterHelper.formatCurrency(fee),
                     style: CustomAppFontStyle.semiBold14.copyWith(
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                   ),
                 ],
@@ -205,17 +213,17 @@ class MedicalServiceCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CustomAssetImage(
+                  CustomAssetImage(
                     path: AppIcons.clock,
                     width: 14,
                     height: 14,
-                    color: AppColors.gray,
+                    color: colors.textSecondary,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     AppFormatterHelper.formatMinutes(duration, context: context),
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.darkSlate,
+                      color: colors.textPrimary,
                     ),
                   ),
                 ],
@@ -225,17 +233,17 @@ class MedicalServiceCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CustomAssetImage(
+                  CustomAssetImage(
                     path: AppIcons.user,
                     width: 14,
                     height: 14,
-                    color: AppColors.secondary,
+                    color: colors.secondary,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     docName,
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.secondaryDark,
+                      color: colors.textPrimary,
                     ),
                   ),
                 ],

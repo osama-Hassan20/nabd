@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -29,7 +30,7 @@ class DoctorsScheduleTable extends StatelessWidget {
   });
 
   static const Map<int, TableColumnWidth> columnWidths = {
-    0: FixedColumnWidth(50),  // Index
+    0: FixedColumnWidth(50), // Index
     1: FixedColumnWidth(230), // Doctor Name & Specialty
     2: FixedColumnWidth(200), // Working Days / Badge
     3: FixedColumnWidth(160), // Working Hours
@@ -71,12 +72,11 @@ class DoctorsScheduleTable extends StatelessWidget {
     DoctorScheduleModel? schedule,
     int index,
   ) {
+    final colors = context.themeColors;
     final isAdmin =
         getIt<CurrentRoleProvider>().currentRole == UserRoleEnum.admin;
-    final workingDays = schedule?.workDays
-            ?.where((w) => w.isWorking == true)
-            .toList() ??
-        [];
+    final workingDays =
+        schedule?.workDays?.where((w) => w.isWorking == true).toList() ?? [];
     final hasSchedule = workingDays.isNotEmpty;
 
     // Working days summary
@@ -99,7 +99,7 @@ class DoctorsScheduleTable extends StatelessWidget {
         child: Text(
           index.toString(),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       ),
@@ -113,7 +113,7 @@ class DoctorsScheduleTable extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: colors.primaryLight,
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -134,7 +134,7 @@ class DoctorsScheduleTable extends StatelessWidget {
                   Text(
                     doc.name ?? '',
                     style: CustomAppFontStyle.semiBold14.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -143,7 +143,7 @@ class DoctorsScheduleTable extends StatelessWidget {
                     Text(
                       doc.specialty!,
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -166,14 +166,14 @@ class DoctorsScheduleTable extends StatelessWidget {
                   Text(
                     '${workingDays.length} ${'days_work_count'.tr()}',
                     style: CustomAppFontStyle.semiBold13.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     daysStr,
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -197,26 +197,26 @@ class DoctorsScheduleTable extends StatelessWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
+                            color: colors.primaryLight,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
+                              color: colors.primary.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const CustomAssetImage(
+                              CustomAssetImage(
                                 path: AppIcons.edit,
                                 width: 13,
                                 height: 13,
-                                color: AppColors.primary,
+                                color: colors.primary,
                               ),
                               const SizedBox(width: 5),
                               Text(
                                 'set_schedule'.tr(),
                                 style: CustomAppFontStyle.medium12.copyWith(
-                                  color: AppColors.primary,
+                                  color: colors.primary,
                                 ),
                               ),
                             ],
@@ -229,13 +229,14 @@ class DoctorsScheduleTable extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.warning.withValues(alpha: 0.12),
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
                         child: Text(
                           'no_schedule_badge'.tr(),
                           style: CustomAppFontStyle.medium12.copyWith(
-                            color: AppColors.warning,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -248,7 +249,7 @@ class DoctorsScheduleTable extends StatelessWidget {
         child: Text(
           hoursStr,
           style: CustomAppFontStyle.regular13.copyWith(
-            color: hasSchedule ? AppColors.darkText : AppColors.gray71717A,
+            color: hasSchedule ? colors.textPrimary : colors.textSecondary,
           ),
         ),
       ),
@@ -264,13 +265,13 @@ class DoctorsScheduleTable extends StatelessWidget {
                   context: context,
                 ),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               )
             : Text(
                 '-',
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
       ),
@@ -280,30 +281,24 @@ class DoctorsScheduleTable extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Center(
           child: InkWell(
-            onTap: () => DoctorUpcomingLeavesDialog.show(
-              context: context,
-              doctor: doc,
-            ),
+            onTap: () =>
+                DoctorUpcomingLeavesDialog.show(context: context, doctor: doc),
             borderRadius: BorderRadius.circular(10),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: colors.primaryLight,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.event_note,
-                    size: 14,
-                    color: AppColors.primary,
-                  ),
+                  Icon(Icons.event_note, size: 14, color: colors.primary),
                   const SizedBox(width: 4),
                   Text(
                     'leaves_details'.tr(),
                     style: CustomAppFontStyle.medium11.copyWith(
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                   ),
                 ],
@@ -320,7 +315,7 @@ class DoctorsScheduleTable extends StatelessWidget {
           child: isAdmin
               ? CustomPushButton(
                   height: 32,
-                  backgroundColor: AppColors.primaryLight,
+                  backgroundColor: colors.primaryLight,
                   borderRadius: BorderRadius.circular(6),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   onTap: () => DoctorScheduleEditorDialog.show(
@@ -332,17 +327,17 @@ class DoctorsScheduleTable extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const CustomAssetImage(
+                      CustomAssetImage(
                         path: AppIcons.edit,
                         width: 12,
                         height: 12,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'edit_schedule'.tr(),
                         style: CustomAppFontStyle.semiBold12.copyWith(
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                     ],
@@ -354,4 +349,3 @@ class DoctorsScheduleTable extends StatelessWidget {
     ];
   }
 }
-

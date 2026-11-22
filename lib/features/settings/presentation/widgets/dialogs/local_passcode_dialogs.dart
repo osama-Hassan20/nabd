@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
@@ -42,7 +43,7 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
     final pass = _passcodeController.text.trim();
     final confirm = _confirmPasscodeController.text.trim();
 
-    if (pass.length < 4) {
+    if (pass.isEmpty || pass.length < 4) {
       setState(() {
         _errorMessage = 'passcode_min_length_error'.tr();
       });
@@ -70,6 +71,7 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -78,12 +80,12 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
         child: Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.1),
                 blurRadius: 32,
                 offset: const Offset(0, 12),
               ),
@@ -100,12 +102,12 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
                   Text(
                     'create_local_passcode_title'.tr(),
                     style: CustomAppFontStyle.bold18.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: AppColors.gray71717A),
+                    icon: Icon(Icons.close_rounded, color: colors.textSecondary),
                   ),
                 ],
               ),
@@ -117,13 +119,13 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: colors.primaryLight,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.lock_person_rounded,
-                      color: AppColors.primary,
+                      color: colors.primary,
                       size: 34,
                     ),
                   ),
@@ -136,7 +138,7 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
                 'create_local_passcode_desc'.tr(),
                 textAlign: TextAlign.center,
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -148,9 +150,9 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
                 headerText: 'enter_passcode_label'.tr(),
                 hintText: '••••',
                 isObeseureText: true,
-                prefixWidget: const Icon(
+                prefixWidget: Icon(
                   Icons.lock_outline_rounded,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                   size: 20,
                 ),
               ),
@@ -162,9 +164,9 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
                 headerText: 'reenter_passcode_label'.tr(),
                 hintText: '••••',
                 isObeseureText: true,
-                prefixWidget: const Icon(
+                prefixWidget: Icon(
                   Icons.lock_clock_outlined,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                   size: 20,
                 ),
               ),
@@ -185,7 +187,7 @@ class _CreateLocalPasscodeDialogState extends State<CreateLocalPasscodeDialog> {
               CustomPushButton(
                 height: 46,
                 radius: 12,
-                backgroundColor: AppColors.primary,
+                backgroundColor: colors.primary,
                 onTap: _save,
                 child: Center(
                   child: Text(
@@ -224,6 +226,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
   final cubit = getIt<LocalPasscodeCubit>();
 
   void _showChangePasscodeDialog() {
+    final colors = context.themeColors;
     final oldController = TextEditingController();
     final newController = TextEditingController();
     final confirmController = TextEditingController();
@@ -239,8 +242,9 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: colors.cardBackground,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -249,7 +253,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                   Text(
                     'change_passcode'.tr(),
                     style: CustomAppFontStyle.bold16.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -286,7 +290,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                   CustomPushButton(
                     height: 44,
                     radius: 12,
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: colors.primary,
                     onTap: () async {
                       if (newController.text != confirmController.text) {
                         setDialogState(() {
@@ -331,6 +335,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
   }
 
   void _showAutoLockPicker() {
+    final colors = context.themeColors;
     final durations = [
       {'label': 'auto_lock_1_min'.tr(), 'minutes': 1},
       {'label': 'auto_lock_5_min'.tr(), 'minutes': 5},
@@ -348,8 +353,9 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -358,7 +364,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                 Text(
                   'auto_lock_label'.tr(),
                   style: CustomAppFontStyle.bold16.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -372,14 +378,14 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                       d['label'] as String,
                       style: CustomAppFontStyle.medium14.copyWith(
                         color: isSelected
-                            ? AppColors.primary
-                            : AppColors.darkText,
+                            ? colors.primary
+                            : colors.textPrimary,
                       ),
                     ),
                     leading: Radio<int>(
                       value: d['minutes'] as int,
                       groupValue: cubit.state.autoLockMinutes,
-                      activeColor: AppColors.primary,
+                      activeColor: colors.primary,
                       onChanged: (val) {
                         if (val != null) {
                           cubit.setAutoLockDuration(val);
@@ -388,11 +394,6 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                         }
                       },
                     ),
-                    onTap: () {
-                      cubit.setAutoLockDuration(d['minutes'] as int);
-                      Navigator.of(ctx).pop();
-                      setState(() {});
-                    },
                   );
                 }),
               ],
@@ -404,6 +405,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
   }
 
   void _confirmDisablePasscode() {
+    final colors = context.themeColors;
     final currentPassController = TextEditingController();
     String? error;
 
@@ -417,8 +419,9 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: colors.cardBackground,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -427,14 +430,14 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                   Text(
                     'disable_passcode_confirm_title'.tr(),
                     style: CustomAppFontStyle.bold16.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'disable_passcode_confirm_desc'.tr(),
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -462,7 +465,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                         child: Text(
                           'cancel'.tr(),
                           style: CustomAppFontStyle.medium14.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -516,6 +519,7 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final state = cubit.state;
 
     return Dialog(
@@ -526,12 +530,12 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
         child: Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.1),
                 blurRadius: 32,
                 offset: const Offset(0, 12),
               ),
@@ -548,12 +552,12 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
                   Text(
                     'local_passcode_title'.tr(),
                     style: CustomAppFontStyle.bold18.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: AppColors.gray71717A),
+                    icon: Icon(Icons.close_rounded, color: colors.textSecondary),
                   ),
                 ],
               ),
@@ -562,48 +566,48 @@ class _ManageLocalPasscodeDialogState extends State<ManageLocalPasscodeDialog> {
               // Action 1: Change Passcode
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.lock_reset_rounded, color: AppColors.primary),
+                leading: Icon(Icons.lock_reset_rounded, color: colors.primary),
                 title: Text(
                   'change_passcode'.tr(),
                   style: CustomAppFontStyle.medium14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
                 onTap: _showChangePasscodeDialog,
               ),
-              const Divider(color: AppColors.grayE2E8F0),
+              Divider(color: colors.borderSubtle),
 
               // Action 2: Auto-Lock Duration
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.timer_outlined, color: AppColors.secondary),
+                leading: Icon(Icons.timer_outlined, color: colors.secondary),
                 title: Text(
                   'auto_lock_label'.tr(),
                   style: CustomAppFontStyle.medium14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 trailing: Text(
                   _getAutoLockDurationText(state.autoLockMinutes),
                   style: CustomAppFontStyle.semiBold13.copyWith(
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                 ),
                 onTap: _showAutoLockPicker,
               ),
-              const Divider(color: AppColors.grayE2E8F0),
+              Divider(color: colors.borderSubtle),
 
               const SizedBox(height: 12),
               // Explanatory note matching Telegram Screenshot 4
               Text(
                 'create_local_passcode_desc'.tr(),
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                   height: 1.5,
                 ),
               ),

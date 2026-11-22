@@ -1,12 +1,14 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
@@ -37,6 +39,7 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final status = booking.status ?? BookingStatusEnum.waiting;
     final visitType = booking.visitType ?? BookingTypeEnum.newVisit;
 
@@ -44,12 +47,12 @@ class BookingCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.02),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -68,17 +71,17 @@ class BookingCard extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
+                      color: colors.primary.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: colors.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Center(
                       child: Text(
                         '#${booking.queueNumber ?? 1}',
                         style: CustomAppFontStyle.bold14.copyWith(
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                     ),
@@ -90,7 +93,9 @@ class BookingCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: status.backgroundColor,
+                      color: colors.isDark
+                          ? status.color.withValues(alpha: 0.16)
+                          : status.backgroundColor,
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Row(
@@ -128,7 +133,7 @@ class BookingCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: colors.primary,
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Row(
@@ -149,6 +154,11 @@ class BookingCard extends StatelessWidget {
                           ],
                         ),
                       ),
+                    ),
+                  if (booking.isFreeConsultation)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: FreeBookingBadge(),
                     ),
                   const SizedBox(width: 4),
                   Builder(
@@ -209,13 +219,13 @@ class BookingCard extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.6),
+                    color: colors.primaryLight.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.person_rounded,
-                      color: AppColors.primary,
+                      color: colors.primary,
                       size: 20,
                     ),
                   ),
@@ -228,7 +238,7 @@ class BookingCard extends StatelessWidget {
                       Text(
                         booking.patientName ?? booking.customerName ?? 'patient_unassigned'.tr(),
                         style: CustomAppFontStyle.semiBold14.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -237,7 +247,7 @@ class BookingCard extends StatelessWidget {
                         child: Text(
                           '${booking.patientPhone ?? ''} ${booking.fileNumber != null ? '• #${booking.fileNumber}' : ''}'.trim(),
                           style: CustomAppFontStyle.regular12.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -252,7 +262,7 @@ class BookingCard extends StatelessWidget {
                           ? '0 ${'currency'.tr()}'
                           : '${MonyHelper.formatMoney(booking.netAmount)} ${'currency'.tr()}',
                       style: CustomAppFontStyle.bold15.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -262,37 +272,42 @@ class BookingCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 1.5),
                         decoration: BoxDecoration(
-                          color: const Color(0xffFEF3C7),
-                          borderRadius: BorderRadius.circular(100),
-                          border: Border.all(color: const Color(0xffF59E0B)),
+                          color: colors.isDark
+                              ? Colors.amber.shade900.withValues(alpha: 0.25)
+                              : const Color(0xffFEF3C7),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'cashier_needs_refund'.tr(),
-                          style: CustomAppFontStyle.medium10.copyWith(
-                            color: const Color(0xffB45309),
+                          'مسترد: ${MonyHelper.formatMoney(booking.paidAmount ?? 0)} ${'currency'.tr()}',
+                          style: CustomAppFontStyle.medium11.copyWith(
+                            color: colors.isDark ? Colors.amber.shade200 : const Color(0xff92400E),
                           ),
                         ),
-                      )
-                    else if (booking.isFreeConsultation)
-                      const FreeBookingBadge(
-                        fontSize: 10,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                       )
                     else
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1.5),
-                        decoration: BoxDecoration(
-                          color: booking.effectivePaymentStatus.backgroundColor,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          booking.effectivePaymentStatus.label,
-                          style: CustomAppFontStyle.medium10.copyWith(
-                            color: booking.effectivePaymentStatus.color,
-                          ),
-                        ),
+                      Builder(
+                        builder: (context) {
+                          final payStatus =
+                              booking.paymentStatus ?? PaymentStatusEnum.unpaid;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.isDark
+                                  ? payStatus.color.withValues(alpha: 0.16)
+                                  : payStatus.backgroundColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              payStatus.label,
+                              style: CustomAppFontStyle.medium11.copyWith(
+                                color: payStatus.color,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                   ],
                 ),
@@ -300,20 +315,20 @@ class BookingCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 12),
 
-          // ─── Doctor, Clinic Room & Visit Type ─────────────────────────────
+          // ─── Service + Doctor + Clinic + Visit Type ────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.medical_services_outlined,
                       size: 14,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 6),
                     Flexible(
@@ -322,7 +337,7 @@ class BookingCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: CustomAppFontStyle.medium13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
@@ -335,7 +350,9 @@ class BookingCard extends StatelessWidget {
                   vertical: 3,
                 ),
                 decoration: BoxDecoration(
-                  color: visitType.backgroundColor,
+                  color: colors.isDark
+                      ? visitType.color.withValues(alpha: 0.16)
+                      : visitType.backgroundColor,
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: Text(
@@ -366,7 +383,7 @@ class BookingCard extends StatelessWidget {
                 detailWidget = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.red1A,
+                    color: AppColors.error.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
@@ -383,7 +400,7 @@ class BookingCard extends StatelessWidget {
                 detailWidget = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.red1A,
+                    color: AppColors.error.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
@@ -405,13 +422,13 @@ class BookingCard extends StatelessWidget {
                 detailWidget = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.12),
+                    color: colors.secondary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
                     'موعد جديد: $dateStr',
                     style: CustomAppFontStyle.medium11.copyWith(
-                      color: AppColors.secondary,
+                      color: colors.secondary,
                     ),
                   ),
                 );
@@ -419,13 +436,15 @@ class BookingCard extends StatelessWidget {
                 detailWidget = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.statusWarningLight,
+                    color: colors.isDark
+                        ? Colors.amber.shade900.withValues(alpha: 0.2)
+                        : AppColors.statusWarningLight,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
                     '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
                     style: CustomAppFontStyle.medium11.copyWith(
-                      color: AppColors.statusWarning,
+                      color: colors.isDark ? Colors.amber.shade200 : AppColors.statusWarning,
                     ),
                   ),
                 );
@@ -433,10 +452,10 @@ class BookingCard extends StatelessWidget {
 
               return Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.access_time_rounded,
                     size: 14,
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                   const SizedBox(width: 6),
                   Expanded(
@@ -444,7 +463,7 @@ class BookingCard extends StatelessWidget {
                       '${'arrival_time'.tr()}: ${booking.startTime ?? '--:--'}',
                       overflow: TextOverflow.ellipsis,
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/extensions/date_time_extentision.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -23,6 +24,7 @@ class SpecialHolidaysTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = AdaptiveLayout.isMobile(context);
+    final colors = context.themeColors;
 
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: settingsCubit,
@@ -33,6 +35,8 @@ class SpecialHolidaysTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: CustomContainer(
             padding: const EdgeInsets.all(24),
+            backGroundColor: colors.cardBackground,
+            border: Border.all(color: colors.borderSubtle),
             child: Column(
               spacing: 16,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,21 +55,21 @@ class SpecialHolidaysTab extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
+                                  color: colors.primaryLight,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const CustomAssetImage(
+                                child: CustomAssetImage(
                                   path: AppIcons.calendar,
                                   width: 20,
                                   height: 20,
-                                  color: AppColors.primary,
+                                  color: colors.primary,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 'special_holidays'.tr(),
                                 style: CustomAppFontStyle.semiBold18.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                             ],
@@ -74,7 +78,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                           Text(
                             'special_holidays_desc'.tr(),
                             style: CustomAppFontStyle.regular14.copyWith(
-                              color: AppColors.gray7A828E,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
@@ -87,7 +91,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 180),
                   child: CustomPushButton(
                     height: 42,
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: colors.primary,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () {
                       AddSpecialHolidayDialog.show(
@@ -103,13 +107,13 @@ class SpecialHolidaysTab extends StatelessWidget {
                             path: AppIcons.add,
                             width: 16,
                             height: 16,
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'add_holiday'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.white,
+                              color: Colors.white,
                             ),
                           ),
                         ],
@@ -118,15 +122,15 @@ class SpecialHolidaysTab extends StatelessWidget {
                   ),
                 ),
 
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
 
                 // ─── Holidays List / Table ──────────────────────────────────
                 if (holidays.isEmpty)
-                  _buildEmptyState()
+                  _buildEmptyState(context, colors)
                 else if (isMobile)
-                  _buildMobileCards(context, holidays)
+                  _buildMobileCards(context, holidays, colors)
                 else
-                  _buildDesktopTable(context, holidays),
+                  _buildDesktopTable(context, holidays, colors),
               ],
             ),
           ),
@@ -135,7 +139,7 @@ class SpecialHolidaysTab extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context, dynamic colors) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 48),
       alignment: Alignment.center,
@@ -144,21 +148,21 @@ class SpecialHolidaysTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.grayf6,
+              color: colors.surfaceLevel1,
               shape: BoxShape.circle,
             ),
-            child: const CustomAssetImage(
+            child: CustomAssetImage(
               path: AppIcons.calendar,
               width: 32,
               height: 32,
-              color: AppColors.gray7A828E,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'no_holidays_found'.tr(),
             style: CustomAppFontStyle.medium16.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
         ],
@@ -169,11 +173,13 @@ class SpecialHolidaysTab extends StatelessWidget {
   Widget _buildDesktopTable(
     BuildContext context,
     List<SpecialHolidayModel> holidays,
+    dynamic colors,
   ) {
     return Container(
       decoration: BoxDecoration(
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -181,7 +187,7 @@ class SpecialHolidaysTab extends StatelessWidget {
           children: [
             // Table Header
             Container(
-              color: AppColors.grayf6,
+              color: colors.tableHeaderBackground,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 children: [
@@ -190,7 +196,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                     child: Text(
                       'holiday_name'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.gray7A828E,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -199,7 +205,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                     child: Text(
                       'start_date'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.gray7A828E,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -208,7 +214,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                     child: Text(
                       'end_date'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.gray7A828E,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -217,7 +223,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                     child: Text(
                       'duration_days'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.gray7A828E,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -225,7 +231,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColors.grayE2E8F0),
+            Divider(height: 1, color: colors.borderSubtle),
 
             // Table Rows
             ListView.separated(
@@ -233,7 +239,7 @@ class SpecialHolidaysTab extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: holidays.length,
               separatorBuilder: (context, index) =>
-                  const Divider(height: 1, color: AppColors.grayE2E8F0),
+                  Divider(height: 1, color: colors.borderSubtle),
               itemBuilder: (context, index) {
                 final holiday = holidays[index];
                 return Padding(
@@ -248,7 +254,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                         child: Text(
                           holiday.name ?? '-',
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ),
@@ -257,7 +263,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                         child: Text(
                           holiday.startDate?.toCustomFormat() ?? '-',
                           style: CustomAppFontStyle.regular14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ),
@@ -266,7 +272,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                         child: Text(
                           holiday.endDate?.toCustomFormat() ?? '-',
                           style: CustomAppFontStyle.regular14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ),
@@ -280,13 +286,13 @@ class SpecialHolidaysTab extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: colors.primaryLight,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               '${holiday.durationDays} ${'days_label'.tr()}',
                               style: CustomAppFontStyle.semiBold12.copyWith(
-                                color: AppColors.primary,
+                                color: colors.primary,
                               ),
                             ),
                           ),
@@ -325,6 +331,7 @@ class SpecialHolidaysTab extends StatelessWidget {
   Widget _buildMobileCards(
     BuildContext context,
     List<SpecialHolidayModel> holidays,
+    dynamic colors,
   ) {
     return Column(
       children: holidays.map((holiday) {
@@ -332,9 +339,9 @@ class SpecialHolidaysTab extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,7 +353,7 @@ class SpecialHolidaysTab extends StatelessWidget {
                     child: Text(
                       holiday.name ?? '-',
                       style: CustomAppFontStyle.semiBold16.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ),
@@ -370,17 +377,17 @@ class SpecialHolidaysTab extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const CustomAssetImage(
+                  CustomAssetImage(
                     path: AppIcons.calendar,
                     width: 16,
                     height: 16,
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     '${holiday.startDate?.toCustomFormat() ?? '-'}  ←  ${holiday.endDate?.toCustomFormat() ?? '-'}',
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.gray7A828E,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -389,13 +396,13 @@ class SpecialHolidaysTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: colors.primaryLight,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '${holiday.durationDays} ${'days_label'.tr()}',
                   style: CustomAppFontStyle.semiBold12.copyWith(
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                 ),
               ),

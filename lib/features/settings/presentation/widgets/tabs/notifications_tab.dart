@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -66,6 +67,7 @@ class _NotificationsTabState extends State<NotificationsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, state) {
@@ -75,6 +77,8 @@ class _NotificationsTabState extends State<NotificationsTab> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: CustomContainer(
             padding: const EdgeInsets.all(24),
+            backGroundColor: colors.cardBackground,
+            border: Border.all(color: colors.borderSubtle),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -83,21 +87,21 @@ class _NotificationsTabState extends State<NotificationsTab> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: colors.primaryLight,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const CustomAssetImage(
+                      child: CustomAssetImage(
                         path: AppIcons.notification,
                         width: 20,
                         height: 20,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'tab_notifications'.tr(),
                       style: CustomAppFontStyle.semiBold18.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -106,20 +110,20 @@ class _NotificationsTabState extends State<NotificationsTab> {
                 Text(
                   'enable_booking_reminders_desc'.tr(),
                   style: CustomAppFontStyle.regular14.copyWith(
-                    color: AppColors.gray7A828E,
+                    color: colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
                 const SizedBox(height: 24),
 
                 // Switch Row
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: AppColors.grayf6,
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.grayE2E8F0),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -131,14 +135,14 @@ class _NotificationsTabState extends State<NotificationsTab> {
                             Text(
                               'enable_booking_reminders'.tr(),
                               style: CustomAppFontStyle.semiBold16.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'إرسال إشعار تلقائي قبل موعد الزيارة المحدد في الحجز.',
                               style: CustomAppFontStyle.regular13.copyWith(
-                                color: AppColors.gray7A828E,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],
@@ -146,7 +150,7 @@ class _NotificationsTabState extends State<NotificationsTab> {
                       ),
                       Switch(
                         value: _enabled,
-                        activeThumbColor: AppColors.primary,
+                        activeThumbColor: colors.primary,
                         onChanged: (val) {
                           setState(() {
                             _enabled = val;
@@ -162,7 +166,7 @@ class _NotificationsTabState extends State<NotificationsTab> {
                   Text(
                     'reminder_lead_time'.tr(),
                     style: CustomAppFontStyle.semiBold14.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -186,13 +190,13 @@ class _NotificationsTabState extends State<NotificationsTab> {
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primaryLight
-                                : AppColors.white,
+                                ? colors.primaryLight
+                                : colors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.grayE2E8F0,
+                                  ? colors.primary
+                                  : colors.borderSubtle,
                               width: isSelected ? 1.5 : 1,
                             ),
                           ),
@@ -200,8 +204,8 @@ class _NotificationsTabState extends State<NotificationsTab> {
                             '$minutes ${'minutes'.tr()}',
                             style: CustomAppFontStyle.semiBold14.copyWith(
                               color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.darkText,
+                                  ? colors.primary
+                                  : colors.textPrimary,
                             ),
                           ),
                         ),
@@ -218,7 +222,7 @@ class _NotificationsTabState extends State<NotificationsTab> {
                     constraints: const BoxConstraints(maxWidth: 200),
                     child: CustomPushButton(
                       height: 44,
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colors.primary,
                       isLoading: isLoading,
                       borderRadius: BorderRadius.circular(8),
                       onTap: isLoading ? null : _handleSave,
@@ -226,7 +230,7 @@ class _NotificationsTabState extends State<NotificationsTab> {
                         child: Text(
                           'save_changes'.tr(),
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),

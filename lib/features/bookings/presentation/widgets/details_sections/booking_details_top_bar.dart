@@ -130,8 +130,9 @@ class BookingDetailsTopBar extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.grayf2,
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -139,14 +140,14 @@ class BookingDetailsTopBar extends StatelessWidget {
                       Text(
                         booking.id ?? '#',
                         style: CustomAppFontStyle.semiBold13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Icon(
+                      Icon(
                         Icons.copy,
                         size: 13,
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ),

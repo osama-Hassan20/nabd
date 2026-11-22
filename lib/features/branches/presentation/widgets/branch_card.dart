@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../data/models/branch_model.dart';
@@ -23,8 +24,9 @@ class BranchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final isMain = branch.isMain == true;
-    final isActive = branch.isBranchActive;
+    final isActive = branch.isActive != false;
 
     final displayName = (branch.nameKey != null && branch.nameKey!.isNotEmpty)
         ? branch.nameKey!.tr()
@@ -41,12 +43,12 @@ class BranchCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -65,7 +67,7 @@ class BranchCard extends StatelessWidget {
                       child: Text(
                         displayName,
                         style: CustomAppFontStyle.bold16.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -79,16 +81,16 @@ class BranchCard extends StatelessWidget {
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert_rounded,
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                   size: 20,
                 ),
                 tooltip: 'actions'.tr(),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                color: AppColors.white,
+                color: colors.cardBackground,
                 onSelected: (val) {
                   switch (val) {
                     case 'edit':
@@ -110,9 +112,14 @@ class BranchCard extends StatelessWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        const Icon(Icons.edit_outlined, size: 18, color: AppColors.darkText),
+                        Icon(Icons.edit_outlined, size: 18, color: colors.textPrimary),
                         const SizedBox(width: 10),
-                        Text('edit'.tr(), style: CustomAppFontStyle.medium13),
+                        Text(
+                          'edit'.tr(),
+                          style: CustomAppFontStyle.medium13.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -122,7 +129,12 @@ class BranchCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.copy_rounded, size: 18, color: Color(0xFF6366F1)),
                         const SizedBox(width: 10),
-                        Text('copy_settings'.tr(), style: CustomAppFontStyle.medium13),
+                        Text(
+                          'copy_settings'.tr(),
+                          style: CustomAppFontStyle.medium13.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -133,7 +145,12 @@ class BranchCard extends StatelessWidget {
                         children: [
                           const Icon(Icons.star_outline_rounded, size: 18, color: Color(0xFFD97706)),
                           const SizedBox(width: 10),
-                          Text('set_as_main'.tr(), style: CustomAppFontStyle.medium13),
+                          Text(
+                            'set_as_main'.tr(),
+                            style: CustomAppFontStyle.medium13.copyWith(
+                              color: colors.textPrimary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -166,13 +183,13 @@ class BranchCard extends StatelessWidget {
           if (branch.address != null && branch.address!.isNotEmpty) ...[
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: AppColors.gray71717A),
+                Icon(Icons.location_on_outlined, size: 14, color: colors.textSecondary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     branch.address!,
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -187,12 +204,12 @@ class BranchCard extends StatelessWidget {
           if (branch.phone != null && branch.phone!.isNotEmpty) ...[
             Row(
               children: [
-                const Icon(Icons.phone_outlined, size: 14, color: AppColors.gray71717A),
+                Icon(Icons.phone_outlined, size: 14, color: colors.textSecondary),
                 const SizedBox(width: 6),
                 Text(
                   branch.phone!,
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -203,19 +220,19 @@ class BranchCard extends StatelessWidget {
           // Working Hours
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, size: 14, color: AppColors.gray71717A),
+              Icon(Icons.access_time_rounded, size: 14, color: colors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 hoursText,
                 style: CustomAppFontStyle.medium13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 10),
 
           // Bottom Bar: Rooms/Staff + Status Badge
@@ -225,7 +242,7 @@ class BranchCard extends StatelessWidget {
               Text(
                 '$rooms ${'rooms_short'.tr()} • $staff ${'staff_short'.tr()}',
                 style: CustomAppFontStyle.medium12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               BranchStatusBadge(isActive: isActive),

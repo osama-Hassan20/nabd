@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -160,6 +161,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, state) {
@@ -175,6 +177,8 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                 // ─── Company Info Card ──────────────────────────────────────
                 CustomContainer(
                   padding: const EdgeInsets.all(24),
+                  backGroundColor: colors.cardBackground,
+                  border: Border.all(color: colors.borderSubtle),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -183,27 +187,27 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: colors.primaryLight,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const CustomAssetImage(
+                            child: CustomAssetImage(
                               path: AppIcons.company,
                               width: 20,
                               height: 20,
-                              color: AppColors.primary,
+                              color: colors.primary,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Text(
                             'tab_company_info'.tr(),
                             style: CustomAppFontStyle.semiBold18.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 20),
-                      const Divider(height: 1, color: AppColors.grayE2E8F0),
+                      Divider(height: 1, color: colors.borderSubtle),
                       const SizedBox(height: 24),
 
                       // Company Name
@@ -302,13 +306,15 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                       // Facility Operating Mode
                       Text(
                         'فئة ونوع المنشأة الطبية',
-                        style: CustomAppFontStyle.semiBold14,
+                        style: CustomAppFontStyle.semiBold14.copyWith(
+                          color: colors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         'تحدد طريقة تسجيل المواعيد وسلوك نموذج الحجز وتلقائية اختيار الأطباء وتحديد الأسعار.',
                         style: CustomAppFontStyle.regular12.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -321,6 +327,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                               subtitle:
                                   'أطباء وتخصصات متعددة؛ الاستقبال يحدد الطبيب، والأطباء يُملأ لهم طبيبهم الافتراضي مع إمكانية التحويل.',
                               icon: Icons.local_hospital_outlined,
+                              colors: colors,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -331,6 +338,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                               subtitle:
                                   'طبيب واحد مع سكرتارية؛ إخفاء قائمة الأطباء وتعبئة كشف الطبيب وسعره تلقائياً دون أي خطوات إضافية.',
                               icon: Icons.person_outline_rounded,
+                              colors: colors,
                             ),
                           ),
                         ],
@@ -344,7 +352,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                           constraints: const BoxConstraints(maxWidth: 200),
                           child: CustomPushButton(
                             height: 44,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: colors.primary,
                             isLoading: isLoading,
                             borderRadius: BorderRadius.circular(8),
                             onTap: isLoading ? null : _handleSave,
@@ -352,7 +360,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                               child: Text(
                                 'save_changes'.tr(),
                                 style: CustomAppFontStyle.semiBold14.copyWith(
-                                  color: AppColors.white,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -368,6 +376,8 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                 // ─── Security & Password Card ───────────────────────────────
                 CustomContainer(
                   padding: const EdgeInsets.all(24),
+                  backGroundColor: colors.cardBackground,
+                  border: Border.all(color: colors.borderSubtle),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -376,21 +386,21 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: colors.primaryLight,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const CustomAssetImage(
+                            child: CustomAssetImage(
                               path: AppIcons.lock,
                               width: 20,
                               height: 20,
-                              color: AppColors.primary,
+                              color: colors.primary,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Text(
                             'security_settings'.tr(),
                             style: CustomAppFontStyle.semiBold18.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                         ],
@@ -399,11 +409,11 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                       Text(
                         'security_settings_desc'.tr(),
                         style: CustomAppFontStyle.regular14.copyWith(
-                          color: AppColors.gray7A828E,
+                          color: colors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Divider(height: 1, color: AppColors.grayE2E8F0),
+                      Divider(height: 1, color: colors.borderSubtle),
                       const SizedBox(height: 20),
 
                       Row(
@@ -417,7 +427,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                                 Text(
                                   '••••••••••••',
                                   style: CustomAppFontStyle.bold18.copyWith(
-                                    color: AppColors.darkText,
+                                    color: colors.textPrimary,
                                     letterSpacing: 2,
                                   ),
                                 ),
@@ -425,7 +435,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                                 Text(
                                   '${'current_password'.tr()} (Admin)',
                                   style: CustomAppFontStyle.regular12.copyWith(
-                                    color: AppColors.gray7A828E,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ],
@@ -436,7 +446,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                               constraints: const BoxConstraints(maxWidth: 220),
                               child: CustomPushButton(
                                 height: 40,
-                                backgroundColor: AppColors.primaryLight,
+                                backgroundColor: colors.surfaceLevel1,
                                 borderRadius: BorderRadius.circular(8),
                                 onTap: () {
                                   ChangePasswordDialog.show(
@@ -448,11 +458,11 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const CustomAssetImage(
+                                      CustomAssetImage(
                                         path: AppIcons.lock,
                                         width: 16,
                                         height: 16,
-                                        color: AppColors.primary,
+                                        color: colors.primary,
                                       ),
                                       const SizedBox(width: 8),
                                       Flexible(
@@ -461,7 +471,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                                             'change_password'.tr(),
                                             style: CustomAppFontStyle.semiBold14
                                                 .copyWith(
-                                                  color: AppColors.primary,
+                                                  color: colors.primary,
                                                 ),
                                           ),
                                         ),
@@ -490,6 +500,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
     required String title,
     required String subtitle,
     required IconData icon,
+    required dynamic colors,
   }) {
     final isSelected = _selectedClinicType == type;
     return InkWell(
@@ -504,11 +515,11 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryLight.withValues(alpha: 0.4)
-              : Colors.transparent,
+              ? colors.primaryLight
+              : colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+            color: isSelected ? colors.primary : colors.borderSubtle,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -519,14 +530,14 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary
-                    : AppColors.grayE2E8F0.withValues(alpha: 0.5),
+                    ? colors.primary
+                    : colors.borderSubtle.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
                 size: 20,
-                color: isSelected ? AppColors.white : AppColors.gray71717A,
+                color: isSelected ? Colors.white : colors.textSecondary,
               ),
             ),
             const SizedBox(width: 12),
@@ -541,16 +552,16 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                           title,
                           style: CustomAppFontStyle.semiBold14.copyWith(
                             color: isSelected
-                                ? AppColors.primary
-                                : AppColors.darkText,
+                                ? colors.primary
+                                : colors.textPrimary,
                           ),
                         ),
                       ),
                       if (isSelected)
-                        const Icon(
+                        Icon(
                           Icons.check_circle_rounded,
                           size: 18,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                     ],
                   ),
@@ -558,7 +569,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                   Text(
                     subtitle,
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],

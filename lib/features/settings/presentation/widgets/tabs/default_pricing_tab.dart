@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -72,6 +73,7 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, state) {
@@ -83,6 +85,8 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
             key: _formKey,
             child: CustomContainer(
               padding: const EdgeInsets.all(24),
+              backGroundColor: colors.cardBackground,
+              border: Border.all(color: colors.borderSubtle),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -91,21 +95,21 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                          color: colors.primaryLight,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const CustomAssetImage(
+                        child: CustomAssetImage(
                           path: AppIcons.money,
                           width: 20,
                           height: 20,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'tab_pricing'.tr(),
                         style: CustomAppFontStyle.semiBold18.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -114,29 +118,29 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                   Text(
                     'default_hourly_rate_desc'.tr(),
                     style: CustomAppFontStyle.regular14.copyWith(
-                      color: AppColors.gray7A828E,
+                      color: colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Divider(height: 1, color: AppColors.grayE2E8F0),
+                  Divider(height: 1, color: colors.borderSubtle),
                   const SizedBox(height: 24),
 
                   // Info Alert Banner
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withValues(alpha: 0.5),
+                      color: colors.primaryLight.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: colors.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.info_outline,
-                          color: AppColors.primary,
+                          color: colors.primary,
                           size: 22,
                         ),
                         const SizedBox(width: 12),
@@ -144,7 +148,7 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                           child: Text(
                             'ملاحظة: هذا السعر يعتبر معياراً افتراضياً عند فتح نافذة حجز جديد، ويمكن لمسؤول النظام تخصيص السعر لكل حجز على حدة عند الحاجة، ولا يؤثر تغيير هذا السعر على الحجوزات السابقة.',
                             style: CustomAppFontStyle.regular13.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                               height: 1.5,
                             ),
                           ),
@@ -161,47 +165,52 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                     child: CustomTextFormField(
                       controller: _rateController,
                       headerText: 'default_hourly_rate'.tr(),
-                      hintText: '250',
+                      hintText: 'default_hourly_rate_hint'.tr(),
                       textInputType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                      ],
-                      suffixWidget: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}'),
                         ),
-                        child: Text(
-                          'currency'.tr(),
-                          style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.primary,
-                          ),
+                      ],
+                      prefixWidget: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CustomAssetImage(
+                          path: AppIcons.money,
+                          width: 16,
+                          height: 16,
                         ),
                       ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
+                      besideHeader: Text(
+                        'egp'.tr(),
+                        style: CustomAppFontStyle.regular12.copyWith(
+                          color: colors.primary,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'field_required'.tr();
                         }
-                        final numVal = num.tryParse(v.trim());
-                        if (numVal == null || numVal <= 0) {
-                          return 'يجب إدخال سعر صحيح أكبر من صفر';
+                        final numValue = num.tryParse(value.trim());
+                        if (numValue == null || numValue < 0) {
+                          return 'invalid_amount'.tr();
                         }
                         return null;
                       },
                     ),
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
+                  // Save Button
                   Align(
                     alignment: AlignmentDirectional.centerEnd,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 200),
                       child: CustomPushButton(
                         height: 44,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: colors.primary,
                         isLoading: isLoading,
                         borderRadius: BorderRadius.circular(8),
                         onTap: isLoading ? null : _handleSave,
@@ -209,7 +218,7 @@ class _DefaultPricingTabState extends State<DefaultPricingTab> {
                           child: Text(
                             'save_changes'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.white,
+                              color: Colors.white,
                             ),
                           ),
                         ),

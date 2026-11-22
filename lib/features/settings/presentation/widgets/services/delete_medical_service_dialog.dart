@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -39,6 +40,7 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocProvider.value(
       value: cubit,
       child: BlocConsumer<MedicalServicesCubit, MedicalServicesState>(
@@ -71,9 +73,9 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 440),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: colors.cardBackground,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -82,8 +84,8 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
                     Container(
                       width: 56,
                       height: 56,
-                      decoration: const BoxDecoration(
-                        color: AppColors.red1A,
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       padding: const EdgeInsets.all(14),
@@ -96,7 +98,7 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
                     Text(
                       'confirm_delete_medical_service_title'.tr(),
                       style: CustomAppFontStyle.semiBold18.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -104,16 +106,22 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
                       '${'confirm_delete_medical_service_desc'.tr()}\n(${service.name ?? ''})',
                       textAlign: TextAlign.center,
                       style: CustomAppFontStyle.regular13.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.yellowPale,
+                        color: colors.isDark
+                            ? Colors.amber.shade900.withValues(alpha: 0.2)
+                            : AppColors.yellowPale,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.yellowLight),
+                        border: Border.all(
+                          color: colors.isDark
+                              ? Colors.amber.shade700.withValues(alpha: 0.4)
+                              : AppColors.yellowLight,
+                        ),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +137,9 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
                             child: Text(
                               'cannot_delete_service_linked_to_bookings'.tr(),
                               style: CustomAppFontStyle.regular12.copyWith(
-                                color: AppColors.darkGray,
+                                color: colors.isDark
+                                    ? Colors.amber.shade200
+                                    : AppColors.darkGray,
                               ),
                             ),
                           ),
@@ -143,14 +153,14 @@ class DeleteMedicalServiceDialog extends StatelessWidget {
                         CustomPushButton(
                           height: 40,
                           width: 100,
-                          backgroundColor: AppColors.grayf2,
+                          backgroundColor: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(8),
                           onTap: () => context.pop(),
                           child: Center(
                             child: Text(
                               'cancel'.tr(),
                               style: CustomAppFontStyle.medium14.copyWith(
-                                color: AppColors.grayMuted,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ),

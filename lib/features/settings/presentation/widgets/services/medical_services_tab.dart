@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -46,7 +47,7 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
 
           if (state.status == RequestStatusEnum.failure &&
               state.services.isEmpty) {
-            return _buildErrorView();
+            return _buildErrorView(context);
           }
 
           final isMobile = AdaptiveLayout.isMobile(context);
@@ -71,7 +72,7 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
               // ─── List or Table Content ──────────────────────────────────
               Expanded(
                 child: filteredServices.isEmpty
-                    ? _buildEmptyState()
+                    ? _buildEmptyState(context)
                     : isMobile
                         ? ListView.builder(
                             padding: const EdgeInsets.only(bottom: 24),
@@ -97,7 +98,8 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final colors = context.themeColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -107,21 +109,21 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
             Container(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceLevel1,
+              decoration: BoxDecoration(
+                color: colors.surfaceLevel1,
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(16),
-              child: const CustomAssetImage(
+              child: CustomAssetImage(
                 path: AppIcons.service,
-                color: AppColors.grayMid,
+                color: colors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               'no_medical_services'.tr(),
               style: CustomAppFontStyle.semiBold16.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
@@ -129,7 +131,7 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
               'no_medical_services_desc'.tr(),
               textAlign: TextAlign.center,
               style: CustomAppFontStyle.regular13.copyWith(
-                color: AppColors.gray,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -138,7 +140,8 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
     );
   }
 
-  Widget _buildErrorView() {
+  Widget _buildErrorView(BuildContext context) {
+    final colors = context.themeColors;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -148,7 +151,7 @@ class _MedicalServicesTabState extends State<MedicalServicesTab> {
           Text(
             'failed_to_load'.tr(),
             style: CustomAppFontStyle.semiBold18.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),

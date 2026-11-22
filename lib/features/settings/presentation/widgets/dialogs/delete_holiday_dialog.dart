@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -76,18 +77,21 @@ class DeleteHolidayDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsCubit, SettingsState>(
+    final colors = context.themeColors;
+    return BlocConsumer<SettingsCubit, SettingsState>(
       bloc: settingsCubit,
+      listenWhen: (prev, curr) => prev.actionStatus != curr.actionStatus,
+      listener: (context, state) {},
       builder: (context, state) {
         final isLoading = state.actionStatus == RequestStatusEnum.loading;
 
         final content = Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(isFullScreen ? 0 : 16),
             border: isFullScreen
                 ? null
-                : Border.all(color: AppColors.grayE2E8F0),
+                : Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             mainAxisSize: isFullScreen ? MainAxisSize.max : MainAxisSize.min,
@@ -102,7 +106,7 @@ class DeleteHolidayDialog extends StatelessWidget {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: AppColors.red1A,
+                        color: AppColors.error.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
@@ -118,7 +122,7 @@ class DeleteHolidayDialog extends StatelessWidget {
                     Text(
                       'delete_holiday'.tr(),
                       style: CustomAppFontStyle.semiBold18.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -126,7 +130,7 @@ class DeleteHolidayDialog extends StatelessWidget {
                     Text(
                       'confirm_delete_holiday'.tr(),
                       style: CustomAppFontStyle.regular14.copyWith(
-                        color: AppColors.gray7A828E,
+                        color: colors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -138,13 +142,14 @@ class DeleteHolidayDialog extends StatelessWidget {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.grayf6,
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
                         child: Text(
                           holiday.name!,
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ),
@@ -152,7 +157,7 @@ class DeleteHolidayDialog extends StatelessWidget {
                   ],
                 ),
               ),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -160,14 +165,14 @@ class DeleteHolidayDialog extends StatelessWidget {
                     Expanded(
                       child: CustomPushButton(
                         height: 44,
-                        backgroundColor: AppColors.grayf2,
+                        backgroundColor: colors.surfaceLevel1,
                         borderRadius: BorderRadius.circular(8),
                         onTap: () => Navigator.of(context).pop(),
                         child: Center(
                           child: Text(
                             'cancel'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.grayMuted,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ),
@@ -219,7 +224,7 @@ class DeleteHolidayDialog extends StatelessWidget {
         );
 
         if (isFullScreen) {
-          return Scaffold(backgroundColor: AppColors.white, body: content);
+          return Scaffold(backgroundColor: colors.scaffoldBackground, body: content);
         }
 
         return content;

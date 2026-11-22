@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -27,6 +28,7 @@ class MedicalServicesFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final isMobile = AdaptiveLayout.isMobile(context);
     final isAdmin = getIt<CurrentRoleProvider>().currentRole.canManageServices;
 
@@ -38,7 +40,7 @@ class MedicalServicesFilterBar extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: _buildStatusFilterChips()),
+              Expanded(child: _buildStatusFilterChips(context)),
               if (isAdmin) ...[
                 const SizedBox(width: 8),
                 _buildAddButton(compact: true),
@@ -50,10 +52,10 @@ class MedicalServicesFilterBar extends StatelessWidget {
     }
 
     return CustomContainer(
-      backGroundColor: AppColors.white,
+      backGroundColor: colors.cardBackground,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppColors.grayE2E8F0),
+      border: Border.all(color: colors.borderSubtle),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isNarrow = constraints.maxWidth < 720;
@@ -65,7 +67,7 @@ class MedicalServicesFilterBar extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _buildStatusFilterChips()),
+                    Expanded(child: _buildStatusFilterChips(context)),
                     if (isAdmin) ...[
                       const SizedBox(width: 12),
                       _buildAddButton(compact: constraints.maxWidth < 520),
@@ -87,7 +89,7 @@ class MedicalServicesFilterBar extends StatelessWidget {
               const SizedBox(width: 16),
 
               // Status Filter Tabs
-              _buildStatusFilterChips(),
+              _buildStatusFilterChips(context),
 
               if (isAdmin) ...[
                 const SizedBox(width: 16),
@@ -121,15 +123,16 @@ class MedicalServicesFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusFilterChips() {
+  Widget _buildStatusFilterChips(BuildContext context) {
+    final colors = context.themeColors;
     final current = state.statusFilter;
 
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLevel1,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -137,18 +140,21 @@ class MedicalServicesFilterBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildFilterChip(
+              context: context,
               key: 'all',
               label: 'service_status_all'.tr(),
               isSelected: current == 'all',
             ),
             const SizedBox(width: 4),
             _buildFilterChip(
+              context: context,
               key: 'active',
               label: 'service_status_active'.tr(),
               isSelected: current == 'active',
             ),
             const SizedBox(width: 4),
             _buildFilterChip(
+              context: context,
               key: 'inactive',
               label: 'service_status_inactive'.tr(),
               isSelected: current == 'inactive',
@@ -160,19 +166,24 @@ class MedicalServicesFilterBar extends StatelessWidget {
   }
 
   Widget _buildFilterChip({
+    required BuildContext context,
     required String key,
     required String label,
     required bool isSelected,
   }) {
+    final colors = context.themeColors;
     return InkWell(
       onTap: () => cubit.setStatusFilter(key),
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.white : Colors.transparent,
+          color: isSelected
+              ? (colors.isDark ? colors.surfaceLevel2 : AppColors.white)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
-          boxShadow: isSelected
+          border: isSelected ? Border.all(color: colors.borderSubtle) : null,
+          boxShadow: isSelected && !colors.isDark
               ? [
                   BoxShadow(
                     color: AppColors.black.withValues(alpha: 0.04),
@@ -186,10 +197,10 @@ class MedicalServicesFilterBar extends StatelessWidget {
           label,
           style: isSelected
               ? CustomAppFontStyle.semiBold13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 )
               : CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray,
+                  color: colors.textSecondary,
                 ),
         ),
       ),

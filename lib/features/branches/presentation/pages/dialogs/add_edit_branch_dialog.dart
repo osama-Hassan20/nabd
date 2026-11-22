@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/branches/data/models/branch_model.dart';
@@ -109,6 +110,7 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
     final currentUserId = getIt.isRegistered<SessionCubit>()
         ? getIt<SessionCubit>().currentUser?.id ?? 'USER-OWNER'
         : 'USER-OWNER';
+    final colors = context.themeColors;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -117,11 +119,12 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
         constraints: const BoxConstraints(maxWidth: 580),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -140,12 +143,12 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: colors.primaryLight,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.business_rounded,
-                        color: AppColors.primary,
+                        color: colors.primary,
                         size: 22,
                       ),
                     ),
@@ -157,45 +160,69 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                           Text(
                             isEdit ? 'edit_branch'.tr() : 'add_branch'.tr(),
                             style: CustomAppFontStyle.bold16.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'branch_details_prompt'.tr(),
                             style: CustomAppFontStyle.regular12.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20, color: AppColors.gray71717A),
+                      icon: Icon(Icons.close_rounded, size: 20, color: colors.textSecondary),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
 
-              // Form Body
+              // Form
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.all(20),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Branch Name
+                        // Name
                         CustomTextFormField(
                           controller: _nameController,
                           headerText: 'branch_name'.tr(),
                           hintText: 'branch_name_hint'.tr(),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'required_field'.tr();
+                          prefixWidget: Icon(
+                            Icons.store_rounded,
+                            size: 18,
+                            color: colors.textSecondary,
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'please_enter_branch_name'.tr();
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Address
+                        CustomTextFormField(
+                          controller: _addressController,
+                          headerText: 'address'.tr(),
+                          hintText: 'address_hint'.tr(),
+                          prefixWidget: Icon(
+                            Icons.location_on_outlined,
+                            size: 18,
+                            color: colors.textSecondary,
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'please_enter_address'.tr();
                             }
                             return null;
                           },
@@ -204,12 +231,24 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
 
                         // Phone & Email Row
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: CustomTextFormField(
                                 controller: _phoneController,
                                 headerText: 'phone'.tr(),
-                                hintText: '+20 2 ...',
+                                hintText: '01xxxxxxxxx',
+                                prefixWidget: Icon(
+                                  Icons.phone_rounded,
+                                  size: 18,
+                                  color: colors.textSecondary,
+                                ),
+                                validator: (val) {
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'please_enter_phone'.tr();
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -217,45 +256,48 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                               child: CustomTextFormField(
                                 controller: _emailController,
                                 headerText: 'email'.tr(),
-                                hintText: 'branch@eyadty.com',
+                                hintText: 'email_hint'.tr(),
+                                prefixWidget: Icon(
+                                  Icons.email_outlined,
+                                  size: 18,
+                                  color: colors.textSecondary,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 14),
 
-                        // Address
-                        CustomTextFormField(
-                          controller: _addressController,
-                          headerText: 'address'.tr(),
-                          hintText: 'branch_address_hint'.tr(),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Working Hours (Opening & Closing)
+                        // Opening & Closing Time Row
                         Row(
                           children: [
                             Expanded(
-                              child: GestureDetector(
+                              child: InkWell(
                                 onTap: () => _pickTime(isOpening: true),
-                                child: AbsorbPointer(
-                                  child: CustomTextFormField(
-                                    controller: _openingTimeController,
-                                    headerText: 'opening_time'.tr(),
-                                    prefixWidget: const Icon(Icons.access_time_rounded, size: 18),
+                                child: CustomTextFormField(
+                                  controller: _openingTimeController,
+                                  headerText: 'opening_time'.tr(),
+                                  isReadOnly: true,
+                                  prefixWidget: Icon(
+                                    Icons.access_time_rounded,
+                                    size: 18,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: GestureDetector(
+                              child: InkWell(
                                 onTap: () => _pickTime(isOpening: false),
-                                child: AbsorbPointer(
-                                  child: CustomTextFormField(
-                                    controller: _closingTimeController,
-                                    headerText: 'closing_time'.tr(),
-                                    prefixWidget: const Icon(Icons.access_time_filled_rounded, size: 18),
+                                child: CustomTextFormField(
+                                  controller: _closingTimeController,
+                                  headerText: 'closing_time'.tr(),
+                                  isReadOnly: true,
+                                  prefixWidget: Icon(
+                                    Icons.access_time_filled_rounded,
+                                    size: 18,
+                                    color: colors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -268,7 +310,7 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                         Text(
                           'working_days'.tr(),
                           style: CustomAppFontStyle.semiBold13.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -294,17 +336,17 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.fillDisableColor.withValues(alpha: 0.5),
+                                      ? colors.primary
+                                      : colors.surfaceLevel1,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+                                    color: isSelected ? colors.primary : colors.borderSubtle,
                                   ),
                                 ),
                                 child: Text(
                                   day.tr(),
                                   style: CustomAppFontStyle.medium12.copyWith(
-                                    color: isSelected ? AppColors.white : AppColors.darkText,
+                                    color: isSelected ? Colors.white : colors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -317,9 +359,9 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
-                            color: AppColors.fillDisableColor.withValues(alpha: 0.3),
+                            color: colors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.grayE2E8F0),
+                            border: Border.all(color: colors.borderSubtle),
                           ),
                           child: Row(
                             children: [
@@ -332,13 +374,13 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                                     Text(
                                       'is_main_branch'.tr(),
                                       style: CustomAppFontStyle.semiBold13.copyWith(
-                                        color: AppColors.darkText,
+                                        color: colors.textPrimary,
                                       ),
                                     ),
                                     Text(
                                       'main_branch_desc'.tr(),
                                       style: CustomAppFontStyle.regular11.copyWith(
-                                        color: AppColors.gray71717A,
+                                        color: colors.textSecondary,
                                       ),
                                     ),
                                   ],
@@ -346,7 +388,7 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                               ),
                               Switch(
                                 value: _isMain,
-                                activeThumbColor: AppColors.primary,
+                                activeThumbColor: colors.primary,
                                 onChanged: (val) {
                                   setState(() => _isMain = val);
                                 },
@@ -360,7 +402,7 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                 ),
               ),
 
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
 
               // Action Buttons
               Padding(
@@ -371,14 +413,14 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                     CustomPushButton(
                       height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 18),
-                      backgroundColor: AppColors.fillDisableColor,
+                      backgroundColor: colors.surfaceLevel1,
                       borderRadius: BorderRadius.circular(8),
                       onTap: () => Navigator.of(context).pop(),
                       child: Center(
                         child: Text(
                           'cancel'.tr(),
                           style: CustomAppFontStyle.medium13.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -387,7 +429,7 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                     CustomPushButton(
                       height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 22),
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colors.primary,
                       borderRadius: BorderRadius.circular(8),
                       isLoading: _isLoading,
                       onTap: () async {
@@ -420,7 +462,7 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                         child: Text(
                           isEdit ? 'save_changes'.tr() : 'add_branch'.tr(),
                           style: CustomAppFontStyle.semiBold13.copyWith(
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),

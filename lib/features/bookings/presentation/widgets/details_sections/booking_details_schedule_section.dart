@@ -207,13 +207,13 @@ class BookingDetailsScheduleSection extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     '${'rescheduled_appointment'.tr()}: ${BookingTimeFormatter.formatDateWithDay(booking.rescheduledTo, context)} ${BookingTimeFormatter.formatSingleTime('${booking.rescheduledTo!.hour.toString().padLeft(2, '0')}:${booking.rescheduledTo!.minute.toString().padLeft(2, '0')}', context)}',
-                    style: CustomAppFontStyle.medium12.copyWith(color: AppColors.darkText),
+                    style: CustomAppFontStyle.medium12.copyWith(color: colors.textPrimary),
                   ),
                   if (booking.postponeReason != null && booking.postponeReason!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       '${'postpone_reason_label'.tr()}: ${booking.postponeReason}',
-                      style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray71717A),
+                      style: CustomAppFontStyle.regular12.copyWith(color: colors.textSecondary),
                     ),
                   ],
                 ],
@@ -227,7 +227,7 @@ class BookingDetailsScheduleSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.errorLight,
+                color: colors.isDark ? AppColors.error.withValues(alpha: 0.15) : AppColors.errorLight,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
               ),
@@ -255,14 +255,14 @@ class BookingDetailsScheduleSection extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       '${'cancel_reason_label'.tr()}: ${booking.cancelReason}',
-                      style: CustomAppFontStyle.regular12.copyWith(color: AppColors.darkText),
+                      style: CustomAppFontStyle.regular12.copyWith(color: colors.textPrimary),
                     ),
                   ],
                   if (booking.cancelledAt != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       '${'cancellation_time'.tr()}: ${booking.cancelledAt!.toCustomFormatWithTime()}',
-                      style: CustomAppFontStyle.regular11.copyWith(color: AppColors.gray71717A),
+                      style: CustomAppFontStyle.regular11.copyWith(color: colors.textSecondary),
                     ),
                   ],
                 ],
@@ -277,13 +277,13 @@ class BookingDetailsScheduleSection extends StatelessWidget {
                 Text(
                   '${'created_at'.tr()}: ',
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
                 Text(
                   booking.createdAt!.toCustomFormatWithTime(),
                   style: CustomAppFontStyle.medium12.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
               ],

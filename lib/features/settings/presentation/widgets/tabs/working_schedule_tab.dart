@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -119,6 +120,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, state) {
@@ -132,6 +134,8 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
               // ─── Weekly Working Days Section ──────────────────────────────
               CustomContainer(
                 padding: const EdgeInsets.all(24),
+                backGroundColor: colors.cardBackground,
+                border: Border.all(color: colors.borderSubtle),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -140,21 +144,21 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: colors.primaryLight,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const CustomAssetImage(
+                          child: CustomAssetImage(
                             path: AppIcons.calendar,
                             width: 20,
                             height: 20,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Text(
                           'working_days'.tr(),
                           style: CustomAppFontStyle.semiBold18.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ],
@@ -163,11 +167,11 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                     Text(
                       'working_days_desc'.tr(),
                       style: CustomAppFontStyle.regular14.copyWith(
-                        color: AppColors.gray7A828E,
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Divider(height: 1, color: AppColors.grayE2E8F0),
+                    Divider(height: 1, color: colors.borderSubtle),
                     const SizedBox(height: 20),
 
                     // Days Chips Grid
@@ -188,13 +192,13 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppColors.primaryLight
-                                  : AppColors.grayf6,
+                                  ? colors.primaryLight
+                                  : colors.surfaceLevel1,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.grayE2E8F0,
+                                    ? colors.primary
+                                    : colors.borderSubtle,
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -206,8 +210,8 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                                       ? Icons.check_circle_rounded
                                       : Icons.radio_button_unchecked,
                                   color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.gray7A828E,
+                                      ? colors.primary
+                                      : colors.textSecondary,
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
@@ -215,8 +219,8 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                                   dayKey.tr(),
                                   style: CustomAppFontStyle.semiBold14.copyWith(
                                     color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.darkText,
+                                        ? colors.primary
+                                        : colors.textPrimary,
                                   ),
                                 ),
                               ],
@@ -234,6 +238,8 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
               // ─── Daily Working Hours Section ──────────────────────────────
               CustomContainer(
                 padding: const EdgeInsets.all(24),
+                backGroundColor: colors.cardBackground,
+                border: Border.all(color: colors.borderSubtle),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -242,27 +248,27 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: colors.primaryLight,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const CustomAssetImage(
+                          child: CustomAssetImage(
                             path: AppIcons.hours24,
                             width: 20,
                             height: 20,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Text(
                           'working_hours'.tr(),
                           style: CustomAppFontStyle.semiBold18.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    const Divider(height: 1, color: AppColors.grayE2E8F0),
+                    Divider(height: 1, color: colors.borderSubtle),
                     const SizedBox(height: 20),
 
                     Row(
@@ -274,6 +280,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                             timeStr: _openingTime,
                             onTap: () =>
                                 _pickTime(isOpening: true, context: context),
+                            colors: colors,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -284,6 +291,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                             timeStr: _closingTime,
                             onTap: () =>
                                 _pickTime(isOpening: false, context: context),
+                            colors: colors,
                           ),
                         ),
                       ],
@@ -297,7 +305,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                         constraints: const BoxConstraints(maxWidth: 200),
                         child: CustomPushButton(
                           height: 44,
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: colors.primary,
                           isLoading: isLoading,
                           borderRadius: BorderRadius.circular(8),
                           onTap: isLoading ? null : _handleSave,
@@ -305,7 +313,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
                             child: Text(
                               'save_changes'.tr(),
                               style: CustomAppFontStyle.semiBold14.copyWith(
-                                color: AppColors.white,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -327,6 +335,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
     required String label,
     required String timeStr,
     required VoidCallback onTap,
+    required dynamic colors,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +343,7 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
         Text(
           label,
           style: CustomAppFontStyle.semiBold14.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -344,26 +353,26 @@ class _WorkingScheduleTabState extends State<WorkingScheduleTab> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const CustomAssetImage(
+                    CustomAssetImage(
                       path: AppIcons.clock,
                       width: 18,
                       height: 18,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 10),
                     Text(
                       _displayTime(context, timeStr),
                       style: CustomAppFontStyle.semiBold16.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],

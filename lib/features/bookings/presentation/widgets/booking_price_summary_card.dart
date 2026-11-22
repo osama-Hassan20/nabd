@@ -263,7 +263,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
                   Text(
                     booking.discountApprovedByUserId!,
                     style: CustomAppFontStyle.medium12.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   if (booking.discountApprovedAt != null) ...[
@@ -271,7 +271,7 @@ class BookingPriceSummaryCard extends StatelessWidget {
                     Text(
                       '• ${AppFormatterHelper.formatDate(booking.discountApprovedAt)}',
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],

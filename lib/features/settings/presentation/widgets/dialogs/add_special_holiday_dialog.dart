@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/extensions/date_time_extentision.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -166,6 +167,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, state) {
@@ -176,19 +178,19 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
 
         final content = Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(widget.isFullScreen ? 0 : 16),
             border: widget.isFullScreen
                 ? null
-                : Border.all(color: AppColors.grayE2E8F0),
+                : Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             mainAxisSize:
                 widget.isFullScreen ? MainAxisSize.max : MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeader(context),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              _buildHeader(context, colors),
+              Divider(height: 1, color: colors.borderSubtle),
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
@@ -220,6 +222,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
                                   startDate,
                                   endDate,
                                 ),
+                                colors: colors,
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -232,6 +235,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
                                   startDate,
                                   endDate,
                                 ),
+                                colors: colors,
                               ),
                             ),
                           ],
@@ -241,14 +245,14 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
                   ),
                 ),
               ),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
-              _buildFooter(context, isLoading),
+              Divider(height: 1, color: colors.borderSubtle),
+              _buildFooter(context, isLoading, colors),
             ],
           ),
         );
 
         if (widget.isFullScreen) {
-          return Scaffold(backgroundColor: AppColors.white, body: content);
+          return Scaffold(backgroundColor: colors.scaffoldBackground, body: content);
         }
 
         return content;
@@ -260,6 +264,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
     required String label,
     required DateTime date,
     required VoidCallback onTap,
+    required dynamic colors,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,7 +272,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
         Text(
           label,
           style: CustomAppFontStyle.semiBold14.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -277,24 +282,24 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               children: [
-                const CustomAssetImage(
+                CustomAssetImage(
                   path: AppIcons.calendar,
                   width: 18,
                   height: 18,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     date.toCustomFormat(),
                     style: CustomAppFontStyle.medium14.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -308,7 +313,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, dynamic colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -331,17 +336,20 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
             child: Text(
               widget.holiday == null ? 'add_holiday'.tr() : 'edit'.tr(),
               style: CustomAppFontStyle.semiBold18.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
           ),
-          const CloseButton(),
+          IconButton(
+            icon: Icon(Icons.close, color: colors.textSecondary),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFooter(BuildContext context, bool isLoading) {
+  Widget _buildFooter(BuildContext context, bool isLoading, dynamic colors) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -349,14 +357,14 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
           Expanded(
             child: CustomPushButton(
               height: 44,
-              backgroundColor: AppColors.grayf2,
+              backgroundColor: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(8),
               onTap: () => Navigator.of(context).pop(),
               child: Center(
                 child: Text(
                   'cancel'.tr(),
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.grayMuted,
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
@@ -375,7 +383,7 @@ class _AddSpecialHolidayDialogState extends State<AddSpecialHolidayDialog> {
                 child: Text(
                   'save'.tr(),
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.white,
+                    color: Colors.white,
                   ),
                 ),
               ),

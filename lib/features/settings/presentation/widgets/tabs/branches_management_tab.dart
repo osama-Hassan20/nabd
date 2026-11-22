@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/branches/data/models/branch_model.dart';
@@ -153,14 +154,15 @@ class _BranchesManagementViewState extends State<_BranchesManagementView> {
     BranchesCubit cubit,
     BranchesState state,
   ) {
+    final colors = context.themeColors;
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         children: [
@@ -287,14 +289,15 @@ class _BranchesManagementViewState extends State<_BranchesManagementView> {
     final isWide = MediaQuery.of(context).size.width >= 800;
 
     if (isWide) {
+      final colors = context.themeColors;
       return Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

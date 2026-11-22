@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
@@ -118,6 +119,7 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
     final cubit = context.read<StaffUsersCubit>();
     final state = cubit.state;
 
+    final colors = context.themeColors;
     final isDoctorRoleSelected = _selectedRoleId == RoleIds.doctor;
 
     return Dialog(
@@ -127,12 +129,12 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
         constraints: const BoxConstraints(maxWidth: 580),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -152,12 +154,12 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                          color: colors.primaryLight,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person_add_alt_1_rounded,
-                          color: AppColors.primary,
+                          color: colors.primary,
                           size: 22,
                         ),
                       ),
@@ -171,27 +173,27 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                                   ? 'edit_user'.tr()
                                   : 'add_new_user'.tr(),
                               style: CustomAppFontStyle.bold18.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                             Text(
                               'staff_user_details_prompt'.tr(),
                               style: CustomAppFontStyle.regular12.copyWith(
-                                color: AppColors.gray71717A,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded,
-                            color: AppColors.gray71717A),
+                        icon: Icon(Icons.close_rounded,
+                            color: colors.textSecondary),
                         onPressed: () => context.pop(),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Divider(height: 1, color: AppColors.grayE2E8F0),
+                  Divider(height: 1, color: colors.borderSubtle),
                   const SizedBox(height: 20),
 
                   // ─── Basic Info ──────────────────────────────────────────
@@ -325,7 +327,7 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                       Text(
                         'الدور الوظيفي والصلاحية',
                         style: CustomAppFontStyle.semiBold13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -337,19 +339,19 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                           return ChoiceChip(
                             label: Text(r.nameAr ?? r.id ?? ''),
                             selected: isSelected,
-                            selectedColor: AppColors.primary,
+                            selectedColor: colors.primary,
                             showCheckmark: isSelected,
-                            checkmarkColor: AppColors.white,
+                            checkmarkColor: Colors.white,
                             labelStyle: CustomAppFontStyle.semiBold12.copyWith(
                               color: isSelected
-                                  ? AppColors.white
-                                  : AppColors.darkText,
+                                  ? Colors.white
+                                  : colors.textPrimary,
                             ),
-                            backgroundColor: AppColors.lightBackground,
+                            backgroundColor: colors.surfaceLevel1,
                             side: BorderSide(
                               color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.grayE2E8F0,
+                                  ? colors.primary
+                                  : colors.borderSubtle,
                             ),
                             onSelected: (selected) {
                               if (selected) {
@@ -373,22 +375,31 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: colors.isDark
+                            ? Colors.blue.shade900.withValues(alpha: 0.25)
+                            : const Color(0xFFEFF6FF),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFBFDBFE)),
+                        border: Border.all(
+                          color: colors.isDark
+                              ? Colors.blue.shade700.withValues(alpha: 0.4)
+                              : const Color(0xFFBFDBFE),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.medical_services_rounded,
-                                  size: 16, color: Color(0xFF2563EB)),
+                              Icon(
+                                Icons.medical_services_rounded,
+                                size: 16,
+                                color: colors.isDark ? Colors.blue.shade300 : const Color(0xFF2563EB),
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'link_doctor_profile_required'.tr(),
                                 style: CustomAppFontStyle.semiBold13.copyWith(
-                                  color: const Color(0xFF1E40AF),
+                                  color: colors.isDark ? Colors.blue.shade200 : const Color(0xFF1E40AF),
                                 ),
                               ),
                             ],
@@ -423,15 +434,15 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                       Expanded(
                         child: CustomPushButton(
                           height: 44,
-                          backgroundColor: AppColors.white,
-                          boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                          backgroundColor: colors.surfaceLevel1,
+                          boxBorder: Border.all(color: colors.borderSubtle),
                           borderRadius: BorderRadius.circular(10),
                           onTap: _isLoading ? null : () => context.pop(),
                           child: Center(
                             child: Text(
                               'cancel'.tr(),
                               style: CustomAppFontStyle.semiBold14.copyWith(
-                                color: AppColors.gray71717A,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ),
@@ -441,7 +452,7 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                       Expanded(
                         child: CustomPushButton(
                           height: 44,
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: colors.primary,
                           borderRadius: BorderRadius.circular(10),
                           isLoading: _isLoading,
                           onTap: _isLoading

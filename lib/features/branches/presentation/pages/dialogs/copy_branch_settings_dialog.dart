@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/branches/data/models/branch_model.dart';
@@ -29,36 +30,26 @@ class CopyBranchSettingsDialog extends StatefulWidget {
 
 class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
   String? _selectedSourceBranchId;
-  late final TextEditingController _branchController;
+  final _branchController = TextEditingController();
+
   bool _copyWorkingHours = true;
   bool _copySpecialHolidays = true;
   bool _copyMedicalServices = true;
-  bool _copyDoctorSchedules = false;
+  bool _copyDoctorSchedules = true;
+
   bool _isLoading = false;
-
-  String _branchName(BranchModel b) {
-    return (b.nameKey != null && b.nameKey!.isNotEmpty)
-        ? b.nameKey!.tr()
-        : (b.name ?? '');
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _branchController = TextEditingController();
-    final eligible = widget.allBranches
-        .where((b) => b.id != widget.targetBranch.id && b.isBranchActive)
-        .toList();
-    if (eligible.isNotEmpty) {
-      _selectedSourceBranchId = eligible.first.id;
-      _branchController.text = _branchName(eligible.first);
-    }
-  }
 
   @override
   void dispose() {
     _branchController.dispose();
     super.dispose();
+  }
+
+  String _branchName(BranchModel b) {
+    if (b.nameKey != null && b.nameKey!.isNotEmpty) {
+      return b.nameKey!.tr();
+    }
+    return b.name ?? '';
   }
 
   @override
@@ -67,10 +58,10 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
     final currentUserId = getIt.isRegistered<SessionCubit>()
         ? getIt<SessionCubit>().currentUser?.id ?? 'USER-OWNER'
         : 'USER-OWNER';
+    final colors = context.themeColors;
 
-    final eligibleSources = widget.allBranches
-        .where((b) => b.id != widget.targetBranch.id)
-        .toList();
+    final eligibleSources =
+        widget.allBranches.where((b) => b.id != widget.targetBranch.id).toList();
 
     final targetName = (widget.targetBranch.nameKey != null &&
             widget.targetBranch.nameKey!.isNotEmpty)
@@ -84,11 +75,12 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
         constraints: const BoxConstraints(maxWidth: 520),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -125,28 +117,28 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                           Text(
                             'copy_settings'.tr(),
                             style: CustomAppFontStyle.bold16.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '${'target_branch'.tr()}: $targetName',
                             style: CustomAppFontStyle.regular12.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded,
-                          size: 20, color: AppColors.gray71717A),
+                      icon: Icon(Icons.close_rounded,
+                          size: 20, color: colors.textSecondary),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
 
               // Body
               Padding(
@@ -173,7 +165,7 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                     Text(
                       'select_settings_to_copy'.tr(),
                       style: CustomAppFontStyle.semiBold13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -185,6 +177,7 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                       value: _copyWorkingHours,
                       onChanged: (val) =>
                           setState(() => _copyWorkingHours = val ?? false),
+                      colors: colors,
                     ),
                     const SizedBox(height: 8),
                     _buildCheckboxTile(
@@ -193,6 +186,7 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                       value: _copySpecialHolidays,
                       onChanged: (val) =>
                           setState(() => _copySpecialHolidays = val ?? false),
+                      colors: colors,
                     ),
                     const SizedBox(height: 8),
                     _buildCheckboxTile(
@@ -201,6 +195,7 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                       value: _copyMedicalServices,
                       onChanged: (val) =>
                           setState(() => _copyMedicalServices = val ?? false),
+                      colors: colors,
                     ),
                     const SizedBox(height: 8),
                     _buildCheckboxTile(
@@ -209,12 +204,13 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                       value: _copyDoctorSchedules,
                       onChanged: (val) =>
                           setState(() => _copyDoctorSchedules = val ?? false),
+                      colors: colors,
                     ),
                   ],
                 ),
               ),
 
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
 
               // Action Buttons
               Padding(
@@ -225,14 +221,14 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                     CustomPushButton(
                       height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 18),
-                      backgroundColor: AppColors.fillDisableColor,
+                      backgroundColor: colors.surfaceLevel1,
                       borderRadius: BorderRadius.circular(8),
                       onTap: () => Navigator.of(context).pop(),
                       child: Center(
                         child: Text(
                           'cancel'.tr(),
                           style: CustomAppFontStyle.medium13.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -291,7 +287,7 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                         child: Text(
                           'confirm_copy'.tr(),
                           style: CustomAppFontStyle.semiBold13.copyWith(
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -311,16 +307,17 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
     required String subtitle,
     required bool value,
     required ValueChanged<bool?> onChanged,
+    required dynamic colors,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: value
-            ? const Color(0xFFEEF2FF)
-            : AppColors.fillDisableColor.withValues(alpha: 0.3),
+            ? (colors.isDark ? const Color(0xFF312E81).withValues(alpha: 0.3) : const Color(0xFFEEF2FF))
+            : colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: value ? const Color(0xFFC7D2FE) : AppColors.grayE2E8F0,
+          color: value ? const Color(0xFF6366F1) : colors.borderSubtle,
         ),
       ),
       child: Row(
@@ -340,13 +337,13 @@ class _CopyBranchSettingsDialogState extends State<CopyBranchSettingsDialog> {
                 Text(
                   title,
                   style: CustomAppFontStyle.semiBold13.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: CustomAppFontStyle.regular11.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],

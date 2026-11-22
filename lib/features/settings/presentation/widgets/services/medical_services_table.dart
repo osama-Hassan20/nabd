@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/cutom_table.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -61,6 +62,7 @@ class MedicalServicesTable extends StatelessWidget {
     MedicalServiceModel srv,
     int index,
   ) {
+    final colors = context.themeColors;
     final isAdmin = getIt<CurrentRoleProvider>().currentRole.canManageServices;
     final isActive = srv.isServiceActive;
     final fee = srv.consultationFee ?? 0;
@@ -76,7 +78,7 @@ class MedicalServicesTable extends StatelessWidget {
         child: Text(
           index.toString(),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.gray71717A,
+            color: colors.textSecondary,
           ),
         ),
       ),
@@ -91,7 +93,7 @@ class MedicalServicesTable extends StatelessWidget {
             Text(
               srv.name ?? '',
               style: CustomAppFontStyle.semiBold14.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -101,7 +103,7 @@ class MedicalServicesTable extends StatelessWidget {
               Text(
                 srv.description!,
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray,
+                  color: colors.textSecondary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -116,7 +118,7 @@ class MedicalServicesTable extends StatelessWidget {
         child: Text(
           AppFormatterHelper.formatCurrency(fee),
           style: CustomAppFontStyle.semiBold14.copyWith(
-            color: AppColors.primary,
+            color: colors.primary,
           ),
         ),
       ),
@@ -126,7 +128,7 @@ class MedicalServicesTable extends StatelessWidget {
         child: Text(
           AppFormatterHelper.formatMinutes(duration, context: context),
           style: CustomAppFontStyle.regular13.copyWith(
-            color: AppColors.darkSlate,
+            color: colors.textPrimary,
           ),
         ),
       ),
@@ -137,8 +139,8 @@ class MedicalServicesTable extends StatelessWidget {
           docName,
           style: CustomAppFontStyle.regular13.copyWith(
             color: srv.assignedDoctorId != null
-                ? AppColors.secondaryDark
-                : AppColors.gray,
+                ? colors.primary
+                : colors.textSecondary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -154,13 +156,15 @@ class MedicalServicesTable extends StatelessWidget {
       Center(
         child: isAdmin
             ? PopupMenuButton<String>(
-                icon: const Icon(
+                color: colors.cardBackground,
+                icon: Icon(
                   Icons.more_vert,
                   size: 20,
-                  color: AppColors.grayMid,
+                  color: colors.textSecondary,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(color: colors.borderSubtle),
                 ),
                 onSelected: (val) {
                   if (val == 'toggle') {
@@ -198,7 +202,9 @@ class MedicalServicesTable extends StatelessWidget {
                           isActive
                               ? 'service_deactivate'.tr()
                               : 'service_activate'.tr(),
-                          style: CustomAppFontStyle.regular14,
+                          style: CustomAppFontStyle.regular14.copyWith(
+                            color: colors.textPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -207,16 +213,18 @@ class MedicalServicesTable extends StatelessWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        const CustomAssetImage(
+                        CustomAssetImage(
                           path: AppIcons.edit,
                           width: 16,
                           height: 16,
-                          color: AppColors.gray334155,
+                          color: colors.textSecondary,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'edit'.tr(),
-                          style: CustomAppFontStyle.regular14,
+                          style: CustomAppFontStyle.regular14.copyWith(
+                            color: colors.textPrimary,
+                          ),
                         ),
                       ],
                     ),

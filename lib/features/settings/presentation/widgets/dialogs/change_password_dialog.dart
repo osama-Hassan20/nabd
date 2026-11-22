@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -144,6 +145,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocBuilder<SettingsCubit, SettingsState>(
       bloc: widget.settingsCubit,
       builder: (context, state) {
@@ -151,11 +153,11 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
 
         final content = Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(widget.isFullScreen ? 0 : 16),
             border: widget.isFullScreen
                 ? null
-                : Border.all(color: AppColors.grayE2E8F0),
+                : Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             mainAxisSize:
@@ -163,7 +165,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildHeader(context),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
@@ -182,7 +184,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                               _obscureCurrent
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: AppColors.gray7A828E,
+                              color: colors.textSecondary,
                               size: 20,
                             ),
                             onPressed: () {
@@ -203,7 +205,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                               _obscureNew
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: AppColors.gray7A828E,
+                              color: colors.textSecondary,
                               size: 20,
                             ),
                             onPressed: () {
@@ -224,7 +226,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                               _obscureConfirm
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: AppColors.gray7A828E,
+                              color: colors.textSecondary,
                               size: 20,
                             ),
                             onPressed: () {
@@ -239,14 +241,14 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                 ),
               ),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               _buildFooter(context, isLoading),
             ],
           ),
         );
 
         if (widget.isFullScreen) {
-          return Scaffold(backgroundColor: AppColors.white, body: content);
+          return Scaffold(backgroundColor: colors.cardBackground, body: content);
         }
 
         return content;
@@ -255,6 +257,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final colors = context.themeColors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -262,14 +265,14 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: colors.primaryLight,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const CustomAssetImage(
+            child: CustomAssetImage(
               path: AppIcons.lock,
               width: 20,
               height: 20,
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
           const SizedBox(width: 12),
@@ -281,13 +284,13 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 Text(
                   'change_password'.tr(),
                   style: CustomAppFontStyle.semiBold18.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 Text(
                   'security_settings_desc'.tr(),
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray7A828E,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -295,9 +298,9 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
+            icon: Icon(
               Icons.close,
-              color: AppColors.gray7A828E,
+              color: colors.textSecondary,
               size: 20,
             ),
           ),
@@ -307,6 +310,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   }
 
   Widget _buildFooter(BuildContext context, bool isLoading) {
+    final colors = context.themeColors;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -314,14 +318,15 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           Expanded(
             child: CustomPushButton(
               height: 44,
-              backgroundColor: AppColors.grayf2,
+              backgroundColor: colors.surfaceLevel1,
+              boxBorder: Border.all(color: colors.borderSubtle),
               borderRadius: BorderRadius.circular(8),
               onTap: () => Navigator.of(context).pop(),
               child: Center(
                 child: Text(
                   'cancel'.tr(),
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.grayMuted,
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
@@ -331,7 +336,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           Expanded(
             child: CustomPushButton(
               height: 44,
-              backgroundColor: AppColors.primary,
+              backgroundColor: colors.primary,
               isLoading: isLoading,
               borderRadius: BorderRadius.circular(8),
               onTap: isLoading ? null : _handleSubmit,
@@ -339,7 +344,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 child: Text(
                   'save_changes'.tr(),
                   style: CustomAppFontStyle.semiBold14.copyWith(
-                    color: AppColors.white,
+                    color: Colors.white,
                   ),
                 ),
               ),
