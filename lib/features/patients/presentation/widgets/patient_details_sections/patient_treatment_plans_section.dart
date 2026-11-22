@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -32,12 +33,13 @@ class PatientTreatmentPlansSection extends StatelessWidget {
       builder: (context, state) {
         final plans = state.selectedPatient?.treatmentPlans ?? [];
         final cubit = context.read<PatientsCubit>();
+        final colors = context.themeColors;
 
         return CustomContainer(
-          backGroundColor: AppColors.white,
+          backGroundColor: colors.cardBackground,
           padding: const EdgeInsets.all(20),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -48,13 +50,13 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: colors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     padding: const EdgeInsets.all(8),
-                    child: const CustomAssetImage(
+                    child: CustomAssetImage(
                       path: AppIcons.service,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -65,7 +67,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                         Text(
                           'الخدمات والخطط العلاجية المستمرة',
                           style: CustomAppFontStyle.bold16.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -190,19 +192,20 @@ class PatientTreatmentPlansSection extends StatelessWidget {
   ) {
     final isMobile = AdaptiveLayout.isMobile(context);
     final isCompleted = plan.isCompleted;
+    final colors = context.themeColors;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isCompleted ? AppColors.grayE2E8F0 : AppColors.primary.withValues(alpha: 0.3),
+          color: isCompleted ? colors.borderSubtle : colors.primary.withValues(alpha: 0.3),
           width: isCompleted ? 1 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -232,7 +235,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                 child: Text(
                   plan.serviceName,
                   style: CustomAppFontStyle.bold15.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -242,17 +245,17 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? AppColors.grayF8FAFC
-                      : AppColors.primaryLight,
+                      ? colors.surfaceLevel1
+                      : colors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isCompleted ? AppColors.grayE2E8F0 : AppColors.primary,
+                    color: isCompleted ? colors.borderSubtle : colors.primary,
                   ),
                 ),
                 child: Text(
                   isCompleted ? 'مكتملة' : 'جارية',
                   style: CustomAppFontStyle.semiBold12.copyWith(
-                    color: isCompleted ? AppColors.gray71717A : AppColors.primary,
+                    color: isCompleted ? colors.textSecondary : colors.primary,
                   ),
                 ),
               ),
@@ -263,21 +266,21 @@ class PatientTreatmentPlansSection extends StatelessWidget {
           // Row 2: Doctor and Start Date info
           Row(
             children: [
-              const Icon(Icons.person_outline, size: 15, color: AppColors.gray71717A),
+              Icon(Icons.person_outline, size: 15, color: colors.textSecondary),
               const SizedBox(width: 4),
               Text(
                 'الطبيب: ${plan.doctorName.isNotEmpty ? plan.doctorName : 'طبيب العيادة'}',
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(width: 16),
-              const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.gray71717A),
+              Icon(Icons.calendar_today_outlined, size: 14, color: colors.textSecondary),
               const SizedBox(width: 4),
               Text(
                 'تاريخ البدء: ${DateFormat('yyyy/MM/dd').format(plan.startDate)}',
                 style: CustomAppFontStyle.regular12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               if (plan.notes.isNotEmpty) ...[
@@ -286,7 +289,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                   child: Text(
                     'ملاحظات: ${plan.notes}',
                     style: CustomAppFontStyle.regular12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                       fontStyle: FontStyle.italic,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -338,9 +341,9 @@ class PatientTreatmentPlansSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLevel1,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderSubtle),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Wrap(
               alignment: WrapAlignment.spaceBetween,
@@ -355,13 +358,13 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     Text(
                       'الإجمالي المتفق عليه: ',
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                     Text(
                       '${plan.totalAgreedPrice} ج.م',
                       style: CustomAppFontStyle.bold14.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -371,14 +374,14 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          color: AppColors.white,
+                          color: colors.cardBackground,
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: AppColors.grayE2E8F0),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.edit,
                           size: 13,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                     ),
@@ -392,13 +395,13 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     Text(
                       'المدفوع: ',
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                     Text(
                       '${plan.totalPaidAmount} ج.م',
                       style: CustomAppFontStyle.bold14.copyWith(
-                        color: Colors.teal.shade700,
+                        color: Colors.teal.shade400,
                       ),
                     ),
                   ],
@@ -411,15 +414,15 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     Text(
                       'المتبقي: ',
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                     Text(
                       '${plan.remainingBalance} ج.م',
                       style: CustomAppFontStyle.bold14.copyWith(
                         color: plan.remainingBalance > 0
-                            ? Colors.red.shade700
-                            : Colors.teal.shade700,
+                            ? Colors.red.shade400
+                            : Colors.teal.shade400,
                       ),
                     ),
                   ],
@@ -429,9 +432,9 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: colors.cardBackground,
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.grayE2E8F0),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Text(
                     plan.paymentMode == 'perSession'
@@ -440,7 +443,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                             ? 'سداد كامل مقدماً'
                             : 'دفعات وأقساط مرنة'),
                     style: CustomAppFontStyle.medium11.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),
@@ -459,28 +462,29 @@ class PatientTreatmentPlansSection extends StatelessWidget {
               CustomPushButton(
                 height: 36,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                backgroundColor: AppColors.surfaceLevel1,
-                boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                backgroundColor: colors.surfaceLevel1,
+                boxBorder: Border.all(color: colors.borderSubtle),
                 borderRadius: BorderRadius.circular(8),
                 onTap: () => _showHistoryDialog(context, plan),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.history,
                       size: 15,
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'السجل والتفاصيل (${plan.sessions.length} جلسات / ${plan.payments.length} دفعات)',
                       style: CustomAppFontStyle.medium12.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
                 ),
               ),
+            
 
               // Record Payment Button
               if (plan.remainingBalance > 0)
@@ -576,6 +580,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (dlgContext) {
+        final dlgColors = dlgContext.themeColors;
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -583,9 +588,9 @@ class PatientTreatmentPlansSection extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 600),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: dlgColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: dlgColors.borderSubtle),
               ),
               child: Form(
                 key: formKey,
@@ -596,8 +601,8 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     // Header
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(color: AppColors.grayE2E8F0)),
+                      decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(color: dlgColors.borderSubtle)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -605,12 +610,12 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                           Text(
                             'بدء خدمة / خطة علاجية متعددة الجلسات',
                             style: CustomAppFontStyle.semiBold16.copyWith(
-                              color: AppColors.darkText,
+                              color: dlgColors.textPrimary,
                             ),
                           ),
                           IconButton(
                             onPressed: () => Navigator.of(dlgContext).pop(),
-                            icon: const Icon(Icons.close, size: 20, color: AppColors.gray71717A),
+                            icon: Icon(Icons.close, size: 20, color: dlgColors.textSecondary),
                           ),
                         ],
                       ),
@@ -755,8 +760,8 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     // Actions
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      decoration: const BoxDecoration(
-                        border: Border(top: BorderSide(color: AppColors.grayE2E8F0)),
+                      decoration: BoxDecoration(
+                        border: Border(top: BorderSide(color: dlgColors.borderSubtle)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -764,13 +769,13 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                           CustomPushButton(
                             height: 40,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            backgroundColor: AppColors.surfaceLevel1,
+                            backgroundColor: dlgColors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(8),
                             onTap: () => Navigator.of(dlgContext).pop(),
                             child: Text(
                               'إلغاء',
                               style: CustomAppFontStyle.medium14.copyWith(
-                                color: AppColors.gray71717A,
+                                color: dlgColors.textSecondary,
                               ),
                             ),
                           ),
@@ -864,15 +869,16 @@ class PatientTreatmentPlansSection extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (dlgContext) {
+        final dlgColors = dlgContext.themeColors;
         return Dialog(
           backgroundColor: Colors.transparent,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: dlgColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: dlgColors.borderSubtle),
               ),
               padding: const EdgeInsets.all(20),
               child: Form(
@@ -884,14 +890,14 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     Text(
                       'تسجيل إنجاز جلسة (جلسة رقم $sessionNum)',
                       style: CustomAppFontStyle.semiBold16.copyWith(
-                        color: AppColors.darkText,
+                        color: dlgColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'الخطة: ${plan.serviceName}',
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.primary,
+                        color: dlgColors.primary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -986,15 +992,16 @@ class PatientTreatmentPlansSection extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (dlgContext) {
+        final dlgColors = dlgContext.themeColors;
         return Dialog(
           backgroundColor: Colors.transparent,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: dlgColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: dlgColors.borderSubtle),
               ),
               padding: const EdgeInsets.all(20),
               child: Form(
@@ -1006,7 +1013,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     Text(
                       'تحصيل دفعة مالية / قسط مرن',
                       style: CustomAppFontStyle.semiBold16.copyWith(
-                        color: AppColors.darkText,
+                        color: dlgColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -1127,15 +1134,16 @@ class PatientTreatmentPlansSection extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (dlgContext) {
+        final dlgColors = dlgContext.themeColors;
         return Dialog(
           backgroundColor: Colors.transparent,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: dlgColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: dlgColors.borderSubtle),
               ),
               padding: const EdgeInsets.all(20),
               child: Form(
@@ -1147,14 +1155,14 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                     Text(
                       'تعديل إجمالي سعر الخطة العلاجية',
                       style: CustomAppFontStyle.semiBold16.copyWith(
-                        color: AppColors.darkText,
+                        color: dlgColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'ميزة مخصصة للطبيب: في حال استجد إجراء إضافي أثناء العلاج (مثل قناة عصب إضافية أو جلسة رتوش مكثفة)',
                       style: CustomAppFontStyle.regular12.copyWith(
-                        color: AppColors.gray71717A,
+                        color: dlgColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1249,6 +1257,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (dlgContext) {
+        final dlgColors = dlgContext.themeColors;
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -1256,9 +1265,9 @@ class PatientTreatmentPlansSection extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 580),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: dlgColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: dlgColors.borderSubtle),
               ),
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -1275,14 +1284,14 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                             Text(
                               'سجل الجلسات والدفعات المحصلة',
                               style: CustomAppFontStyle.bold16.copyWith(
-                                color: AppColors.darkText,
+                                color: dlgColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               plan.serviceName,
                               style: CustomAppFontStyle.regular12.copyWith(
-                                color: AppColors.primary,
+                                color: dlgColors.primary,
                               ),
                             ),
                           ],
@@ -1290,11 +1299,11 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(dlgContext).pop(),
-                        icon: const Icon(Icons.close, size: 20, color: AppColors.gray71717A),
+                        icon: Icon(Icons.close, size: 20, color: dlgColors.textSecondary),
                       ),
                     ],
                   ),
-                  const Divider(height: 24, color: AppColors.grayE2E8F0),
+                  Divider(height: 24, color: dlgColors.borderSubtle),
 
                   Flexible(
                     child: SingleChildScrollView(
@@ -1304,12 +1313,12 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                           // Sessions Section
                           Row(
                             children: [
-                              const Icon(Icons.check_circle_outline, size: 16, color: AppColors.primary),
+                              Icon(Icons.check_circle_outline, size: 16, color: dlgColors.primary),
                               const SizedBox(width: 6),
                               Text(
                                 'الجلسات المنفذة (${plan.sessions.length} جلسة)',
                                 style: CustomAppFontStyle.semiBold14.copyWith(
-                                  color: AppColors.darkText,
+                                  color: dlgColors.textPrimary,
                                 ),
                               ),
                             ],
@@ -1321,7 +1330,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                               child: Text(
                                 'لم يتم تسجيل جلسات منفذة بعد',
                                 style: CustomAppFontStyle.regular12.copyWith(
-                                  color: AppColors.gray71717A,
+                                  color: dlgColors.textSecondary,
                                 ),
                               ),
                             )
@@ -1336,9 +1345,9 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                                 return Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surfaceLevel1,
+                                    color: dlgColors.surfaceLevel1,
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.borderSubtle),
+                                    border: Border.all(color: dlgColors.borderSubtle),
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1349,13 +1358,13 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                                           Text(
                                             'الجلسة #${s.sessionNumber} - المنفذ: ${s.performedBy}',
                                             style: CustomAppFontStyle.semiBold13.copyWith(
-                                              color: AppColors.darkText,
+                                              color: dlgColors.textPrimary,
                                             ),
                                           ),
                                           Text(
                                             DateFormat('yyyy/MM/dd').format(s.date),
                                             style: CustomAppFontStyle.regular12.copyWith(
-                                              color: AppColors.gray71717A,
+                                              color: dlgColors.textSecondary,
                                             ),
                                           ),
                                         ],
@@ -1365,7 +1374,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                                         Text(
                                           s.doctorNotes,
                                           style: CustomAppFontStyle.regular12.copyWith(
-                                            color: AppColors.gray71717A,
+                                            color: dlgColors.textSecondary,
                                           ),
                                         ),
                                       ],
@@ -1385,7 +1394,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                               Text(
                                 'سجل الدفعات والمتحصلات (${plan.payments.length} دفعة)',
                                 style: CustomAppFontStyle.semiBold14.copyWith(
-                                  color: AppColors.darkText,
+                                  color: dlgColors.textPrimary,
                                 ),
                               ),
                             ],
@@ -1397,7 +1406,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                               child: Text(
                                 'لم يتم تحصيل دفعات بعد',
                                 style: CustomAppFontStyle.regular12.copyWith(
-                                  color: AppColors.gray71717A,
+                                  color: dlgColors.textSecondary,
                                 ),
                               ),
                             )
@@ -1412,9 +1421,9 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                                 return Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surfaceLevel1,
+                                    color: dlgColors.surfaceLevel1,
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.borderSubtle),
+                                    border: Border.all(color: dlgColors.borderSubtle),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1425,14 +1434,14 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                                           Text(
                                             'دفعة: ${p.amount} ج.م (${p.paymentMethod})',
                                             style: CustomAppFontStyle.semiBold13.copyWith(
-                                              color: Colors.teal.shade800,
+                                              color: dlgColors.isDark ? Colors.teal.shade300 : Colors.teal.shade800,
                                             ),
                                           ),
                                           if (p.notes.isNotEmpty)
                                             Text(
                                               p.notes,
                                               style: CustomAppFontStyle.regular11.copyWith(
-                                                color: AppColors.gray71717A,
+                                                color: dlgColors.textSecondary,
                                               ),
                                             ),
                                         ],
@@ -1440,7 +1449,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                                       Text(
                                         DateFormat('yyyy/MM/dd').format(p.date),
                                         style: CustomAppFontStyle.regular12.copyWith(
-                                          color: AppColors.gray71717A,
+                                          color: dlgColors.textSecondary,
                                         ),
                                       ),
                                     ],

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -225,20 +226,21 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
       builder: (context, state) {
         final form = state.formState ?? const PatientFormState();
         final isLoading = state.actionStatus == RequestStatusEnum.loading;
+        final colors = context.themeColors;
 
         final content = Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius:
                 isFullScreen ? BorderRadius.zero : BorderRadius.circular(16),
             border:
-                isFullScreen ? null : Border.all(color: AppColors.grayE2E8F0),
+                isFullScreen ? null : Border.all(color: colors.borderSubtle),
             boxShadow: isFullScreen
                 ? null
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -276,7 +278,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                         Text(
                           titleText,
                           style: CustomAppFontStyle.semiBold18.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -285,7 +287,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                               ? '${'file_number'.tr()}: ${form.fileNumber}'
                               : 'patient_info'.tr(),
                           style: CustomAppFontStyle.regular12.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -293,28 +295,29 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                   ),
                   IconButton(
                     onPressed: () => context.pop(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close,
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                       size: 20,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 16),
 
               // ─── Tab Navigation Bar ─────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.grayf2,
+                  color: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   children: [
                     _buildTabButton(
+                      context: context,
                       index: 0,
                       label: 'tab_basic_info'.tr(),
                       icon: Icons.person_outline_rounded,
@@ -322,6 +325,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       hasError: state.formTabsWithErrors.contains(0),
                     ),
                     _buildTabButton(
+                      context: context,
                       index: 1,
                       label: 'tab_medical_info'.tr(),
                       icon: Icons.medical_services_outlined,
@@ -329,6 +333,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       hasError: state.formTabsWithErrors.contains(1),
                     ),
                     _buildTabButton(
+                      context: context,
                       index: 2,
                       label: 'tab_contact_insurance'.tr(),
                       icon: Icons.contact_phone_outlined,
@@ -363,19 +368,19 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
 
         if (isFullScreen) {
           return Scaffold(
-            backgroundColor: AppColors.white,
+            backgroundColor: colors.cardBackground,
             appBar: AppBar(
-              backgroundColor: AppColors.white,
+              backgroundColor: colors.cardBackground,
               elevation: 0,
               title: Text(
                 titleText,
                 style: CustomAppFontStyle.semiBold18.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               leading: IconButton(
                 onPressed: () => context.pop(),
-                icon: const Icon(Icons.close, color: AppColors.darkText),
+                icon: Icon(Icons.close, color: colors.textPrimary),
               ),
             ),
             body: SafeArea(child: content),
@@ -388,12 +393,14 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
   }
 
   Widget _buildTabButton({
+    required BuildContext context,
     required int index,
     required String label,
     required IconData icon,
     required int activeIndex,
     required bool hasError,
   }) {
+    final colors = context.themeColors;
     final isActive = index == activeIndex;
     return Expanded(
       child: InkWell(
@@ -402,12 +409,12 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.white : Colors.transparent,
+            color: isActive ? colors.cardBackground : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      color: Colors.black.withValues(alpha: colors.isDark ? 0.2 : 0.04),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -420,7 +427,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               Icon(
                 icon,
                 size: 16,
-                color: isActive ? AppColors.primary : AppColors.gray71717A,
+                color: isActive ? colors.primary : colors.textSecondary,
               ),
               const SizedBox(width: 6),
               Flexible(
@@ -433,7 +440,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       overflow: TextOverflow.ellipsis,
                       style: CustomAppFontStyle.medium13.copyWith(
                         color:
-                            isActive ? AppColors.primary : AppColors.gray71717A,
+                            isActive ? colors.primary : colors.textSecondary,
                         fontWeight:
                             isActive ? FontWeight.w600 : FontWeight.w500,
                       ),
@@ -486,6 +493,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
     PatientsState state,
     PatientFormState form,
   ) {
+    final colors = context.themeColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -545,7 +553,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               child: Text(
                 'phone_has_whatsapp'.tr(),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ),
@@ -562,7 +570,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                 Text(
                   '${'date_of_birth'.tr()} (${'optional_field'.tr()})',
                   style: CustomAppFontStyle.medium14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 if (form.ageYears != null) ...[
@@ -575,7 +583,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                     decoration: BoxDecoration(
                       color: form.isChild
                           ? AppColors.warning.withValues(alpha: 0.12)
-                          : AppColors.primaryLight,
+                          : colors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -585,14 +593,13 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       style: CustomAppFontStyle.medium12.copyWith(
                         color: form.isChild
                             ? AppColors.warning
-                            : AppColors.primary,
+                            : colors.primary,
                       ),
                     ),
                   ),
                 ],
               ],
-            ),
-            const SizedBox(height: 6),
+            ), const SizedBox(height: 6),
             InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: () => _selectDateOfBirth(context, form.dateOfBirth),
@@ -600,16 +607,16 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today_outlined,
                       size: 18,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -618,8 +625,8 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                           : 'date_of_birth_hint'.tr(),
                       style: CustomAppFontStyle.regular14.copyWith(
                         color: form.dateOfBirth != null
-                            ? AppColors.darkText
-                            : AppColors.gray71717A,
+                            ? colors.textPrimary
+                            : colors.textSecondary,
                       ),
                     ),
                   ],
@@ -637,7 +644,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
             Text(
               '${'gender'.tr()} (${'optional_field'.tr()})',
               style: CustomAppFontStyle.medium14.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
@@ -652,13 +659,13 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       height: 44,
                       decoration: BoxDecoration(
                         color: form.gender == GenderEnum.male
-                            ? AppColors.primaryLight
-                            : AppColors.white,
+                            ? colors.primaryLight
+                            : colors.surfaceLevel1,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: form.gender == GenderEnum.male
-                              ? AppColors.primary
-                              : AppColors.grayE2E8F0,
+                              ? colors.primary
+                              : colors.borderSubtle,
                         ),
                       ),
                       child: Row(
@@ -668,16 +675,16 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                             Icons.male_rounded,
                             size: 18,
                             color: form.gender == GenderEnum.male
-                                ? AppColors.primary
-                                : AppColors.gray71717A,
+                                ? colors.primary
+                                : colors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'gender_male'.tr(),
                             style: CustomAppFontStyle.medium14.copyWith(
                               color: form.gender == GenderEnum.male
-                                  ? AppColors.primary
-                                  : AppColors.darkText,
+                                  ? colors.primary
+                                  : colors.textPrimary,
                             ),
                           ),
                         ],
@@ -695,13 +702,13 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       height: 44,
                       decoration: BoxDecoration(
                         color: form.gender == GenderEnum.female
-                            ? AppColors.primaryLight
-                            : AppColors.white,
+                            ? colors.primaryLight
+                            : colors.surfaceLevel1,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: form.gender == GenderEnum.female
-                              ? AppColors.primary
-                              : AppColors.grayE2E8F0,
+                              ? colors.primary
+                              : colors.borderSubtle,
                         ),
                       ),
                       child: Row(
@@ -711,16 +718,16 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                             Icons.female_rounded,
                             size: 18,
                             color: form.gender == GenderEnum.female
-                                ? AppColors.primary
-                                : AppColors.gray71717A,
+                                ? colors.primary
+                                : colors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'gender_female'.tr(),
                             style: CustomAppFontStyle.medium14.copyWith(
                               color: form.gender == GenderEnum.female
-                                  ? AppColors.primary
-                                  : AppColors.darkText,
+                                  ? colors.primary
+                                  : colors.textPrimary,
                             ),
                           ),
                         ],
@@ -739,10 +746,10 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.06),
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.warning.withValues(alpha: 0.3),
+                color: colors.borderSubtle,
               ),
             ),
             child: Column(
@@ -760,7 +767,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       child: Text(
                         'guardian_header'.tr(),
                         style: CustomAppFontStyle.semiBold14.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
@@ -816,6 +823,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
     PatientFormState form,
     bool isMobile,
   ) {
+    final colors = context.themeColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -832,25 +840,25 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.grayf6,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.female_rounded,
                       size: 18,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'female_health_details'.tr(),
                       style: CustomAppFontStyle.semiBold13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
@@ -877,7 +885,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                             child: Text(
                               'is_pregnant'.tr(),
                               style: CustomAppFontStyle.medium13.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                           ),
@@ -889,7 +897,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                         children: [
                           Checkbox(
                             value: form.isNursing,
-                            activeColor: AppColors.primary,
+                            activeColor: colors.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -903,7 +911,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                             child: Text(
                               'is_nursing'.tr(),
                               style: CustomAppFontStyle.medium13.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                           ),
@@ -919,7 +927,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                     Text(
                       'last_menstrual_period_date'.tr(),
                       style: CustomAppFontStyle.medium13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -938,16 +946,16 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                color: AppColors.white,
+                                color: colors.surfaceLevel1,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.grayE2E8F0),
+                                border: Border.all(color: colors.borderSubtle),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.calendar_today_outlined,
                                     size: 16,
-                                    color: AppColors.primary,
+                                    color: colors.primary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
@@ -960,8 +968,8 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                                         CustomAppFontStyle.regular13.copyWith(
                                       color:
                                           form.lastMenstrualPeriodDate != null
-                                              ? AppColors.darkText
-                                              : AppColors.gray71717A,
+                                              ? colors.textPrimary
+                                              : colors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -1116,6 +1124,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
     PatientsState state,
     PatientFormState form,
   ) {
+    final colors = context.themeColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1175,8 +1184,9 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.grayf2,
+            color: colors.surfaceLevel1,
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1184,7 +1194,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               Text(
                 'emergency_contact_header'.tr(),
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1228,8 +1238,9 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.grayf2,
+            color: colors.surfaceLevel1,
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1237,7 +1248,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               Text(
                 'insurance_company'.tr(),
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1306,6 +1317,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
     bool isLoading,
     bool isMobile,
   ) {
+    final colors = context.themeColors;
     if (isMobile) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -1316,7 +1328,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                 Expanded(
                   child: CustomPushButton(
                     height: 44,
-                    backgroundColor: AppColors.primaryLight,
+                    backgroundColor: colors.primaryLight,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () => patientsCubit
                         .updateFormActiveTab(state.activeFormTab + 1),
@@ -1324,7 +1336,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       child: Text(
                         'next'.tr(),
                         style: CustomAppFontStyle.medium14.copyWith(
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                     ),
@@ -1336,7 +1348,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                 flex: state.activeFormTab < 2 ? 1 : 2,
                 child: CustomPushButton(
                   height: 44,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                   isLoading: isLoading,
                   borderRadius: BorderRadius.circular(8),
                   onTap: () => _submit(context, form),
@@ -1344,7 +1356,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                     child: Text(
                       'save_patient'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.white,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -1359,7 +1371,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                 Expanded(
                   child: CustomPushButton(
                     height: 44,
-                    backgroundColor: AppColors.grayf2,
+                    backgroundColor: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () => patientsCubit
                         .updateFormActiveTab(state.activeFormTab - 1),
@@ -1367,7 +1379,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       child: Text(
                         'previous'.tr(),
                         style: CustomAppFontStyle.medium14.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
@@ -1378,14 +1390,14 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               Expanded(
                 child: CustomPushButton(
                   height: 44,
-                  backgroundColor: AppColors.grayf2,
+                  backgroundColor: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
                   onTap: () => context.pop(),
                   child: Center(
                     child: Text(
                       'cancel'.tr(),
                       style: CustomAppFontStyle.medium14.copyWith(
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -1403,14 +1415,14 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         CustomPushButton(
           height: 44,
           width: 100,
-          backgroundColor: AppColors.grayf2,
+          backgroundColor: colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(8),
           onTap: () => context.pop(),
           child: Center(
             child: Text(
               'cancel'.tr(),
               style: CustomAppFontStyle.medium14.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -1420,7 +1432,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
           CustomPushButton(
             height: 44,
             width: 90,
-            backgroundColor: AppColors.grayf2,
+            backgroundColor: colors.surfaceLevel1,
             borderRadius: BorderRadius.circular(8),
             onTap: () =>
                 patientsCubit.updateFormActiveTab(state.activeFormTab - 1),
@@ -1428,7 +1440,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               child: Text(
                 'previous'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
             ),
@@ -1439,7 +1451,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
           CustomPushButton(
             height: 44,
             width: 90,
-            backgroundColor: AppColors.primaryLight,
+            backgroundColor: colors.primaryLight,
             borderRadius: BorderRadius.circular(8),
             onTap: () =>
                 patientsCubit.updateFormActiveTab(state.activeFormTab + 1),
@@ -1447,7 +1459,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               child: Text(
                 'next'.tr(),
                 style: CustomAppFontStyle.medium14.copyWith(
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
               ),
             ),
@@ -1457,7 +1469,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         Expanded(
           child: CustomPushButton(
             height: 44,
-            backgroundColor: AppColors.primary,
+            backgroundColor: colors.primary,
             isLoading: isLoading,
             borderRadius: BorderRadius.circular(8),
             onTap: () => _submit(context, form),
@@ -1465,7 +1477,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
               child: Text(
                 'save_patient'.tr(),
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: AppColors.white,
+                  color: Colors.white,
                 ),
               ),
             ),

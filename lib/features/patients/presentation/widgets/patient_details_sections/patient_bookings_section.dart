@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -72,28 +73,29 @@ class _PatientBookingsSectionState extends State<PatientBookingsSection>
               curr.patientBookingSearchQuery ||
           prev.actionStatus != curr.actionStatus,
       builder: (context, state) {
+        final colors = context.themeColors;
         return CustomContainer(
-          backGroundColor: AppColors.lightBackground,
+          backGroundColor: colors.cardBackground,
           padding: const EdgeInsets.all(20),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ─── Header ──────────────────────────────────────────
               Row(
                 children: [
-                  const CustomAssetImage(
+                  CustomAssetImage(
                     path: AppIcons.calendar,
                     width: 20,
                     height: 20,
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                   const SizedBox(width: 10),
                   Text(
                     'patient_bookings'.tr(),
                     style: CustomAppFontStyle.bold16.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const Spacer(),
@@ -169,21 +171,21 @@ class _PatientBookingsSectionState extends State<PatientBookingsSection>
                           minHeight: 36,
                         ),
                         filled: true,
-                        fillColor: AppColors.white,
+                        fillColor: colors.inputBackground,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
-                              const BorderSide(color: AppColors.grayE2E8F0),
+                              BorderSide(color: colors.inputBorder),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
-                              const BorderSide(color: AppColors.grayE2E8F0),
+                              BorderSide(color: colors.inputBorder),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide:
-                              const BorderSide(color: AppColors.primary),
+                              BorderSide(color: colors.primary),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,

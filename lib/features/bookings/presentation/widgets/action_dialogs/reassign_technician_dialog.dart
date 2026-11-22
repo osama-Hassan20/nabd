@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -28,6 +29,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     // Exclude current doctor from reassignment candidate list
     final candidateDoctors = technicians.where((t) => t.id != currentDoctorId).toList();
     final availableDoctorsCount = candidateDoctors.where((t) => t.isAvailable).length;
@@ -40,9 +42,9 @@ class ReassignTechnicianDialog extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -56,7 +58,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                       Text(
                         'transfer_doctor'.tr(),
                         style: CustomAppFontStyle.semiBold18.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -66,13 +68,13 @@ class ReassignTechnicianDialog extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                          color: colors.primaryLight,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '$availableDoctorsCount متاح',
                           style: CustomAppFontStyle.semiBold12.copyWith(
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ),
@@ -81,7 +83,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                   const CloseButton(),
                 ],
               ),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 16),
               if (candidateDoctors.isEmpty)
                 Padding(
@@ -90,7 +92,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                     child: Text(
                       'no_technicians_found'.tr(),
                       style: CustomAppFontStyle.medium14.copyWith(
-                        color: AppColors.grayMuted,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
@@ -119,14 +121,14 @@ class ReassignTechnicianDialog extends StatelessWidget {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.primary.withValues(alpha: 0.12)
-                                      : (isAvailable ? AppColors.grayf2 : AppColors.grayE2E8F0.withValues(alpha: 0.3)),
+                                      ? colors.primary.withValues(alpha: 0.15)
+                                      : (isAvailable ? colors.surfaceLevel1 : colors.fillDisabled),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.primary
-                                        : Colors.transparent,
-                                    width: 1.5,
+                                        ? colors.primary
+                                        : colors.borderSubtle,
+                                    width: isSelected ? 1.5 : 1.0,
                                   ),
                                 ),
                                 child: Row(
@@ -135,7 +137,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                                       path: AppIcons.team,
                                       width: 18,
                                       height: 18,
-                                      color: isAvailable ? AppColors.primary : AppColors.gray71717A,
+                                      color: isAvailable ? colors.primary : colors.textSecondary,
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -146,8 +148,8 @@ class ReassignTechnicianDialog extends StatelessWidget {
                                             tech.name,
                                             style: CustomAppFontStyle.medium14.copyWith(
                                               color: isAvailable
-                                                  ? AppColors.darkText
-                                                  : AppColors.gray71717A,
+                                                  ? colors.textPrimary
+                                                  : colors.textSecondary,
                                             ),
                                           ),
                                           if (!isAvailable && tech.unavailableReason != null) ...[
@@ -168,21 +170,21 @@ class ReassignTechnicianDialog extends StatelessWidget {
                                             ? Icons.check_circle
                                             : Icons.circle_outlined,
                                         color: isSelected
-                                            ? AppColors.primary
-                                            : AppColors.gray71717A,
+                                            ? colors.primary
+                                            : colors.textSecondary,
                                         size: 20,
                                       )
                                     else
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: AppColors.grayE2E8F0,
+                                          color: colors.fillDisabled,
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Text(
                                           'doctor_not_available'.tr(),
                                           style: CustomAppFontStyle.regular11.copyWith(
-                                            color: AppColors.gray71717A,
+                                            color: colors.textSecondary,
                                           ),
                                         ),
                                       ),
@@ -203,14 +205,14 @@ class ReassignTechnicianDialog extends StatelessWidget {
                   CustomPushButton(
                     height: 40,
                     width: 100,
-                    backgroundColor: AppColors.grayf2,
+                    backgroundColor: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () => context.pop(),
                     child: Center(
                       child: Text(
                         'cancel'.tr(),
                         style: CustomAppFontStyle.medium14.copyWith(
-                          color: AppColors.grayMuted,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -220,7 +222,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                     child: CustomPushButton(
                       height: 40,
                       width: 120,
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colors.primary,
                       isLoading: isLoading,
                       borderRadius: BorderRadius.circular(8),
                       onTap: onConfirm,
@@ -228,7 +230,7 @@ class ReassignTechnicianDialog extends StatelessWidget {
                         child: Text(
                           'save'.tr(),
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),

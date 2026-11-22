@@ -57,14 +57,14 @@ class BookingDetailsPatientSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: colors.primaryLight,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const CustomAssetImage(
+                child: CustomAssetImage(
                   path: AppIcons.user,
                   width: 18,
                   height: 18,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -85,13 +85,13 @@ class BookingDetailsPatientSection extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: colors.primaryLight,
                 child: Text(
                   (patientName != null && patientName.trim().isNotEmpty)
                       ? patientName.trim()[0].toUpperCase()
                       : '?',
                   style: CustomAppFontStyle.bold16.copyWith(
-                    color: AppColors.primaryDark,
+                    color: colors.primary,
                   ),
                 ),
               ),
@@ -134,32 +134,32 @@ class BookingDetailsPatientSection extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.grayf6,
+                  color: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: Row(
                   children: [
-                    const CustomAssetImage(
+                    CustomAssetImage(
                       path: AppIcons.phone,
                       width: 16,
                       height: 16,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         patientPhone,
                         style: CustomAppFontStyle.medium13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                         textDirection: TextDirection.ltr,
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.copy,
                       size: 14,
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -173,25 +173,25 @@ class BookingDetailsPatientSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.grayf6,
+                color: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CustomAssetImage(
+                  CustomAssetImage(
                     path: AppIcons.userLocation,
                     width: 16,
                     height: 16,
-                    color: AppColors.accent,
+                    color: colors.secondary,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       patientAddress,
                       style: CustomAppFontStyle.regular13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ),

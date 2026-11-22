@@ -8,6 +8,7 @@ import '../../../../core/enums/staff_permission_enum.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/services/permission_evaluator.dart';
 import '../../../../core/utils/enums/request_status_enum.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_push_container_button.dart';
@@ -166,13 +167,14 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                         visit?.doctorId != null ? {visit!.doctorId!} : null,
                   ));
 
+          final colors = context.themeColors;
           return PopScope(
             canPop: true,
             onPopInvokedWithResult: (didPop, result) {
               _cubit.flushDraftOnExit();
             },
             child: Scaffold(
-              backgroundColor: const Color(0xFFF8FAFC),
+              backgroundColor: colors.scaffoldBackground,
               body: SafeArea(
                 child: Column(
                   children: [
@@ -214,14 +216,15 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
     final visit = state.activeVisit;
     final patientName = visit?.patientName;
     final isDesktop = AdaptiveLayout.isDesktop(context);
+    final colors = context.themeColors;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFE2E8F0),
+            color: colors.borderSubtle,
             width: 0.8,
           ),
         ),
@@ -334,16 +337,16 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
               CustomPushButton(
                 height: 38,
                 width: 120,
-                backgroundColor: AppColors.white,
+                backgroundColor: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(8),
-                border: const BorderSide(color: Color(0xFFE2E8F0)),
+                border: BorderSide(color: colors.borderSubtle),
                 isLoading: isActionLoading,
                 onTap: _onSaveDraft,
                 child: Center(
                   child: Text(
                     'visits_save_draft'.tr(),
                     style: CustomAppFontStyle.medium13.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                 ),
@@ -410,6 +413,7 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
     bool isFinalized,
     bool canRecordVitals,
   ) {
+    final colors = context.themeColors;
     if (state.activeVisitStatus == RequestStatusEnum.loading) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
@@ -422,9 +426,9 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
           padding: const EdgeInsets.all(24),
           constraints: const BoxConstraints(maxWidth: 420),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -537,12 +541,12 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
     final vitalsSection = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+        border: Border.all(color: colors.borderSubtle, width: 0.8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.2 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),

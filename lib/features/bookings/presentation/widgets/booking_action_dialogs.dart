@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
@@ -299,6 +300,7 @@ class BookingActionDialogs {
             }
           },
           builder: (ctx, state) {
+            final colors = ctx.themeColors;
             final isLoading = state.actionStatus == RequestStatusEnum.loading;
             return Dialog(
               backgroundColor: Colors.transparent,
@@ -308,9 +310,9 @@ class BookingActionDialogs {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: colors.cardBackground,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.grayE2E8F0),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   padding: const EdgeInsets.all(24),
                   child: Form(
@@ -340,7 +342,7 @@ class BookingActionDialogs {
                               child: Text(
                                 'disc_remove_confirm_title'.tr(),
                                 style: CustomAppFontStyle.bold16.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                             ),
@@ -350,7 +352,7 @@ class BookingActionDialogs {
                         Text(
                           'disc_remove_confirm_body'.tr(),
                           style: CustomAppFontStyle.regular13.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -380,7 +382,7 @@ class BookingActionDialogs {
                               child: Text(
                                 'cancel'.tr(),
                                 style: CustomAppFontStyle.medium14.copyWith(
-                                  color: AppColors.gray71717A,
+                                  color: colors.textSecondary,
                                 ),
                               ),
                             ),
@@ -402,7 +404,7 @@ class BookingActionDialogs {
                               child: Text(
                                 'disc_confirm_remove'.tr(),
                                 style: CustomAppFontStyle.medium14.copyWith(
-                                  color: AppColors.white,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

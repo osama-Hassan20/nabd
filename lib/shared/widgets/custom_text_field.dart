@@ -144,7 +144,7 @@ class CustomTextFormField extends StatelessWidget {
     final Color resolvedFillColor = backgroundColor ??
         (fillDisableColor != null && fillDisableColor != AppColors.fillDisableColor
             ? fillDisableColor!
-            : colors.surfaceLevel1);
+            : colors.inputBackground);
 
     return Column(
       spacing: spacing,
@@ -161,8 +161,8 @@ class CustomTextFormField extends StatelessWidget {
                   headerText!,
                   style:
                       headerTextStyle ??
-                      CustomAppFontStyle.regular14.copyWith(
-                        color: colors.textSecondary,
+                      CustomAppFontStyle.medium14.copyWith(
+                        color: colors.textPrimary,
                       ),
                 ),
               ),
@@ -239,12 +239,12 @@ class CustomTextFormField extends StatelessWidget {
                 labelStyle:
                     labelStyle ??
                     CustomAppFontStyle.regular14.copyWith(
-                      color: AppColors.grayLight217,
+                      color: colors.textSecondary,
                     ),
                 errorStyle:
                     errorStyle ??
                     CustomAppFontStyle.regular12.copyWith(color: AppColors.red),
-                focusColor: Colors.black,
+                focusColor: colors.primary,
                 suffixIcon: suffixWidget,
                 suffixText: suffixText,
                 suffixStyle: suffixTextStyle,
@@ -274,17 +274,17 @@ class CustomTextFormField extends StatelessWidget {
                 enabledBorder:
                     enabledBorder ??
                     customOutLineBorders(
-                      borderColor: effectiveFocusBorderColor,
+                      borderColor: effectiveBorderColor,
                       borderRadius: borderRadius,
                     ),
                 focusedBorder:
                     focusedBorder ??
                     customOutLineBorders(
-                      borderWidth: 1,
+                      borderWidth: 1.5,
                       borderRadius: borderRadius,
                       borderColor: enableFocusBorder
                           ? effectiveFocusBorderColor
-                          : null,
+                          : effectiveBorderColor,
                     ),
               ),
             ),
@@ -297,7 +297,7 @@ class CustomTextFormField extends StatelessWidget {
             style:
                 headerTextStyle ??
                 CustomAppFontStyle.light16.copyWith(
-                  color: AppColors.gray334155,
+                  color: colors.textSecondary,
                 ),
           ),
       ],

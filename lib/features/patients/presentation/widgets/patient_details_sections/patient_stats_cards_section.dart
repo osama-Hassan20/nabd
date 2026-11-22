@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/network/mony_helper.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -25,35 +26,36 @@ class PatientStatsCardsSection extends StatelessWidget {
               curr.patientCompletedBookingsCount ||
           prev.patientTotalSpentAmount != curr.patientTotalSpentAmount,
       builder: (context, state) {
+        final colors = context.themeColors;
         final cards = [
           _StatCardItem(
             title: 'total_bookings'.tr(),
             value: '${state.patientTotalBookingsCount}',
             icon: AppIcons.totalBooking,
-            color: AppColors.primary,
-            bgColor: AppColors.primaryLight,
+            color: colors.primary,
+            bgColor: colors.primary.withValues(alpha: 0.12),
           ),
           _StatCardItem(
             title: 'upcoming_bookings'.tr(),
             value: '${state.patientUpcomingBookingsCount}',
             icon: AppIcons.comingBooking,
             color: AppColors.cyan,
-            bgColor: AppColors.primaryLight,
+            bgColor: AppColors.cyan.withValues(alpha: 0.12),
           ),
           _StatCardItem(
             title: 'completed'.tr(),
             value: '${state.patientCompletedBookingsCount}',
             icon: AppIcons.completedBooking,
             color: AppColors.success,
-            bgColor: AppColors.secondaryLight,
+            bgColor: AppColors.success.withValues(alpha: 0.12),
           ),
           _StatCardItem(
             title: 'total_spent'.tr(),
             value:
                 "${MonyHelper.formatMoney(state.patientTotalSpentAmount)} ${'currency'.tr()}",
             icon: AppIcons.wallet,
-            color: AppColors.secondary,
-            bgColor: AppColors.secondaryLight,
+            color: colors.primary,
+            bgColor: colors.primary.withValues(alpha: 0.12),
           ),
         ];
 
@@ -82,13 +84,13 @@ class PatientStatsCardsSection extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = cards[index];
                 return CustomContainer(
-                  backGroundColor: AppColors.white,
+                  backGroundColor: colors.cardBackground,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                   child: Row(
                     children: [
                       Container(
@@ -118,7 +120,7 @@ class PatientStatsCardsSection extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: CustomAppFontStyle.regular12.copyWith(
-                                color: AppColors.gray71717A,
+                                color: colors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -127,7 +129,7 @@ class PatientStatsCardsSection extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: CustomAppFontStyle.bold18.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                           ],

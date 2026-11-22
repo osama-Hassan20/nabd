@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/egyptian_phone_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -35,6 +36,7 @@ class PatientProfileCardSection extends StatelessWidget {
       builder: (context, state) {
         final patient = state.selectedPatient;
         if (patient == null) return const SizedBox.shrink();
+        final colors = context.themeColors;
 
         final age = patient.calculateAgeYears();
         final genderText = patient.gender == GenderEnum.female
@@ -44,10 +46,10 @@ class PatientProfileCardSection extends StatelessWidget {
             patient.bloodGroup != BloodGroupEnum.unknown;
 
         return CustomContainer(
-          backGroundColor: AppColors.white,
+          backGroundColor: colors.cardBackground,
           padding: const EdgeInsets.all(20),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -59,15 +61,15 @@ class PatientProfileCardSection extends StatelessWidget {
                     width: 54,
                     height: 54,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: colors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: CustomAssetImage(
                         path: AppIcons.user,
                         width: 26,
                         height: 26,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                     ),
                   ),
@@ -82,7 +84,7 @@ class PatientProfileCardSection extends StatelessWidget {
                               child: Text(
                                 patient.name ?? '',
                                 style: CustomAppFontStyle.bold18.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                             ),
@@ -190,7 +192,7 @@ class PatientProfileCardSection extends StatelessWidget {
               ],
 
               const SizedBox(height: 16),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 16),
 
               // Contact, Location, and Clinical Info Chips
@@ -205,14 +207,14 @@ class PatientProfileCardSection extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.grayf2,
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const CustomAssetImage(
+                        child: CustomAssetImage(
                           path: AppIcons.phone,
                           width: 14,
                           height: 14,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -222,7 +224,7 @@ class PatientProfileCardSection extends StatelessWidget {
                           Text(
                             'patient_phone'.tr(),
                             style: CustomAppFontStyle.regular11.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                           Row(
@@ -231,7 +233,7 @@ class PatientProfileCardSection extends StatelessWidget {
                                 EgyptianPhoneHelper.formatDisplay(patient.phone),
                                 textDirection: TextDirection.ltr,
                                 style: CustomAppFontStyle.medium13.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                               if (patient.phoneHasWhatsapp == true) ...[
@@ -260,13 +262,13 @@ class PatientProfileCardSection extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: AppColors.grayf2,
+                            color: colors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.cake_outlined,
                             size: 14,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -276,13 +278,13 @@ class PatientProfileCardSection extends StatelessWidget {
                             Text(
                               'age'.tr(),
                               style: CustomAppFontStyle.regular11.copyWith(
-                                color: AppColors.gray71717A,
+                                color: colors.textSecondary,
                               ),
                             ),
                             Text(
                               '$age ${'age_years'.tr()}${genderText.isNotEmpty ? ' • $genderText' : ''}',
                               style: CustomAppFontStyle.medium13.copyWith(
-                                color: AppColors.darkText,
+                                color: colors.textPrimary,
                               ),
                             ),
                           ],
@@ -297,14 +299,14 @@ class PatientProfileCardSection extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.grayf2,
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const CustomAssetImage(
+                        child: CustomAssetImage(
                           path: AppIcons.location,
                           width: 14,
                           height: 14,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -314,13 +316,13 @@ class PatientProfileCardSection extends StatelessWidget {
                           Text(
                             'patient_address'.tr(),
                             style: CustomAppFontStyle.regular11.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                           Text(
                             patient.address ?? '-',
                             style: CustomAppFontStyle.medium13.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                         ],

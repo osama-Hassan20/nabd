@@ -107,7 +107,7 @@ class BookingDetailsTechniciansSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 16),
 
           if (technicians.isNotEmpty)
@@ -121,28 +121,28 @@ class BookingDetailsTechniciansSection extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.grayf6,
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.grayE2E8F0),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircleAvatar(
                         radius: 16,
-                        backgroundColor: AppColors.primaryLight,
-                        child: const CustomAssetImage(
+                        backgroundColor: colors.primaryLight,
+                        child: CustomAssetImage(
                           path: AppIcons.user,
                           width: 16,
                           height: 16,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         tech.name?.trim() ?? '',
                         style: CustomAppFontStyle.medium13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -154,21 +154,22 @@ class BookingDetailsTechniciansSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.grayf6,
+                color: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.person_off_outlined,
                     size: 18,
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'technician_unassigned'.tr(),
                     style: CustomAppFontStyle.regular13.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],

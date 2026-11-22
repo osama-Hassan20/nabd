@@ -158,9 +158,9 @@ class _CustomStackSelectorState<T> extends State<CustomStackSelector<T>> {
       isReadOnly: true,
       disabledBorder: InputBorder.none,
       focusFillColor: widget.fillDisableColor,
-      suffixWidget: const Icon(
+      suffixWidget: Icon(
         Icons.keyboard_arrow_down_outlined,
-        color: AppColors.gray7A828E,
+        color: context.themeColors.textSecondary,
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/patients/data/models/kinship_relations.dart';
@@ -71,6 +72,8 @@ class _KinshipChipsSelectorState extends State<KinshipChipsSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -78,7 +81,7 @@ class _KinshipChipsSelectorState extends State<KinshipChipsSelector> {
           Text(
             widget.header!,
             style: CustomAppFontStyle.medium14.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -116,17 +119,17 @@ class _KinshipChipsSelectorState extends State<KinshipChipsSelector> {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.white,
+                  color: isSelected ? colors.primary : colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+                    color: isSelected ? colors.primary : colors.borderSubtle,
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
                 child: Text(
                   option.localizedLabel,
                   style: CustomAppFontStyle.medium13.copyWith(
-                    color: isSelected ? AppColors.white : AppColors.darkText,
+                    color: isSelected ? Colors.white : colors.textPrimary,
                   ),
                 ),
               ),

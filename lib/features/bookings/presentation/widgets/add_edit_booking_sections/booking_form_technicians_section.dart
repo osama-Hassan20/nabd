@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -24,6 +25,7 @@ class BookingFormTechniciansSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final cubit = context.read<BookingsCubit>();
 
     return BlocBuilder<BookingsCubit, BookingsState>(
@@ -46,7 +48,9 @@ class BookingFormTechniciansSection extends StatelessWidget {
                 children: [
                   Text(
                     'doctor_label'.tr(),
-                    style: CustomAppFontStyle.bold14,
+                    style: CustomAppFontStyle.bold14.copyWith(
+                      color: colors.textPrimary,
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -54,25 +58,25 @@ class BookingFormTechniciansSection extends StatelessWidget {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: colors.primaryLight,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.25),
+                        color: colors.primary.withValues(alpha: 0.25),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.verified_user_rounded,
                           size: 13,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'عيادة فردية',
                           style: CustomAppFontStyle.medium11.copyWith(
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ],
@@ -87,10 +91,10 @@ class BookingFormTechniciansSection extends StatelessWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withValues(alpha: 0.35),
+                  color: colors.primaryLight.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.25),
+                    color: colors.primary.withValues(alpha: 0.25),
                   ),
                 ),
                 child: Row(
@@ -99,13 +103,13 @@ class BookingFormTechniciansSection extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
+                        color: colors.primary.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.medical_services_rounded,
-                          color: AppColors.primary,
+                          color: colors.primary,
                           size: 18,
                         ),
                       ),
@@ -118,22 +122,22 @@ class BookingFormTechniciansSection extends StatelessWidget {
                           Text(
                             doctor.name,
                             style: CustomAppFontStyle.bold14.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'طبيب المنشأة المعتمد - يتم تحديد المواعيد والأسعار تلقائياً',
                             style: CustomAppFontStyle.regular11.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.check_circle_rounded,
-                      color: AppColors.primary,
+                      color: colors.primary,
                       size: 20,
                     ),
                   ],
@@ -161,10 +165,10 @@ class BookingFormTechniciansSection extends StatelessWidget {
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: colors.primaryLight,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.2),
+                color: colors.primary.withValues(alpha: 0.2),
               ),
             ),
             child: Text(
@@ -174,7 +178,7 @@ class BookingFormTechniciansSection extends StatelessWidget {
                       ? selectedTechs.first.name
                       : '${selectedTechs.length} أطباء'),
               style: CustomAppFontStyle.medium11.copyWith(
-                color: AppColors.primary,
+                color: colors.primary,
               ),
             ),
           );
@@ -220,7 +224,7 @@ class BookingFormTechniciansSection extends StatelessWidget {
                     vertical: 10,
                   ),
                   color: isSelected
-                      ? AppColors.primaryLight.withValues(alpha: 0.5)
+                      ? colors.primaryLight.withValues(alpha: 0.5)
                       : Colors.transparent,
                   child: Row(
                     children: [
@@ -230,8 +234,8 @@ class BookingFormTechniciansSection extends StatelessWidget {
                             : Icons.check_box_outline_blank_rounded,
                         size: 18,
                         color: isSelected
-                            ? AppColors.primary
-                            : AppColors.gray71717A,
+                            ? colors.primary
+                            : colors.textSecondary,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -239,9 +243,11 @@ class BookingFormTechniciansSection extends StatelessWidget {
                           t.name,
                           style: isSelected
                               ? CustomAppFontStyle.medium14.copyWith(
-                                  color: AppColors.primary,
+                                  color: colors.primary,
                                 )
-                              : CustomAppFontStyle.regular14,
+                              : CustomAppFontStyle.regular14.copyWith(
+                                  color: colors.textPrimary,
+                                ),
                         ),
                       ),
                     ],

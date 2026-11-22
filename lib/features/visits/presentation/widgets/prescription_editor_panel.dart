@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_push_container_button.dart';
@@ -43,16 +44,17 @@ class _PrescriptionEditorPanelState extends State<PrescriptionEditorPanel> {
         : (widget.cubit.state.formState.prescriptionItems ?? const []);
 
     final editingItem = widget.cubit.state.formState.editingItem;
+    final colors = context.themeColors;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+        border: Border.all(color: colors.borderSubtle, width: 0.8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.2 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -269,9 +271,9 @@ class _PrescriptionEditorPanelState extends State<PrescriptionEditorPanel> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: colors.surfaceLevel1,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Column(
                 children: [
@@ -284,7 +286,7 @@ class _PrescriptionEditorPanelState extends State<PrescriptionEditorPanel> {
                   Text(
                     'rx_no_items'.tr(),
                     style: CustomAppFontStyle.medium14.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -304,13 +306,13 @@ class _PrescriptionEditorPanelState extends State<PrescriptionEditorPanel> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isBeingEdited
-                        ? AppColors.primary.withValues(alpha: 0.05)
-                        : const Color(0xFFF8FAFC),
+                        ? colors.primary.withValues(alpha: 0.05)
+                        : colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isBeingEdited
-                          ? AppColors.primary
-                          : const Color(0xFFE2E8F0),
+                          ? colors.primary
+                          : colors.borderSubtle,
                     ),
                   ),
                   child: Row(

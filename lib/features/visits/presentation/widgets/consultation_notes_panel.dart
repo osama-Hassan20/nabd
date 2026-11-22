@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
@@ -131,15 +132,16 @@ class _ConsultationNotesPanelState extends State<ConsultationNotesPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+        border: Border.all(color: colors.borderSubtle, width: 0.8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.2 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -154,28 +156,28 @@ class _ConsultationNotesPanelState extends State<ConsultationNotesPanel> {
             spacing: 8,
             runSpacing: 4,
             children: [
-              const Icon(
+              Icon(
                 Icons.description_outlined,
                 size: 20,
-                color: AppColors.primary,
+                color: colors.primary,
               ),
               Text(
                 'visits_consultation_details_title'.tr(),
                 style: CustomAppFontStyle.bold16.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               if (widget.isReadOnly)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.grayf2,
+                    color: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'visits_finalized_read_only'.tr(),
                     style: CustomAppFontStyle.medium12.copyWith(
-                      color: AppColors.gray,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),

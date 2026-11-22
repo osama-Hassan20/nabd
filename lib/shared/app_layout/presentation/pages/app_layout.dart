@@ -10,6 +10,7 @@ import 'package:eyadty/core/layout_adaptive/widgets/screen_adaptive_layout.dart'
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/constants/app_constants.dart';
 import 'package:eyadty/core/utils/constants/app_list.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/shared/app_layout/presentation/widgets/header_layout.dart';
 import 'package:eyadty/shared/widgets/custom_full_screen_loading.dart';
 import 'package:eyadty/shared/widgets/error_page.dart';
@@ -94,6 +95,7 @@ class _AppLayoutState extends State<AppLayout> {
                 builder: (context, sessionState) {
                   return Scaffold(
                     key: scaffoldKey,
+                    backgroundColor: context.themeColors.scaffoldBackground,
                     drawer: CustomDrawer(
                       scaffoldKey: scaffoldKey,
                       items: layoutItems(context),

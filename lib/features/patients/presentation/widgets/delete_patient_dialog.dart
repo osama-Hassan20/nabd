@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -86,16 +87,17 @@ class _DeletePatientDialogState extends State<DeletePatientDialog> {
       },
       builder: (context, state) {
         final isLoading = state.actionStatus == RequestStatusEnum.loading;
+        final colors = context.themeColors;
 
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -132,14 +134,14 @@ class _DeletePatientDialogState extends State<DeletePatientDialog> {
                         Text(
                           'archive_patient'.tr(),
                           style: CustomAppFontStyle.semiBold16.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           patient.name ?? '-',
                           style: CustomAppFontStyle.medium14.copyWith(
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ],
@@ -148,13 +150,13 @@ class _DeletePatientDialogState extends State<DeletePatientDialog> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 16),
 
               Text(
                 'archive_patient_confirm'.tr(),
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -242,14 +244,14 @@ class _DeletePatientDialogState extends State<DeletePatientDialog> {
                   CustomPushButton(
                     height: 42,
                     width: 100,
-                    backgroundColor: AppColors.grayf2,
+                    backgroundColor: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () => context.pop(false),
                     child: Center(
                       child: Text(
                         'cancel'.tr(),
                         style: CustomAppFontStyle.medium14.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),

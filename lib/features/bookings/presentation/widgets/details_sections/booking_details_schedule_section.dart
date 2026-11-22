@@ -53,14 +53,14 @@ class BookingDetailsScheduleSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.1),
+                  color: colors.primaryLight,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const CustomAssetImage(
+                child: CustomAssetImage(
                   path: AppIcons.service,
                   width: 18,
                   height: 18,
-                  color: AppColors.accent,
+                  color: colors.primary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -73,31 +73,31 @@ class BookingDetailsScheduleSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.grayE2E8F0),
+          Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 16),
 
           // Service Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.grayf6,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               children: [
-                const CustomAssetImage(
+                CustomAssetImage(
                   path: AppIcons.service,
                   width: 16,
                   height: 16,
-                  color: AppColors.accent,
+                  color: colors.primary,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     booking.serviceName ?? 'service_default'.tr(),
                     style: CustomAppFontStyle.semiBold14.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                 ),
@@ -110,50 +110,50 @@ class BookingDetailsScheduleSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.grayf6,
+              color: colors.surfaceLevel1,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Column(
               children: [
                 // Date Row
                 Row(
                   children: [
-                    const CustomAssetImage(
+                    CustomAssetImage(
                       path: AppIcons.calendar,
                       width: 16,
                       height: 16,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         dateStr.isNotEmpty ? dateStr : 'not_specified'.tr(),
                         style: CustomAppFontStyle.medium13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
                 const SizedBox(height: 10),
 
                 // Time & Duration Row
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time_rounded,
                       size: 16,
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         timeStr.isNotEmpty ? timeStr : 'not_specified'.tr(),
                         style: CustomAppFontStyle.regular13.copyWith(
-                          color: AppColors.darkText,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),
@@ -165,13 +165,13 @@ class BookingDetailsScheduleSection extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                          color: colors.primaryLight,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           '${booking.durationMinutes} ${'minutes'.tr()}',
                           style: CustomAppFontStyle.medium12.copyWith(
-                            color: AppColors.primaryDark,
+                            color: colors.primary,
                           ),
                         ),
                       ),

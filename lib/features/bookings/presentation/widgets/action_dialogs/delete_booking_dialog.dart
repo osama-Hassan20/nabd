@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -19,6 +20,8 @@ class DeleteBookingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -26,9 +29,9 @@ class DeleteBookingDialog extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 400),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -51,7 +54,7 @@ class DeleteBookingDialog extends StatelessWidget {
               Text(
                 'confirm_delete_booking_title'.tr(),
                 style: CustomAppFontStyle.semiBold18.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -59,7 +62,7 @@ class DeleteBookingDialog extends StatelessWidget {
                 'confirm_delete_booking_desc'.tr(),
                 textAlign: TextAlign.center,
                 style: CustomAppFontStyle.regular13.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -69,14 +72,14 @@ class DeleteBookingDialog extends StatelessWidget {
                   CustomPushButton(
                     height: 40,
                     width: 100,
-                    backgroundColor: AppColors.grayf2,
+                    backgroundColor: colors.surfaceLevel1,
                     borderRadius: BorderRadius.circular(8),
                     onTap: () => context.pop(),
                     child: Center(
                       child: Text(
                         'cancel'.tr(),
                         style: CustomAppFontStyle.medium14.copyWith(
-                          color: AppColors.grayMuted,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -94,7 +97,7 @@ class DeleteBookingDialog extends StatelessWidget {
                         child: Text(
                           'delete'.tr(),
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/patients/data/models/enums/blood_group_enum.dart';
@@ -34,6 +35,7 @@ class BloodGroupSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = AdaptiveLayout.isMobile(context);
+    final colors = context.themeColors;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +44,7 @@ class BloodGroupSelector extends StatelessWidget {
           Text(
             header ?? 'blood_group'.tr(),
             style: CustomAppFontStyle.medium14.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -59,11 +61,11 @@ class BloodGroupSelector extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      children: _availableGroups.take(4).map(_buildChip).toList(),
+                      children: _availableGroups.take(4).map((g) => _buildChip(context, g)).toList(),
                     ),
                     const SizedBox(height: 8),
                     Row(
-                      children: _availableGroups.skip(4).take(4).map(_buildChip).toList(),
+                      children: _availableGroups.skip(4).take(4).map((g) => _buildChip(context, g)).toList(),
                     ),
                   ],
                 ),
@@ -72,7 +74,7 @@ class BloodGroupSelector extends StatelessWidget {
 
             // Desktop: single row with all 8 groups
             return Row(
-              children: _availableGroups.map((g) => Expanded(child: _buildChip(g))).toList(),
+              children: _availableGroups.map((g) => Expanded(child: _buildChip(context, g))).toList(),
             );
           },
         ),
@@ -80,7 +82,8 @@ class BloodGroupSelector extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(BloodGroupEnum group) {
+  Widget _buildChip(BuildContext context, BloodGroupEnum group) {
+    final colors = context.themeColors;
     final isSelected = selectedGroup == group;
 
     return Padding(
@@ -100,16 +103,16 @@ class BloodGroupSelector extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 54),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.white,
+            color: isSelected ? colors.primary : colors.surfaceLevel1,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.grayE2E8F0,
+              color: isSelected ? colors.primary : colors.borderSubtle,
               width: isSelected ? 1.5 : 1,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.2),
+                      color: colors.primary.withValues(alpha: 0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -122,7 +125,7 @@ class BloodGroupSelector extends StatelessWidget {
               child: Text(
                 group.value,
                 style: CustomAppFontStyle.semiBold14.copyWith(
-                  color: isSelected ? AppColors.white : AppColors.darkText,
+                  color: isSelected ? Colors.white : colors.textPrimary,
                 ),
               ),
             ),

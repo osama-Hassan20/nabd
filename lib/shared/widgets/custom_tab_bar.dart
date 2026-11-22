@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../core/utils/theme/app_colors.dart';
 import '../../core/utils/theme/custom_app_font_styles.dart';
 import '../../core/utils/theme/app_gradient.dart';
@@ -37,6 +38,8 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Padding(
       padding: padding ?? EdgeInsets.zero,
       child: TabBar(
@@ -58,11 +61,11 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
               final hasIcon = icons != null && index < icons!.length;
               return CustomPushButton(
                 height: height,
-                backgroundColor: isSelected ? null : AppColors.white,
+                backgroundColor: isSelected ? null : colors.surfaceLevel1,
                 border: isSelected
                     ? null
-                    : const BorderSide(color: AppColors.grayE2E8F0),
-                radius: radius ?? 2,
+                    : BorderSide(color: colors.borderSubtle),
+                radius: radius ?? 8,
                 onTap: () => controller.animateTo(index),
                 padding: tabPadding ??
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -74,7 +77,7 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
                         path: icons![index],
                         width: 16,
                         height: 16,
-                        color: isSelected ? AppColors.white : AppColors.primary,
+                        color: isSelected ? Colors.white : colors.primary,
                       ),
                       const SizedBox(width: 6),
                     ],
@@ -82,12 +85,12 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
                       tabs[index],
                       style: isSelected
                           ? (selectedTextStyle ??
-                              CustomAppFontStyle.regular16.copyWith(
-                                color: AppColors.white,
+                              CustomAppFontStyle.semiBold14.copyWith(
+                                color: Colors.white,
                               ))
                           : (textStyle ??
-                              CustomAppFontStyle.regular16.copyWith(
-                                color: AppColors.gray334155,
+                              CustomAppFontStyle.medium14.copyWith(
+                                color: colors.textSecondary,
                               )),
                     ),
                   ],

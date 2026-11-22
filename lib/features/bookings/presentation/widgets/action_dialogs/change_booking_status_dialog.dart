@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -104,6 +105,8 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -112,9 +115,9 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -127,13 +130,13 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                     Text(
                       'change_status'.tr(),
                       style: CustomAppFontStyle.semiBold18.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const CloseButton(),
                   ],
                 ),
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
                 const SizedBox(height: 16),
 
                 // Status Choices
@@ -151,14 +154,14 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? status.color.withValues(alpha: 0.12)
-                                : AppColors.grayf2,
+                                ? status.color.withValues(alpha: 0.15)
+                                : colors.surfaceLevel1,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: isSelected
                                   ? status.color
-                                  : Colors.transparent,
-                              width: 1.5,
+                                  : colors.borderSubtle,
+                              width: isSelected ? 1.5 : 1.0,
                             ),
                           ),
                           child: Row(
@@ -174,7 +177,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                 child: Text(
                                   status.label,
                                   style: CustomAppFontStyle.medium14.copyWith(
-                                    color: AppColors.darkText,
+                                    color: colors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -198,10 +201,10 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0D9488).withValues(alpha: 0.05),
+                      color: const Color(0xFF0D9488).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: const Color(0xFF0D9488).withValues(alpha: 0.2),
+                        color: const Color(0xFF0D9488).withValues(alpha: 0.25),
                       ),
                     ),
                     child: Column(
@@ -245,10 +248,10 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                     horizontal: 12,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.white,
+                                    color: colors.cardBackground,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: AppColors.grayE2E8F0,
+                                      color: colors.borderSubtle,
                                     ),
                                   ),
                                   child: Row(
@@ -272,8 +275,8 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                           style: CustomAppFontStyle.medium13
                                               .copyWith(
                                             color: widget.postponeDate != null
-                                                ? AppColors.darkText
-                                                : AppColors.grayMuted,
+                                                ? colors.textPrimary
+                                                : colors.textSecondary,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -297,10 +300,10 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                     horizontal: 12,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.white,
+                                    color: colors.cardBackground,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: AppColors.grayE2E8F0,
+                                      color: colors.borderSubtle,
                                     ),
                                   ),
                                   child: Row(
@@ -324,8 +327,8 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                           style: CustomAppFontStyle.medium13
                                               .copyWith(
                                             color: widget.postponeTime != null
-                                                ? AppColors.darkText
-                                                : AppColors.grayMuted,
+                                                ? colors.textPrimary
+                                                : colors.textSecondary,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -355,10 +358,10 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.05),
+                      color: AppColors.error.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: AppColors.error.withValues(alpha: 0.2),
+                        color: AppColors.error.withValues(alpha: 0.25),
                       ),
                     ),
                     child: Column(
@@ -367,7 +370,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                         Text(
                           'cancelled_by_label'.tr(),
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -386,12 +389,12 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                   decoration: BoxDecoration(
                                     color: widget.cancelledBy == 'patient'
                                         ? AppColors.error.withValues(alpha: 0.15)
-                                        : AppColors.white,
+                                        : colors.cardBackground,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: widget.cancelledBy == 'patient'
                                           ? AppColors.error
-                                          : AppColors.grayE2E8F0,
+                                          : colors.borderSubtle,
                                     ),
                                   ),
                                   child: Center(
@@ -401,7 +404,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                           CustomAppFontStyle.medium13.copyWith(
                                         color: widget.cancelledBy == 'patient'
                                             ? AppColors.error
-                                            : AppColors.darkText,
+                                            : colors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -422,12 +425,12 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                   decoration: BoxDecoration(
                                     color: widget.cancelledBy == 'clinic'
                                         ? AppColors.error.withValues(alpha: 0.15)
-                                        : AppColors.white,
+                                        : colors.cardBackground,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: widget.cancelledBy == 'clinic'
                                           ? AppColors.error
-                                          : AppColors.grayE2E8F0,
+                                          : colors.borderSubtle,
                                     ),
                                   ),
                                   child: Center(
@@ -437,7 +440,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                                           CustomAppFontStyle.medium13.copyWith(
                                         color: widget.cancelledBy == 'clinic'
                                             ? AppColors.error
-                                            : AppColors.darkText,
+                                            : colors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -464,14 +467,14 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                     CustomPushButton(
                       height: 40,
                       width: 100,
-                      backgroundColor: AppColors.grayf2,
+                      backgroundColor: colors.surfaceLevel1,
                       borderRadius: BorderRadius.circular(8),
                       onTap: () => context.pop(),
                       child: Center(
                         child: Text(
                           'cancel'.tr(),
                           style: CustomAppFontStyle.medium14.copyWith(
-                            color: AppColors.grayMuted,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -481,7 +484,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                       child: CustomPushButton(
                         height: 40,
                         width: 120,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: colors.primary,
                         isLoading: widget.isLoading,
                         borderRadius: BorderRadius.circular(8),
                         onTap: () {
@@ -502,7 +505,7 @@ class _ChangeBookingStatusDialogState extends State<ChangeBookingStatusDialog> {
                           child: Text(
                             'save'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.white,
+                              color: Colors.white,
                             ),
                           ),
                         ),

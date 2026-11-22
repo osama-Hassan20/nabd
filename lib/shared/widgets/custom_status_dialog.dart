@@ -1,4 +1,5 @@
-﻿import 'package:eyadty/core/utils/theme/app_icons.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
+import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -28,12 +29,19 @@ class CustomStatusDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.all(24),
         constraints: const BoxConstraints(maxWidth: 600),
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderSubtle),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -50,7 +58,7 @@ class CustomStatusDialog extends StatelessWidget {
             Text(
               title ?? "",
               style: CustomAppFontStyle.medium15.copyWith(
-                color: AppColors.black,
+                color: colors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -58,7 +66,7 @@ class CustomStatusDialog extends StatelessWidget {
             Text(
               subtitle ?? "",
               style: CustomAppFontStyle.regular14.copyWith(
-                color: AppColors.gray6C6C6C,
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -69,7 +77,8 @@ class CustomStatusDialog extends StatelessWidget {
                 Expanded(
                   child: CustomPushButton(
                     height: 48,
-                    backgroundColor: AppColors.grayf2,
+                    backgroundColor: colors.surfaceLevel1,
+                    borderRadius: BorderRadius.circular(8),
                     onTap: () {
                       context.pop();
                     },
@@ -77,7 +86,7 @@ class CustomStatusDialog extends StatelessWidget {
                       child: Text(
                         "الغاء",
                         style: CustomAppFontStyle.regular14.copyWith(
-                          color: AppColors.gray334155,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -86,12 +95,14 @@ class CustomStatusDialog extends StatelessWidget {
                 Expanded(
                   child: CustomPushButton(
                     height: 48,
+                    backgroundColor: colors.primary,
+                    borderRadius: BorderRadius.circular(8),
                     onTap: onConfirm,
                     child: Center(
                       child: Text(
                         "تأكيد",
                         style: CustomAppFontStyle.regular15.copyWith(
-                          color: AppColors.white,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -120,12 +131,19 @@ class CustomDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.all(24),
         constraints: const BoxConstraints(maxWidth: 600),
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderSubtle),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -133,13 +151,13 @@ class CustomDeleteDialog extends StatelessWidget {
               path: AppIcons.delete,
               width: 36,
               height: 36,
-              color: AppColors.red,
+              color: AppColors.error,
             ),
             const SizedBox(height: 24),
             Text(
               title ?? "",
               style: CustomAppFontStyle.medium15.copyWith(
-                color: AppColors.black,
+                color: colors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -147,7 +165,7 @@ class CustomDeleteDialog extends StatelessWidget {
             Text(
               subtitle ?? "",
               style: CustomAppFontStyle.regular14.copyWith(
-                color: AppColors.gray6C6C6C,
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -158,7 +176,8 @@ class CustomDeleteDialog extends StatelessWidget {
                 Expanded(
                   child: CustomPushButton(
                     height: 48,
-                    backgroundColor: AppColors.grayf2,
+                    backgroundColor: colors.surfaceLevel1,
+                    borderRadius: BorderRadius.circular(8),
                     onTap: () {
                       context.pop();
                     },
@@ -166,7 +185,7 @@ class CustomDeleteDialog extends StatelessWidget {
                       child: Text(
                         "الغاء",
                         style: CustomAppFontStyle.regular14.copyWith(
-                          color: AppColors.gray334155,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -175,13 +194,14 @@ class CustomDeleteDialog extends StatelessWidget {
                 Expanded(
                   child: CustomPushButton(
                     height: 48,
-                    backgroundColor: AppColors.red,
+                    backgroundColor: AppColors.error,
+                    borderRadius: BorderRadius.circular(8),
                     onTap: onConfirm,
                     child: Center(
                       child: Text(
                         "حذف",
                         style: CustomAppFontStyle.regular15.copyWith(
-                          color: AppColors.white,
+                          color: Colors.white,
                         ),
                       ),
                     ),
