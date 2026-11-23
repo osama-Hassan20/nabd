@@ -4,6 +4,7 @@ import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import '../../data/models/company_settings_model.dart';
 import '../../data/models/enums/clinic_type_enum.dart';
+import '../../data/models/prescription_template_model.dart';
 import '../../data/models/special_holiday_model.dart';
 import '../../domain/use_cases/add_special_holiday_use_case.dart';
 import '../../domain/use_cases/change_password_use_case.dart';
@@ -500,6 +501,45 @@ class SettingsCubit extends SafeCubit<SettingsState> {
           state.copyWith(
             actionStatus: RequestStatusEnum.success,
             settings: saved,
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> updatePrescriptionTemplate(
+    PrescriptionTemplateModel template,
+  ) async {
+    emit(
+      state.copyWith(
+        actionStatus: RequestStatusEnum.loading,
+        clearErrMessage: true,
+        clearSuccessMessage: true,
+      ),
+    );
+
+    final current = state.settings ?? const CompanySettingsModel();
+    final updated = current.copyWith(prescriptionTemplate: template);
+
+    final result = await updateCompanySettingsUseCase(updated);
+
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.failure,
+            errMessage: failure.errMessage,
+          ),
+        );
+        return false;
+      },
+      (savedSettings) {
+        emit(
+          state.copyWith(
+            actionStatus: RequestStatusEnum.success,
+            settings: savedSettings,
+            successMessage: 'settings_saved_successfully',
           ),
         );
         return true;

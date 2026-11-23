@@ -1,5 +1,6 @@
 import 'enums/clinic_type_enum.dart';
 import 'enums/print_format_enum.dart';
+import 'prescription_template_model.dart';
 import 'special_holiday_model.dart';
 
 class CompanySettingsModel {
@@ -21,6 +22,7 @@ class CompanySettingsModel {
   final String? prescriptionPrintFormat;
   final String? doctorSettlementPrintFormat;
   final String? staffPayrollPrintFormat;
+  final PrescriptionTemplateModel? prescriptionTemplate;
 
   const CompanySettingsModel({
     this.id,
@@ -41,6 +43,7 @@ class CompanySettingsModel {
     this.prescriptionPrintFormat,
     this.doctorSettlementPrintFormat,
     this.staffPayrollPrintFormat,
+    this.prescriptionTemplate,
   });
 
   bool get isSingleDoctorClinic => clinicType == ClinicTypeEnum.singleDoctor;
@@ -55,6 +58,9 @@ class CompanySettingsModel {
       PrintFormat.fromString(doctorSettlementPrintFormat);
   PrintFormat get effectiveStaffPayrollPrintFormat =>
       PrintFormat.fromString(staffPayrollPrintFormat);
+
+  PrescriptionTemplateModel get effectivePrescriptionTemplate =>
+      prescriptionTemplate ?? const PrescriptionTemplateModel();
 
   factory CompanySettingsModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const CompanySettingsModel();
@@ -81,6 +87,10 @@ class CompanySettingsModel {
       prescriptionPrintFormat: json['prescriptionPrintFormat'] as String?,
       doctorSettlementPrintFormat: json['doctorSettlementPrintFormat'] as String?,
       staffPayrollPrintFormat: json['staffPayrollPrintFormat'] as String?,
+      prescriptionTemplate: json['prescriptionTemplate'] != null
+          ? PrescriptionTemplateModel.fromJson(
+              json['prescriptionTemplate'] as Map<String, dynamic>?)
+          : const PrescriptionTemplateModel(),
     );
   }
 
@@ -112,6 +122,8 @@ class CompanySettingsModel {
         'doctorSettlementPrintFormat': doctorSettlementPrintFormat,
       if (staffPayrollPrintFormat != null)
         'staffPayrollPrintFormat': staffPayrollPrintFormat,
+      if (prescriptionTemplate != null)
+        'prescriptionTemplate': prescriptionTemplate?.toJson(),
     };
   }
 
@@ -134,6 +146,7 @@ class CompanySettingsModel {
     String? prescriptionPrintFormat,
     String? doctorSettlementPrintFormat,
     String? staffPayrollPrintFormat,
+    PrescriptionTemplateModel? prescriptionTemplate,
   }) {
     return CompanySettingsModel(
       id: id ?? this.id,
@@ -159,6 +172,7 @@ class CompanySettingsModel {
           doctorSettlementPrintFormat ?? this.doctorSettlementPrintFormat,
       staffPayrollPrintFormat:
           staffPayrollPrintFormat ?? this.staffPayrollPrintFormat,
+      prescriptionTemplate: prescriptionTemplate ?? this.prescriptionTemplate,
     );
   }
 }
