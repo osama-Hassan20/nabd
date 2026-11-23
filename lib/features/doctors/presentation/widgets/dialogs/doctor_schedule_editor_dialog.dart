@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/helpers/app_formatter_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -122,6 +123,7 @@ class _DoctorScheduleEditorDialogState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     return BlocConsumer<DoctorsCubit, DoctorsState>(
       listenWhen: (prev, curr) =>
           prev.scheduleActionStatus != curr.scheduleActionStatus ||
@@ -155,15 +157,28 @@ class _DoctorScheduleEditorDialogState
           },
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius:
                   BorderRadius.circular(widget.isFullScreen ? 0 : 16),
+              border: widget.isFullScreen
+                  ? null
+                  : Border.all(color: colors.borderSubtle),
+              boxShadow: widget.isFullScreen
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                            alpha: colors.isDark ? 0.35 : 0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildHeader(context, form),
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
                 if (form == null)
                   const Expanded(
                     child: Center(child: CircularProgressIndicator()),
@@ -182,7 +197,7 @@ class _DoctorScheduleEditorDialogState
                       ),
                     ),
                   ),
-                const Divider(height: 1, color: AppColors.grayE2E8F0),
+                Divider(height: 1, color: colors.borderSubtle),
                 _buildFooter(context, cubit, form, state),
               ],
             ),
@@ -193,6 +208,7 @@ class _DoctorScheduleEditorDialogState
   }
 
   Widget _buildHeader(BuildContext context, DoctorScheduleFormState? form) {
+    final colors = context.themeColors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -200,14 +216,14 @@ class _DoctorScheduleEditorDialogState
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: colors.primaryLight,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const CustomAssetImage(
+            child: CustomAssetImage(
               path: AppIcons.calendar,
               width: 18,
               height: 18,
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
           const SizedBox(width: 12),
@@ -218,14 +234,14 @@ class _DoctorScheduleEditorDialogState
                 Text(
                   'edit_schedule'.tr(),
                   style: CustomAppFontStyle.semiBold16.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   widget.doctorName,
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -239,7 +255,7 @@ class _DoctorScheduleEditorDialogState
                 context.pop();
               }
             },
-            icon: const Icon(Icons.close, color: AppColors.gray71717A),
+            icon: Icon(Icons.close, color: colors.textSecondary),
           ),
         ],
       ),
@@ -251,15 +267,16 @@ class _DoctorScheduleEditorDialogState
     DoctorsCubit cubit,
     DoctorScheduleFormState form,
   ) {
+    final colors = context.themeColors;
     final slotOptions = [5, 10, 15, 20, 30, 45, 60, 90, 120];
     final bufferOptions = [0, 5, 10, 15, 20, 30];
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.grayf6,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Wrap(
         spacing: 20,
@@ -305,9 +322,9 @@ class _DoctorScheduleEditorDialogState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.grayE2E8F0),
+              border: Border.all(color: colors.borderSubtle),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -315,13 +332,13 @@ class _DoctorScheduleEditorDialogState
                 Text(
                   'accepts_walk_ins'.tr(),
                   style: CustomAppFontStyle.medium14.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Switch(
                   value: form.isAcceptingWalkIns,
-                  activeThumbColor: AppColors.primary,
+                  activeThumbColor: colors.primary,
                   onChanged: (val) => cubit.updateScheduleWalkIns(val),
                 ),
               ],
@@ -337,6 +354,7 @@ class _DoctorScheduleEditorDialogState
     DoctorsCubit cubit,
     DoctorScheduleFormState form,
   ) {
+    final colors = context.themeColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -345,14 +363,14 @@ class _DoctorScheduleEditorDialogState
             Text(
               'work_days'.tr(),
               style: CustomAppFontStyle.semiBold16.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(width: 8),
             Text(
               '(${'saturday'.tr()} ← ${'friday'.tr()})',
               style: CustomAppFontStyle.regular12.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -375,6 +393,7 @@ class _DoctorScheduleEditorDialogState
     WeekDayEnum day,
     WorkDayFormState dayState,
   ) {
+    final colors = context.themeColors;
     final isWorking = dayState.isWorking;
     final hasError = dayState.errorMessage != null;
 
@@ -382,12 +401,12 @@ class _DoctorScheduleEditorDialogState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isWorking ? AppColors.white : AppColors.grayf6,
+        color: isWorking ? colors.cardBackground : colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: hasError
               ? AppColors.error
-              : (isWorking ? AppColors.primary.withValues(alpha: 0.25) : AppColors.grayE2E8F0),
+              : (isWorking ? colors.primary.withValues(alpha: 0.3) : colors.borderSubtle),
         ),
       ),
       child: Column(
@@ -398,7 +417,10 @@ class _DoctorScheduleEditorDialogState
               // Switch: Day on/off
               Switch(
                 value: isWorking,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: colors.primary,
+                activeTrackColor: colors.primary.withValues(alpha: 0.4),
+                inactiveThumbColor: colors.textMuted,
+                inactiveTrackColor: colors.surfaceLevel2,
                 onChanged: (val) => cubit.toggleDayWorking(day, val),
               ),
               const SizedBox(width: 10),
@@ -408,7 +430,7 @@ class _DoctorScheduleEditorDialogState
                 child: Text(
                   day.translationKey.tr(),
                   style: CustomAppFontStyle.semiBold15.copyWith(
-                    color: isWorking ? AppColors.darkText : AppColors.gray71717A,
+                    color: isWorking ? colors.textPrimary : colors.textSecondary,
                   ),
                 ),
               ),
@@ -439,7 +461,7 @@ class _DoctorScheduleEditorDialogState
                 // Copy this day to other working days button
                 CustomPushButton(
                   height: 32,
-                  backgroundColor: AppColors.primaryLight,
+                  backgroundColor: colors.primaryLight,
                   borderRadius: BorderRadius.circular(6),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   onTap: () {
@@ -452,16 +474,16 @@ class _DoctorScheduleEditorDialogState
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.copy_rounded,
                         size: 13,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                       const SizedBox(width: 5),
                       Text(
                         'copy_to_other_days'.tr(),
                         style: CustomAppFontStyle.medium12.copyWith(
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                       ),
                     ],
@@ -474,13 +496,13 @@ class _DoctorScheduleEditorDialogState
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.grayE2E8F0,
+                    color: colors.surfaceLevel2,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'off_day'.tr(),
                     style: CustomAppFontStyle.medium12.copyWith(
-                      color: AppColors.gray71717A,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),
@@ -527,6 +549,7 @@ class _DoctorScheduleEditorDialogState
     required String time24,
     required void Function(String) onPicked,
   }) {
+    final colors = context.themeColors;
     final displayTime = BookingTimeFormatter.formatSingleTime(time24, context);
 
     return InkWell(
@@ -539,9 +562,9 @@ class _DoctorScheduleEditorDialogState
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.grayf6,
+          color: colors.surfaceLevel1,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.grayE2E8F0),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -549,21 +572,21 @@ class _DoctorScheduleEditorDialogState
             Text(
               '$label: ',
               style: CustomAppFontStyle.regular12.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
             ),
             Text(
               displayTime,
               style: CustomAppFontStyle.semiBold13.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(width: 4),
-            const CustomAssetImage(
+            CustomAssetImage(
               path: AppIcons.clock,
               width: 14,
               height: 14,
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ],
         ),
@@ -577,11 +600,13 @@ class _DoctorScheduleEditorDialogState
     WeekDayEnum day,
     WorkDayFormState dayState,
   ) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.grayf6,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -591,7 +616,7 @@ class _DoctorScheduleEditorDialogState
               Text(
                 'breaks'.tr(),
                 style: CustomAppFontStyle.medium12.copyWith(
-                  color: AppColors.gray71717A,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(width: 8),
@@ -599,30 +624,31 @@ class _DoctorScheduleEditorDialogState
                 Text(
                   '(${dayState.breaks.length})',
                   style: CustomAppFontStyle.semiBold12.copyWith(
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                 ),
               const Spacer(),
               CustomPushButton(
                 height: 26,
-                backgroundColor: AppColors.white,
+                backgroundColor: colors.surfaceLevel2,
                 borderRadius: BorderRadius.circular(6),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
+                boxBorder: Border.all(color: colors.borderSubtle),
                 onTap: () => _showAddBreakDialog(context, cubit, day, dayState),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const CustomAssetImage(
+                    CustomAssetImage(
                       path: AppIcons.add,
                       width: 11,
                       height: 11,
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'add_break'.tr(),
                       style: CustomAppFontStyle.medium11.copyWith(
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
                     ),
                   ],
@@ -653,6 +679,7 @@ class _DoctorScheduleEditorDialogState
     int index,
     DoctorBreakTimeModel b,
   ) {
+    final colors = context.themeColors;
     final rangeStr = BookingTimeFormatter.formatTimeRange(
       b.startTime,
       b.endTime,
@@ -665,9 +692,9 @@ class _DoctorScheduleEditorDialogState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.grayE2E8F0),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -681,7 +708,7 @@ class _DoctorScheduleEditorDialogState
           Text(
             nameStr,
             style: CustomAppFontStyle.medium12.copyWith(
-              color: AppColors.darkText,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(width: 6),
@@ -698,13 +725,13 @@ class _DoctorScheduleEditorDialogState
       ),
     );
   }
-
   Widget _buildFooter(
     BuildContext context,
     DoctorsCubit cubit,
     DoctorScheduleFormState? form,
     DoctorsState state,
   ) {
+    final colors = context.themeColors;
     final isValid = form?.isValid ?? false;
 
     return Padding(
@@ -715,7 +742,8 @@ class _DoctorScheduleEditorDialogState
           CustomPushButton(
             height: 42,
             width: 100,
-            backgroundColor: AppColors.grayf2,
+            backgroundColor: colors.surfaceLevel1,
+            boxBorder: Border.all(color: colors.borderSubtle),
             borderRadius: BorderRadius.circular(8),
             onTap: () {
               if (form != null && form.hasUnsavedChanges) {
@@ -727,7 +755,7 @@ class _DoctorScheduleEditorDialogState
             child: Text(
               'cancel'.tr(),
               style: CustomAppFontStyle.medium14.copyWith(
-                color: AppColors.darkText,
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -735,14 +763,14 @@ class _DoctorScheduleEditorDialogState
           CustomPushButton(
             height: 42,
             width: 140,
-            backgroundColor: isValid ? AppColors.primary : AppColors.grayE2E8F0,
+            backgroundColor: isValid ? colors.primary : colors.fillDisabled,
             isLoading: state.scheduleActionStatus == RequestStatusEnum.loading,
             borderRadius: BorderRadius.circular(8),
             onTap: isValid ? () => cubit.saveSchedule() : null,
             child: Text(
               'save'.tr(),
               style: CustomAppFontStyle.semiBold14.copyWith(
-                color: isValid ? AppColors.white : AppColors.gray71717A,
+                color: isValid ? Colors.white : colors.textMuted,
               ),
             ),
           ),
@@ -786,6 +814,7 @@ class _DoctorScheduleEditorDialogState
     WeekDayEnum day,
     WorkDayFormState dayState,
   ) {
+    final colors = context.themeColors;
     String start = dayState.startTime;
     // Default break: 1 hour inside day
     final startMin = DoctorScheduleValidator.timeToMinutes(start) ?? 540;
@@ -804,17 +833,19 @@ class _DoctorScheduleEditorDialogState
     showDialog(
       context: context,
       builder: (ctx) {
+        final dlgColors = ctx.themeColors;
         return StatefulBuilder(
           builder: (dialogCtx, setModalState) {
             return AlertDialog(
-              backgroundColor: AppColors.white,
+              backgroundColor: dlgColors.cardBackground,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: dlgColors.borderSubtle),
               ),
               title: Text(
                 'add_break'.tr(),
                 style: CustomAppFontStyle.semiBold16.copyWith(
-                  color: AppColors.darkText,
+                  color: dlgColors.textPrimary,
                 ),
               ),
               content: Column(
@@ -823,11 +854,25 @@ class _DoctorScheduleEditorDialogState
                 children: [
                   TextField(
                     controller: nameController,
+                    style: TextStyle(color: dlgColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'break_name'.tr(),
+                      labelStyle: TextStyle(color: dlgColors.textSecondary),
                       hintText: 'break_name_hint'.tr(),
+                      hintStyle: TextStyle(color: dlgColors.textMuted),
+                      filled: true,
+                      fillColor: dlgColors.inputBackground,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: dlgColors.inputBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: dlgColors.inputBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: dlgColors.primary),
                       ),
                     ),
                   ),
@@ -836,6 +881,11 @@ class _DoctorScheduleEditorDialogState
                     children: [
                       Expanded(
                         child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: dlgColors.textPrimary,
+                            side: BorderSide(color: dlgColors.borderSubtle),
+                            backgroundColor: dlgColors.surfaceLevel1,
+                          ),
                           onPressed: () async {
                             await _pickTime(
                               context: dialogCtx,
@@ -853,6 +903,11 @@ class _DoctorScheduleEditorDialogState
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: dlgColors.textPrimary,
+                            side: BorderSide(color: dlgColors.borderSubtle),
+                            backgroundColor: dlgColors.surfaceLevel1,
+                          ),
                           onPressed: () async {
                             await _pickTime(
                               context: dialogCtx,
@@ -874,11 +929,14 @@ class _DoctorScheduleEditorDialogState
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text('cancel'.tr()),
+                  child: Text(
+                    'cancel'.tr(),
+                    style: TextStyle(color: dlgColors.textSecondary),
+                  ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: dlgColors.primary,
                   ),
                   onPressed: () {
                     Navigator.of(ctx).pop();
@@ -895,7 +953,7 @@ class _DoctorScheduleEditorDialogState
                   },
                   child: Text(
                     'add_item'.tr(),
-                    style: const TextStyle(color: AppColors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -907,20 +965,28 @@ class _DoctorScheduleEditorDialogState
   }
 
   void _confirmDiscard(BuildContext context) {
+    final colors = context.themeColors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: colors.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: colors.borderSubtle),
+        ),
         title: Text(
           'unsaved_changes_warning'.tr(),
           style: CustomAppFontStyle.semiBold16.copyWith(
-            color: AppColors.darkText,
+            color: colors.textPrimary,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('cancel'.tr()),
+            child: Text(
+              'cancel'.tr(),
+              style: TextStyle(color: colors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () {

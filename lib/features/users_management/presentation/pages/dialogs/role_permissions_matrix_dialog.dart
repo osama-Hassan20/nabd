@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/params/update_role_discount_policy_params.dart';
@@ -116,6 +117,7 @@ class _RolePermissionsMatrixDialogState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final sessionCubit = getIt.isRegistered<SessionCubit>()
         ? getIt<SessionCubit>()
         : null;
@@ -133,12 +135,12 @@ class _RolePermissionsMatrixDialogState
         constraints: const BoxConstraints(maxWidth: 820, maxHeight: 720),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -154,12 +156,14 @@ class _RolePermissionsMatrixDialogState
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
+                      color: colors.isDark
+                          ? colors.primary.withValues(alpha: 0.15)
+                          : const Color(0xFFEEF2FF),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.shield_outlined,
-                      color: Color(0xFF6366F1),
+                      color: colors.primary,
                       size: 22,
                     ),
                   ),
@@ -171,27 +175,27 @@ class _RolePermissionsMatrixDialogState
                         Text(
                           'role_permissions_matrix'.tr(),
                           style: CustomAppFontStyle.bold18.copyWith(
-                            color: AppColors.darkText,
+                            color: colors.textPrimary,
                           ),
                         ),
                         Text(
                           'role_permissions_matrix_desc'.tr(),
                           style: CustomAppFontStyle.regular12.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: AppColors.gray71717A),
+                    icon: Icon(Icons.close_rounded,
+                        color: colors.textSecondary),
                     onPressed: () => context.pop(),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 16),
 
               // ─── Roles Selector Chips ────────────────────────────────
@@ -205,19 +209,21 @@ class _RolePermissionsMatrixDialogState
                       child: ChoiceChip(
                         label: Text(r.nameAr ?? r.id ?? ''),
                         selected: isSelected,
-                        selectedColor: const Color(0xFFEEF2FF),
+                        selectedColor: colors.isDark
+                            ? colors.primary.withValues(alpha: 0.2)
+                            : const Color(0xFFEEF2FF),
                         labelStyle: CustomAppFontStyle.semiBold13.copyWith(
                           color: isSelected
-                              ? const Color(0xFF4338CA)
-                              : AppColors.gray71717A,
+                              ? colors.primary
+                              : colors.textSecondary,
                           fontWeight:
                               isSelected ? FontWeight.w700 : FontWeight.w500,
                         ),
-                        backgroundColor: AppColors.lightBackground,
+                        backgroundColor: colors.surfaceLevel1,
                         side: BorderSide(
                           color: isSelected
-                              ? const Color(0xFF6366F1)
-                              : AppColors.grayE2E8F0,
+                              ? colors.primary
+                              : colors.borderSubtle,
                         ),
                         onSelected: (selected) {
                           if (selected && r.id != null) {
@@ -248,9 +254,9 @@ class _RolePermissionsMatrixDialogState
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.lightBackground,
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.grayE2E8F0),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -258,18 +264,18 @@ class _RolePermissionsMatrixDialogState
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
-                              decoration: const BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.vertical(
+                              decoration: BoxDecoration(
+                                color: colors.surfaceLevel2,
+                                borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(12)),
                                 border: Border(
-                                  bottom: BorderSide(color: AppColors.grayE2E8F0),
+                                  bottom: BorderSide(color: colors.borderSubtle),
                                 ),
                               ),
                               child: Text(
                                 categoryName,
                                 style: CustomAppFontStyle.semiBold13.copyWith(
-                                  color: AppColors.darkText,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                             ),
@@ -284,22 +290,24 @@ class _RolePermissionsMatrixDialogState
                                   return FilterChip(
                                     label: Text(perm.name),
                                     selected: isChecked,
-                                    selectedColor: const Color(0xFFEFF6FF),
-                                    checkmarkColor: const Color(0xFF2563EB),
+                                    selectedColor: colors.isDark
+                                        ? colors.primary.withValues(alpha: 0.2)
+                                        : const Color(0xFFEFF6FF),
+                                    checkmarkColor: colors.primary,
                                     labelStyle:
                                         CustomAppFontStyle.regular12.copyWith(
                                       color: isChecked
-                                          ? const Color(0xFF1D4ED8)
-                                          : AppColors.darkText,
+                                          ? colors.primary
+                                          : colors.textPrimary,
                                       fontWeight: isChecked
                                           ? FontWeight.w600
                                           : FontWeight.w400,
                                     ),
-                                    backgroundColor: AppColors.white,
+                                    backgroundColor: colors.cardBackground,
                                     side: BorderSide(
                                       color: isChecked
-                                          ? const Color(0xFF3B82F6)
-                                          : AppColors.grayE2E8F0,
+                                          ? colors.primary
+                                          : colors.borderSubtle,
                                     ),
                                     onSelected: (val) {
                                       setState(() {
@@ -326,9 +334,9 @@ class _RolePermissionsMatrixDialogState
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.lightBackground,
+                          color: colors.surfaceLevel1,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.grayE2E8F0),
+                          border: Border.all(color: colors.borderSubtle),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -336,26 +344,26 @@ class _RolePermissionsMatrixDialogState
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
-                              decoration: const BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.vertical(
+                              decoration: BoxDecoration(
+                                color: colors.surfaceLevel2,
+                                borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(12)),
                                 border: Border(
-                                  bottom: BorderSide(color: AppColors.grayE2E8F0),
+                                  bottom: BorderSide(color: colors.borderSubtle),
                                 ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.local_offer_outlined,
                                     size: 16,
-                                    color: AppColors.primaryViolet,
+                                    color: colors.primary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'disc_policy_title'.tr(),
                                     style: CustomAppFontStyle.semiBold13.copyWith(
-                                      color: AppColors.darkText,
+                                      color: colors.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -388,11 +396,11 @@ class _RolePermissionsMatrixDialogState
                                       title: Text(
                                         'disc_policy_can_free'.tr(),
                                         style: CustomAppFontStyle.medium13.copyWith(
-                                          color: AppColors.darkText,
+                                          color: colors.textPrimary,
                                         ),
                                       ),
                                       value: _roleCanFreeConsultations[_selectedRoleId] ?? false,
-                                      activeThumbColor: AppColors.primaryViolet,
+                                      activeThumbColor: colors.primary,
                                       onChanged: (val) {
                                         setState(() {
                                           _roleCanFreeConsultations[_selectedRoleId] = val;
@@ -411,7 +419,7 @@ class _RolePermissionsMatrixDialogState
               ),
 
               const SizedBox(height: 16),
-              const Divider(height: 1, color: AppColors.grayE2E8F0),
+              Divider(height: 1, color: colors.borderSubtle),
               const SizedBox(height: 16),
 
               // ─── Actions ─────────────────────────────────────────────
@@ -420,15 +428,15 @@ class _RolePermissionsMatrixDialogState
                   Expanded(
                     child: CustomPushButton(
                       height: 44,
-                      backgroundColor: AppColors.white,
-                      boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                      backgroundColor: colors.surfaceLevel1,
+                      boxBorder: Border.all(color: colors.borderSubtle),
                       borderRadius: BorderRadius.circular(10),
                       onTap: _isLoading ? null : () => context.pop(),
                       child: Center(
                         child: Text(
                           'cancel'.tr(),
                           style: CustomAppFontStyle.semiBold14.copyWith(
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -438,7 +446,7 @@ class _RolePermissionsMatrixDialogState
                   Expanded(
                     child: CustomPushButton(
                       height: 44,
-                      backgroundColor: const Color(0xFF6366F1),
+                      backgroundColor: colors.primary,
                       borderRadius: BorderRadius.circular(10),
                       isLoading: _isLoading,
                       onTap: (_isLoading || sessionCubit?.currentUser?.isOwner != true)

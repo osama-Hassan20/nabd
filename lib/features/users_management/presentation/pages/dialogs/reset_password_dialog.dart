@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
@@ -51,6 +52,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final currentUserId = getIt.isRegistered<SessionCubit>()
         ? getIt<SessionCubit>().currentUser?.id ?? 'USER-OWNER'
         : 'USER-OWNER';
@@ -63,12 +65,12 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
         constraints: const BoxConstraints(maxWidth: 460),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -86,14 +88,20 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
+                      color: colors.isDark
+                          ? colors.primary.withValues(alpha: 0.15)
+                          : const Color(0xFFEEF2FF),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFC7D2FE)),
+                      border: Border.all(
+                        color: colors.isDark
+                            ? colors.primary.withValues(alpha: 0.3)
+                            : const Color(0xFFC7D2FE),
+                      ),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.lock_reset_rounded,
-                        color: Color(0xFF6366F1),
+                        color: colors.primary,
                         size: 26,
                       ),
                     ),
@@ -103,7 +111,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                 Text(
                   'reset_password'.tr(),
                   style: CustomAppFontStyle.bold18.copyWith(
-                    color: AppColors.darkText,
+                    color: colors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -113,7 +121,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                     namedArgs: {'name': widget.user.fullName ?? ''},
                   ),
                   style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -125,9 +133,9 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                   headerText: 'temporary_password'.tr(),
                   hintText: 'password_hint'.tr(),
                   isObeseureText: _obscure,
-                  prefixWidget: const Icon(
+                  prefixWidget: Icon(
                     Icons.lock_outline_rounded,
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                     size: 20,
                   ),
                   suffixWidget: Row(
@@ -136,7 +144,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                       IconButton(
                         icon: const Icon(Icons.copy_rounded, size: 18),
                         tooltip: 'نسخ كلمة المرور',
-                        color: AppColors.primary,
+                        color: colors.primary,
                         onPressed: () {
                           Clipboard.setData(
                             ClipboardData(text: _passwordController.text),
@@ -152,7 +160,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                       IconButton(
                         icon: const Icon(Icons.autorenew_rounded, size: 18),
                         tooltip: 'توليد كلمة مرور جديدة',
-                        color: const Color(0xFF6366F1),
+                        color: colors.primary,
                         onPressed: () {
                           setState(() {
                             _passwordController.text = _generateRandomPass();
@@ -177,20 +185,27 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: colors.isDark
+                        ? Colors.blue.shade900.withValues(alpha: 0.2)
+                        : const Color(0xFFEFF6FF),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                    border: Border.all(
+                      color: colors.isDark
+                          ? Colors.blue.shade800
+                          : const Color(0xFFBFDBFE),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded,
-                          size: 16, color: Color(0xFF2563EB)),
+                      Icon(Icons.info_outline_rounded,
+                          size: 16,
+                          color: colors.isDark ? Colors.blue.shade300 : const Color(0xFF2563EB)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'reset_password_first_login_notice'.tr(),
                           style: CustomAppFontStyle.regular11.copyWith(
-                            color: const Color(0xFF1E40AF),
+                            color: colors.isDark ? Colors.blue.shade200 : const Color(0xFF1E40AF),
                           ),
                         ),
                       ),
@@ -205,15 +220,15 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                     Expanded(
                       child: CustomPushButton(
                         height: 44,
-                        backgroundColor: AppColors.white,
-                        boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                        backgroundColor: colors.surfaceLevel1,
+                        boxBorder: Border.all(color: colors.borderSubtle),
                         borderRadius: BorderRadius.circular(10),
                         onTap: _isLoading ? null : () => context.pop(),
                         child: Center(
                           child: Text(
                             'cancel'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ),
@@ -223,7 +238,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                     Expanded(
                       child: CustomPushButton(
                         height: 44,
-                        backgroundColor: const Color(0xFF6366F1),
+                        backgroundColor: colors.primary,
                         borderRadius: BorderRadius.circular(10),
                         isLoading: _isLoading,
                         onTap: _isLoading
@@ -247,7 +262,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                           child: Text(
                             'save'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.white,
+                              color: Colors.white,
                             ),
                           ),
                         ),

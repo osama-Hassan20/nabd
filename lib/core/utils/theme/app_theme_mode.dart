@@ -99,8 +99,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textInverse: Color(0xFFFFFFFF),
     fillDisabled: Color(0xFFF0F0F2),
     tableHeaderBackground: Color(0xFFF6F6F8),
-    inputBackground: Color(0xFFFFFFFF),
-    inputBorder: Color(0xFFEAEAEA),
+    inputBackground: Color(0xFFF1F3F6),
+    inputBorder: Color(0xFFDDE1E6),
     badgeBackground: Color(0xFFFDEEEB),
     activeGlow: Color(0x33E0583E),
   );
@@ -159,8 +159,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textInverse: Color(0xFFFFFFFF),
     fillDisabled: Color(0xFFF1EAD8),
     tableHeaderBackground: Color(0xFFF5EFE3),
-    inputBackground: Color(0xFFFFFDF9),
-    inputBorder: Color(0xFFE8DFC8),
+    inputBackground: Color(0xFFF6EFE3),
+    inputBorder: Color(0xFFE2D6C0),
     badgeBackground: Color(0xFFFEF3C7),
     activeGlow: Color(0x44D97706),
   );
@@ -219,8 +219,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     textInverse: Color(0xFFFFFFFF),
     fillDisabled: Color(0xFFE2EEE7),
     tableHeaderBackground: Color(0xFFE5EFEA),
-    inputBackground: Color(0xFFFFFFFF),
-    inputBorder: Color(0xFFD2E3DA),
+    inputBackground: Color(0xFFEAF3EE),
+    inputBorder: Color(0xFFC5DCD0),
     badgeBackground: Color(0xFFD1FAE5),
     activeGlow: Color(0x33059669),
   );

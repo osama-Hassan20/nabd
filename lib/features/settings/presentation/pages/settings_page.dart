@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/settings/presentation/cubit/settings_cubit.dart';
@@ -98,6 +99,7 @@ class _SettingsViewState extends State<SettingsView>
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SettingsCubit>();
+    final colors = context.themeColors;
     final isMobile = AdaptiveLayout.isMobile(context);
     final horizontalPadding = AdaptiveLayout.getResponsiveValue(
       context: context,
@@ -136,7 +138,8 @@ class _SettingsViewState extends State<SettingsView>
             children: [
               // ─── Custom Tab Bar Header ──────────────────────────────────
               CustomContainer(
-                border: Border.all(color: AppColors.grayE2E8F0),
+                border: Border.all(color: colors.borderSubtle),
+                backGroundColor: colors.cardBackground,
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 8 : 16,
                   vertical: isMobile ? 8 : 12,
@@ -158,7 +161,7 @@ class _SettingsViewState extends State<SettingsView>
                       (isMobile
                               ? CustomAppFontStyle.medium14
                               : CustomAppFontStyle.regular16)
-                          .copyWith(color: AppColors.gray334155),
+                          .copyWith(color: colors.textSecondary),
                   selectedTextStyle:
                       (isMobile
                               ? CustomAppFontStyle.semiBold14

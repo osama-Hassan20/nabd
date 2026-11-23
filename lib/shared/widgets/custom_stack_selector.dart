@@ -156,7 +156,6 @@ class _CustomStackSelectorState<T> extends State<CustomStackSelector<T>> {
       hintText: widget.hintText,
       validator: widget.itemValidator,
       isReadOnly: true,
-      disabledBorder: InputBorder.none,
       focusFillColor: widget.fillDisableColor,
       suffixWidget: Icon(
         Icons.keyboard_arrow_down_outlined,

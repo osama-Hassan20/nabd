@@ -136,7 +136,7 @@ class CustomTextFormField extends StatelessWidget {
     final isDark = context.isDarkMode;
 
     final Color effectiveBorderColor =
-        borderColor ?? (isDark ? colors.borderSubtle : AppColors.lightBackground.withValues(alpha: 0.1));
+        borderColor ?? colors.inputBorder;
 
     final Color effectiveFocusBorderColor =
         focusBorderColor ?? colors.primary;
@@ -311,10 +311,10 @@ OutlineInputBorder customOutLineBorders({
   double? borderWidth,
 }) {
   return OutlineInputBorder(
-    borderRadius: BorderRadius.circular(borderRadius ?? 14),
+    borderRadius: BorderRadius.circular(borderRadius ?? 10),
     borderSide: BorderSide(
       color: borderColor ?? AppColors.inputBorderColor,
-      width: borderWidth ?? 0.75,
+      width: borderWidth ?? 1.0,
     ),
   );
 }

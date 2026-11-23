@@ -127,34 +127,35 @@ class PatientTreatmentPlansSection extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, PatientsCubit cubit) {
+    final colors = context.themeColors;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLevel1,
+        color: colors.surfaceLevel1,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Center(
         child: Column(
           children: [
-            const CustomAssetImage(
+            CustomAssetImage(
               path: AppIcons.service,
               width: 48,
               height: 48,
-              color: AppColors.grayMid,
+              color: colors.textMuted,
             ),
             const SizedBox(height: 12),
             Text(
               'لا توجد خطط علاجية أو باقات مستمرة لهذا المريض حالياً',
               style: CustomAppFontStyle.semiBold14.copyWith(
-                color: AppColors.darkText,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'يمكن للطبيب إضافة باقة ليزر، تقويم، علاج عصب، أو علاج طبيعي وتحديد الدفعات وتعديل الأسعار حسب الحالة',
               style: CustomAppFontStyle.regular12.copyWith(
-                color: AppColors.gray71717A,
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -162,7 +163,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
             CustomPushButton(
               height: 38,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              backgroundColor: AppColors.primary,
+              backgroundColor: colors.primary,
               borderRadius: BorderRadius.circular(8),
               onTap: () => _showAddPlanDialog(context, cubit),
               child: Row(
@@ -310,7 +311,7 @@ class PatientTreatmentPlansSection extends StatelessWidget {
                   Text(
                     'الجلسات المنفذة: ${plan.completedSessions} من أصل ${plan.totalSessions} جلسة',
                     style: CustomAppFontStyle.semiBold13.copyWith(
-                      color: AppColors.darkText,
+                      color: colors.textPrimary,
                     ),
                   ),
                   Text(

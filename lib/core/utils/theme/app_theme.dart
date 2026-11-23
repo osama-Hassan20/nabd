@@ -38,6 +38,7 @@ class MyAppTheme {
       fontFamily: AppConstants.arabicFontFamily,
       scaffoldBackgroundColor: colors.scaffoldBackground,
       cardColor: colors.cardBackground,
+      dialogBackgroundColor: colors.cardBackground,
       canvasColor: colors.canvas,
       dividerColor: colors.borderSubtle,
       primaryColor: colors.primary,
@@ -55,6 +56,26 @@ class MyAppTheme {
         error: AppColors.error,
         onError: Colors.white,
         outline: colors.borderSubtle,
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.cardBackground,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.borderSubtle),
+        ),
+        titleTextStyle: TextStyle(
+          color: colors.textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          fontFamily: AppConstants.arabicFontFamily,
+        ),
+        contentTextStyle: TextStyle(
+          color: colors.textSecondary,
+          fontSize: 14,
+          fontFamily: AppConstants.arabicFontFamily,
+        ),
       ),
 
       appBarTheme: AppBarTheme(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -32,6 +33,7 @@ class PatientDetailsPage extends StatelessWidget {
         child: BlocBuilder<PatientsCubit, PatientsState>(
           builder: (context, state) {
             final cubit = context.read<PatientsCubit>();
+            final colors = context.themeColors;
 
             return RefreshIndicator(
               onRefresh: () async => cubit.fetchPatientDetails(patientId),
@@ -53,24 +55,24 @@ class PatientDetailsPage extends StatelessWidget {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.white,
+                                color: colors.cardBackground,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.grayE2E8F0),
+                                border: Border.all(color: colors.borderSubtle),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const CustomAssetImage(
+                                  CustomAssetImage(
                                     path: AppIcons.arrowForward,
                                     width: 14,
                                     height: 14,
-                                    color: AppColors.primary,
+                                    color: colors.primary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'patients'.tr(),
                                     style: CustomAppFontStyle.medium13.copyWith(
-                                      color: AppColors.primary,
+                                      color: colors.primary,
                                     ),
                                   ),
                                 ],
@@ -81,7 +83,7 @@ class PatientDetailsPage extends StatelessWidget {
                           Text(
                             '/',
                             style: CustomAppFontStyle.regular14.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -89,7 +91,7 @@ class PatientDetailsPage extends StatelessWidget {
                             state.selectedPatient?.name ??
                                 'patient_details'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.darkText,
+                              color: colors.textPrimary,
                             ),
                           ),
                         ],

@@ -149,21 +149,21 @@ class _PatientBookingsSectionState extends State<PatientBookingsSection>
                     child: TextField(
                       controller: cubit.patientBookingsSearchController,
                       style: CustomAppFontStyle.regular13.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                       decoration: InputDecoration(
                         isDense: true,
                         hintText: 'search_bookings_hint'.tr(),
                         hintStyle: CustomAppFontStyle.regular13.copyWith(
-                          color: AppColors.gray71717A,
+                          color: colors.textMuted,
                         ),
-                        prefixIcon: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: CustomAssetImage(
                             path: AppIcons.search,
                             width: 16,
                             height: 16,
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                         prefixIconConstraints: const BoxConstraints(

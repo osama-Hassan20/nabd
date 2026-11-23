@@ -205,10 +205,10 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                           controller: _nameController,
                           headerText: 'full_name'.tr(),
                           hintText: 'name_hint'.tr(),
-                          prefixWidget: const Icon(
+                          prefixWidget: Icon(
                             Icons.person_outline_rounded,
                             size: 18,
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
@@ -224,10 +224,10 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                           controller: _jobTitleController,
                           headerText: 'job_title'.tr(),
                           hintText: 'job_title_hint'.tr(),
-                          prefixWidget: const Icon(
+                          prefixWidget: Icon(
                             Icons.work_outline_rounded,
                             size: 18,
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -243,10 +243,10 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                           controller: _emailController,
                           headerText: 'email'.tr(),
                           hintText: 'email_hint'.tr(),
-                          prefixWidget: const Icon(
+                          prefixWidget: Icon(
                             Icons.email_outlined,
                             size: 18,
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
@@ -265,10 +265,10 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                           controller: _phoneController,
                           headerText: 'phone'.tr(),
                           hintText: '01xxxxxxxxx',
-                          prefixWidget: const Icon(
+                          prefixWidget: Icon(
                             Icons.phone_rounded,
                             size: 18,
-                            color: AppColors.gray71717A,
+                            color: colors.textSecondary,
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
@@ -287,10 +287,10 @@ class _AddEditStaffUserDialogState extends State<AddEditStaffUserDialog> {
                       controller: _tempPasswordController,
                       headerText: 'temporary_password'.tr(),
                       hintText: 'password_hint'.tr(),
-                      prefixWidget: const Icon(
+                      prefixWidget: Icon(
                         Icons.lock_outline_rounded,
                         size: 18,
-                        color: AppColors.gray71717A,
+                        color: colors.textSecondary,
                       ),
                       validator: (val) {
                         if (val == null || val.isEmpty) {

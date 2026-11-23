@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
@@ -27,6 +28,7 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
     final currentUserId = getIt.isRegistered<SessionCubit>()
         ? getIt<SessionCubit>().currentUser?.id ?? 'USER-OWNER'
         : 'USER-OWNER';
@@ -47,12 +49,12 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
         constraints: const BoxConstraints(maxWidth: 440),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: colors.cardBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.grayE2E8F0),
+            border: Border.all(color: colors.borderSubtle),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: colors.isDark ? 0.35 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -69,13 +71,13 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                   height: 52,
                   decoration: BoxDecoration(
                     color: newStatus
-                        ? const Color(0xFFECFDF5)
-                        : const Color(0xFFFEF3C7),
+                        ? (colors.isDark ? Colors.teal.shade900.withValues(alpha: 0.3) : const Color(0xFFECFDF5))
+                        : (colors.isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : const Color(0xFFFEF3C7)),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: newStatus
-                          ? const Color(0xFFA7F3D0)
-                          : const Color(0xFFFDE68A),
+                          ? (colors.isDark ? Colors.teal.shade800 : const Color(0xFFA7F3D0))
+                          : (colors.isDark ? Colors.amber.shade800 : const Color(0xFFFDE68A)),
                     ),
                   ),
                   child: Center(
@@ -84,8 +86,8 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                           ? Icons.play_circle_outline_rounded
                           : Icons.pause_circle_outline_rounded,
                       color: newStatus
-                          ? const Color(0xFF047857)
-                          : const Color(0xFFD97706),
+                          ? const Color(0xFF10B981)
+                          : (colors.isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706)),
                       size: 26,
                     ),
                   ),
@@ -95,7 +97,7 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
               Text(
                 newStatus ? 'activate_account'.tr() : 'deactivate_account'.tr(),
                 style: CustomAppFontStyle.bold18.copyWith(
-                  color: AppColors.darkText,
+                  color: colors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -105,7 +107,7 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                 Text(
                   'last_active_owner_cannot_be_deactivated'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: const Color(0xFFDC2626),
+                    color: colors.isDark ? Colors.red.shade300 : const Color(0xFFDC2626),
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
@@ -114,7 +116,7 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                 Text(
                   'self_deactivation_forbidden'.tr(),
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: const Color(0xFFDC2626),
+                    color: colors.isDark ? Colors.red.shade300 : const Color(0xFFDC2626),
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
@@ -129,7 +131,7 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                           namedArgs: {'name': widget.user.fullName ?? ''},
                         ),
                   style: CustomAppFontStyle.regular13.copyWith(
-                    color: AppColors.gray71717A,
+                    color: colors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -139,14 +141,14 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
               if (isBlocked)
                 CustomPushButton(
                   height: 44,
-                  backgroundColor: AppColors.grayE2E8F0,
+                  backgroundColor: colors.surfaceLevel1,
                   borderRadius: BorderRadius.circular(10),
                   onTap: () => context.pop(),
                   child: Center(
                     child: Text(
                       'understood'.tr(),
                       style: CustomAppFontStyle.semiBold14.copyWith(
-                        color: AppColors.darkText,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ),
@@ -157,15 +159,15 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                     Expanded(
                       child: CustomPushButton(
                         height: 44,
-                        backgroundColor: AppColors.white,
-                        boxBorder: Border.all(color: AppColors.grayE2E8F0),
+                        backgroundColor: colors.surfaceLevel1,
+                        boxBorder: Border.all(color: colors.borderSubtle),
                         borderRadius: BorderRadius.circular(10),
                         onTap: _isLoading ? null : () => context.pop(),
                         child: Center(
                           child: Text(
                             'cancel'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.gray71717A,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ),
@@ -199,7 +201,7 @@ class _ToggleUserStatusDialogState extends State<ToggleUserStatusDialog> {
                           child: Text(
                             'confirm'.tr(),
                             style: CustomAppFontStyle.semiBold14.copyWith(
-                              color: AppColors.white,
+                              color: Colors.white,
                             ),
                           ),
                         ),

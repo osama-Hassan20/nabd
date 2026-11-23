@@ -36,7 +36,7 @@ class AppColors {
   // ─── Borders & Dividers ───────────────────────────────────────────────────
   static const Color borderSubtle = Color(0xFFEAEAEA); // بوردر خفيف وناعم جداً
   static const Color borderLight = Color(0xFFF0F0F2);
-  static const Color inputBorderColor = Color(0xFFEAEAEA);
+  static const Color inputBorderColor = Color(0xFFDDE1E6);
   static const Color lightBorder = Color(0xFFEAEAEA);
   static const Color grayBorder = Color(0xFFEAEAEA);
 
