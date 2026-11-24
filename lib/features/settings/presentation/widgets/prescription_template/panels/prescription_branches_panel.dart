@@ -6,6 +6,7 @@ import '../../../../../../shared/widgets/custom_container.dart';
 import '../../../../../../shared/widgets/custom_push_container_button.dart';
 import '../../../../../../shared/widgets/custom_text_field.dart';
 import '../../../../data/models/prescription_template_model.dart';
+import '../components/prescription_ui_helpers.dart';
 
 class PrescriptionBranchesPanel extends StatelessWidget {
   final PrescriptionTemplateModel template;
@@ -17,6 +18,7 @@ class PrescriptionBranchesPanel extends StatelessWidget {
   final TextEditingController footerMarginRightCtrl;
   final TextEditingController footerMarginLeftCtrl;
   final void Function(PrescriptionTemplateModel Function()) updateTemplate;
+  final Future<void> Function(void Function(String base64)) onPickImage;
   final VoidCallback onAddAddress;
   final void Function(int) onRemoveAddress;
   final VoidCallback onAddPhone;
@@ -34,6 +36,7 @@ class PrescriptionBranchesPanel extends StatelessWidget {
     required this.footerMarginRightCtrl,
     required this.footerMarginLeftCtrl,
     required this.updateTemplate,
+    required this.onPickImage,
     required this.onAddAddress,
     required this.onRemoveAddress,
     required this.onAddPhone,
@@ -54,105 +57,392 @@ class PrescriptionBranchesPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.location_on_outlined,
-                      size: 18, color: colors.primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    'عناوين الفروع المطبوعة أسفل الروشتة:',
-                    style: CustomAppFontStyle.semiBold13.copyWith(
-                      color: colors.textPrimary,
-                    ),
+              Icon(Icons.view_compact_alt_outlined,
+                  size: 18, color: colors.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'استوديو تصميم التذييل والفروع (Footer Studio)',
+                  style: CustomAppFontStyle.semiBold14.copyWith(
+                    color: colors.textPrimary,
                   ),
-                ],
-              ),
-              CustomPushButton(
-                height: 26,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                backgroundColor: colors.primaryLight,
-                borderRadius: BorderRadius.circular(6),
-                onTap: onAddAddress,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 14, color: colors.primary),
-                    const SizedBox(width: 4),
-                    Text(
-                      'إضافة فرع',
-                      style: CustomAppFontStyle.medium11.copyWith(
-                        color: colors.primary,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          ..._buildPairedAddressInputs(colors),
-
           const SizedBox(height: 10),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Footer Mode Selection (Just like Header Studio)
+          Text(
+            'طريقة إعداد تذييل الروشتة (Footer Mode):',
+            style: CustomAppFontStyle.medium12.copyWith(
+              color: colors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.phone_in_talk_outlined,
-                      size: 18, color: colors.primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    'أرقام الهواتف والخط الساخن المطبوعة:',
-                    style: CustomAppFontStyle.semiBold13.copyWith(
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                ],
+              PrescriptionChoiceChip(
+                label: 'تصميم تذييل ديناميكي ذكي',
+                selected: template.footerMode == 'dynamicComposed',
+                onSelected: () => updateTemplate(
+                  () => template.copyWith(footerMode: 'dynamicComposed'),
+                ),
               ),
-              CustomPushButton(
-                height: 26,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                backgroundColor: colors.primaryLight,
-                borderRadius: BorderRadius.circular(6),
-                onTap: onAddPhone,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 14, color: colors.primary),
-                    const SizedBox(width: 4),
-                    Text(
-                      'إضافة هاتف',
-                      style: CustomAppFontStyle.medium11.copyWith(
-                        color: colors.primary,
-                      ),
-                    ),
-                  ],
+              PrescriptionChoiceChip(
+                label: 'رفع بانر تذييل جاهز (فوتوشوب)',
+                selected: template.footerMode == 'customBannerImage',
+                onSelected: () => updateTemplate(
+                  () => template.copyWith(footerMode: 'customBannerImage'),
+                ),
+              ),
+              PrescriptionChoiceChip(
+                label: 'ورق مطبوع مسبقاً (فارغ)',
+                selected: template.footerMode == 'preprinted',
+                onSelected: () => updateTemplate(
+                  () => template.copyWith(footerMode: 'preprinted'),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          ..._buildPairedPhoneInputs(colors),
+          const SizedBox(height: 12),
+
+          // ── Option A: Upload Custom Footer Banner Image ─────────────
+          if (template.footerMode == 'customBannerImage') ...[
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: colors.surfaceLevel1,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.borderSubtle),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.image_outlined,
+                          size: 16, color: colors.primary),
+                      const SizedBox(width: 6),
+                      Text(
+                        'صورة بانر التذييل المخصصة (Footer Banner Image):',
+                        style: CustomAppFontStyle.semiBold12.copyWith(
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  if (template.footerBannerBase64 != null) ...[
+                    Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: PrescriptionBase64Image(
+                            base64Str: template.footerBannerBase64,
+                            width: 140,
+                            height: 44,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        CustomPushButton(
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          backgroundColor: colors.primaryLight,
+                          borderRadius: BorderRadius.circular(6),
+                          onTap: () => onPickImage((b64) {
+                            updateTemplate(
+                              () => template.copyWith(footerBannerBase64: b64),
+                            );
+                          }),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.sync_rounded,
+                                  size: 14, color: colors.primary),
+                              const SizedBox(width: 4),
+                              Text(
+                                'تغيير البانر',
+                                style: CustomAppFontStyle.medium11.copyWith(
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              size: 18, color: AppColors.error),
+                          tooltip: 'حذف صورة التذييل',
+                          onPressed: () => updateTemplate(
+                            () => template.copyWith(footerBannerBase64: null),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    InkWell(
+                      onTap: () => onPickImage((b64) {
+                        updateTemplate(
+                          () => template.copyWith(footerBannerBase64: b64),
+                        );
+                      }),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: colors.cardBackground,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: colors.primary.withValues(alpha: 0.5),
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.cloud_upload_outlined,
+                                  size: 24, color: colors.primary),
+                              const SizedBox(height: 4),
+                              Text(
+                                'انقر لاختيار ورفع صورة بانر التذييل من جهازك (PNG / JPG)',
+                                style: CustomAppFontStyle.semiBold12.copyWith(
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+
+          // ── Option B: Dynamic Composed Footer Styling ───────────────
+          if (template.footerMode == 'dynamicComposed') ...[
+            // Background Theme & Border Styling
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ثيم وألوان التذييل:',
+                        style: CustomAppFontStyle.medium11.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 4,
+                        children: [
+                          PrescriptionChoiceChip(
+                            label: 'أبيض هادئ',
+                            selected: template.footerBackgroundStyle == 'white',
+                            onSelected: () => updateTemplate(
+                              () => template.copyWith(
+                                  footerBackgroundStyle: 'white'),
+                            ),
+                          ),
+                          PrescriptionChoiceChip(
+                            label: 'أزرق ملكي',
+                            selected: template.footerBackgroundStyle ==
+                                'gradientBlue',
+                            onSelected: () => updateTemplate(
+                              () => template.copyWith(
+                                  footerBackgroundStyle: 'gradientBlue'),
+                            ),
+                          ),
+                          PrescriptionChoiceChip(
+                            label: 'تركواز',
+                            selected: template.footerBackgroundStyle ==
+                                'gradientTeal',
+                            onSelected: () => updateTemplate(
+                              () => template.copyWith(
+                                  footerBackgroundStyle: 'gradientTeal'),
+                            ),
+                          ),
+                          PrescriptionChoiceChip(
+                            label: 'بطاقة ناعمة',
+                            selected:
+                                template.footerBackgroundStyle == 'softCard',
+                            onSelected: () => updateTemplate(
+                              () => template.copyWith(
+                                  footerBackgroundStyle: 'softCard'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'شكل وتصميم الإطار:',
+                        style: CustomAppFontStyle.medium11.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 4,
+                        children: [
+                          PrescriptionChoiceChip(
+                            label: 'خط فاصل',
+                            selected: template.footerShapeStyle == 'flat',
+                            onSelected: () => updateTemplate(
+                              () =>
+                                  template.copyWith(footerShapeStyle: 'flat'),
+                            ),
+                          ),
+                          PrescriptionChoiceChip(
+                            label: 'بطاقة مدورة',
+                            selected:
+                                template.footerShapeStyle == 'roundedCard',
+                            onSelected: () => updateTemplate(
+                              () => template.copyWith(
+                                  footerShapeStyle: 'roundedCard'),
+                            ),
+                          ),
+                          PrescriptionChoiceChip(
+                            label: 'موجة انسيابية',
+                            selected:
+                                template.footerShapeStyle == 'curvedWave',
+                            onSelected: () => updateTemplate(
+                              () => template.copyWith(
+                                  footerShapeStyle: 'curvedWave'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Branches Addresses Editor
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined,
+                        size: 16, color: colors.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'عناوين الفروع المطبوعة أسفل الروشتة:',
+                      style: CustomAppFontStyle.semiBold12.copyWith(
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                CustomPushButton(
+                  height: 26,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  backgroundColor: colors.primaryLight,
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: onAddAddress,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, size: 14, color: colors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'إضافة فرع',
+                        style: CustomAppFontStyle.medium11.copyWith(
+                          color: colors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ..._buildPairedAddressInputs(colors),
+
+            const SizedBox(height: 10),
+
+            // Hotlines and Phone Numbers
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.phone_in_talk_outlined,
+                        size: 16, color: colors.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'أرقام الهواتف والخط الساخن المطبوعة:',
+                      style: CustomAppFontStyle.semiBold12.copyWith(
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                CustomPushButton(
+                  height: 26,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  backgroundColor: colors.primaryLight,
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: onAddPhone,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, size: 14, color: colors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'إضافة هاتف',
+                        style: CustomAppFontStyle.medium11.copyWith(
+                          color: colors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ..._buildPairedPhoneInputs(colors),
+          ],
 
           const SizedBox(height: 12),
           Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 10),
 
-          // Footer Height Direct Number Input & Margins
+          // Footer Height Direct Number Input & Stepper
           Row(
             children: [
               Expanded(
                 child: CustomTextFormField(
                   controller: footerHeightCtrl,
                   headerText: 'ارتفاع التذييل السفلي (px - كتابة رقم مباشر)',
-                  hintText: '70',
+                  hintText: '85',
                   textInputType: TextInputType.number,
                   onChanged: (v) {
-                    final n = double.tryParse(v ?? '') ?? 70.0;
-                    updateTemplate(() => template.copyWith(footerHeight: n));
+                    final n = double.tryParse(v ?? '') ?? 85.0;
+                    updateTemplate(
+                      () => template.copyWith(footerHeight: n),
+                    );
                   },
                 ),
               ),
@@ -169,7 +459,7 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                         final current =
                             double.tryParse(footerHeightCtrl.text) ??
                                 template.footerHeight;
-                        final next = (current - 5).clamp(20.0, 200.0);
+                        final next = (current - 5).clamp(30.0, 200.0);
                         footerHeightCtrl.text = next.toInt().toString();
                         updateTemplate(
                           () => template.copyWith(footerHeight: next),
@@ -183,7 +473,7 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                         final current =
                             double.tryParse(footerHeightCtrl.text) ??
                                 template.footerHeight;
-                        final next = (current + 5).clamp(20.0, 200.0);
+                        final next = (current + 5).clamp(30.0, 200.0);
                         footerHeightCtrl.text = next.toInt().toString();
                         updateTemplate(
                           () => template.copyWith(footerHeight: next),
@@ -195,9 +485,10 @@ class PrescriptionBranchesPanel extends StatelessWidget {
               ),
             ],
           ),
+
           const SizedBox(height: 8),
 
-          // Footer 4-way Margins
+          // Footer 4-Way Margins
           Row(
             children: [
               Text(
@@ -214,6 +505,7 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                       child: CustomTextFormField(
                         controller: footerMarginTopCtrl,
                         headerText: 'أعلى',
+                        hintText: '8',
                         textInputType: TextInputType.number,
                         onChanged: (v) {
                           final n = double.tryParse(v ?? '') ?? 8.0;
@@ -223,11 +515,12 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: CustomTextFormField(
                         controller: footerMarginBottomCtrl,
                         headerText: 'أسفل',
+                        hintText: '12',
                         textInputType: TextInputType.number,
                         onChanged: (v) {
                           final n = double.tryParse(v ?? '') ?? 12.0;
@@ -237,11 +530,12 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: CustomTextFormField(
                         controller: footerMarginRightCtrl,
                         headerText: 'يمين',
+                        hintText: '15',
                         textInputType: TextInputType.number,
                         onChanged: (v) {
                           final n = double.tryParse(v ?? '') ?? 15.0;
@@ -251,11 +545,12 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: CustomTextFormField(
                         controller: footerMarginLeftCtrl,
                         headerText: 'يسار',
+                        hintText: '15',
                         textInputType: TextInputType.number,
                         onChanged: (v) {
                           final n = double.tryParse(v ?? '') ?? 15.0;
@@ -278,9 +573,11 @@ class PrescriptionBranchesPanel extends StatelessWidget {
   List<Widget> _buildPairedAddressInputs(AppThemeColors colors) {
     final widgets = <Widget>[];
     for (int i = 0; i < addressCtrls.length; i += 2) {
+      final ctrl1 = addressCtrls[i];
       final idx1 = i;
+      final hasSecond = (i + 1) < addressCtrls.length;
+      final ctrl2 = hasSecond ? addressCtrls[i + 1] : null;
       final idx2 = i + 1;
-      final hasSecond = idx2 < addressCtrls.length;
 
       widgets.add(
         Padding(
@@ -292,32 +589,34 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                   children: [
                     Expanded(
                       child: CustomTextFormField(
-                        controller: addressCtrls[idx1],
-                        hintText: 'مثال: فرع المعادي: 15 شارع النصر...',
+                        controller: ctrl1,
+                        hintText: 'عنوان الفرع رقم ${idx1 + 1}',
                         onChanged: (_) => onStateChanged(),
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 26, minHeight: 26),
-                      icon: const Icon(Icons.delete_outline,
-                          size: 15, color: AppColors.error),
-                      onPressed: () => onRemoveAddress(idx1),
-                    ),
+                    if (addressCtrls.length > 1) ...[
+                      const SizedBox(width: 2),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(minWidth: 26, minHeight: 26),
+                        icon: const Icon(Icons.delete_outline,
+                            size: 15, color: AppColors.error),
+                        onPressed: () => onRemoveAddress(idx1),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              if (hasSecond)
+              if (hasSecond && ctrl2 != null) ...[
+                const SizedBox(width: 8),
                 Expanded(
                   child: Row(
                     children: [
                       Expanded(
                         child: CustomTextFormField(
-                          controller: addressCtrls[idx2],
-                          hintText: 'مثال: فرع المهندسين: 42 شارع جامعة الدول...',
+                          controller: ctrl2,
+                          hintText: 'عنوان الفرع رقم ${idx2 + 1}',
                           onChanged: (_) => onStateChanged(),
                         ),
                       ),
@@ -332,9 +631,8 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                       ),
                     ],
                   ),
-                )
-              else
-                const Spacer(),
+                ),
+              ],
             ],
           ),
         ),
@@ -346,9 +644,11 @@ class PrescriptionBranchesPanel extends StatelessWidget {
   List<Widget> _buildPairedPhoneInputs(AppThemeColors colors) {
     final widgets = <Widget>[];
     for (int i = 0; i < phoneCtrls.length; i += 2) {
+      final ctrl1 = phoneCtrls[i];
       final idx1 = i;
+      final hasSecond = (i + 1) < phoneCtrls.length;
+      final ctrl2 = hasSecond ? phoneCtrls[i + 1] : null;
       final idx2 = i + 1;
-      final hasSecond = idx2 < phoneCtrls.length;
 
       widgets.add(
         Padding(
@@ -360,34 +660,34 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                   children: [
                     Expanded(
                       child: CustomTextFormField(
-                        controller: phoneCtrls[idx1],
-                        hintText: 'مثال: 02 27508800 أو 01012345678',
-                        textInputType: TextInputType.phone,
+                        controller: ctrl1,
+                        hintText: 'رقم هاتف / واتساب ${idx1 + 1}',
                         onChanged: (_) => onStateChanged(),
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 26, minHeight: 26),
-                      icon: const Icon(Icons.delete_outline,
-                          size: 15, color: AppColors.error),
-                      onPressed: () => onRemovePhone(idx1),
-                    ),
+                    if (phoneCtrls.length > 1) ...[
+                      const SizedBox(width: 2),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(minWidth: 26, minHeight: 26),
+                        icon: const Icon(Icons.delete_outline,
+                            size: 15, color: AppColors.error),
+                        onPressed: () => onRemovePhone(idx1),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              if (hasSecond)
+              if (hasSecond && ctrl2 != null) ...[
+                const SizedBox(width: 8),
                 Expanded(
                   child: Row(
                     children: [
                       Expanded(
                         child: CustomTextFormField(
-                          controller: phoneCtrls[idx2],
-                          hintText: 'مثال: الخط الساخن 19888',
-                          textInputType: TextInputType.phone,
+                          controller: ctrl2,
+                          hintText: 'رقم هاتف / واتساب ${idx2 + 1}',
                           onChanged: (_) => onStateChanged(),
                         ),
                       ),
@@ -402,9 +702,8 @@ class PrescriptionBranchesPanel extends StatelessWidget {
                       ),
                     ],
                   ),
-                )
-              else
-                const Spacer(),
+                ),
+              ],
             ],
           ),
         ),

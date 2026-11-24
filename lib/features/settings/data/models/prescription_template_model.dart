@@ -50,6 +50,12 @@ class PrescriptionTemplateModel {
   final bool enableMicroprintProtection; // حماية ضد التصوير الضوئي
 
   // ── Footer & Signatures ────────────────────────────────────────
+  // footerMode: 'dynamicComposed' (تصميم ديناميكي ذكي), 'customBannerImage' (رفع بانر تذييل كصورة), 'preprinted' (ورق مطبوع مسبقاً)
+  final String footerMode;
+  final String? footerBannerBase64; // صورة بانر التذييل المصممة كصورة فوتوشوب
+  final String footerBackgroundStyle; // 'white', 'gradientBlue', 'gradientTeal', 'gradientDark', 'softCard', 'accentBorder'
+  final String footerShapeStyle; // 'flat', 'curvedWave', 'roundedCard', 'doubleLine'
+  final String headerShapeStyle; // 'flat', 'curvedWave', 'roundedCard', 'doubleLine'
   final bool includeDoctorSignature;
   final bool includeOfficialStamp;
   final String officialStampText;
@@ -81,7 +87,9 @@ class PrescriptionTemplateModel {
 
   // ── Back Page (تصميم ظهر الروشتة للتعليمات والإرشادات) ─────────────
   final bool enableBackPage; // خيار تفعيل طباعة ظهر الروشتة
+  final String backPageMode; // 'instructions', 'faqs', 'centerServices', 'dietProtocol'
   final String backPageTitle; // عنوان ظهر الروشتة (مثال: تعليمات وإرشادات هامة للمريض)
+  final String backPageSubtitle; // عنوان فرعي أو تعريفي لظهر الروشتة
   final String? backPageHeaderBannerBase64; // بانر هيدر لظهر الروشتة
   final List<String> backPageInstructions; // قائمة التعليمات والنصائح الطبية كنقاط
   final String backPageDietAdvice; // إرشادات التغذية والحمية الغذائية
@@ -135,6 +143,11 @@ class PrescriptionTemplateModel {
     this.watermarkOpacity = 0.12,
     this.watermarkPosition = 'center',
     this.enableMicroprintProtection = true,
+    this.footerMode = 'dynamicComposed',
+    this.footerBannerBase64,
+    this.footerBackgroundStyle = 'white',
+    this.footerShapeStyle = 'flat',
+    this.headerShapeStyle = 'flat',
     this.includeDoctorSignature = true,
     this.includeOfficialStamp = true,
     this.officialStampText = 'مركز المهندسين - ختم معتمد',
@@ -145,7 +158,7 @@ class PrescriptionTemplateModel {
     this.rightMargin = 15.0,
     this.leftMargin = 15.0,
     this.defaultPaperSize = 'a4',
-    this.footerHeight = 70.0,
+    this.footerHeight = 85.0,
     this.headerMarginTop = 0.0,
     this.headerMarginBottom = 8.0,
     this.headerMarginRight = 15.0,
@@ -159,7 +172,10 @@ class PrescriptionTemplateModel {
     this.footerMarginRight = 15.0,
     this.footerMarginLeft = 15.0,
     this.enableBackPage = false,
+    this.backPageMode = 'instructions',
     this.backPageTitle = 'إرشادات وتعليمات طبية هامة للمريض',
+    this.backPageSubtitle =
+        'نصائح طبية وإرشادات هامة للحفاظ على صحتك وسرعة الشفاء',
     this.backPageHeaderBannerBase64,
     this.backPageInstructions = const [
       'الالتزام التام بالجرعات المقررة ومواعيد تناول الدواء قبل أو بعد الأكل بدقة.',
@@ -250,6 +266,12 @@ class PrescriptionTemplateModel {
       watermarkPosition: json['watermarkPosition'] as String? ?? 'center',
       enableMicroprintProtection:
           json['enableMicroprintProtection'] as bool? ?? true,
+      footerMode: json['footerMode'] as String? ?? 'dynamicComposed',
+      footerBannerBase64: json['footerBannerBase64'] as String?,
+      footerBackgroundStyle:
+          json['footerBackgroundStyle'] as String? ?? 'white',
+      footerShapeStyle: json['footerShapeStyle'] as String? ?? 'flat',
+      headerShapeStyle: json['headerShapeStyle'] as String? ?? 'flat',
       includeDoctorSignature:
           json['includeDoctorSignature'] as bool? ?? true,
       includeOfficialStamp: json['includeOfficialStamp'] as bool? ?? true,
@@ -262,7 +284,7 @@ class PrescriptionTemplateModel {
       rightMargin: (json['rightMargin'] as num?)?.toDouble() ?? 15.0,
       leftMargin: (json['leftMargin'] as num?)?.toDouble() ?? 15.0,
       defaultPaperSize: json['defaultPaperSize'] as String? ?? 'a4',
-      footerHeight: (json['footerHeight'] as num?)?.toDouble() ?? 70.0,
+      footerHeight: (json['footerHeight'] as num?)?.toDouble() ?? 85.0,
       headerMarginTop: (json['headerMarginTop'] as num?)?.toDouble() ?? 0.0,
       headerMarginBottom:
           (json['headerMarginBottom'] as num?)?.toDouble() ?? 8.0,
@@ -285,8 +307,11 @@ class PrescriptionTemplateModel {
       footerMarginLeft:
           (json['footerMarginLeft'] as num?)?.toDouble() ?? 15.0,
       enableBackPage: json['enableBackPage'] as bool? ?? false,
+      backPageMode: json['backPageMode'] as String? ?? 'instructions',
       backPageTitle: json['backPageTitle'] as String? ??
           'إرشادات وتعليمات طبية هامة للمريض',
+      backPageSubtitle: json['backPageSubtitle'] as String? ??
+          'نصائح طبية وإرشادات هامة للحفاظ على صحتك وسرعة الشفاء',
       backPageHeaderBannerBase64:
           json['backPageHeaderBannerBase64'] as String?,
       backPageInstructions: (json['backPageInstructions'] as List<dynamic>?)
@@ -350,6 +375,11 @@ class PrescriptionTemplateModel {
       'watermarkOpacity': watermarkOpacity,
       'watermarkPosition': watermarkPosition,
       'enableMicroprintProtection': enableMicroprintProtection,
+      'footerMode': footerMode,
+      'footerBannerBase64': footerBannerBase64,
+      'footerBackgroundStyle': footerBackgroundStyle,
+      'footerShapeStyle': footerShapeStyle,
+      'headerShapeStyle': headerShapeStyle,
       'includeDoctorSignature': includeDoctorSignature,
       'includeOfficialStamp': includeOfficialStamp,
       'officialStampText': officialStampText,
@@ -373,7 +403,9 @@ class PrescriptionTemplateModel {
       'footerMarginRight': footerMarginRight,
       'footerMarginLeft': footerMarginLeft,
       'enableBackPage': enableBackPage,
+      'backPageMode': backPageMode,
       'backPageTitle': backPageTitle,
+      'backPageSubtitle': backPageSubtitle,
       'backPageHeaderBannerBase64': backPageHeaderBannerBase64,
       'backPageInstructions': backPageInstructions,
       'backPageDietAdvice': backPageDietAdvice,
@@ -398,6 +430,7 @@ class PrescriptionTemplateModel {
     String? headerBackgroundStyle,
     String? headerAlignment,
     String? headerLayout,
+    String? headerShapeStyle,
     double? preprintedHeaderHeight,
     double? preprintedFooterHeight,
     bool? hideFooterOnPreprinted,
@@ -423,6 +456,10 @@ class PrescriptionTemplateModel {
     double? watermarkOpacity,
     String? watermarkPosition,
     bool? enableMicroprintProtection,
+    String? footerMode,
+    String? footerBannerBase64,
+    String? footerBackgroundStyle,
+    String? footerShapeStyle,
     bool? includeDoctorSignature,
     bool? includeOfficialStamp,
     String? officialStampText,
@@ -446,7 +483,9 @@ class PrescriptionTemplateModel {
     double? footerMarginRight,
     double? footerMarginLeft,
     bool? enableBackPage,
+    String? backPageMode,
     String? backPageTitle,
+    String? backPageSubtitle,
     String? backPageHeaderBannerBase64,
     List<String>? backPageInstructions,
     String? backPageDietAdvice,
@@ -471,6 +510,7 @@ class PrescriptionTemplateModel {
           headerBackgroundStyle ?? this.headerBackgroundStyle,
       headerAlignment: headerAlignment ?? this.headerAlignment,
       headerLayout: headerLayout ?? this.headerLayout,
+      headerShapeStyle: headerShapeStyle ?? this.headerShapeStyle,
       preprintedHeaderHeight:
           preprintedHeaderHeight ?? this.preprintedHeaderHeight,
       preprintedFooterHeight:
@@ -494,7 +534,8 @@ class PrescriptionTemplateModel {
       showChronicDiseasesAndAllergies:
           showChronicDiseasesAndAllergies ?? this.showChronicDiseasesAndAllergies,
       showVitalSigns: showVitalSigns ?? this.showVitalSigns,
-      showClinicalDiagnosis: showClinicalDiagnosis ?? this.showClinicalDiagnosis,
+      showClinicalDiagnosis:
+          showClinicalDiagnosis ?? this.showClinicalDiagnosis,
       watermarkEnabled: watermarkEnabled ?? this.watermarkEnabled,
       watermarkType: watermarkType ?? this.watermarkType,
       watermarkCustomText: watermarkCustomText ?? this.watermarkCustomText,
@@ -502,6 +543,11 @@ class PrescriptionTemplateModel {
       watermarkPosition: watermarkPosition ?? this.watermarkPosition,
       enableMicroprintProtection:
           enableMicroprintProtection ?? this.enableMicroprintProtection,
+      footerMode: footerMode ?? this.footerMode,
+      footerBannerBase64: footerBannerBase64 ?? this.footerBannerBase64,
+      footerBackgroundStyle:
+          footerBackgroundStyle ?? this.footerBackgroundStyle,
+      footerShapeStyle: footerShapeStyle ?? this.footerShapeStyle,
       includeDoctorSignature:
           includeDoctorSignature ?? this.includeDoctorSignature,
       includeOfficialStamp: includeOfficialStamp ?? this.includeOfficialStamp,
@@ -526,7 +572,9 @@ class PrescriptionTemplateModel {
       footerMarginRight: footerMarginRight ?? this.footerMarginRight,
       footerMarginLeft: footerMarginLeft ?? this.footerMarginLeft,
       enableBackPage: enableBackPage ?? this.enableBackPage,
+      backPageMode: backPageMode ?? this.backPageMode,
       backPageTitle: backPageTitle ?? this.backPageTitle,
+      backPageSubtitle: backPageSubtitle ?? this.backPageSubtitle,
       backPageHeaderBannerBase64:
           backPageHeaderBannerBase64 ?? this.backPageHeaderBannerBase64,
       backPageInstructions: backPageInstructions ?? this.backPageInstructions,

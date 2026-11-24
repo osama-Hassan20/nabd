@@ -80,6 +80,7 @@ class SettingsCubit extends SafeCubit<SettingsState> {
     required String address,
     String? logo,
     ClinicTypeEnum? clinicType,
+    String? prescriptionCustomizationScope,
   }) async {
     emit(
       state.copyWith(
@@ -96,6 +97,8 @@ class SettingsCubit extends SafeCubit<SettingsState> {
       address: address,
       logo: logo ?? current.logo,
       clinicType: clinicType ?? current.clinicType,
+      prescriptionCustomizationScope:
+          prescriptionCustomizationScope ?? current.prescriptionCustomizationScope,
     );
 
     final result = await updateCompanySettingsUseCase(updated);

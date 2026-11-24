@@ -432,10 +432,12 @@ class PrescriptionLivePreview extends StatelessWidget {
                   right: template.headerMarginRight * 0.75,
                   left: template.headerMarginLeft * 0.75,
                 ),
-                child: SizedBox(
-                  height: template.headerHeight > 0
-                      ? template.headerHeight
-                      : null,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: template.headerHeight > 0
+                        ? template.headerHeight
+                        : 0,
+                  ),
                   child: _buildDynamicHeaderWidget(
                     clinicName: effectiveClinicName,
                     doctorName: effectiveDoctorName,
@@ -556,11 +558,14 @@ class PrescriptionLivePreview extends StatelessWidget {
                   right: template.footerMarginRight * 0.75,
                   left: template.footerMarginLeft * 0.75,
                 ),
-                child: SizedBox(
-                  height: template.footerHeight > 0
-                      ? template.footerHeight
-                      : null,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: template.footerHeight > 0
+                        ? template.footerHeight
+                        : 0,
+                  ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -716,70 +721,196 @@ class PrescriptionLivePreview extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          // 2. Instructions & Advice List
-          Row(
-            children: const [
-              Icon(Icons.check_circle_rounded,
-                  size: 16, color: Color(0xFF10B981)),
-              SizedBox(width: 6),
-              Text(
-                'التعليمات والإرشادات الطبية المعتمدة:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
+          // 2. Dynamic Content by Back Page Mode
+          if (template.backPageMode == 'faqs') ...[
+            Row(
+              children: const [
+                Icon(Icons.quiz_outlined, size: 16, color: Color(0xFF2563EB)),
+                SizedBox(width: 6),
+                Text(
+                  'الأسئلة الأكثر شيوعاً والأمان الدوائي للمريض:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...displayInstructions.map((text) {
+              final parts = text.contains('|') ? text.split('|') : [text];
+              final question = parts[0].trim();
+              final answer = parts.length > 1 ? parts[1].trim() : null;
 
-          ...displayInstructions.asMap().entries.map((entry) {
-            final idx = entry.key + 1;
-            final text = entry.value;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2563EB),
-                      shape: BoxShape.circle,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.help_outline_rounded,
+                            size: 13, color: Color(0xFF2563EB)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            question,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '$idx',
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    if (answer != null) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 19),
+                        child: Text(
+                          answer,
+                          style: const TextStyle(
+                            fontSize: 9.5,
+                            color: Color(0xFF475569),
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }),
+          ] else if (template.backPageMode == 'centerServices') ...[
+            Row(
+              children: const [
+                Icon(Icons.medical_services_outlined, size: 16, color: Color(0xFF0D9488)),
+                SizedBox(width: 6),
+                Text(
+                  'دليل التخصصات والخدمات السريرية بالمركز:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...displayInstructions.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final text = entry.value;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDFA),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFCCFBF1)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0D9488),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$idx',
+                        style: const TextStyle(fontSize: 8.5, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF334155),
-                        height: 1.35,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          color: Color(0xFF134E4A),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
+                  ],
+                ),
+              );
+            }),
+          ] else ...[
+            // Default Instructions & Advice List
+            Row(
+              children: const [
+                Icon(Icons.check_circle_rounded,
+                    size: 16, color: Color(0xFF10B981)),
+                SizedBox(width: 6),
+                Text(
+                  'التعليمات والإرشادات الطبية المعتمدة:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
                   ),
-                ],
-              ),
-            );
-          }),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            ...displayInstructions.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final text = entry.value;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF2563EB),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$idx',
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF334155),
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
 
           const SizedBox(height: 8),
 
@@ -1637,47 +1768,182 @@ class PrescriptionLivePreview extends StatelessWidget {
     required List<String> addresses,
     required List<String> phones,
   }) {
-    return Column(
-      children: [
-        if (template.legalDisclaimer.isNotEmpty) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              template.legalDisclaimer,
-              style: const TextStyle(fontSize: 7.5, color: Color(0xFF94A3B8)),
-              textAlign: TextAlign.center,
-            ),
+    // Mode 1: Custom Uploaded Banner Image for Footer
+    if (template.footerMode == 'customBannerImage') {
+      if (template.footerBannerBase64 != null) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: PrescriptionBase64Image(
+            base64Str: template.footerBannerBase64,
+            height: template.footerHeight > 0 ? template.footerHeight : 80,
+            width: double.infinity,
+            fit: BoxFit.cover,
           ),
-          const SizedBox(height: 4),
-        ],
-        if (addresses.isNotEmpty || phones.isNotEmpty)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  addresses.join('  •  '),
-                  style: const TextStyle(fontSize: 7.5, color: Color(0xFF64748B)),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (phones.isNotEmpty) ...[
-                const SizedBox(width: 8),
+        );
+      } else {
+        return Container(
+          height: template.footerHeight > 0 ? template.footerHeight : 70,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFFCBD5E1)),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.add_photo_alternate_outlined,
+                    size: 24, color: Color(0xFF64748B)),
+                SizedBox(height: 4),
                 Text(
-                  phones.join('  |  '),
-                  style: const TextStyle(
-                      fontSize: 7.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF475569)),
+                  'انقر على لوحة التذييل لرفع بانر مصمم لأسفل الروشتة (Footer Banner)',
+                  style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
                 ),
               ],
-            ],
+            ),
           ),
-      ],
+        );
+      }
+    }
+
+    // Mode 2: Dynamic Composed Studio Footer
+    final isGradient = template.footerBackgroundStyle.startsWith('gradient');
+    final isTeal = template.footerBackgroundStyle == 'gradientTeal';
+    final isDark = template.footerBackgroundStyle == 'gradientDark';
+    final isSoftCard = template.footerBackgroundStyle == 'softCard';
+
+    Color footerBg = Colors.white;
+    LinearGradient? footerGradient;
+    Color textColor = const Color(0xFF64748B);
+    Color phoneColor = const Color(0xFF475569);
+    Border? border = Border(top: BorderSide(color: Colors.grey.shade300, width: 0.8));
+    BorderRadius borderRadius = BorderRadius.zero;
+
+    if (template.footerShapeStyle == 'roundedCard') {
+      borderRadius = BorderRadius.circular(8);
+      border = Border.all(color: Colors.grey.shade300, width: 0.8);
+    } else if (template.footerShapeStyle == 'curvedWave') {
+      borderRadius = const BorderRadius.vertical(top: Radius.circular(12));
+      border = Border(top: BorderSide(color: isTeal ? const Color(0xFF0D9488) : const Color(0xFF2563EB), width: 2.5));
+    } else if (template.footerShapeStyle == 'doubleLine') {
+      border = Border(top: BorderSide(color: Colors.grey.shade400, width: 2));
+    }
+
+    if (isGradient) {
+      if (isTeal) {
+        footerGradient = const LinearGradient(
+          colors: [Color(0xFF0F766E), Color(0xFF0D9488)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+        );
+      } else if (isDark) {
+        footerGradient = const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+        );
+      } else {
+        footerGradient = const LinearGradient(
+          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+        );
+      }
+      textColor = Colors.white.withValues(alpha: 0.9);
+      phoneColor = Colors.white;
+      border = null;
+    } else if (isSoftCard) {
+      footerBg = const Color(0xFFF8FAFC);
+      border = Border.all(color: const Color(0xFFE2E8F0));
+      borderRadius = BorderRadius.circular(6);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: footerGradient == null ? footerBg : null,
+        gradient: footerGradient,
+        borderRadius: borderRadius,
+        border: border,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (template.legalDisclaimer.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isGradient ? Colors.white.withValues(alpha: 0.15) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                template.legalDisclaimer,
+                style: TextStyle(fontSize: 7.5, color: isGradient ? Colors.white70 : const Color(0xFF94A3B8)),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 4),
+          ],
+          if (addresses.isNotEmpty || phones.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 11,
+                        color: isGradient ? Colors.white70 : const Color(0xFF3B82F6),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          addresses.join('  •  '),
+                          style: TextStyle(
+                            fontSize: 7.5,
+                            color: textColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (phones.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isGradient ? Colors.white.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.phone_in_talk_outlined,
+                          size: 10,
+                          color: isGradient ? Colors.white : const Color(0xFF2563EB),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          phones.join('  |  '),
+                          style: TextStyle(
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.bold,
+                            color: isGradient ? Colors.white : phoneColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+        ],
+      ),
     );
   }
 

@@ -23,6 +23,7 @@ class CompanySettingsModel {
   final String? doctorSettlementPrintFormat;
   final String? staffPayrollPrintFormat;
   final PrescriptionTemplateModel? prescriptionTemplate;
+  final String? prescriptionCustomizationScope; // 'unifiedCenter', 'perDoctor'
 
   const CompanySettingsModel({
     this.id,
@@ -44,9 +45,12 @@ class CompanySettingsModel {
     this.doctorSettlementPrintFormat,
     this.staffPayrollPrintFormat,
     this.prescriptionTemplate,
+    this.prescriptionCustomizationScope = 'unifiedCenter',
   });
 
   bool get isSingleDoctorClinic => clinicType == ClinicTypeEnum.singleDoctor;
+  bool get isUnifiedCenterPrescription =>
+      prescriptionCustomizationScope != 'perDoctor';
 
   PrintFormat get effectiveReceiptPrintFormat =>
       PrintFormat.fromString(receiptPrintFormat);
@@ -91,6 +95,8 @@ class CompanySettingsModel {
           ? PrescriptionTemplateModel.fromJson(
               json['prescriptionTemplate'] as Map<String, dynamic>?)
           : const PrescriptionTemplateModel(),
+      prescriptionCustomizationScope:
+          json['prescriptionCustomizationScope'] as String? ?? 'unifiedCenter',
     );
   }
 
@@ -124,6 +130,8 @@ class CompanySettingsModel {
         'staffPayrollPrintFormat': staffPayrollPrintFormat,
       if (prescriptionTemplate != null)
         'prescriptionTemplate': prescriptionTemplate?.toJson(),
+      if (prescriptionCustomizationScope != null)
+        'prescriptionCustomizationScope': prescriptionCustomizationScope,
     };
   }
 
@@ -147,6 +155,7 @@ class CompanySettingsModel {
     String? doctorSettlementPrintFormat,
     String? staffPayrollPrintFormat,
     PrescriptionTemplateModel? prescriptionTemplate,
+    String? prescriptionCustomizationScope,
   }) {
     return CompanySettingsModel(
       id: id ?? this.id,
@@ -173,6 +182,8 @@ class CompanySettingsModel {
       staffPayrollPrintFormat:
           staffPayrollPrintFormat ?? this.staffPayrollPrintFormat,
       prescriptionTemplate: prescriptionTemplate ?? this.prescriptionTemplate,
+      prescriptionCustomizationScope:
+          prescriptionCustomizationScope ?? this.prescriptionCustomizationScope,
     );
   }
 }

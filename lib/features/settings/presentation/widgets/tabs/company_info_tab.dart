@@ -34,6 +34,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
   late ClinicTypeEnum _selectedClinicType;
+  late String _selectedPrescriptionScope;
 
   @override
   void initState() {
@@ -45,6 +46,8 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
     );
     _addressController = TextEditingController(text: settings?.address ?? '');
     _selectedClinicType = settings?.clinicType ?? ClinicTypeEnum.polyclinic;
+    _selectedPrescriptionScope =
+        settings?.prescriptionCustomizationScope ?? 'unifiedCenter';
   }
 
   @override
@@ -139,6 +142,7 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
       phone: formattedPhone,
       address: _addressController.text.trim(),
       clinicType: _selectedClinicType,
+      prescriptionCustomizationScope: _selectedPrescriptionScope,
     );
 
     if (mounted) {
@@ -343,6 +347,58 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                           ),
                         ],
                       ),
+
+                      if (_selectedClinicType == ClinicTypeEnum.polyclinic) ...[
+                        const SizedBox(height: 20),
+                        Divider(height: 1, color: colors.borderSubtle),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Icon(Icons.print_outlined,
+                                size: 18, color: colors.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              'سياسة وهوية قوالب الروشتة في المركز الطبي',
+                              style: CustomAppFontStyle.semiBold14.copyWith(
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'تحدد ما إذا كان المركز يستخدم قالباً وهوية موحدة لجميع الأطباء، أو يُسمح لكل طبيب بتصميم روشتته الخاصة المستقلة.',
+                          style: CustomAppFontStyle.regular12.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildPrescriptionScopeOption(
+                                scope: 'unifiedCenter',
+                                title: 'روشتة موحدة للمركز (إشراف الإدارة)',
+                                subtitle:
+                                    'شعار وهوية وبانر المركز موحد لجميع العيادات؛ المالك فقط من يصمم القالب مع طباعة اسم الطبيب وتخصصه آلياً.',
+                                icon: Icons.domain_rounded,
+                                colors: colors,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildPrescriptionScopeOption(
+                                scope: 'perDoctor',
+                                title: 'تخصيص مستقل لكل طبيب / عيادة',
+                                subtitle:
+                                    'يُمنح كل طبيب داخل المركز حرية رفع لوجو وبانر خاص وتصميم شكل الروشتة والظهر المستقل بما يناسب تخصصه.',
+                                icon: Icons.badge_outlined,
+                                colors: colors,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 24),
 
                       // Save Button
@@ -570,6 +626,91 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
                     subtitle,
                     style: CustomAppFontStyle.regular12.copyWith(
                       color: colors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrescriptionScopeOption({
+    required String scope,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required dynamic colors,
+  }) {
+    final isSelected = _selectedPrescriptionScope == scope;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedPrescriptionScope = scope;
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.primaryLight : colors.surfaceLevel1,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? colors.primary : colors.borderSubtle,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? colors.primary
+                    : colors.borderSubtle.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected ? Colors.white : colors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: CustomAppFontStyle.semiBold13.copyWith(
+                            color: isSelected
+                                ? colors.primary
+                                : colors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 18,
+                          color: colors.primary,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: CustomAppFontStyle.regular11.copyWith(
+                      color: colors.textSecondary,
+                      height: 1.35,
                     ),
                   ),
                 ],

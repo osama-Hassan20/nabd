@@ -646,6 +646,7 @@ class _PrescriptionTemplateDesignerState
           footerMarginRightCtrl: _footerMarginRightCtrl,
           footerMarginLeftCtrl: _footerMarginLeftCtrl,
           updateTemplate: _updateTemplate,
+          onPickImage: _pickImage,
           onAddAddress: () {
             setState(() {
               _addressCtrls.add(TextEditingController());
