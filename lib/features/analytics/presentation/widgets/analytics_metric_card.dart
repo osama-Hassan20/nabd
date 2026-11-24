@@ -88,7 +88,9 @@ class AnalyticsMetricCard extends StatelessWidget {
                   Icon(
                     isPositiveTrend! ? Icons.trending_up : Icons.trending_down,
                     size: 16,
-                    color: isPositiveTrend! ? AppColors.secondary : AppColors.error,
+                    color: isPositiveTrend!
+                        ? (colors.isDark ? const Color(0xFF34D399) : AppColors.secondary)
+                        : (colors.isDark ? const Color(0xFFF87171) : AppColors.error),
                   ),
                   const SizedBox(width: 4),
                 ],
@@ -97,9 +99,9 @@ class AnalyticsMetricCard extends StatelessWidget {
                     subtitle!,
                     style: CustomAppFontStyle.regular12.copyWith(
                       color: isPositiveTrend == true
-                          ? AppColors.secondary
+                          ? (colors.isDark ? const Color(0xFF34D399) : AppColors.secondary)
                           : isPositiveTrend == false
-                              ? AppColors.error
+                              ? (colors.isDark ? const Color(0xFFF87171) : AppColors.error)
                               : colors.textSecondary,
                     ),
                     maxLines: 1,

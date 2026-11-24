@@ -120,7 +120,7 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
                           child: Text(
                             _getTabTitle(tab),
                             style: CustomAppFontStyle.medium14.copyWith(
-                              color: isSelected ? colors.textInverse : colors.textPrimary,
+                              color: isSelected ? Colors.white : colors.textSecondary,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
@@ -150,11 +150,19 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
                     children: [
                       // Time Range Dropdown
                       SizedBox(
-                        width: 170,
+                        width: 185,
                         child: CustomStackSelector<AnalyticsTimeRangeEnum>(
                           key: const Key('filter_time_range'),
                           controller: _timeRangeController,
                           hintText: _getTimeRangeTitle(state.selectedTimeRange),
+                          prefixWidget: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Icon(
+                              Icons.calendar_today_outlined,
+                              size: 16,
+                              color: colors.textSecondary,
+                            ),
+                          ),
                           list: AnalyticsTimeRangeEnum.values,
                           itemAsString: (range) => _getTimeRangeTitle(range),
                           changeValue: (newRange) async {
@@ -186,11 +194,19 @@ class _AnalyticsFilterBarState extends State<AnalyticsFilterBar> {
 
                       // Branch Dropdown
                       SizedBox(
-                        width: 170,
+                        width: 185,
                         child: CustomStackSelector<(String?, String)>(
                           key: const Key('filter_branch'),
                           controller: _branchController,
                           hintText: 'analytics_all_branches'.tr(),
+                          prefixWidget: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Icon(
+                              Icons.storefront_outlined,
+                              size: 16,
+                              color: colors.textSecondary,
+                            ),
+                          ),
                           list: _branches,
                           itemAsString: (b) => b.$2.tr(),
                           changeValue: (newBranch) {

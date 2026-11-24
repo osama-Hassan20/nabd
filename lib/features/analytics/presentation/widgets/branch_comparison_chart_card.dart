@@ -14,11 +14,18 @@ import 'shimmers/analytics_chart_shimmer.dart';
 class BranchComparisonChartCard extends StatelessWidget {
   const BranchComparisonChartCard({super.key});
 
-  static const List<Color> _branchColors = [
+  static const List<Color> _branchColorsLight = [
     AppColors.primary,
     Color(0xFF0284C7),
     Color(0xFFD97706),
     Color(0xFF7C3AED),
+  ];
+
+  static const List<Color> _branchColorsDark = [
+    Color(0xFFFF6B50),
+    Color(0xFF38BDF8),
+    Color(0xFFFBBF24),
+    Color(0xFFA78BFA),
   ];
 
   @override
@@ -29,6 +36,7 @@ class BranchComparisonChartCard extends StatelessWidget {
           prev.branchComparisons != current.branchComparisons,
       builder: (context, state) {
         final colors = context.themeColors;
+        final branchColors = colors.isDark ? _branchColorsDark : _branchColorsLight;
 
         if (state.branchesStatus == RequestStatusEnum.loading && state.branchComparisons.isEmpty) {
           return const AnalyticsChartShimmer(height: 340);
@@ -140,7 +148,7 @@ class BranchComparisonChartCard extends StatelessWidget {
                                 barRods: [
                                   BarChartRodData(
                                     toY: (branches[i].totalRevenuePiastres ?? 0).toDouble(),
-                                    color: _branchColors[i % _branchColors.length],
+                                    color: branchColors[i % branchColors.length],
                                     width: 32,
                                     borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                                   ),
@@ -170,14 +178,16 @@ class BranchComparisonChartCard extends StatelessWidget {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: _branchColors[i % _branchColors.length],
+                              color: branchColors[i % branchColors.length],
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             branches[i].branchName ?? '',
-                            style: CustomAppFontStyle.regular13.copyWith(color: AppColors.pitchBlack),
+                            style: CustomAppFontStyle.medium13.copyWith(
+                              color: colors.textPrimary,
+                            ),
                           ),
                         ],
                       ),
@@ -187,21 +197,28 @@ class BranchComparisonChartCard extends StatelessWidget {
                         children: [
                           Text(
                             '${branches[i].visitsCount ?? 0} ${'analytics_completed_visits'.tr()} • ',
-                            style: CustomAppFontStyle.regular12.copyWith(color: AppColors.gray),
+                            style: CustomAppFontStyle.regular12.copyWith(
+                              color: colors.textSecondary,
+                            ),
                           ),
                           Text(
                             Money.fromPiastres(branches[i].totalRevenuePiastres ?? 0).formatEgp(),
-                            style: CustomAppFontStyle.bold13.copyWith(color: AppColors.pitchBlack),
+                            style: CustomAppFontStyle.bold13.copyWith(
+                              color: colors.textPrimary,
+                            ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
-                              color: AppColors.grayf6,
+                              color: colors.isDark ? colors.surfaceLevel2 : colors.surfaceLevel1,
                               borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: colors.borderSubtle),
                             ),
                             child: Text(
                               '${branches[i].shareOfTotalRevenuePercent?.toStringAsFixed(0)}%',
-                              style: CustomAppFontStyle.bold11.copyWith(color: AppColors.primary),
+                              style: CustomAppFontStyle.bold11.copyWith(
+                                color: branchColors[i % branchColors.length],
+                              ),
                             ),
                           ),
                         ],

@@ -104,8 +104,8 @@ class RevenueTrendChartCard extends StatelessWidget {
                     spacing: 16,
                     runSpacing: 6,
                     children: [
-                      _buildLegendIndicator('analytics_total_revenue'.tr(), AppColors.primary),
-                      _buildLegendIndicator('analytics_net_profit'.tr(), AppColors.secondary),
+                      _buildLegendIndicator('analytics_total_revenue'.tr(), colors.primary, colors),
+                      _buildLegendIndicator('analytics_net_profit'.tr(), colors.secondary, colors),
                     ],
                   ),
                 ],
@@ -117,7 +117,7 @@ class RevenueTrendChartCard extends StatelessWidget {
                     ? Center(
                         child: Text(
                           'no_data'.tr(),
-                          style: CustomAppFontStyle.regular13.copyWith(color: AppColors.gray),
+                          style: CustomAppFontStyle.regular13.copyWith(color: colors.textSecondary),
                         ),
                       )
                     : LineChart(
@@ -127,7 +127,7 @@ class RevenueTrendChartCard extends StatelessWidget {
                             drawVerticalLine: false,
                             horizontalInterval: 500000,
                             getDrawingHorizontalLine: (value) => FlLine(
-                              color: AppColors.grayE2E8F0,
+                              color: colors.borderSubtle,
                               strokeWidth: 1,
                             ),
                           ),
@@ -141,7 +141,7 @@ class RevenueTrendChartCard extends StatelessWidget {
                                   final inThousands = (value / 100000).toStringAsFixed(0);
                                   return Text(
                                     '${inThousands}k',
-                                    style: CustomAppFontStyle.regular11.copyWith(color: AppColors.gray),
+                                    style: CustomAppFontStyle.regular11.copyWith(color: colors.textSecondary),
                                   );
                                 },
                               ),
@@ -158,7 +158,7 @@ class RevenueTrendChartCard extends StatelessWidget {
                                       padding: const EdgeInsets.only(top: 8.0),
                                       child: Text(
                                         points[idx].label ?? '',
-                                        style: CustomAppFontStyle.regular11.copyWith(color: AppColors.gray),
+                                        style: CustomAppFontStyle.regular11.copyWith(color: colors.textSecondary),
                                       ),
                                     );
                                   }
@@ -177,13 +177,13 @@ class RevenueTrendChartCard extends StatelessWidget {
                                   FlSpot(i.toDouble(), (points[i].revenuePiastres ?? 0).toDouble()),
                               ],
                               isCurved: true,
-                              color: AppColors.primary,
+                              color: colors.primary,
                               barWidth: 3,
                               isStrokeCapRound: true,
                               dotData: const FlDotData(show: false),
                               belowBarData: BarAreaData(
                                 show: true,
-                                color: AppColors.primary.withValues(alpha: 0.08),
+                                color: colors.primary.withValues(alpha: 0.08),
                               ),
                             ),
                             LineChartBarData(
@@ -192,13 +192,13 @@ class RevenueTrendChartCard extends StatelessWidget {
                                   FlSpot(i.toDouble(), (points[i].netProfitPiastres ?? 0).toDouble()),
                               ],
                               isCurved: true,
-                              color: AppColors.secondary,
+                              color: colors.secondary,
                               barWidth: 2.5,
                               isStrokeCapRound: true,
                               dotData: const FlDotData(show: false),
                               belowBarData: BarAreaData(
                                 show: true,
-                                color: AppColors.secondary.withValues(alpha: 0.06),
+                                color: colors.secondary.withValues(alpha: 0.06),
                               ),
                             ),
                           ],
@@ -212,7 +212,7 @@ class RevenueTrendChartCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendIndicator(String label, Color color) {
+  Widget _buildLegendIndicator(String label, Color color, AppThemeColors colors) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -224,7 +224,7 @@ class RevenueTrendChartCard extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: CustomAppFontStyle.regular12.copyWith(color: AppColors.pitchBlack),
+          style: CustomAppFontStyle.medium12.copyWith(color: colors.textPrimary),
         ),
       ],
     );

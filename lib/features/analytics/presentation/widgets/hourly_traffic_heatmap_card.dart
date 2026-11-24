@@ -12,17 +12,17 @@ import 'shimmers/analytics_chart_shimmer.dart';
 class HourlyTrafficHeatmapCard extends StatelessWidget {
   const HourlyTrafficHeatmapCard({super.key});
 
-  Color _getLevelColor(String? level) {
+  Color _getLevelColor(String? level, bool isDark) {
     switch (level) {
       case 'peak':
-        return AppColors.error;
+        return isDark ? const Color(0xFFF87171) : AppColors.error;
       case 'high':
-        return const Color(0xFFD97706);
+        return isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
       case 'medium':
-        return const Color(0xFF0284C7);
+        return isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
       case 'low':
       default:
-        return AppColors.secondary;
+        return isDark ? const Color(0xFF34D399) : AppColors.secondary;
     }
   }
 
@@ -115,7 +115,7 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
                 Center(
                   child: Text(
                     'no_data'.tr(),
-                    style: CustomAppFontStyle.regular13.copyWith(color: AppColors.gray),
+                    style: CustomAppFontStyle.regular13.copyWith(color: colors.textSecondary),
                   ),
                 )
               else
@@ -127,41 +127,48 @@ class HourlyTrafficHeatmapCard extends StatelessWidget {
                       runSpacing: 12,
                       children: [
                         for (final item in traffic)
-                          Container(
-                            width: isMobile ? 70 : 85,
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: _getLevelColor(item.occupancyLevel).withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: _getLevelColor(item.occupancyLevel).withValues(alpha: 0.25),
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${item.hour?.toString().padLeft(2, '0')}:00',
-                                  style: CustomAppFontStyle.bold12.copyWith(color: AppColors.pitchBlack),
-                                ),
-                                const SizedBox(height: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: _getLevelColor(item.occupancyLevel),
-                                    borderRadius: BorderRadius.circular(6),
+                          Builder(
+                            builder: (context) {
+                              final levelColor = _getLevelColor(item.occupancyLevel, colors.isDark);
+                              return Container(
+                                width: isMobile ? 70 : 85,
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: levelColor.withValues(alpha: colors.isDark ? 0.14 : 0.08),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: levelColor.withValues(alpha: colors.isDark ? 0.35 : 0.25),
                                   ),
-                                  child: Text(
-                                    '${item.visitsCount ?? 0}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${item.hour?.toString().padLeft(2, '0')}:00',
+                                      style: CustomAppFontStyle.bold12.copyWith(
+                                        color: colors.textPrimary,
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: levelColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${item.visitsCount ?? 0}',
+                                        style: TextStyle(
+                                          color: colors.isDark ? const Color(0xFF0F0F12) : Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
                       ],
                     );

@@ -106,13 +106,13 @@ class DoctorPerformanceTableCard extends StatelessWidget {
                     dataRowMinHeight: 52,
                     dataRowMaxHeight: 56,
                     columns: [
-                      DataColumn(label: Text('analytics_col_doctor'.tr(), style: CustomAppFontStyle.bold13)),
-                      DataColumn(label: Text('analytics_col_specialty'.tr(), style: CustomAppFontStyle.bold13)),
-                      DataColumn(label: Text('analytics_col_visits'.tr(), style: CustomAppFontStyle.bold13), numeric: true),
-                      DataColumn(label: Text('analytics_col_revenue'.tr(), style: CustomAppFontStyle.bold13), numeric: true),
-                      DataColumn(label: Text('analytics_col_commission'.tr(), style: CustomAppFontStyle.bold13), numeric: true),
-                      DataColumn(label: Text('analytics_col_avg_duration'.tr(), style: CustomAppFontStyle.bold13)),
-                      DataColumn(label: Text('analytics_col_satisfaction'.tr(), style: CustomAppFontStyle.bold13)),
+                      DataColumn(label: Text('analytics_col_doctor'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary))),
+                      DataColumn(label: Text('analytics_col_specialty'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary))),
+                      DataColumn(label: Text('analytics_col_visits'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary)), numeric: true),
+                      DataColumn(label: Text('analytics_col_revenue'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary)), numeric: true),
+                      DataColumn(label: Text('analytics_col_commission'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary)), numeric: true),
+                      DataColumn(label: Text('analytics_col_avg_duration'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary))),
+                      DataColumn(label: Text('analytics_col_satisfaction'.tr(), style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary))),
                     ],
                     rows: [
                       for (int i = 0; i < doctors.length; i++)
@@ -124,19 +124,23 @@ class DoctorPerformanceTableCard extends StatelessWidget {
                                 children: [
                                   CircleAvatar(
                                     radius: 14,
-                                    backgroundColor: i == 0
-                                        ? const Color(0xFFFEF3C7)
-                                        : i == 1
-                                            ? const Color(0xFFF1F5F9)
-                                            : const Color(0xFFFDEEEB),
+                                    backgroundColor: colors.isDark
+                                        ? (i == 0
+                                            ? const Color(0xFF452205)
+                                            : colors.surfaceLevel2)
+                                        : (i == 0
+                                            ? const Color(0xFFFEF3C7)
+                                            : i == 1
+                                                ? const Color(0xFFF1F5F9)
+                                                : const Color(0xFFFDEEEB)),
                                     child: Text(
                                       '${i + 1}',
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: i == 0
-                                            ? const Color(0xFFD97706)
-                                            : AppColors.pitchBlack,
+                                            ? (colors.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706))
+                                            : colors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -180,7 +184,7 @@ class DoctorPerformanceTableCard extends StatelessWidget {
                                   const SizedBox(width: 4),
                                   Text(
                                     doctors[i].patientSatisfactionRating?.toStringAsFixed(1) ?? '—',
-                                    style: CustomAppFontStyle.bold13,
+                                    style: CustomAppFontStyle.bold13.copyWith(color: colors.textPrimary),
                                   ),
                                 ],
                               ),

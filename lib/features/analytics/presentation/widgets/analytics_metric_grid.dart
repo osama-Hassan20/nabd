@@ -54,6 +54,8 @@ class AnalyticsMetricGrid extends StatelessWidget {
         }
 
         final summary = state.summary;
+        final colors = context.themeColors;
+        final isDark = colors.isDark;
 
         final revenueText = summary?.totalRevenuePiastres != null
             ? Money.fromPiastres(summary!.totalRevenuePiastres!).formatEgp()
@@ -106,7 +108,7 @@ class AnalyticsMetricGrid extends StatelessWidget {
                       : null,
                   isPositiveTrend: true,
                   icon: Icons.account_balance_wallet_outlined,
-                  accentColor: AppColors.primary,
+                  accentColor: colors.primary,
                 ),
                 AnalyticsMetricCard(
                   key: const Key('card_net_profit'),
@@ -115,7 +117,7 @@ class AnalyticsMetricGrid extends StatelessWidget {
                   subtitle: 'analytics_estimated_profit'.tr(),
                   isPositiveTrend: true,
                   icon: Icons.monetization_on_outlined,
-                  accentColor: AppColors.secondary,
+                  accentColor: colors.secondary,
                 ),
                 AnalyticsMetricCard(
                   key: const Key('card_total_visits'),
@@ -124,7 +126,7 @@ class AnalyticsMetricGrid extends StatelessWidget {
                   subtitle: '${summary?.completedVisitsCount ?? 0} ${'analytics_completed_visits'.tr()}',
                   isPositiveTrend: true,
                   icon: Icons.people_outline,
-                  accentColor: const Color(0xFF0284C7),
+                  accentColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                 ),
                 AnalyticsMetricCard(
                   key: const Key('card_avg_wait_time'),
@@ -132,7 +134,7 @@ class AnalyticsMetricGrid extends StatelessWidget {
                   value: waitTimeText,
                   subtitle: 'analytics_patient_punctuality'.tr(),
                   icon: Icons.timer_outlined,
-                  accentColor: const Color(0xFFD97706),
+                  accentColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
                 ),
                 AnalyticsMetricCard(
                   key: const Key('card_return_rate'),
@@ -141,7 +143,7 @@ class AnalyticsMetricGrid extends StatelessWidget {
                   subtitle: 'analytics_retention_rate'.tr(),
                   isPositiveTrend: true,
                   icon: Icons.autorenew_outlined,
-                  accentColor: const Color(0xFF7C3AED),
+                  accentColor: isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED),
                 ),
                 AnalyticsMetricCard(
                   key: const Key('card_outstanding_debts'),

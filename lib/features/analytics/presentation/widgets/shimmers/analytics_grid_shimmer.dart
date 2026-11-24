@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 
 class AnalyticsGridShimmer extends StatelessWidget {
@@ -7,6 +8,9 @@ class AnalyticsGridShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.themeColors;
+    final isDark = colors.isDark;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 1000
@@ -16,8 +20,8 @@ class AnalyticsGridShimmer extends StatelessWidget {
                 : 1;
 
         return Shimmer.fromColors(
-          baseColor: AppColors.grayE2E8F0,
-          highlightColor: AppColors.white,
+          baseColor: isDark ? const Color(0xFF1F1F26) : AppColors.grayE2E8F0,
+          highlightColor: isDark ? const Color(0xFF2A2A35) : AppColors.white,
           child: GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -31,9 +35,9 @@ class AnalyticsGridShimmer extends StatelessWidget {
             itemBuilder: (context, index) {
               return Container(
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: isDark ? const Color(0xFF1F1F26) : AppColors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.grayE2E8F0),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
               );
             },
