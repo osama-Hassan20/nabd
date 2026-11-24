@@ -6,15 +6,22 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/patients/data/models/patient_model.dart';
 import 'package:eyadty/features/patients/presentation/manager/patients_cubit.dart';
 import 'package:eyadty/features/patients/presentation/manager/patients_state.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_active_medications_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_bookings_section.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_clinical_alerts_banner.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_consultations_history_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_details_shimmer.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_emr_tab_bar.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_lab_radiology_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_profile_card_section.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_specialty_tracking_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_stats_cards_section.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_surgical_history_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_treatment_plans_section.dart';
 import 'package:eyadty/shared/widgets/custom_asset_image.dart';
 import 'package:eyadty/shared/widgets/error_page.dart';
@@ -111,20 +118,54 @@ class PatientDetailsPage extends StatelessWidget {
                       ),
                     )
                   else if (state.selectedPatient != null) ...[
+                    // 1. Patient Profile Info Card
                     const SliverToBoxAdapter(
                       child: PatientProfileCardSection(),
                     ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 14)),
+
+                    // 2. High-Priority Clinical Alert Banner (Allergies, Chronic Diseases, Active Meds)
+                    SliverToBoxAdapter(
+                      child: PatientClinicalAlertsBanner(
+                        patient: state.selectedPatient!,
+                      ),
+                    ),
                     const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+                    // 3. Overall Patient Financial & Visit Statistics
                     const SliverToBoxAdapter(
                       child: PatientStatsCardsSection(),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    const SliverToBoxAdapter(
-                      child: PatientTreatmentPlansSection(),
+
+                    // 4. Unified EMR Navigation Tabs Bar (الكشوفات والروشتات، الأدوية، التحاليل والأشعة، العمليات، المتابعات التخصصية، باقات العلاج، المواعيد)
+                    SliverToBoxAdapter(
+                      child: PatientEmrTabBar(
+                        activeIndex: state.activeDetailsTab,
+                        onTabSelected: (index) => cubit.changeDetailsTab(index),
+                        consultationsCount: state.patientVisits.length,
+                        activeMedsCount:
+                            state.selectedPatient?.activeMedications?.length ?? 0,
+                        labsCount:
+                            state.selectedPatient?.labAndRadiology?.length ?? 0,
+                        surgeriesCount:
+                            state.selectedPatient?.surgicalHistory?.length ?? 0,
+                        specialtyCount:
+                            (state.selectedPatient?.eyeExams?.length ?? 0) +
+                            (state.selectedPatient?.beforeAfterGallery?.length ?? 0),
+                        treatmentPlansCount:
+                            state.selectedPatient?.treatmentPlans?.length ?? 0,
+                        bookingsCount: state.patientBookings.length,
+                      ),
                     ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    const SliverToBoxAdapter(
-                      child: PatientBookingsSection(),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+                    // 5. Active Tab View Content
+                    SliverToBoxAdapter(
+                      child: _buildActiveTabContent(
+                        state.activeDetailsTab,
+                        state.selectedPatient!,
+                      ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 32)),
                   ],
@@ -135,5 +176,18 @@ class PatientDetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildActiveTabContent(int activeTab, PatientModel patient) {
+    return switch (activeTab) {
+      0 => PatientConsultationsHistorySection(patient: patient),
+      1 => PatientActiveMedicationsSection(patient: patient),
+      2 => PatientLabRadiologySection(patient: patient),
+      3 => const PatientSurgicalHistorySection(),
+      4 => const PatientSpecialtyTrackingSection(),
+      5 => const PatientTreatmentPlansSection(),
+      6 => const PatientBookingsSection(),
+      _ => PatientConsultationsHistorySection(patient: patient),
+    };
   }
 }

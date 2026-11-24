@@ -12,6 +12,7 @@ import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../domain/repo/visits_repo.dart';
 import '../models/consultation_queue_item_model.dart';
 import '../models/enums/visit_status_enum.dart';
+import '../models/prescription_item_model.dart';
 import '../models/visit_addendum_model.dart';
 import '../models/visit_model.dart';
 import '../models/vitals_model.dart';
@@ -109,6 +110,117 @@ class VisitsMockRepoImpl implements VisitsRepo, ActiveVisitLookup {
         diagnosis: 'التهاب حاد في اللوزتين',
         treatmentPlan: 'مضاد حيوي مناسب للوزن + خافض حرارة عند اللزوم',
         followUpDays: 5,
+        vitals: VitalsModel(
+          systolicBp: 135,
+          diastolicBp: 88,
+          heartRate: 82,
+          temperature: 38.6,
+          weightKg: 86.0,
+          heightCm: 178.0,
+        ),
+      ),
+      // Seed 4: Previous Finalized visit for سارة أحمد عبد الله (PAT-000101) with full prescription
+      VisitModel(
+        id: 'VIS-004',
+        bookingId: 'MED-110',
+        patientId: 'PAT-000101',
+        branchId: 'branch_1',
+        patientName: 'سارة أحمد عبد الله',
+        patientPhone: '+201012345678',
+        doctorId: 'DOC-01',
+        doctorName: 'د. حسام الدين مصطفى',
+        specialty: 'استشاري أمراض باطنة وسكري',
+        status: VisitStatusEnum.finalized,
+        startedAt: today.subtract(const Duration(days: 30)),
+        finalizedAt: today.subtract(const Duration(days: 30)),
+        lastSavedAt: today.subtract(const Duration(days: 30)),
+        chiefComplaint: 'ارتفاع في ضغط الدم، صداع بالجهة الخلفية للرأس وخمول عام',
+        medicalHistory: 'تاريخ عائلي للضغط والسكري، حساسية بنسلين شديدة',
+        diagnosis: 'ارتفاع ضغط الدم الأساسي (Essential Hypertension Grade 1)',
+        treatmentPlan: 'تنظيم نمط الغذاء قليل الصوديوم، المشي اليومي، ومتابعة قياسات الضغط اليومية بالمنزل',
+        followUpDays: 14,
+        vitals: VitalsModel(
+          systolicBp: 150,
+          diastolicBp: 95,
+          heartRate: 84,
+          temperature: 36.9,
+          oxygenSaturation: 99,
+          weightKg: 62.0,
+          heightCm: 165.0,
+          recordedAt: today.subtract(const Duration(days: 30)),
+          recordedByUserId: 'USR-02',
+        ),
+        prescriptionItems: const [
+          PrescriptionItemModel(
+            id: 'RX-01',
+            drugId: 'DRUG-101',
+            tradeName: 'Concor 5mg Tab (Bisoprolol Fumarate)',
+            concentration: '5mg',
+            dosage: 'قرص واحد',
+            frequency: 'مرة واحدة يومياً',
+            duration: '30 يوم',
+            instructions: 'يؤخذ صباحاً قبل الإفطار مع قياس الضغط أسبوعياً',
+          ),
+          PrescriptionItemModel(
+            id: 'RX-02',
+            drugId: 'DRUG-102',
+            tradeName: 'Panadol Extra 500mg Tablet',
+            concentration: '500mg',
+            dosage: 'قرص واحد',
+            frequency: 'عند اللزوم (أقصى حد 3 مرات يومياً)',
+            duration: '10 أيام',
+            instructions: 'عند الشعور بالصداع الشديد بعد الأكل مباشرة',
+          ),
+        ],
+      ),
+      // Seed 5: Eye consultation for سارة أحمد عبد الله (PAT-000101)
+      VisitModel(
+        id: 'VIS-005',
+        bookingId: 'MED-111',
+        patientId: 'PAT-000101',
+        branchId: 'branch_1',
+        patientName: 'سارة أحمد عبد الله',
+        patientPhone: '+201012345678',
+        doctorId: 'DOC-03',
+        doctorName: 'د. عبد الحميد فتحي',
+        specialty: 'أخصائي طب وجراحة العيون',
+        status: VisitStatusEnum.finalized,
+        startedAt: today.subtract(const Duration(days: 75)),
+        finalizedAt: today.subtract(const Duration(days: 75)),
+        lastSavedAt: today.subtract(const Duration(days: 75)),
+        chiefComplaint: 'فحص دوري بعد عملية تصحيح الإبصار وجفاف خفيف بالعين مع العمل على الكمبيوتر',
+        diagnosis: 'جفاف سطحي بالعين بعد الفيمتو ليزك (Post-LASIK Dry Eye Syndrome)',
+        treatmentPlan: 'قطرات مرطبة خالية من المواد الحافظة ونظارة حماية من الشاشات الزرقاء',
+        followUpDays: 60,
+        vitals: VitalsModel(
+          systolicBp: 125,
+          diastolicBp: 80,
+          heartRate: 74,
+          weightKg: 61.5,
+          heightCm: 165.0,
+        ),
+        prescriptionItems: const [
+          PrescriptionItemModel(
+            id: 'RX-03',
+            drugId: 'DRUG-103',
+            tradeName: 'Hyfresh 0.2% Preservative Free Eye Drops',
+            concentration: '0.2%',
+            dosage: 'نقطة واحدة بكل عين',
+            frequency: '4 مرات يومياً',
+            duration: '30 يوم',
+            instructions: 'غسل اليدين جيداً قبل التقطير وعدم لمس فوهة القطرة للعين',
+          ),
+          PrescriptionItemModel(
+            id: 'RX-04',
+            drugId: 'DRUG-104',
+            tradeName: 'Systane Ultra Lubricant Eye Gel',
+            concentration: '0.4%',
+            dosage: 'مسحة خفيفة بالجفن السفلي',
+            frequency: 'مرة واحدة قبل النوم',
+            duration: '30 يوم',
+            instructions: 'يوضع قبل النوم مباشرة لتفادي جفاف العين الليلي',
+          ),
+        ],
       ),
     ]);
   }
@@ -125,6 +237,19 @@ class VisitsMockRepoImpl implements VisitsRepo, ActiveVisitLookup {
     final visit =
         _visits.where((v) => v.bookingId == bookingId).firstOrNull;
     return Right(visit);
+  }
+
+  @override
+  Future<Either<Failures, List<VisitModel>>> getVisitsByPatientId({
+    required String patientId,
+  }) async {
+    final matches = _visits.where((v) => v.patientId == patientId).toList();
+    matches.sort((a, b) {
+      final aDate = a.finalizedAt ?? a.startedAt ?? DateTime(2000);
+      final bDate = b.finalizedAt ?? b.startedAt ?? DateTime(2000);
+      return bDate.compareTo(aDate);
+    });
+    return Right(matches);
   }
 
   @override

@@ -19,6 +19,9 @@ import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
+import 'package:eyadty/features/visits/data/models/visit_model.dart';
+import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
+import '../../data/models/clinical_record_models.dart';
 import '../../data/models/enums/blood_group_enum.dart';
 import '../../data/models/enums/gender_enum.dart';
 import '../../data/models/enums/medical_catalog_type_enum.dart';
@@ -795,6 +798,13 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
       },
     );
 
+    // Fetch previous consultations and prescriptions for this patient
+    List<VisitModel> visits = [];
+    if (getIt.isRegistered<VisitsRepo>()) {
+      final visitsRes = await getIt<VisitsRepo>().getVisitsByPatientId(patientId: patientId);
+      visitsRes.fold((_) => null, (v) => visits = v);
+    }
+
     // Calculate dynamic KPI metrics
     final totalBookings = bookings.length;
     final upcomingBookings = bookings
@@ -839,12 +849,57 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
         selectedPatient: patient,
         patientBookings: bookings,
         filteredPatientBookings: filtered,
+        patientVisits: visits,
         patientTotalBookingsCount: totalBookings,
         patientUpcomingBookingsCount: upcomingBookings,
         patientCompletedBookingsCount: completedBookings,
         patientTotalSpentAmount: totalSpent,
       ),
     );
+  }
+
+  void changeDetailsTab(int index) {
+    emit(state.copyWith(activeDetailsTab: index));
+  }
+
+  Future<void> addActiveMedication(ActiveMedicationModel medication) async {
+    final patient = state.selectedPatient;
+    if (patient == null) return;
+    final updatedMeds = [...(patient.activeMedications ?? []), medication];
+    final updatedPatient = patient.copyWith(activeMedications: updatedMeds);
+    emit(state.copyWith(selectedPatient: updatedPatient));
+  }
+
+  Future<void> addSurgicalProcedure(SurgicalProcedureModel procedure) async {
+    final patient = state.selectedPatient;
+    if (patient == null) return;
+    final updatedHistory = [...(patient.surgicalHistory ?? []), procedure];
+    final updatedPatient = patient.copyWith(surgicalHistory: updatedHistory);
+    emit(state.copyWith(selectedPatient: updatedPatient));
+  }
+
+  Future<void> addLabRadiologyRecord(LabRadiologyModel record) async {
+    final patient = state.selectedPatient;
+    if (patient == null) return;
+    final updatedRecords = [...(patient.labAndRadiology ?? []), record];
+    final updatedPatient = patient.copyWith(labAndRadiology: updatedRecords);
+    emit(state.copyWith(selectedPatient: updatedPatient));
+  }
+
+  Future<void> addEyeExam(EyeTrackingExamModel exam) async {
+    final patient = state.selectedPatient;
+    if (patient == null) return;
+    final updatedExams = [...(patient.eyeExams ?? []), exam];
+    final updatedPatient = patient.copyWith(eyeExams: updatedExams);
+    emit(state.copyWith(selectedPatient: updatedPatient));
+  }
+
+  Future<void> addBeforeAfterGalleryItem(BeforeAfterGalleryItemModel item) async {
+    final patient = state.selectedPatient;
+    if (patient == null) return;
+    final updatedGallery = [...(patient.beforeAfterGallery ?? []), item];
+    final updatedPatient = patient.copyWith(beforeAfterGallery: updatedGallery);
+    emit(state.copyWith(selectedPatient: updatedPatient));
   }
 
   void filterPatientBookingsByStatus(BookingStatusEnum? status) {

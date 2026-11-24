@@ -4,6 +4,7 @@ import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/visits/data/models/visit_model.dart';
 import '../../data/models/enums/blood_group_enum.dart';
 import '../../data/models/enums/gender_enum.dart';
 import '../../data/models/medical_catalog_item_model.dart';
@@ -253,6 +254,10 @@ class PatientsState extends Equatable {
   final BookingStatusEnum? dialogStatus;
   final Set<String> dialogDoctorIds;
 
+  // ─── Patient Visits & EMR Details ───────────────────────────────
+  final List<VisitModel> patientVisits;
+  final int activeDetailsTab;
+
   // ─── Duplicate Phone Warning ────────────────────────────────────
   final List<DuplicatePhonePatientInfo> duplicatePhonePatients;
   final bool hasPendingDuplicatePhoneWarning;
@@ -285,6 +290,8 @@ class PatientsState extends Equatable {
     this.patientTotalSpentAmount = 0,
     this.dialogStatus,
     this.dialogDoctorIds = const {},
+    this.patientVisits = const [],
+    this.activeDetailsTab = 0,
     this.duplicatePhonePatients = const [],
     this.hasPendingDuplicatePhoneWarning = false,
   });
@@ -319,6 +326,8 @@ class PatientsState extends Equatable {
     num? patientTotalSpentAmount,
     BookingStatusEnum? dialogStatus,
     Set<String>? dialogDoctorIds,
+    List<VisitModel>? patientVisits,
+    int? activeDetailsTab,
     List<DuplicatePhonePatientInfo>? duplicatePhonePatients,
     bool? hasPendingDuplicatePhoneWarning,
     bool clearDuplicatePhoneWarning = false,
@@ -360,6 +369,8 @@ class PatientsState extends Equatable {
           patientTotalSpentAmount ?? this.patientTotalSpentAmount,
       dialogStatus: dialogStatus ?? this.dialogStatus,
       dialogDoctorIds: dialogDoctorIds ?? this.dialogDoctorIds,
+      patientVisits: patientVisits ?? this.patientVisits,
+      activeDetailsTab: activeDetailsTab ?? this.activeDetailsTab,
       duplicatePhonePatients: clearDuplicatePhoneWarning
           ? const []
           : (duplicatePhonePatients ?? this.duplicatePhonePatients),
@@ -398,6 +409,8 @@ class PatientsState extends Equatable {
         patientTotalSpentAmount,
         dialogStatus,
         dialogDoctorIds,
+        patientVisits,
+        activeDetailsTab,
         duplicatePhonePatients,
         hasPendingDuplicatePhoneWarning,
       ];

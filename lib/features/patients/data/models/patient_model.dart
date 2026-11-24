@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
+import 'clinical_record_models.dart';
 import 'enums/blood_group_enum.dart';
 import 'enums/gender_enum.dart';
 import 'patient_treatment_plan_model.dart';
@@ -60,7 +61,14 @@ class PatientModel extends Equatable {
   final num? outstandingBalance;
   final List<PatientTreatmentPlanModel>? treatmentPlans;
 
-  // 10. طوابع الوقت
+  // 10. السجلات والملفات السريرية التخصصية (Clinical EMR Records)
+  final List<ActiveMedicationModel>? activeMedications;
+  final List<SurgicalProcedureModel>? surgicalHistory;
+  final List<LabRadiologyModel>? labAndRadiology;
+  final List<EyeTrackingExamModel>? eyeExams;
+  final List<BeforeAfterGalleryItemModel>? beforeAfterGallery;
+
+  // 11. طوابع الوقت
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -102,6 +110,11 @@ class PatientModel extends Equatable {
     this.totalPaidAmount,
     this.outstandingBalance,
     this.treatmentPlans,
+    this.activeMedications,
+    this.surgicalHistory,
+    this.labAndRadiology,
+    this.eyeExams,
+    this.beforeAfterGallery,
     this.createdAt,
     this.updatedAt,
   });
@@ -268,6 +281,21 @@ class PatientModel extends Equatable {
       treatmentPlans: (json['treatmentPlans'] as List<dynamic>?)
           ?.map((e) => PatientTreatmentPlanModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      activeMedications: (json['activeMedications'] as List<dynamic>?)
+          ?.map((e) => ActiveMedicationModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      surgicalHistory: (json['surgicalHistory'] as List<dynamic>?)
+          ?.map((e) => SurgicalProcedureModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      labAndRadiology: (json['labAndRadiology'] as List<dynamic>?)
+          ?.map((e) => LabRadiologyModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      eyeExams: (json['eyeExams'] as List<dynamic>?)
+          ?.map((e) => EyeTrackingExamModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      beforeAfterGallery: (json['beforeAfterGallery'] as List<dynamic>?)
+          ?.map((e) => BeforeAfterGalleryItemModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString())
           : (json['created_at'] != null
@@ -331,6 +359,17 @@ class PatientModel extends Equatable {
         'outstanding_balance': outstandingBalance,
       if (treatmentPlans != null)
         'treatmentPlans': treatmentPlans!.map((e) => e.toJson()).toList(),
+      if (activeMedications != null)
+        'activeMedications': activeMedications!.map((e) => e.toJson()).toList(),
+      if (surgicalHistory != null)
+        'surgicalHistory': surgicalHistory!.map((e) => e.toJson()).toList(),
+      if (labAndRadiology != null)
+        'labAndRadiology': labAndRadiology!.map((e) => e.toJson()).toList(),
+      if (eyeExams != null)
+        'eyeExams': eyeExams!.map((e) => e.toJson()).toList(),
+      if (beforeAfterGallery != null)
+        'beforeAfterGallery':
+            beforeAfterGallery!.map((e) => e.toJson()).toList(),
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt?.toIso8601String(),
     };
@@ -375,6 +414,11 @@ class PatientModel extends Equatable {
     num? totalPaidAmount,
     num? outstandingBalance,
     List<PatientTreatmentPlanModel>? treatmentPlans,
+    List<ActiveMedicationModel>? activeMedications,
+    List<SurgicalProcedureModel>? surgicalHistory,
+    List<LabRadiologyModel>? labAndRadiology,
+    List<EyeTrackingExamModel>? eyeExams,
+    List<BeforeAfterGalleryItemModel>? beforeAfterGallery,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -422,6 +466,11 @@ class PatientModel extends Equatable {
       totalPaidAmount: totalPaidAmount ?? this.totalPaidAmount,
       outstandingBalance: outstandingBalance ?? this.outstandingBalance,
       treatmentPlans: treatmentPlans ?? this.treatmentPlans,
+      activeMedications: activeMedications ?? this.activeMedications,
+      surgicalHistory: surgicalHistory ?? this.surgicalHistory,
+      labAndRadiology: labAndRadiology ?? this.labAndRadiology,
+      eyeExams: eyeExams ?? this.eyeExams,
+      beforeAfterGallery: beforeAfterGallery ?? this.beforeAfterGallery,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -466,6 +515,11 @@ class PatientModel extends Equatable {
         totalPaidAmount,
         outstandingBalance,
         treatmentPlans,
+        activeMedications,
+        surgicalHistory,
+        labAndRadiology,
+        eyeExams,
+        beforeAfterGallery,
         createdAt,
         updatedAt,
       ];

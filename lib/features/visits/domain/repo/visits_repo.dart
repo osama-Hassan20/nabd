@@ -20,6 +20,10 @@ abstract class VisitsRepo {
     required String visitId,
   });
 
+  Future<Either<Failures, List<VisitModel>>> getVisitsByPatientId({
+    required String patientId,
+  });
+
   Future<Either<Failures, VisitModel>> upsertConsultationStart({
     required String bookingId,
     required String patientId,
