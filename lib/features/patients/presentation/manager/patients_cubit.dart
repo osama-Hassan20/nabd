@@ -865,7 +865,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
   Future<void> addActiveMedication(ActiveMedicationModel medication) async {
     final patient = state.selectedPatient;
     if (patient == null) return;
-    final updatedMeds = [...(patient.activeMedications ?? []), medication];
+    final updatedMeds = <ActiveMedicationModel>[...(patient.activeMedications ?? []), medication];
     final updatedPatient = patient.copyWith(activeMedications: updatedMeds);
     emit(state.copyWith(selectedPatient: updatedPatient));
   }
@@ -873,7 +873,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
   Future<void> addSurgicalProcedure(SurgicalProcedureModel procedure) async {
     final patient = state.selectedPatient;
     if (patient == null) return;
-    final updatedHistory = [...(patient.surgicalHistory ?? []), procedure];
+    final updatedHistory = <SurgicalProcedureModel>[...(patient.surgicalHistory ?? []), procedure];
     final updatedPatient = patient.copyWith(surgicalHistory: updatedHistory);
     emit(state.copyWith(selectedPatient: updatedPatient));
   }
@@ -881,7 +881,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
   Future<void> addLabRadiologyRecord(LabRadiologyModel record) async {
     final patient = state.selectedPatient;
     if (patient == null) return;
-    final updatedRecords = [...(patient.labAndRadiology ?? []), record];
+    final updatedRecords = <LabRadiologyModel>[...(patient.labAndRadiology ?? []), record];
     final updatedPatient = patient.copyWith(labAndRadiology: updatedRecords);
     emit(state.copyWith(selectedPatient: updatedPatient));
   }
@@ -889,7 +889,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
   Future<void> addEyeExam(EyeTrackingExamModel exam) async {
     final patient = state.selectedPatient;
     if (patient == null) return;
-    final updatedExams = [...(patient.eyeExams ?? []), exam];
+    final updatedExams = <EyeTrackingExamModel>[...(patient.eyeExams ?? []), exam];
     final updatedPatient = patient.copyWith(eyeExams: updatedExams);
     emit(state.copyWith(selectedPatient: updatedPatient));
   }
@@ -897,7 +897,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
   Future<void> addBeforeAfterGalleryItem(BeforeAfterGalleryItemModel item) async {
     final patient = state.selectedPatient;
     if (patient == null) return;
-    final updatedGallery = [...(patient.beforeAfterGallery ?? []), item];
+    final updatedGallery = <BeforeAfterGalleryItemModel>[...(patient.beforeAfterGallery ?? []), item];
     final updatedPatient = patient.copyWith(beforeAfterGallery: updatedGallery);
     emit(state.copyWith(selectedPatient: updatedPatient));
   }
