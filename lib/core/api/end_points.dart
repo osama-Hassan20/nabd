@@ -1,11 +1,10 @@
+import '../config/app_config.dart';
+
 abstract class EndPoints {
   //?======================== BASE URL ========================
-  //static String appBaseUrl = 'https://darsi.md-soft.app/'; // for production
-
-  static const String appBaseUrl =
-      'http://192.168.1.60:1601/'; // for local testing
-  static String baseUrl = '${appBaseUrl}api/v1/'; // for local testing
-  static String baseImageUrl = "${appBaseUrl}uploads";
+  static String get appBaseUrl => AppConfig.baseUrl;
+  static String get baseUrl => AppConfig.apiUrl;
+  static String get baseImageUrl => AppConfig.baseImageUrl;
 
   // static String baseImgUrl = "${appBaseUrl}image/";
 

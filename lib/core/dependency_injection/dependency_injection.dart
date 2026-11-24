@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
@@ -189,6 +190,9 @@ import 'package:eyadty/features/analytics/presentation/manager/analytics_cubit.d
 final getIt = GetIt.instance;
 
 Future<void> setupGetIt() async {
+  // Fail-loud safety gate: Prevent accidental mock repo registration in production mode
+  AppConfig.assertDemoModeAllowed('setupGetIt');
+
   // ─── Network & Core Services ───────────────────────────────────────────────
   getIt.registerSingleton<Dio>(
     Dio(

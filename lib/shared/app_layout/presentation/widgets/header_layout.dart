@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
@@ -116,6 +117,38 @@ class CustomHeaderLayout extends StatelessWidget
           mainAxisSize: MainAxisSize.min,
           spacing: 12,
           children: [
+            if (AppConfig.isDemoMode)
+              Container(
+                key: const Key('header_demo_badge'),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.warning,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'demo_mode_badge'.tr(),
+                      style: CustomAppFontStyle.medium12.copyWith(
+                        color: AppColors.warning,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // Reception Buzzer Signal Button (Matches Images 1 & 2)
             const HeaderReceptionSignalWidget(),
             // Telegram-style Quick Passcode Lock Button (Matches Image 9)

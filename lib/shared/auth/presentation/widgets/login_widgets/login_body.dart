@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/routing/app_router.dart';
-import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/animation/slide_transition_animation.dart';
 import 'package:eyadty/core/animation/scale_transition_animation.dart';
 import 'package:eyadty/core/animation/hover_scale_animation.dart';
@@ -648,6 +648,43 @@ class _LoginFormFields extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Demo Mode Safety Indicator
+          if (AppConfig.isDemoMode) ...[
+            Container(
+              key: const Key('demo_mode_indicator_banner'),
+              margin: const EdgeInsets.only(bottom: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.warning.withValues(alpha: 0.35),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: AppColors.warning,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'demo_mode_banner'.tr(),
+                      style: CustomAppFontStyle.medium12.copyWith(
+                        color: AppColors.warning,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // Identifier Field
           SlideTransitionAnimation(
             duration: AppAnimations.medium,
@@ -819,78 +856,80 @@ class _LoginFormFields extends StatelessWidget {
           ),
 
           // ─── Direct Demo Role Accounts Section ─────────────────────────────
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              const Expanded(child: Divider(color: AppColors.grayE2E8F0)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  'demo_accounts_title'.tr(),
-                  style: CustomAppFontStyle.regular12.copyWith(
-                    color: AppColors.gray71717A,
+          if (AppConfig.isDemoMode) ...[
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                const Expanded(child: Divider(color: AppColors.grayE2E8F0)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    'demo_accounts_title'.tr(),
+                    style: CustomAppFontStyle.regular12.copyWith(
+                      color: AppColors.gray71717A,
+                    ),
                   ),
                 ),
-              ),
-              const Expanded(child: Divider(color: AppColors.grayE2E8F0)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildRoleDemoChip(
-                label: 'demo_owner'.tr(),
-                email: 'owner@eyadty.com',
-                color: AppColors.primary,
-                icon: Icons.workspace_premium_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_med_dir'.tr(),
-                email: 'med_dir@eyadty.com',
-                color: const Color(0xFF0284C7),
-                icon: Icons.health_and_safety_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_manager'.tr(),
-                email: 'manager@eyadty.com',
-                color: AppColors.secondary,
-                icon: Icons.business_center_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_doctor'.tr(),
-                email: 'doctor@eyadty.com',
-                color: const Color(0xFF059669),
-                icon: Icons.medical_services_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_nurse'.tr(),
-                email: 'nurse@eyadty.com',
-                color: const Color(0xFFEC4899),
-                icon: Icons.favorite_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_reception'.tr(),
-                email: 'reception@eyadty.com',
-                color: AppColors.warning,
-                icon: Icons.support_agent_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_cashier'.tr(),
-                email: 'cashier@eyadty.com',
-                color: const Color(0xFF10B981),
-                icon: Icons.account_balance_wallet_rounded,
-              ),
-              _buildRoleDemoChip(
-                label: 'demo_hr'.tr(),
-                email: 'hr@eyadty.com',
-                color: const Color(0xFF8B5CF6),
-                icon: Icons.badge_rounded,
-              ),
-            ],
-          ),
+                const Expanded(child: Divider(color: AppColors.grayE2E8F0)),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildRoleDemoChip(
+                  label: 'demo_owner'.tr(),
+                  email: 'owner@eyadty.com',
+                  color: AppColors.primary,
+                  icon: Icons.workspace_premium_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_med_dir'.tr(),
+                  email: 'med_dir@eyadty.com',
+                  color: const Color(0xFF0284C7),
+                  icon: Icons.health_and_safety_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_manager'.tr(),
+                  email: 'manager@eyadty.com',
+                  color: AppColors.secondary,
+                  icon: Icons.business_center_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_doctor'.tr(),
+                  email: 'doctor@eyadty.com',
+                  color: const Color(0xFF059669),
+                  icon: Icons.medical_services_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_nurse'.tr(),
+                  email: 'nurse@eyadty.com',
+                  color: const Color(0xFFEC4899),
+                  icon: Icons.favorite_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_reception'.tr(),
+                  email: 'reception@eyadty.com',
+                  color: AppColors.warning,
+                  icon: Icons.support_agent_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_cashier'.tr(),
+                  email: 'cashier@eyadty.com',
+                  color: const Color(0xFF10B981),
+                  icon: Icons.account_balance_wallet_rounded,
+                ),
+                _buildRoleDemoChip(
+                  label: 'demo_hr'.tr(),
+                  email: 'hr@eyadty.com',
+                  color: const Color(0xFF8B5CF6),
+                  icon: Icons.badge_rounded,
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

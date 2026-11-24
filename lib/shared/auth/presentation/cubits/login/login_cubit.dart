@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
@@ -77,8 +78,7 @@ class LoginCubit extends Cubit<LoginState> {
         }
       },
       (user) async {
-        final token =
-            'eyadty_session_${user.id}_${DateTime.now().millisecondsSinceEpoch}';
+        final token = AppConfig.generateDemoToken(user.id ?? '');
         await AppSharedPreferences.setString(
           key: AppConstants.accessToken,
           value: token,
@@ -106,8 +106,7 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<void> handlePasswordChangedSuccess(StaffUserModel user) async {
-    final token =
-        'eyadty_session_${user.id}_${DateTime.now().millisecondsSinceEpoch}';
+    final token = AppConfig.generateDemoToken(user.id ?? '');
     await AppSharedPreferences.setString(
       key: AppConstants.accessToken,
       value: token,

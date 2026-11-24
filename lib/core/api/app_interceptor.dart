@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:eyadty/core/config/app_config.dart';
 
 import '../routing/app_router.dart';
 import '../routing/routes.dart';
@@ -35,6 +36,18 @@ class AppInterceptors extends Interceptor {
       key: AppConstants.accessToken,
     );
     if (authToken != null && authToken.isNotEmpty) {
+      if (!AppConfig.isDemoMode && AppConfig.isDemoToken(authToken)) {
+        log('WARNING: Blocked transmission of demo auth token in non-demo mode.');
+        handler.reject(
+          DioException(
+            requestOptions: options,
+            type: DioExceptionType.cancel,
+            error:
+                'Security Error: Demo session token cannot be transmitted in non-demo mode.',
+          ),
+        );
+        return;
+      }
       options.headers['Authorization'] = 'Bearer $authToken';
     }
     super.onRequest(options, handler);
@@ -84,7 +97,7 @@ class AppInterceptors extends Interceptor {
             data: {"refreshToken": refreshToken},
           );
 
-          log("Refresh success: ${response.data}");
+          log("Refresh token succeeded.");
 
           final String? newRefreshToken = response.data['data']['refreshToken'];
           final String? newAccessToken = response.data['data']['accessToken'];

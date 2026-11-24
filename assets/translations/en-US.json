@@ -1551,6 +1551,8 @@
   "demo_reception": "Reception",
   "demo_cashier": "Cashier",
   "demo_hr": "HR",
+  "demo_mode_banner": "Demo Version - Mock Data",
+  "demo_mode_badge": "Demo Mode",
   "profile": "Profile",
   "log_out": "Log out",
   "nav_inventory": "Clinic Inventory",

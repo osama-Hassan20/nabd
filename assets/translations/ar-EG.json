@@ -1573,6 +1573,8 @@
   "demo_reception": "استقبال",
   "demo_cashier": "محاسب",
   "demo_hr": "موارد بشرية",
+  "demo_mode_banner": "نسخة تجريبية - بيانات وهمية",
+  "demo_mode_badge": "نسخة تجريبية",
   "profile": "الملف الشخصي",
   "log_out": "تسجيل الخروج"
 }
