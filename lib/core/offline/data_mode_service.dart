@@ -88,10 +88,9 @@ class DataModeService {
 
   DataModeService({
     ReachabilityProbe? reachabilityProbe,
-    InFlightSyncCoordinator? syncCoordinator,
+    this._syncCoordinator,
     bool initialReachable = true,
-  })  : _reachabilityProbe = reachabilityProbe ?? _defaultHttpProbe,
-        this._syncCoordinator = syncCoordinator {
+  })  : _reachabilityProbe = reachabilityProbe ?? _defaultHttpProbe {
     final persistedForced =
         AppSharedPreferences.getBool(key: forcedLocalKey) ?? false;
     _state = DataModeState(

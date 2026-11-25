@@ -9,6 +9,9 @@ import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/offline/remote/remote_sync_api.dart';
 import 'package:eyadty/core/offline/remote/fake_remote_sync_api.dart';
 import 'package:eyadty/core/offline/sync/sync_engine.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_bookings_repo.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_drugs_repo.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_patients_repo.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
@@ -239,7 +242,9 @@ Future<void> setupGetIt() async {
   );
 
   getIt.registerLazySingleton<TransactionalLocalStore>(
-    () => InMemoryTransactionalStore(),
+    () => InMemoryTransactionalStore(
+      dataModeService: getIt<DataModeService>(),
+    ),
   );
 
   getIt.registerLazySingleton<RemoteSyncApi>(
@@ -301,8 +306,19 @@ Future<void> setupGetIt() async {
   );
 
   // ─── Bookings Feature ───────────────────────────────────────────────────────
-  getIt.registerLazySingleton<BookingsRepo>(
+  getIt.registerLazySingleton<BookingsMockRepoImpl>(
     () => BookingsMockRepoImpl(apiConsumer: getIt<DioConsumer>()),
+  );
+
+  getIt.registerLazySingleton<BookingsRepo>(
+    () => OfflineFirstBookingsRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteRepo: getIt<BookingsMockRepoImpl>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
+    ),
   );
 
   getIt.registerLazySingleton<GetBookingSummaryUseCase>(
@@ -471,8 +487,19 @@ Future<void> setupGetIt() async {
   );
 
   // ─── Drugs Feature ──────────────────────────────────────────────────────────
-  getIt.registerLazySingleton<DrugsRepo>(
+  getIt.registerLazySingleton<DrugsMockRepoImpl>(
     () => DrugsMockRepoImpl(),
+  );
+
+  getIt.registerLazySingleton<DrugsRepo>(
+    () => OfflineFirstDrugsRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteRepo: getIt<DrugsMockRepoImpl>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
+    ),
   );
 
   getIt.registerLazySingleton<GetDrugsCatalogUseCase>(
@@ -558,12 +585,23 @@ Future<void> setupGetIt() async {
     () => BookingPatientBalanceLookupImpl(getIt<BookingsRepo>()),
   );
 
-  getIt.registerLazySingleton<PatientsRepo>(
+  getIt.registerLazySingleton<PatientsMockRepoImpl>(
     () => PatientsMockRepoImpl(
       apiConsumer: getIt<DioConsumer>(),
       roleProvider: getIt<CurrentRoleProvider>(),
       bookingsRepo: getIt<BookingsRepo>(),
       balanceLookup: getIt<PatientBalanceLookup>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<PatientsRepo>(
+    () => OfflineFirstPatientsRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteRepo: getIt<PatientsMockRepoImpl>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
     ),
   );
 

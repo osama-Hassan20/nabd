@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:eyadty/core/storage/cache_helper.dart';
+import '../data_mode_service.dart';
 import '../models/conflict_record.dart';
 import '../models/local_entity_record.dart';
 import '../models/outbox_entry.dart';
@@ -81,6 +84,87 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
   Map<String, ConflictRecord> _conflicts = {};
   final Map<String, String> _syncCursors = {};
 
+  final DataModeService? dataModeService;
+  final bool persistToStorage;
+
+  InMemoryTransactionalStore({
+    this.dataModeService,
+    this.persistToStorage = true,
+  }) {
+    if (persistToStorage) {
+      _loadFromPersistence();
+    }
+  }
+
+  void _loadFromPersistence() {
+    try {
+      final entitiesRaw =
+          AppSharedPreferences.getString(key: 'eyadty_offline_entities');
+      if (entitiesRaw != null && entitiesRaw.isNotEmpty) {
+        final Map decoded = jsonDecode(entitiesRaw) as Map;
+        _entities = decoded.map((k, v) => MapEntry(
+            k as String,
+            LocalEntityRecord.fromJson(
+                Map<String, dynamic>.from(v as Map))));
+      }
+
+      final outboxRaw =
+          AppSharedPreferences.getString(key: 'eyadty_offline_outbox');
+      if (outboxRaw != null && outboxRaw.isNotEmpty) {
+        final Map decoded = jsonDecode(outboxRaw) as Map;
+        _outbox = decoded.map((k, v) => MapEntry(
+            k as String,
+            OutboxEntry.fromJson(Map<String, dynamic>.from(v as Map))));
+      }
+
+      final conflictsRaw =
+          AppSharedPreferences.getString(key: 'eyadty_offline_conflicts');
+      if (conflictsRaw != null && conflictsRaw.isNotEmpty) {
+        final Map decoded = jsonDecode(conflictsRaw) as Map;
+        _conflicts = decoded.map((k, v) => MapEntry(
+            k as String,
+            ConflictRecord.fromJson(
+                Map<String, dynamic>.from(v as Map))));
+      }
+
+      _notifyOutboxCount();
+    } catch (_) {}
+  }
+
+  void _saveToPersistence() {
+    if (!persistToStorage) {
+      _notifyOutboxCount();
+      return;
+    }
+    try {
+      final entitiesJson =
+          jsonEncode(_entities.map((k, v) => MapEntry(k, v.toJson())));
+      AppSharedPreferences.setString(
+          key: 'eyadty_offline_entities', value: entitiesJson);
+
+      final outboxJson =
+          jsonEncode(_outbox.map((k, v) => MapEntry(k, v.toJson())));
+      AppSharedPreferences.setString(
+          key: 'eyadty_offline_outbox', value: outboxJson);
+
+      final conflictsJson =
+          jsonEncode(_conflicts.map((k, v) => MapEntry(k, v.toJson())));
+      AppSharedPreferences.setString(
+          key: 'eyadty_offline_conflicts', value: conflictsJson);
+    } catch (_) {}
+
+    _notifyOutboxCount();
+  }
+
+  void _notifyOutboxCount() {
+    final pendingCount = _outbox.values
+        .where((e) =>
+            e.status == OutboxStatus.pending ||
+            e.status == OutboxStatus.inFlight)
+        .length;
+    dataModeService?.updatePendingOutboxCount(pendingCount);
+  }
+
   @override
   Future<T> runInTransaction<T>(
     Future<T> Function(StoreTransaction txn) action,
@@ -104,6 +188,9 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
       _entities = entitySnapshot;
       _outbox = outboxSnapshot;
       _conflicts = conflictSnapshot;
+
+      // 4. Persist to storage and notify mode service
+      _saveToPersistence();
 
       return result;
     } catch (e) {
@@ -186,6 +273,7 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
         lastError: lastError,
         attemptCount: entry.attemptCount + 1,
       );
+      _saveToPersistence();
     }
   }
 
@@ -216,6 +304,7 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
         updatedAt: DateTime.now(),
       );
     }
+    _saveToPersistence();
   }
 
   @override
@@ -239,5 +328,6 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
     _outbox.clear();
     _conflicts.clear();
     _syncCursors.clear();
+    _saveToPersistence();
   }
 }
