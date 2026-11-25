@@ -23,7 +23,7 @@ import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 import 'package:eyadty/shared/widgets/app_date_time_picker.dart';
 import 'dialogs/duplicate_phone_warning_dialog.dart';
 
-class QuickAddPatientDialog extends StatelessWidget {
+class QuickAddPatientDialog extends StatefulWidget {
   final PatientsCubit cubit;
   final bool isFullScreen;
 
@@ -91,6 +91,16 @@ class QuickAddPatientDialog extends StatelessWidget {
     );
   }
 
+  @override
+  State<QuickAddPatientDialog> createState() => _QuickAddPatientDialogState();
+}
+
+class _QuickAddPatientDialogState extends State<QuickAddPatientDialog> {
+  bool _hasHandledSuccess = false;
+
+  PatientsCubit get cubit => widget.cubit;
+  bool get isFullScreen => widget.isFullScreen;
+
   Future<void> _selectDateOfBirth(BuildContext context, DateTime? current) async {
     final now = CairoTimeHelper.now();
     final picked = await showAppDatePicker(
@@ -149,7 +159,8 @@ class QuickAddPatientDialog extends StatelessWidget {
           prev.hasPendingDuplicatePhoneWarning !=
               curr.hasPendingDuplicatePhoneWarning,
       listener: (context, state) {
-        if (state.actionStatus == RequestStatusEnum.success) {
+        if (state.actionStatus == RequestStatusEnum.success && !_hasHandledSuccess) {
+          _hasHandledSuccess = true;
           CustomToast(
             context: context,
             header: 'patient_saved_successfully'.tr(),

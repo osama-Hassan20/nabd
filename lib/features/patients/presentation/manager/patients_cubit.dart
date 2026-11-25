@@ -110,7 +110,10 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
       ],
     );
 
-    emit(state.copyWith(status: RequestStatusEnum.loading));
+    emit(state.copyWith(
+      status: RequestStatusEnum.loading,
+      actionStatus: RequestStatusEnum.initial,
+    ));
 
     final result = await getPatientsUseCase(paginationParams);
 
@@ -175,11 +178,13 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
           internalNotes: patient.internalNotes ?? '',
         ),
         activeFormTab: 0,
+        actionStatus: RequestStatusEnum.initial,
         formTabsWithErrors: const {},
       ));
     } else {
       emit(state.copyWith(
         formState: const PatientFormState(phoneHasWhatsapp: true),
+        actionStatus: RequestStatusEnum.initial,
         activeFormTab: 0,
         formTabsWithErrors: const {},
       ));

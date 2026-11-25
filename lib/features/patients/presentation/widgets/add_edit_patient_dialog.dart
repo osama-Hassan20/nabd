@@ -98,6 +98,7 @@ class AddEditPatientDialog extends StatefulWidget {
 }
 
 class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
+  bool _hasHandledSuccess = false;
   late final TextEditingController _governorateController;
   late final TextEditingController _cityController;
 
@@ -179,7 +180,12 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
 
     return BlocConsumer<PatientsCubit, PatientsState>(
       bloc: patientsCubit,
-      listenWhen: (prev, curr) => prev != curr,
+      listenWhen: (prev, curr) =>
+          prev.actionStatus != curr.actionStatus ||
+          prev.hasPendingDuplicatePhoneWarning !=
+              curr.hasPendingDuplicatePhoneWarning ||
+          prev.formState?.governorate != curr.formState?.governorate ||
+          prev.formState?.city != curr.formState?.city,
       listener: (context, state) {
         final form = state.formState;
         if (form != null) {
@@ -189,11 +195,12 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
           if (_governorateController.text != govText) {
             _governorateController.text = govText;
           }
-          if (_cityController.text != (form.city ?? '')) {
-            _cityController.text = form.city ?? '';
+          if (_cityController.text != form.city) {
+            _cityController.text = form.city;
           }
         }
-        if (state.actionStatus == RequestStatusEnum.success) {
+        if (state.actionStatus == RequestStatusEnum.success && !_hasHandledSuccess) {
+          _hasHandledSuccess = true;
           CustomToast(
             context: context,
             header: 'patient_saved_successfully'.tr(),
