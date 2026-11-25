@@ -8,6 +8,33 @@ import '../models/outbox_entry.dart';
 import '../models/sync_status.dart';
 import 'transactional_local_store.dart';
 
+/// Exception thrown when persistence to underlying storage fails.
+class StoragePersistenceException implements Exception {
+  final String message;
+  final Object? cause;
+
+  const StoragePersistenceException(this.message, [this.cause]);
+
+  @override
+  String toString() => 'StoragePersistenceException: $message${cause != null ? ' (Cause: $cause)' : ''}';
+}
+
+/// Exception thrown when persisted store data is corrupt or unparsable.
+class StorageCorruptionException implements Exception {
+  final String message;
+  final String backupKey;
+  final Object? cause;
+
+  const StorageCorruptionException(this.message, {required this.backupKey, this.cause});
+
+  @override
+  String toString() => 'StorageCorruptionException: $message (Backup: $backupKey)';
+}
+
+typedef StorageWriter = Future<void> Function(String key, String value);
+typedef StorageReader = String? Function(String key);
+typedef StorageRemover = Future<void> Function(String key);
+
 class _InMemoryStoreTransaction implements StoreTransaction {
   final Map<String, LocalEntityRecord> entitySnapshot;
   final Map<String, OutboxEntry> outboxSnapshot;
@@ -79,6 +106,9 @@ class _InMemoryStoreTransaction implements StoreTransaction {
 }
 
 class InMemoryTransactionalStore implements TransactionalLocalStore {
+  static const String snapshotKey = 'eyadty_offline_store_v1';
+  static const int currentSchemaVersion = 1;
+
   Map<String, LocalEntityRecord> _entities = {};
   Map<String, OutboxEntry> _outbox = {};
   Map<String, ConflictRecord> _conflicts = {};
@@ -87,72 +117,195 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
   final DataModeService? dataModeService;
   final bool persistToStorage;
 
+  final StorageWriter _writer;
+  final StorageReader _reader;
+  final StorageRemover _remover;
+
+  String? lastCorruptionBackupKey;
+
   InMemoryTransactionalStore({
     this.dataModeService,
     this.persistToStorage = true,
-  }) {
+    StorageWriter? storageWriter,
+    StorageReader? storageReader,
+    StorageRemover? storageRemover,
+  })  : _writer = storageWriter ?? _defaultWriter,
+        _reader = storageReader ?? _defaultReader,
+        _remover = storageRemover ?? _defaultRemover {
     if (persistToStorage) {
       _loadFromPersistence();
     }
   }
 
-  void _loadFromPersistence() {
+  static Future<void> _defaultWriter(String key, String value) async {
+    await AppSharedPreferences.setString(key: key, value: value);
+  }
+
+  static String? _defaultReader(String key) {
     try {
-      final entitiesRaw =
-          AppSharedPreferences.getString(key: 'eyadty_offline_entities');
-      if (entitiesRaw != null && entitiesRaw.isNotEmpty) {
-        final Map decoded = jsonDecode(entitiesRaw) as Map;
-        _entities = decoded.map((k, v) => MapEntry(
-            k as String,
-            LocalEntityRecord.fromJson(
-                Map<String, dynamic>.from(v as Map))));
-      }
+      return AppSharedPreferences.getString(key: key);
+    } catch (_) {
+      return null;
+    }
+  }
 
-      final outboxRaw =
-          AppSharedPreferences.getString(key: 'eyadty_offline_outbox');
-      if (outboxRaw != null && outboxRaw.isNotEmpty) {
-        final Map decoded = jsonDecode(outboxRaw) as Map;
-        _outbox = decoded.map((k, v) => MapEntry(
-            k as String,
-            OutboxEntry.fromJson(Map<String, dynamic>.from(v as Map))));
-      }
-
-      final conflictsRaw =
-          AppSharedPreferences.getString(key: 'eyadty_offline_conflicts');
-      if (conflictsRaw != null && conflictsRaw.isNotEmpty) {
-        final Map decoded = jsonDecode(conflictsRaw) as Map;
-        _conflicts = decoded.map((k, v) => MapEntry(
-            k as String,
-            ConflictRecord.fromJson(
-                Map<String, dynamic>.from(v as Map))));
-      }
-
-      _notifyOutboxCount();
+  static Future<void> _defaultRemover(String key) async {
+    try {
+      await AppSharedPreferences.remove(key: key);
     } catch (_) {}
   }
 
-  void _saveToPersistence() {
+  /// Reloads from storage. Can be called by tests or after a re-initialization.
+  void reloadFromPersistence() {
+    _loadFromPersistence();
+  }
+
+  void _loadFromPersistence() {
+    final raw = _reader(snapshotKey);
+    if (raw == null || raw.trim().isEmpty) {
+      _tryMigrateLegacyStorage();
+      _notifyOutboxCount();
+      return;
+    }
+
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) {
+        throw FormatException('Snapshot root must be a JSON Map, got ${decoded.runtimeType}');
+      }
+      final map = Map<String, dynamic>.from(decoded);
+
+      final version = map['schemaVersion'] as int? ?? 1;
+      final migratedMap = _migrateStore(map, version, currentSchemaVersion);
+
+      final entitiesMap = migratedMap['entities'] as Map? ?? {};
+      final outboxMap = migratedMap['outbox'] as Map? ?? {};
+      final conflictsMap = migratedMap['conflicts'] as Map? ?? {};
+      final cursorsMap = migratedMap['syncCursors'] as Map? ?? {};
+
+      _entities = entitiesMap.map((k, v) => MapEntry(
+            k as String,
+            LocalEntityRecord.fromJson(Map<String, dynamic>.from(v as Map)),
+          ));
+
+      _outbox = outboxMap.map((k, v) => MapEntry(
+            k as String,
+            OutboxEntry.fromJson(Map<String, dynamic>.from(v as Map)),
+          ));
+
+      _conflicts = conflictsMap.map((k, v) => MapEntry(
+            k as String,
+            ConflictRecord.fromJson(Map<String, dynamic>.from(v as Map)),
+          ));
+
+      _syncCursors.clear();
+      cursorsMap.forEach((k, v) {
+        if (v != null) _syncCursors[k.toString()] = v.toString();
+      });
+
+      _notifyOutboxCount();
+    } catch (e) {
+      // Create backup of corrupted store data
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final backupKey = 'eyadty_offline_store_corrupted_$timestamp';
+      try {
+        _writer(backupKey, raw);
+      } catch (_) {}
+
+      lastCorruptionBackupKey = backupKey;
+      throw StorageCorruptionException(
+        'Corrupted offline store detected. A backup was saved to "$backupKey". Reason: $e',
+        backupKey: backupKey,
+        cause: e,
+      );
+    }
+  }
+
+  void _tryMigrateLegacyStorage() {
+    try {
+      final legacyEntitiesRaw = _reader('eyadty_offline_entities');
+      final legacyOutboxRaw = _reader('eyadty_offline_outbox');
+      final legacyConflictsRaw = _reader('eyadty_offline_conflicts');
+
+      bool foundLegacy = false;
+
+      if (legacyEntitiesRaw != null && legacyEntitiesRaw.isNotEmpty) {
+        final decoded = jsonDecode(legacyEntitiesRaw);
+        if (decoded is Map) {
+          _entities = decoded.map((k, v) => MapEntry(
+                k as String,
+                LocalEntityRecord.fromJson(Map<String, dynamic>.from(v as Map)),
+              ));
+          foundLegacy = true;
+        }
+      }
+
+      if (legacyOutboxRaw != null && legacyOutboxRaw.isNotEmpty) {
+        final decoded = jsonDecode(legacyOutboxRaw);
+        if (decoded is Map) {
+          _outbox = decoded.map((k, v) => MapEntry(
+                k as String,
+                OutboxEntry.fromJson(Map<String, dynamic>.from(v as Map)),
+              ));
+          foundLegacy = true;
+        }
+      }
+
+      if (legacyConflictsRaw != null && legacyConflictsRaw.isNotEmpty) {
+        final decoded = jsonDecode(legacyConflictsRaw);
+        if (decoded is Map) {
+          _conflicts = decoded.map((k, v) => MapEntry(
+                k as String,
+                ConflictRecord.fromJson(Map<String, dynamic>.from(v as Map)),
+              ));
+          foundLegacy = true;
+        }
+      }
+
+      if (foundLegacy) {
+        // Upgrade to single atomic snapshot
+        _saveToPersistence();
+        // Remove legacy keys
+        _remover('eyadty_offline_entities');
+        _remover('eyadty_offline_outbox');
+        _remover('eyadty_offline_conflicts');
+      }
+    } catch (_) {}
+  }
+
+  Map<String, dynamic> _migrateStore(
+    Map<String, dynamic> doc,
+    int fromVersion,
+    int toVersion,
+  ) {
+    final migrated = Map<String, dynamic>.from(doc);
+    for (int v = fromVersion; v < toVersion; v++) {
+      // Incremental migration steps if future versions are added
+      if (v == 1) {
+        // Example: future migration from 1 to 2
+      }
+    }
+    migrated['schemaVersion'] = toVersion;
+    return migrated;
+  }
+
+  Future<void> _saveToPersistence() async {
     if (!persistToStorage) {
       _notifyOutboxCount();
       return;
     }
-    try {
-      final entitiesJson =
-          jsonEncode(_entities.map((k, v) => MapEntry(k, v.toJson())));
-      AppSharedPreferences.setString(
-          key: 'eyadty_offline_entities', value: entitiesJson);
 
-      final outboxJson =
-          jsonEncode(_outbox.map((k, v) => MapEntry(k, v.toJson())));
-      AppSharedPreferences.setString(
-          key: 'eyadty_offline_outbox', value: outboxJson);
+    final doc = {
+      'schemaVersion': currentSchemaVersion,
+      'updatedAt': DateTime.now().toIso8601String(),
+      'entities': _entities.map((k, v) => MapEntry(k, v.toJson())),
+      'outbox': _outbox.map((k, v) => MapEntry(k, v.toJson())),
+      'conflicts': _conflicts.map((k, v) => MapEntry(k, v.toJson())),
+      'syncCursors': _syncCursors,
+    };
 
-      final conflictsJson =
-          jsonEncode(_conflicts.map((k, v) => MapEntry(k, v.toJson())));
-      AppSharedPreferences.setString(
-          key: 'eyadty_offline_conflicts', value: conflictsJson);
-    } catch (_) {}
-
+    final serialized = jsonEncode(doc);
+    await _writer(snapshotKey, serialized);
     _notifyOutboxCount();
   }
 
@@ -169,34 +322,52 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
   Future<T> runInTransaction<T>(
     Future<T> Function(StoreTransaction txn) action,
   ) async {
-    // 1. Create a full working snapshot of state
-    final entitySnapshot = Map<String, LocalEntityRecord>.from(_entities);
-    final outboxSnapshot = Map<String, OutboxEntry>.from(_outbox);
-    final conflictSnapshot = Map<String, ConflictRecord>.from(_conflicts);
+    // 1. Snapshot live state before transaction
+    final previousEntities = Map<String, LocalEntityRecord>.from(_entities);
+    final previousOutbox = Map<String, OutboxEntry>.from(_outbox);
+    final previousConflicts = Map<String, ConflictRecord>.from(_conflicts);
+
+    // 2. Working copy for transaction action
+    final workingEntities = Map<String, LocalEntityRecord>.from(_entities);
+    final workingOutbox = Map<String, OutboxEntry>.from(_outbox);
+    final workingConflicts = Map<String, ConflictRecord>.from(_conflicts);
 
     final txn = _InMemoryStoreTransaction(
-      entitySnapshot: entitySnapshot,
-      outboxSnapshot: outboxSnapshot,
-      conflictSnapshot: conflictSnapshot,
+      entitySnapshot: workingEntities,
+      outboxSnapshot: workingOutbox,
+      conflictSnapshot: workingConflicts,
     );
 
+    final T result;
     try {
-      // 2. Execute caller transaction block
-      final result = await action(txn);
-
-      // 3. Atomically commit working snapshot
-      _entities = entitySnapshot;
-      _outbox = outboxSnapshot;
-      _conflicts = conflictSnapshot;
-
-      // 4. Persist to storage and notify mode service
-      _saveToPersistence();
-
-      return result;
+      result = await action(txn);
     } catch (e) {
-      // Rollback: snapshot is discarded and live state remains unaltered
+      // Action threw: discard working copies, state remains unchanged
       rethrow;
     }
+
+    // 3. Tentatively update in-memory state
+    _entities = workingEntities;
+    _outbox = workingOutbox;
+    _conflicts = workingConflicts;
+
+    // 4. Atomically persist to storage BEFORE reporting success
+    try {
+      await _saveToPersistence();
+    } catch (storageError) {
+      // Storage failed: ROLLBACK in-memory state to exact previous state!
+      _entities = previousEntities;
+      _outbox = previousOutbox;
+      _conflicts = previousConflicts;
+      _notifyOutboxCount();
+
+      throw StoragePersistenceException(
+        'Transaction failed during persistence: $storageError',
+        storageError,
+      );
+    }
+
+    return result;
   }
 
   @override
@@ -208,7 +379,6 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
     final record = _entities[localId];
     if (record == null) return null;
 
-    // Strict security and isolation check
     if (record.accountId != accountId || record.branchId != branchId) {
       return null;
     }
@@ -236,10 +406,10 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
   Future<List<OutboxEntry>> getPendingOutboxEntries({int limit = 50}) async {
     final pending = _outbox.values
         .where((e) =>
-            e.status == OutboxStatus.pending || e.status == OutboxStatus.inFlight)
+            e.status == OutboxStatus.pending ||
+            e.status == OutboxStatus.inFlight)
         .toList();
 
-    // Order chronologically
     pending.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     if (pending.length > limit) {
@@ -273,7 +443,7 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
         lastError: lastError,
         attemptCount: entry.attemptCount + 1,
       );
-      _saveToPersistence();
+      await _saveToPersistence();
     }
   }
 
@@ -287,12 +457,10 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
     final entry = _outbox[operationId];
     if (entry == null) return;
 
-    // Mark outbox entry as acknowledged
     _outbox[operationId] = entry.copyWith(
       status: OutboxStatus.acknowledged,
     );
 
-    // Update corresponding entity record
     final entity = _entities[entry.localId];
     if (entity != null) {
       _entities[entry.localId] = entity.copyWith(
@@ -300,11 +468,11 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
         serverCursor: serverCursor ?? entity.serverCursor,
         localRevision: confirmedRevision ?? entity.localRevision,
         syncStatus: SyncStatus.synced,
-        isProvisional: false, // Confirmed by server!
+        isProvisional: false,
         updatedAt: DateTime.now(),
       );
     }
-    _saveToPersistence();
+    await _saveToPersistence();
   }
 
   @override
@@ -320,6 +488,7 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
   @override
   Future<void> setSyncCursor(String entityType, String cursor) async {
     _syncCursors[entityType] = cursor;
+    await _saveToPersistence();
   }
 
   @override
@@ -328,6 +497,6 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
     _outbox.clear();
     _conflicts.clear();
     _syncCursors.clear();
-    _saveToPersistence();
+    await _saveToPersistence();
   }
 }
