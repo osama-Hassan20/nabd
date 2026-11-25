@@ -28,6 +28,7 @@ class CustomListTile extends StatelessWidget {
     this.topPaddingInLeadingIcon = 0,
     this.leadingSize,
     this.titleMaxLines = 1,
+    this.subtitleMaxLines = 1,
     this.trailing,
     this.expantionWidget,
     this.borderRaduis = 8,
@@ -68,6 +69,7 @@ class CustomListTile extends StatelessWidget {
   final double topPaddingInLeadingIcon;
   final TextStyle? titleTextStyle;
   final int titleMaxLines;
+  final int subtitleMaxLines;
   final TextDirection? titleTextDirection;
   final TextDirection? trailingTextDirection;
   final Widget? leadingIconInstead;
@@ -161,7 +163,8 @@ class CustomListTile extends StatelessWidget {
                       else if (subtitle != null)
                         CustomText(
                           subtitle!,
-                          maxLines: 2,
+                          maxLines: subtitleMaxLines,
+                          overflow: TextOverflow.ellipsis,
                           textDirection: subtitleTextDirection,
                           style: subTitleStyle ?? CustomAppFontStyle.light14,
                         ),

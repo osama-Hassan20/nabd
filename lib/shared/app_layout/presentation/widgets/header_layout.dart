@@ -104,13 +104,15 @@ class CustomHeaderLayout extends StatelessWidget
 
     // Desktop: Render Full Header Layout with Signal, Branch Switcher & Quick Lock
     return Padding(
-      padding: const EdgeInsetsDirectional.only(top: 12),
+      padding: const EdgeInsetsDirectional.only(top: 8),
       child: CustomListTile(
         padding: EdgeInsets.zero,
         backgroundColor: Colors.transparent,
         border: Border.all(color: Colors.transparent),
         title: title ?? 'dashboard_header'.tr(),
         subtitle: subtitle ?? 'dashboard_subtitle'.tr(),
+        titleMaxLines: 1,
+        subtitleMaxLines: 1,
         titleTextStyle: CustomAppFontStyle.regular24.copyWith(
           color: context.themeColors.textPrimary,
         ),
