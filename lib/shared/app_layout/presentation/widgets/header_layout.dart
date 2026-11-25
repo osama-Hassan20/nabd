@@ -34,7 +34,7 @@ class CustomHeaderLayout extends StatelessWidget
   final String? subtitle;
 
   @override
-  Size get preferredSize => const Size.fromHeight(75);
+  Size get preferredSize => const Size.fromHeight(88);
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +104,7 @@ class CustomHeaderLayout extends StatelessWidget
 
     // Desktop: Render Full Header Layout with Signal, Branch Switcher & Quick Lock
     return Padding(
-      padding: const EdgeInsetsDirectional.only(top: 8),
+      padding: const EdgeInsetsDirectional.only(top: 2, bottom: 2),
       child: CustomListTile(
         padding: EdgeInsets.zero,
         backgroundColor: Colors.transparent,
@@ -113,10 +113,10 @@ class CustomHeaderLayout extends StatelessWidget
         subtitle: subtitle ?? 'dashboard_subtitle'.tr(),
         titleMaxLines: 1,
         subtitleMaxLines: 1,
-        titleTextStyle: CustomAppFontStyle.regular24.copyWith(
+        titleTextStyle: CustomAppFontStyle.bold20.copyWith(
           color: context.themeColors.textPrimary,
         ),
-        subTitleStyle: CustomAppFontStyle.regular14.copyWith(
+        subTitleStyle: CustomAppFontStyle.regular13.copyWith(
           color: context.themeColors.textSecondary,
         ),
         trailing: Row(

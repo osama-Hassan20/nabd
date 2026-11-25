@@ -133,7 +133,7 @@ class _AppLayoutState extends State<AppLayout> {
                                     context: context,
                                     mobile: 82,
                                     tablet: 82,
-                                    desktop: 80,
+                                    desktop: 90,
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16.0),

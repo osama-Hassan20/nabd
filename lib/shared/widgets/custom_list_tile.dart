@@ -143,6 +143,7 @@ class CustomListTile extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     spacing: spacing ?? 4,
                     children: [
                       titleInstead ??
