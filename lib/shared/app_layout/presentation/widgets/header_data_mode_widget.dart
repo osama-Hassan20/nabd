@@ -5,6 +5,8 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 
+import 'sync_status_dialog.dart';
+
 class HeaderDataModeWidget extends StatelessWidget {
   const HeaderDataModeWidget({super.key});
 
@@ -24,92 +26,92 @@ class HeaderDataModeWidget extends StatelessWidget {
 
         final Color statusColor;
         final String statusLabel;
-        final IconData modeIcon;
 
         switch (state.mode) {
           case DataMode.online:
             statusColor = const Color(0xFF10B981);
             statusLabel = 'mode_online'.tr();
-            modeIcon = Icons.cloud_done_rounded;
             break;
           case DataMode.offline:
             statusColor = const Color(0xFFEF4444);
             statusLabel = 'mode_offline'.tr();
-            modeIcon = Icons.cloud_off_rounded;
             break;
           case DataMode.forcedLocal:
             statusColor = const Color(0xFFF59E0B);
             statusLabel = 'mode_forced_local'.tr();
-            modeIcon = Icons.offline_bolt_rounded;
             break;
         }
 
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Status Chip
-            Container(
-              key: const Key('header_data_mode_chip'),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: statusColor.withValues(alpha: 0.35),
-                  width: 1,
+            // Status Chip (Clickable to open Sync Details & Conflicts)
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => SyncStatusDialog.show(context),
+              child: Container(
+                key: const Key('header_data_mode_chip'),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.35),
+                    width: 1,
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (state.isSyncInProgress) ...[
-                    SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (state.isSyncInProgress) ...[
+                      SizedBox(
+                        width: 10,
+                        height: 10,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                  ] else ...[
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                      const SizedBox(width: 6),
+                    ] else ...[
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: statusColor,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Text(
+                      statusLabel,
+                      style: CustomAppFontStyle.medium12.copyWith(
                         color: statusColor,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                  ],
-                  Text(
-                    statusLabel,
-                    style: CustomAppFontStyle.medium12.copyWith(
-                      color: statusColor,
-                    ),
-                  ),
-                  if (state.pendingOutboxCount > 0) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1.5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${state.pendingOutboxCount} ${'pending_sync_operations'.tr()}',
-                        style: CustomAppFontStyle.medium10.copyWith(
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
+                    if (state.pendingOutboxCount > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${state.pendingOutboxCount} ${'pending_sync_operations'.tr()}',
+                          style: CustomAppFontStyle.medium10.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             const SizedBox(width: 8),

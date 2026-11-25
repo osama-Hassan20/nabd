@@ -1582,6 +1582,12 @@
   "pending_sync_operations": "معلقة",
   "sync_in_progress": "جارٍ المزامنة...",
   "sync_status_title": "حالة المزامنة والتشغيل المحلي",
+  "provisional_unconfirmed": "محلي - غير مؤكد",
+  "sync_now": "مزامنة الآن",
+  "retry_failed": "إعادة محاولة العمليات",
+  "no_conflicts": "لا توجد تعارضات معلقة",
+  "conflicts_detected": "تعارضات بحاجة لمراجعة",
+  "close": "إغلاق",
   "profile": "الملف الشخصي",
   "log_out": "تسجيل الخروج"
 }

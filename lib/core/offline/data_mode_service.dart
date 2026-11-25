@@ -91,7 +91,7 @@ class DataModeService {
     InFlightSyncCoordinator? syncCoordinator,
     bool initialReachable = true,
   })  : _reachabilityProbe = reachabilityProbe ?? _defaultHttpProbe,
-        _syncCoordinator = syncCoordinator {
+        this._syncCoordinator = syncCoordinator {
     final persistedForced =
         AppSharedPreferences.getBool(key: forcedLocalKey) ?? false;
     _state = DataModeState(

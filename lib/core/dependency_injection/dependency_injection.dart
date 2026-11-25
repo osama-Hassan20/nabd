@@ -4,6 +4,11 @@ import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
+import 'package:eyadty/core/offline/store/transactional_local_store.dart';
+import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
+import 'package:eyadty/core/offline/remote/remote_sync_api.dart';
+import 'package:eyadty/core/offline/remote/fake_remote_sync_api.dart';
+import 'package:eyadty/core/offline/sync/sync_engine.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
@@ -231,6 +236,22 @@ Future<void> setupGetIt() async {
 
   getIt.registerLazySingleton<DataModeService>(
     () => DataModeService(),
+  );
+
+  getIt.registerLazySingleton<TransactionalLocalStore>(
+    () => InMemoryTransactionalStore(),
+  );
+
+  getIt.registerLazySingleton<RemoteSyncApi>(
+    () => FakeRemoteSyncApi(),
+  );
+
+  getIt.registerLazySingleton<SyncEngine>(
+    () => SyncEngine(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteApi: getIt<RemoteSyncApi>(),
+    ),
   );
 
   // ─── Session & Role Provider ──────────────────────────────────────────────

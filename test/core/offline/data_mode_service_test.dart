@@ -60,7 +60,7 @@ void main() {
   group('DataModeService Rule Table Tests', () {
     test('1. Truth Table: forcedLocal overrides reachability; unreachable falls back to offline', () async {
       final service = DataModeService(
-        reachabilityProbe: (_, __) async => true,
+        reachabilityProbe: (url, timeout) async => true,
         initialReachable: true,
       );
 
@@ -90,7 +90,7 @@ void main() {
 
     test('2. Persistence: forcedLocal state is saved to SharedPreferences and restored', () async {
       final service = DataModeService(
-        reachabilityProbe: (_, __) async => true,
+        reachabilityProbe: (url, timeout) async => true,
       );
       await service.setForcedLocal(true);
 
@@ -98,7 +98,7 @@ void main() {
 
       // Recreate service: should restore forcedLocal
       final restored = DataModeService(
-        reachabilityProbe: (_, __) async => true,
+        reachabilityProbe: (url, timeout) async => true,
       );
       expect(restored.currentMode, DataMode.forcedLocal);
       expect(restored.isForcedLocal, isTrue);
@@ -109,7 +109,7 @@ void main() {
       coordinator.inProgress = true;
 
       final service = DataModeService(
-        reachabilityProbe: (_, __) async => true,
+        reachabilityProbe: (url, timeout) async => true,
         syncCoordinator: coordinator,
       );
 
@@ -132,7 +132,7 @@ void main() {
 
     setUp(() {
       testService = DataModeService(
-        reachabilityProbe: (_, __) async => true,
+        reachabilityProbe: (url, timeout) async => true,
         initialReachable: true,
       );
 
