@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:eyadty/core/config/app_config.dart';
+import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
@@ -226,6 +227,10 @@ Future<void> setupGetIt() async {
 
   getIt.registerLazySingleton<NotificationService>(
     () => NotificationService(),
+  );
+
+  getIt.registerLazySingleton<DataModeService>(
+    () => DataModeService(),
   );
 
   // ─── Session & Role Provider ──────────────────────────────────────────────

@@ -14,6 +14,7 @@ import 'package:eyadty/shared/widgets/custom_list_tile.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
 
 import 'header_branch_switcher.dart';
+import 'header_data_mode_widget.dart';
 import 'header_reception_signal_widget.dart';
 import 'header_user_profile_widget.dart';
 
@@ -88,6 +89,9 @@ class CustomHeaderLayout extends StatelessWidget
             // Quick Lock Button (Telegram-style lock icon - Matches Image 9)
             _buildQuickLockButton(context),
             const SizedBox(width: 8),
+            // Data Mode (Online/Offline/Local Mode) Toggle & Status Chip
+            const HeaderDataModeWidget(),
+            const SizedBox(width: 8),
             // Branch Switcher on Mobile/Tablet
             const HeaderBranchSwitcher(),
             const SizedBox(width: 8),
@@ -117,6 +121,8 @@ class CustomHeaderLayout extends StatelessWidget
           mainAxisSize: MainAxisSize.min,
           spacing: 12,
           children: [
+            // Data Mode (Online/Offline/Local Mode) Toggle & Status Chip
+            const HeaderDataModeWidget(),
             if (AppConfig.isDemoMode)
               Container(
                 key: const Key('header_demo_badge'),
