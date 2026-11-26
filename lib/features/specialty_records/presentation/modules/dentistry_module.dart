@@ -96,6 +96,7 @@ class _DentistryRecordWidget extends StatefulWidget {
 }
 
 class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
+  final _sessionsKey = GlobalKey<SessionsAndPackagesWidgetState>();
   int _selectedTooth = 16;
   String _selectedProc = 'علاج عصب';
   String _selectedStatus = 'حشو';
@@ -105,10 +106,10 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
 
   static const Map<String, Color> _statusColors = {
     'سليم': Color(0xFFE2E8F0),
-    'تسوس': Color(0xFFFEE2E2),
-    'حشو': Color(0xFFDBEAFE),
-    'عصب': Color(0xFFFEF3C7),
-    'مفقود': Color(0xFFE5E7EB),
+    'تسوس': Color(0xFFFCA5A5),
+    'حشو': Color(0xFF93C5FD),
+    'عصب': Color(0xFFFCD34D),
+    'مفقود': Color(0xFF9CA3AF),
   };
 
   @override
@@ -135,7 +136,11 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
 
   Future<void> _saveToothPlan() async {
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
+    final repo = getIt<OfflineFirstSpecialtyRecordsRepo>();
     final price = num.tryParse(_priceCtrl.text.trim()) ?? 500;
+    final totalSessions = _selectedProc == 'علاج عصب' ? 3 : 1;
+    final nextDate = DateTime.now().add(const Duration(days: 7));
+
     final entry = SpecialtyRecordEntryModel(
       id: '',
       patientId: widget.patientId,
@@ -149,15 +154,39 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
         'materials': _materialCtrl.text.trim(),
         'pricePerSession': price,
         'sessionIndex': 1,
-        'totalSessions': _selectedProc == 'علاج عصب' ? 3 : 1,
-        'nextSessionDate':
-            DateTime.now().add(const Duration(days: 7)).toIso8601String(),
+        'totalSessions': totalSessions,
+        'nextSessionDate': nextDate.toIso8601String(),
         'status': 'done',
       },
       createdAt: DateTime.now(),
     );
-    await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(entry);
+    await repo.saveEntry(entry);
+
+    // Also add a visible row in Dental Sessions & Packages
+    await repo.saveEntry(
+      SpecialtyRecordEntryModel(
+        id: '',
+        patientId: widget.patientId,
+        visitId: widget.visitId,
+        specialty: MedicalSpecialty.dentistry,
+        kind: 'session_package',
+        data: {
+          'procedure': '$_selectedProc (سن $_selectedTooth - ${_materialCtrl.text.trim()})',
+          'toothFdi': _selectedTooth,
+          'toothStatus': _selectedStatus,
+          'materials': _materialCtrl.text.trim(),
+          'totalSessions': totalSessions,
+          'doneSessions': 1,
+          'remainingSessions': (totalSessions - 1).clamp(0, 999),
+          'price': price,
+          'nextSessionDate': nextDate.toIso8601String(),
+        },
+        createdAt: DateTime.now(),
+      ),
+    );
+
     await _load();
+    await _sessionsKey.currentState?.reload();
   }
 
   @override
@@ -225,11 +254,16 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
                       ? (match.first.data['toothStatus']?.toString() ?? 'حشو')
                       : 'سليم';
                   final isSel = _selectedTooth == t;
+                  final statusColor = _statusColors[status] ?? const Color(0xFFE2E8F0);
                   return ChoiceChip(
                     label: Text('$t'),
                     selected: isSel,
-                    selectedColor: AppColors.primaryLight,
-                    backgroundColor: _statusColors[status],
+                    selectedColor: statusColor,
+                    backgroundColor: statusColor,
+                    side: BorderSide(
+                      color: isSel ? AppColors.primary : Colors.black26,
+                      width: isSel ? 2 : 1,
+                    ),
                     onSelected: (_) => setState(() => _selectedTooth = t),
                   );
                 }).toList(),
@@ -309,6 +343,7 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
         ),
         const SizedBox(height: 12),
         SessionsAndPackagesWidget(
+          key: _sessionsKey,
           patientId: widget.patientId,
           patientName: widget.patientName,
           visitId: widget.visitId,

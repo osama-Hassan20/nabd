@@ -202,6 +202,15 @@ class PatientModel extends Equatable {
       gender == null ||
       gender == GenderEnum.unknown;
 
+  String? get incompleteProfileReason {
+    final missingGender = gender == null || gender == GenderEnum.unknown;
+    final missingDob = dateOfBirth == null;
+    if (missingGender && missingDob) return 'ناقص: النوع وتاريخ الميلاد';
+    if (missingGender) return 'ناقص: النوع';
+    if (missingDob) return 'ناقص: تاريخ الميلاد';
+    return null;
+  }
+
   DateTime? get computedEdd =>
       estimatedDueDate ?? lastMenstrualPeriodDate?.add(const Duration(days: 280));
 

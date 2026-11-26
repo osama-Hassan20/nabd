@@ -35,20 +35,21 @@ class SessionsAndPackagesWidget extends StatefulWidget {
 
   @override
   State<SessionsAndPackagesWidget> createState() =>
-      _SessionsAndPackagesWidgetState();
+      SessionsAndPackagesWidgetState();
 }
 
-class _SessionsAndPackagesWidgetState extends State<SessionsAndPackagesWidget> {
+class SessionsAndPackagesWidgetState extends State<SessionsAndPackagesWidget> {
   List<SpecialtyRecordEntryModel> _entries = [];
   bool _loading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    reload();
   }
 
-  Future<void> _load() async {
+  Future<void> reload() async {
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) {
       if (mounted) setState(() => _loading = false);
       return;
@@ -74,27 +75,149 @@ class _SessionsAndPackagesWidgetState extends State<SessionsAndPackagesWidget> {
     required num price,
     String? notes,
   }) async {
-    if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
-    final entry = SpecialtyRecordEntryModel(
-      id: '',
-      patientId: widget.patientId,
-      visitId: widget.visitId,
-      specialty: widget.specialty,
-      kind: 'session_package',
-      data: {
-        'procedure': procedure,
-        'totalSessions': totalSessions,
-        'doneSessions': doneSessions,
-        'remainingSessions': (totalSessions - doneSessions).clamp(0, 999),
-        'price': price,
-        'nextSessionDate':
-            DateTime.now().add(const Duration(days: 7)).toIso8601String(),
-        if (notes != null && notes.isNotEmpty) 'notes': notes,
-      },
-      createdAt: DateTime.now(),
+    if (_isSaving || !getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) {
+      return;
+    }
+    _isSaving = true;
+    try {
+      final entry = SpecialtyRecordEntryModel(
+        id: '',
+        patientId: widget.patientId,
+        visitId: widget.visitId,
+        specialty: widget.specialty,
+        kind: 'session_package',
+        data: {
+          'procedure': procedure,
+          'totalSessions': totalSessions,
+          'doneSessions': doneSessions,
+          'remainingSessions': (totalSessions - doneSessions).clamp(0, 999),
+          'price': price,
+          'nextSessionDate':
+              DateTime.now().add(const Duration(days: 7)).toIso8601String(),
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
+        },
+        createdAt: DateTime.now(),
+      );
+      await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(entry);
+      await reload();
+    } finally {
+      _isSaving = false;
+    }
+  }
+
+  Future<void> _showAddSessionDialog() async {
+    String selectedProcedure = widget.procedureOptions.first;
+    final sessionsCtrl = TextEditingController(text: '4');
+    final priceCtrl = TextEditingController(text: '500');
+    final notesCtrl = TextEditingController();
+    String? dialogError;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('إضافة جلسة / باقة (${widget.title})'),
+          content: SizedBox(
+            width: 380,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: selectedProcedure,
+                  decoration: const InputDecoration(
+                    labelText: 'الإجراء / العلاج',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  items: widget.procedureOptions
+                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                      .toList(),
+                  onChanged: (v) {
+                    if (v != null) selectedProcedure = v;
+                  },
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: sessionsCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'عدد الجلسات',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: priceCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'السعر (ج.م)',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: notesCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'ملاحظات (اختياري)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                if (dialogError != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    dialogError!,
+                    style: CustomAppFontStyle.medium12
+                        .copyWith(color: AppColors.error),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final total = int.tryParse(sessionsCtrl.text.trim());
+                final price = num.tryParse(priceCtrl.text.trim());
+                if (total == null || total <= 0 || price == null || price < 0) {
+                  setDialogState(() {
+                    dialogError = 'يرجى إدخال عدد جلسات وسعر صحيحين.';
+                  });
+                  return;
+                }
+                Navigator.of(ctx).pop();
+                await _addSession(
+                  procedure: selectedProcedure,
+                  totalSessions: total,
+                  doneSessions: 1,
+                  price: price,
+                  notes: notesCtrl.text.trim(),
+                );
+              },
+              child: const Text('حفظ الجلسة'),
+            ),
+          ],
+        ),
+      ),
     );
-    await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(entry);
-    await _load();
+
+    sessionsCtrl.dispose();
+    priceCtrl.dispose();
+    notesCtrl.dispose();
   }
 
   Future<void> _bookNextSession(SpecialtyRecordEntryModel entry) async {
@@ -151,14 +274,7 @@ class _SessionsAndPackagesWidgetState extends State<SessionsAndPackagesWidget> {
                 child: Text(widget.title, style: CustomAppFontStyle.bold14),
               ),
               TextButton.icon(
-                onPressed: () {
-                  _addSession(
-                    procedure: widget.procedureOptions.first,
-                    totalSessions: 4,
-                    doneSessions: 1,
-                    price: 500,
-                  );
-                },
+                onPressed: _isSaving ? null : _showAddSessionDialog,
                 icon: const Icon(Icons.add_circle_outline, size: 18),
                 label: const Text('إضافة جلسة / باقة'),
               ),

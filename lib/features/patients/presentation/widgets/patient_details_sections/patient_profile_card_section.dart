@@ -123,7 +123,8 @@ class PatientProfileCardSection extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'incomplete_profile_badge'.tr(),
+                                  patient.incompleteProfileReason ??
+                                      'incomplete_profile_badge'.tr(),
                                   style: CustomAppFontStyle.medium12.copyWith(
                                     color: AppColors.amber,
                                   ),

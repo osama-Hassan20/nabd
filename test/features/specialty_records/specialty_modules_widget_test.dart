@@ -201,5 +201,91 @@ void main() {
       expect(bmi, closeTo(26.1, 0.1));
       expect(NutritionModule.bmiCategoryAr(bmi), equals('زيادة وزن'));
     });
+
+    test('PatientModel incompleteProfileReason specifies missing field', () {
+      const missingDob = PatientModel(id: 'P1', gender: GenderEnum.female);
+      expect(missingDob.incompleteProfileReason, equals('ناقص: تاريخ الميلاد'));
+
+      final missingGender = PatientModel(id: 'P2', dateOfBirth: DateTime(1990, 1, 1));
+      expect(missingGender.incompleteProfileReason, equals('ناقص: النوع'));
+    });
+
+    testWidgets('Dental registering a tooth adds a visible row under sessions & packages',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const patient = PatientModel(id: 'PAT-DENT', name: 'مريض أسنان');
+      final mod = SpecialtyModuleRegistry.forSpecialty(MedicalSpecialty.dentistry);
+      await tester.pumpWidget(_wrapWidget(mod.buildPatientTab(patient)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('تسجيل للسن 16'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('علاج عصب (سن 16'), findsOneWidget);
+    });
+
+    testWidgets('Derm add session/package opens form and creates exactly one row',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const patient = PatientModel(id: 'PAT-DERM', name: 'مريضة جلدية');
+      final mod = SpecialtyModuleRegistry.forSpecialty(MedicalSpecialty.dermatology);
+      await tester.pumpWidget(_wrapWidget(mod.buildPatientTab(patient)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('إضافة جلسة / باقة'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('حفظ الجلسة'), findsOneWidget);
+      await tester.tap(find.text('حفظ الجلسة'));
+      await tester.pumpAndSettle();
+
+      final outbox = await store.getPendingOutboxEntries();
+      final sessionOps = outbox
+          .where((e) =>
+              e.entityType == 'specialty_record_entry' &&
+              e.payload['kind'] == 'session_package')
+          .toList();
+      expect(sessionOps.length, equals(1));
+    });
+
+    testWidgets('Pediatrics blocks empty save with Arabic validation message',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final child = PatientModel(
+        id: 'PAT-CHILD',
+        name: 'طفل',
+        dateOfBirth: DateTime.now().subtract(const Duration(days: 365)),
+      );
+      final mod = SpecialtyModuleRegistry.forSpecialty(MedicalSpecialty.pediatrics);
+      await tester.pumpWidget(_wrapWidget(mod.buildPatientTab(child)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('حفظ قياسات النمو'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.'),
+        findsOneWidget,
+      );
+      expect(await store.getPendingOutboxEntries(), isEmpty);
+    });
   });
 }

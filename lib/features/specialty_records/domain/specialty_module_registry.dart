@@ -40,25 +40,45 @@ class SpecialtyModuleRegistry {
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.ent,
           customHeaderAr: 'فحص الأنف والأذن والحنجرة',
-          trendFieldLabels: ['اختبار السمع (dB)', 'منظار الأنف والحنجرة'],
+          fields: [
+            SpecialtyFieldDef('entExam', 'فحص الأذن والأنف والحنجرة'),
+            SpecialtyFieldDef('audiometryDb', 'اختبار السمع (dB)'),
+            SpecialtyFieldDef('endoscopyNotes', 'منظار الأنف والحنجرة'),
+            SpecialtyFieldDef('plan', 'الخطة العلاجية'),
+          ],
         );
       case MedicalSpecialty.urology:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.urology,
           customHeaderAr: 'سجل المسالك البولية',
-          trendFieldLabels: ['معدل التدفق / IPSS', 'تحليل PSA / السونار'],
+          fields: [
+            SpecialtyFieldDef('urinarySymptoms', 'أعراض المسالك / IPSS'),
+            SpecialtyFieldDef('flowRate', 'معدل التدفق البولي'),
+            SpecialtyFieldDef('psaValue', 'تحليل PSA'),
+            SpecialtyFieldDef('ultrasoundNotes', 'نتيجة السونار والخطة'),
+          ],
         );
       case MedicalSpecialty.neurology:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.neurology,
           customHeaderAr: 'سجل المخ والأعصاب',
-          trendFieldLabels: ['القوة الحركية / GCS', 'تكرار الصداع / النوبات'],
+          fields: [
+            SpecialtyFieldDef('motorPower', 'القوة الحركية / GCS'),
+            SpecialtyFieldDef('headacheFreq', 'تكرار الصداع / النوبات'),
+            SpecialtyFieldDef('eegMri', 'تخطيط المخ / الأشعة'),
+            SpecialtyFieldDef('plan', 'الخطة العلاجية'),
+          ],
         );
       case MedicalSpecialty.psychiatry:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.psychiatry,
           customHeaderAr: 'سجل الصحة النفسية',
-          trendFieldLabels: ['مقياس المزاج / النوم', 'تقييم PHQ-9 / GAD-7'],
+          fields: [
+            SpecialtyFieldDef('moodScore', 'مقياس المزاج (1-10)'),
+            SpecialtyFieldDef('sleepQuality', 'جودة النوم'),
+            SpecialtyFieldDef('phqGad', 'تقييم PHQ-9 / GAD-7'),
+            SpecialtyFieldDef('therapyPlan', 'خطة العلاج النفسي والدوائي'),
+          ],
         );
       case MedicalSpecialty.nutrition:
         return const NutritionModule();
@@ -66,14 +86,34 @@ class SpecialtyModuleRegistry {
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.generalSurgery,
           customHeaderAr: 'سجل الجراحة العامة',
-          trendFieldLabels: ['موضع الجراحة وحالة الجرح', 'الدرنقة / الغرز'],
+          fields: [
+            SpecialtyFieldDef('surgicalSite', 'موضع الجراحة'),
+            SpecialtyFieldDef('woundStatus', 'حالة الجرح (نظيف / التهاب / يلتئم)'),
+            SpecialtyFieldDef('drainSutures', 'الدرنقة / الغرز'),
+            SpecialtyFieldDef('opPlan', 'الخطة الجراحية والمتابعة'),
+          ],
         );
       case MedicalSpecialty.generalPractice:
-      case MedicalSpecialty.other:
-        return StructuredGenericModule(
-          specialty: specialty,
+        return const StructuredGenericModule(
+          specialty: MedicalSpecialty.generalPractice,
           isGenericFallback: true,
-          trendFieldLabels: const ['مؤشر المتابعة'],
+          fields: [
+            SpecialtyFieldDef('complaint', 'الشكوى الرئيسية'),
+            SpecialtyFieldDef('findings', 'الفحص السريري'),
+            SpecialtyFieldDef('followUpIndicator', 'مؤشر المتابعة'),
+            SpecialtyFieldDef('plan', 'الخطة العلاجية'),
+          ],
+        );
+      case MedicalSpecialty.other:
+        return const StructuredGenericModule(
+          specialty: MedicalSpecialty.other,
+          isGenericFallback: true,
+          fields: [
+            SpecialtyFieldDef('customSpecialty', 'اسم التخصص / القسم'),
+            SpecialtyFieldDef('clinicalAssessment', 'التقييم السريري'),
+            SpecialtyFieldDef('followUpIndicator', 'مؤشر المتابعة'),
+            SpecialtyFieldDef('plan', 'خطة المتابعة'),
+          ],
         );
     }
   }

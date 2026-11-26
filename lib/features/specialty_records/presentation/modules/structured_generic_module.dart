@@ -10,16 +10,22 @@ import 'package:eyadty/features/specialty_records/data/models/specialty_record_e
 import 'package:eyadty/features/specialty_records/domain/specialty_record_module.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 
+class SpecialtyFieldDef {
+  final String key;
+  final String labelAr;
+  const SpecialtyFieldDef(this.key, this.labelAr);
+}
+
 class StructuredGenericModule implements SpecialtyRecordModule {
   @override
   final MedicalSpecialty specialty;
-  final List<String> trendFieldLabels;
+  final List<SpecialtyFieldDef> fields;
   final String? customHeaderAr;
   final bool isGenericFallback;
 
   const StructuredGenericModule({
     required this.specialty,
-    required this.trendFieldLabels,
+    required this.fields,
     this.customHeaderAr,
     this.isGenericFallback = false,
   });
@@ -29,12 +35,7 @@ class StructuredGenericModule implements SpecialtyRecordModule {
 
   @override
   Map<String, dynamic> emptyEntry() => {
-        'complaint': '',
-        'findings': '',
-        'diagnosis': '',
-        'plan': '',
-        'followUp': '',
-        'trendValues': <String, String>{},
+        for (final f in fields) f.key: '',
       };
 
   @override
@@ -44,7 +45,7 @@ class StructuredGenericModule implements SpecialtyRecordModule {
   Widget buildPatientTab(PatientModel patient) => _StructuredTemplateWidget(
         patientId: patient.id ?? '',
         specialty: specialty,
-        trendFieldLabels: trendFieldLabels,
+        fields: fields,
         customHeaderAr: customHeaderAr,
         isGenericFallback: isGenericFallback,
       );
@@ -54,7 +55,7 @@ class StructuredGenericModule implements SpecialtyRecordModule {
         patientId: visit.patientId ?? '',
         visitId: visit.id,
         specialty: specialty,
-        trendFieldLabels: trendFieldLabels,
+        fields: fields,
         customHeaderAr: customHeaderAr,
         isGenericFallback: isGenericFallback,
       );
@@ -64,7 +65,7 @@ class _StructuredTemplateWidget extends StatefulWidget {
   final String patientId;
   final String? visitId;
   final MedicalSpecialty specialty;
-  final List<String> trendFieldLabels;
+  final List<SpecialtyFieldDef> fields;
   final String? customHeaderAr;
   final bool isGenericFallback;
 
@@ -72,7 +73,7 @@ class _StructuredTemplateWidget extends StatefulWidget {
     required this.patientId,
     this.visitId,
     required this.specialty,
-    required this.trendFieldLabels,
+    required this.fields,
     this.customHeaderAr,
     required this.isGenericFallback,
   });
@@ -83,17 +84,19 @@ class _StructuredTemplateWidget extends StatefulWidget {
 }
 
 class _StructuredTemplateWidgetState extends State<_StructuredTemplateWidget> {
-  final _complaintCtrl = TextEditingController();
-  final _planCtrl = TextEditingController();
-  final _trend1Ctrl = TextEditingController();
-  final _trend2Ctrl = TextEditingController();
+  late final Map<String, TextEditingController> _controllers;
   String? _validationError;
 
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {
+      for (final f in widget.fields) f.key: TextEditingController(),
+    };
+  }
+
   Future<void> _save() async {
-    final hasAny = _complaintCtrl.text.trim().isNotEmpty ||
-        _planCtrl.text.trim().isNotEmpty ||
-        _trend1Ctrl.text.trim().isNotEmpty ||
-        _trend2Ctrl.text.trim().isNotEmpty;
+    final hasAny = _controllers.values.any((c) => c.text.trim().isNotEmpty);
     if (!hasAny) {
       setState(() {
         _validationError = 'يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.';
@@ -110,12 +113,8 @@ class _StructuredTemplateWidgetState extends State<_StructuredTemplateWidget> {
         specialty: widget.specialty,
         kind: 'structured_visit',
         data: {
-          'complaint': _complaintCtrl.text.trim(),
-          'plan': _planCtrl.text.trim(),
-          if (widget.trendFieldLabels.isNotEmpty)
-            widget.trendFieldLabels.first: _trend1Ctrl.text.trim(),
-          if (widget.trendFieldLabels.length > 1)
-            widget.trendFieldLabels[1]: _trend2Ctrl.text.trim(),
+          for (final entry in _controllers.entries)
+            entry.key: entry.value.text.trim(),
         },
         createdAt: DateTime.now(),
       ),
@@ -124,10 +123,9 @@ class _StructuredTemplateWidgetState extends State<_StructuredTemplateWidget> {
 
   @override
   void dispose() {
-    _complaintCtrl.dispose();
-    _planCtrl.dispose();
-    _trend1Ctrl.dispose();
-    _trend2Ctrl.dispose();
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -156,54 +154,22 @@ class _StructuredTemplateWidgetState extends State<_StructuredTemplateWidget> {
             ],
           ),
           const SizedBox(height: 10),
-          TextField(
-            controller: _complaintCtrl,
-            decoration: InputDecoration(
-              labelText: 'specialty_complaint_findings'.tr(),
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: widget.fields.map((f) {
+              return SizedBox(
+                width: 260,
                 child: TextField(
-                  controller: _planCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'الخطة العلاجية والمتابعة',
-                    border: OutlineInputBorder(),
+                  controller: _controllers[f.key],
+                  decoration: InputDecoration(
+                    labelText: f.labelAr,
+                    border: const OutlineInputBorder(),
                     isDense: true,
                   ),
                 ),
-              ),
-              if (widget.trendFieldLabels.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _trend1Ctrl,
-                    decoration: InputDecoration(
-                      labelText: widget.trendFieldLabels.first,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                ),
-              ],
-              if (widget.trendFieldLabels.length > 1) ...[
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _trend2Ctrl,
-                    decoration: InputDecoration(
-                      labelText: widget.trendFieldLabels[1],
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                ),
-              ],
-            ],
+              );
+            }).toList(),
           ),
           const SizedBox(height: 8),
           if (_validationError != null) ...[
