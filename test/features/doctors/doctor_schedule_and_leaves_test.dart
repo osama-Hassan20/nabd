@@ -497,7 +497,7 @@ void main() {
     test('Adding leave with conflicting active bookings returns ConflictingBookingsFailure if force is false', () async {
       roleProvider.setRole(UserRoleEnum.admin);
 
-      final leaveDate = DateTime(2026, 12, 10);
+      final leaveDate = DateTime.now().add(const Duration(days: 25));
       final booking = BookingModel(
         id: 'TEST-BKG-1',
         doctorId: 'DOC-01',
