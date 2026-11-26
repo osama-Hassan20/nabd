@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
@@ -5,12 +6,16 @@ import 'package:eyadty/core/offline/repositories/offline_first_specialty_records
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
+import 'package:eyadty/features/patients/domain/repo/patients_repo.dart';
 import 'package:eyadty/features/specialty_records/data/models/specialty_record_entry_model.dart';
 import 'package:eyadty/features/specialty_records/domain/helpers/pediatrics_growth_and_vaccine_helper.dart';
 import 'package:eyadty/features/specialty_records/domain/specialty_record_module.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 
 class PediatricsModule implements SpecialtyRecordModule {
+  /// Default pediatric age cutoff (pending owner decision if another cutoff is desired).
+  static const int defaultPediatricAgeCutoffYears = 18;
+
   const PediatricsModule();
 
   @override
@@ -96,11 +101,13 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
   final _hcCtrl = TextEditingController();
   final _feedingCtrl = TextEditingController();
   final _milestonesCtrl = TextEditingController();
+  DateTime? _dob;
   List<SpecialtyRecordEntryModel> _entries = [];
 
   @override
   void initState() {
     super.initState();
+    _dob = widget.dob;
     if (widget.initialWeight != null) {
       _weightCtrl.text = widget.initialWeight.toString();
     }
@@ -111,6 +118,16 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
   }
 
   Future<void> _load() async {
+    if (_dob == null &&
+        widget.patientId.isNotEmpty &&
+        getIt.isRegistered<PatientsRepo>()) {
+      final pRes = await getIt<PatientsRepo>().getPatientById(id: widget.patientId);
+      pRes.fold((_) {}, (p) {
+        if (mounted && p.dateOfBirth != null) {
+          setState(() => _dob = p.dateOfBirth);
+        }
+      });
+    }
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     final res = await getIt<OfflineFirstSpecialtyRecordsRepo>().getEntriesForPatient(
       patientId: widget.patientId,
@@ -121,14 +138,24 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
     });
   }
 
+  int? _ageYears() {
+    if (_dob == null) return null;
+    final now = DateTime.now();
+    int y = now.year - _dob!.year;
+    if (now.month < _dob!.month || (now.month == _dob!.month && now.day < _dob!.day)) {
+      y--;
+    }
+    return y < 0 ? 0 : y;
+  }
+
   Future<void> _saveGrowthEntry() async {
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     final w = double.tryParse(_weightCtrl.text.trim());
     final h = double.tryParse(_heightCtrl.text.trim());
     final hc = double.tryParse(_hcCtrl.text.trim());
     final bmi = PediatricsGrowthAndVaccineHelper.computeBmi(w, h);
-    final ageMonths = widget.dob != null
-        ? DateTime.now().difference(widget.dob!).inDays ~/ 30
+    final ageMonths = _dob != null
+        ? DateTime.now().difference(_dob!).inDays ~/ 30
         : 12;
     final percentile = w != null
         ? PediatricsGrowthAndVaccineHelper.estimateWeightPercentileBand(ageMonths, w)
@@ -189,16 +216,29 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final ageYears = _ageYears();
+    final isAdult = ageYears != null &&
+        ageYears >= PediatricsModule.defaultPediatricAgeCutoffYears;
+
+    final growthEntries =
+        _entries.where((e) => e.kind == 'pediatrics_growth').toList();
+
     final givenMap = <String, Map<String, dynamic>>{};
     for (final e in _entries.where((e) => e.kind == 'pediatrics_vaccine')) {
       final code = e.data['code']?.toString();
       if (code != null) givenMap[code] = e.data;
     }
-    final dob = widget.dob ?? DateTime.now().subtract(const Duration(days: 365));
-    final schedule = PediatricsGrowthAndVaccineHelper.buildEgyptianSchedule(
-      dob: dob,
-      givenByCode: givenMap,
-    );
+
+    final schedule = (!isAdult && _dob != null)
+        ? PediatricsGrowthAndVaccineHelper.buildEgyptianSchedule(
+            dob: _dob!,
+            givenByCode: givenMap,
+          )
+        : const <PediatricsVaccineDose>[];
+
+    final nextDue = schedule
+        .where((d) => d.status == 'due')
+        .toList();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -215,7 +255,7 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
               const Icon(Icons.child_care_outlined, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
-                'سجل الأطفال والنمو (${PediatricsGrowthAndVaccineHelper.formatPediatricAge(widget.dob)})',
+                'سجل الأطفال والنمو (${PediatricsGrowthAndVaccineHelper.formatPediatricAge(_dob)})',
                 style: CustomAppFontStyle.bold14,
               ),
             ],
@@ -225,6 +265,21 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
             PediatricsGrowthAndVaccineHelper.medicalDisclaimer,
             style: CustomAppFontStyle.regular11.copyWith(color: AppColors.warning),
           ),
+          if (isAdult) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.warning),
+              ),
+              child: Text(
+                'تنبيه: عمر المريض ($ageYears سنة) أكبر من حد الأطفال (${PediatricsModule.defaultPediatricAgeCutoffYears} سنة)؛ تم إخفاء جدول تطعيمات الأطفال.',
+                style: CustomAppFontStyle.medium12.copyWith(color: AppColors.warning),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [
@@ -282,9 +337,9 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
               Expanded(
                 child: TextField(
                   controller: _milestonesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'تطور النمو (Milestones)',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: 'pediatrics_milestones'.tr(),
+                    border: const OutlineInputBorder(),
                     isDense: true,
                   ),
                 ),
@@ -300,30 +355,59 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
               label: const Text('حفظ قياسات النمو'),
             ),
           ),
-          const Divider(height: 20),
-          Text('جدول التطعيمات المصري (مرجعي):', style: CustomAppFontStyle.semiBold13),
-          const SizedBox(height: 6),
-          ...schedule.map((dose) => ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text(dose.nameAr, style: CustomAppFontStyle.medium12),
-                subtitle: Text(
-                  dose.status == 'given'
-                      ? 'تم التطعيم (${dose.batchNumber ?? ''})'
-                      : (dose.status == 'overdue' ? 'متأخر' : 'مستحق'),
-                  style: CustomAppFontStyle.regular11.copyWith(
-                    color: dose.status == 'given'
-                        ? const Color(0xFF10B981)
-                        : (dose.status == 'overdue' ? AppColors.error : AppColors.warning),
+          if (growthEntries.isNotEmpty) ...[
+            const Divider(height: 20),
+            Text('سجل قياسات النمو ومنحنى المئينات (${growthEntries.length}):',
+                style: CustomAppFontStyle.semiBold13),
+            const SizedBox(height: 6),
+            ...growthEntries.map((e) {
+              return Text(
+                '• وزن: ${e.data['weightKg'] ?? '-'} كجم | طول: ${e.data['heightCm'] ?? '-'} سم | محيط الرأس: ${e.data['headCircumferenceCm'] ?? '-'} سم | BMI: ${e.data['bmi'] ?? '-'} (${e.data['percentileBand'] ?? ''})',
+                style: CustomAppFontStyle.regular12,
+              );
+            }),
+          ],
+          if (!isAdult && _dob != null) ...[
+            const Divider(height: 20),
+            Row(
+              children: [
+                Text('جدول التطعيمات المصري (مرجعي):',
+                    style: CustomAppFontStyle.semiBold13),
+                const Spacer(),
+                if (nextDue.isNotEmpty)
+                  Text(
+                    'التطعيم القادم: ${DateFormat('yyyy-MM-dd').format(nextDue.first.dueDate)}',
+                    style: CustomAppFontStyle.medium11
+                        .copyWith(color: AppColors.primary),
                   ),
-                ),
-                trailing: dose.status != 'given'
-                    ? TextButton(
-                        onPressed: () => _markVaccineGiven(dose),
-                        child: const Text('تسجيل التطعيم'),
-                      )
-                    : const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 18),
-              )),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ...schedule.map((dose) => ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(dose.nameAr, style: CustomAppFontStyle.medium12),
+                  subtitle: Text(
+                    dose.status == 'given'
+                        ? 'تم التطعيم (${dose.batchNumber ?? ''})'
+                        : '${dose.status == 'overdue' ? 'متأخر' : 'مستحق'} • ${DateFormat('yyyy-MM-dd').format(dose.dueDate)}',
+                    style: CustomAppFontStyle.regular11.copyWith(
+                      color: dose.status == 'given'
+                          ? const Color(0xFF10B981)
+                          : (dose.status == 'overdue'
+                              ? AppColors.error
+                              : AppColors.warning),
+                    ),
+                  ),
+                  trailing: dose.status != 'given'
+                      ? TextButton(
+                          onPressed: () => _markVaccineGiven(dose),
+                          child: const Text('تسجيل التطعيم'),
+                        )
+                      : const Icon(Icons.check_circle,
+                          color: Color(0xFF10B981), size: 18),
+                )),
+          ],
         ],
       ),
     );

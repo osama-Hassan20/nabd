@@ -868,9 +868,11 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: colors.borderSubtle),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Row(
                       children: [
                         Icon(
@@ -880,7 +882,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'بيانات الأنثى',
+                          'female_health_details'.tr(),
                           style: CustomAppFontStyle.semiBold13.copyWith(
                             color: colors.textPrimary,
                           ),
@@ -1152,6 +1154,7 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
                       ),
                     ],
                   ],
+                ),
                 ),
               );
             },

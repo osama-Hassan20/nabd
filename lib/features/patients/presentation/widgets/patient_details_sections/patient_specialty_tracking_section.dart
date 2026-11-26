@@ -76,7 +76,7 @@ class _PatientSpecialtyTrackingSectionState
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'معرض مقارنة البداية والنهاية (Before/After) وسجلات المتابعة الدورية الخاصة بالتخصصات',
+                          'before_after_subtitle'.tr(),
                           style: CustomAppFontStyle.regular12.copyWith(
                             color: colors.textSecondary,
                           ),
@@ -94,7 +94,7 @@ class _PatientSpecialtyTrackingSectionState
                       borderRadius: BorderRadius.circular(8),
                       onTap: () => _showAddGalleryItemDialog(context),
                       child: Text(
-                        '+ إضافة مقارنة Before/After',
+                        'add_before_after_comparison'.tr(),
                         style: CustomAppFontStyle.medium12.copyWith(
                           color: Colors.white,
                         ),

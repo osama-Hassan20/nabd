@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
@@ -127,9 +128,9 @@ class _StructuredTemplateWidgetState extends State<_StructuredTemplateWidget> {
           const SizedBox(height: 10),
           TextField(
             controller: _complaintCtrl,
-            decoration: const InputDecoration(
-              labelText: 'الشكوى والفحص (Complaint & Findings)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: 'specialty_complaint_findings'.tr(),
+              border: const OutlineInputBorder(),
               isDense: true,
             ),
           ),

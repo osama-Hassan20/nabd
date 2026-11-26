@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
@@ -21,7 +22,7 @@ class ObstetricsGynecologyModule implements SpecialtyRecordModule {
 
   @override
   Map<String, dynamic> emptyEntry() => {
-        'visitKind': 'antenatal', // 'antenatal', 'ultrasound', 'delivery', 'gyn'
+        'visitKind': 'antenatal',
         'weightKg': null,
         'bp': '',
         'fundalHeightCm': null,
@@ -46,14 +47,27 @@ class ObstetricsGynecologyModule implements SpecialtyRecordModule {
     return errors;
   }
 
-  static String formatPregnancyCountdown(PatientModel? patient) {
+  static String trimesterLabel(int weeks) {
+    if (weeks < 14) return 'الثلث الأول';
+    if (weeks < 28) return 'الثلث الثاني';
+    return 'الثلث الثالث';
+  }
+
+  static String formatPregnancyCountdown(PatientModel? patient, {DateTime? now}) {
     if (patient == null || patient.isPregnant != true) {
       return 'لا يوجد حمل نشط مسجل';
     }
-    final month = patient.gestationalMonth() ?? 1;
-    final weeks = patient.gestationalWeeks() ?? 0;
+    final current = now ?? DateTime.now();
+    final month = patient.gestationalMonth(customNow: current) ?? 1;
+    final weeks = patient.gestationalWeeks(customNow: current) ?? 0;
     final remainingWeeks = (40 - weeks).clamp(0, 40);
-    return 'الشهر $month من 9 / باقي $remainingWeeks أسبوع';
+    final monthsRemaining = (9 - month).clamp(0, 9);
+    final edd = patient.computedEdd;
+    final overdue = edd != null && current.isAfter(edd);
+    final eddText = edd != null ? DateFormat('yyyy-MM-dd').format(edd) : '-';
+    final base =
+        'الشهر $month من 9 (${trimesterLabel(weeks)}) • الأسبوع $weeks • باقي $remainingWeeks أسبوع ($monthsRemaining أشهر) • EDD: $eddText';
+    return overdue ? '$base • تحذير: تجاوز موعد الولادة المتوقع!' : base;
   }
 
   @override
@@ -89,19 +103,30 @@ class _ObGynRecordWidget extends StatefulWidget {
 }
 
 class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
+  final _weightCtrl = TextEditingController();
   final _bpCtrl = TextEditingController();
   final _fhrCtrl = TextEditingController();
   final _fundalCtrl = TextEditingController();
   final _usNotesCtrl = TextEditingController();
+  PatientModel? _patient;
   List<SpecialtyRecordEntryModel> _entries = [];
 
   @override
   void initState() {
     super.initState();
+    _patient = widget.patient;
     _load();
   }
 
   Future<void> _load() async {
+    if (_patient == null &&
+        widget.patientId.isNotEmpty &&
+        getIt.isRegistered<PatientsRepo>()) {
+      final pRes = await getIt<PatientsRepo>().getPatientById(id: widget.patientId);
+      pRes.fold((_) {}, (p) {
+        if (mounted) setState(() => _patient = p);
+      });
+    }
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     final res = await getIt<OfflineFirstSpecialtyRecordsRepo>().getEntriesForPatient(
       patientId: widget.patientId,
@@ -121,11 +146,12 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
       specialty: MedicalSpecialty.obstetricsGynecology,
       kind: 'obgyn_antenatal',
       data: {
+        'weightKg': double.tryParse(_weightCtrl.text.trim()),
         'bp': _bpCtrl.text.trim(),
         'fhrBpm': int.tryParse(_fhrCtrl.text.trim()),
         'fundalHeightCm': double.tryParse(_fundalCtrl.text.trim()),
         'ultrasoundNotes': _usNotesCtrl.text.trim(),
-        'gestationalWeeks': widget.patient?.gestationalWeeks(),
+        'gestationalWeeks': _patient?.gestationalWeeks(),
       },
       createdAt: DateTime.now(),
     );
@@ -150,12 +176,12 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
     );
     await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(entry);
 
-    if (widget.patient != null && getIt.isRegistered<PatientsRepo>()) {
+    if (_patient != null && getIt.isRegistered<PatientsRepo>()) {
       await getIt<PatientsRepo>().updatePatient(
-        patient: widget.patient!.copyWith(
+        patient: _patient!.copyWith(
           isPregnant: false,
           isNursing: true,
-          paraCount: (widget.patient!.paraCount ?? 0) + 1,
+          paraCount: (_patient!.paraCount ?? 0) + 1,
         ),
       );
     }
@@ -164,6 +190,7 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
 
   @override
   void dispose() {
+    _weightCtrl.dispose();
     _bpCtrl.dispose();
     _fhrCtrl.dispose();
     _fundalCtrl.dispose();
@@ -173,8 +200,10 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final countdown =
-        ObstetricsGynecologyModule.formatPregnancyCountdown(widget.patient);
+    final countdown = ObstetricsGynecologyModule.formatPregnancyCountdown(_patient);
+    final isOverdue = _patient?.isPregnant == true &&
+        _patient?.computedEdd != null &&
+        DateTime.now().isAfter(_patient!.computedEdd!);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -193,27 +222,44 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
               Expanded(
                 child: Text('ملف النساء والتوليد', style: CustomAppFontStyle.bold14),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  countdown,
-                  style: CustomAppFontStyle.semiBold12.copyWith(color: AppColors.primary),
-                ),
-              ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isOverdue
+                  ? AppColors.error.withValues(alpha: 0.1)
+                  : AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              countdown,
+              style: CustomAppFontStyle.semiBold12.copyWith(
+                color: isOverdue ? AppColors.error : AppColors.primary,
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: TextField(
+                  controller: _weightCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'الوزن (كجم)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
                   controller: _bpCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'ضغط الدم (BP)',
+                    labelText: 'ضغط الدم',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -225,7 +271,7 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
                   controller: _fhrCtrl,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'نبض الجنين (FHR)',
+                    labelText: 'نبض الجنين',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -258,7 +304,7 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if (widget.patient?.isPregnant == true)
+              if (_patient?.isPregnant == true)
                 TextButton(
                   onPressed: _recordDeliveryOutcome,
                   child: const Text('تسجيل ولادة (إنهاء الحمل)'),
@@ -273,9 +319,11 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
           ),
           if (_entries.isNotEmpty) ...[
             const Divider(height: 18),
-            Text('الزيارات المسجلة (${_entries.length}):', style: CustomAppFontStyle.semiBold12),
-            ..._entries.take(3).map((e) => Text(
-                  '• ${e.kind}: BP=${e.data['bp'] ?? '-'} | FHR=${e.data['fhrBpm'] ?? '-'}',
+            Text('سجل زيارات المتابعة (${_entries.length}):',
+                style: CustomAppFontStyle.semiBold12),
+            const SizedBox(height: 4),
+            ..._entries.map((e) => Text(
+                  '• وزن: ${e.data['weightKg'] ?? '-'} | ضغط: ${e.data['bp'] ?? '-'} | نبض الجنين: ${e.data['fhrBpm'] ?? '-'} | رحم: ${e.data['fundalHeightCm'] ?? '-'} | سونار: ${e.data['ultrasoundNotes'] ?? '-'}',
                   style: CustomAppFontStyle.regular12,
                 )),
           ],

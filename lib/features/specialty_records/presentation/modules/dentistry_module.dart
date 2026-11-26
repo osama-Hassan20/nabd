@@ -47,7 +47,7 @@ class DentistryModule implements SpecialtyRecordModule {
     final errors = <String>[];
     final fdi = entry['toothFdi'] as int?;
     if (fdi == null || (!adultFdiTeeth.contains(fdi) && !childFdiTeeth.contains(fdi))) {
-      errors.add('رقم السن (FDI) غير صالح');
+      errors.add('رقم السن غير صالح');
     }
     return errors;
   }
@@ -98,7 +98,18 @@ class _DentistryRecordWidget extends StatefulWidget {
 class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
   int _selectedTooth = 16;
   String _selectedProc = 'علاج عصب';
+  String _selectedStatus = 'حشو';
+  final _materialCtrl = TextEditingController(text: 'كومبوزيت');
+  final _priceCtrl = TextEditingController(text: '500');
   List<SpecialtyRecordEntryModel> _toothEntries = [];
+
+  static const Map<String, Color> _statusColors = {
+    'سليم': Color(0xFFE2E8F0),
+    'تسوس': Color(0xFFFEE2E2),
+    'حشو': Color(0xFFDBEAFE),
+    'عصب': Color(0xFFFEF3C7),
+    'مفقود': Color(0xFFE5E7EB),
+  };
 
   @override
   void initState() {
@@ -124,6 +135,7 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
 
   Future<void> _saveToothPlan() async {
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
+    final price = num.tryParse(_priceCtrl.text.trim()) ?? 500;
     final entry = SpecialtyRecordEntryModel(
       id: '',
       patientId: widget.patientId,
@@ -132,15 +144,27 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
       kind: 'dentistry_tooth',
       data: {
         'toothFdi': _selectedTooth,
+        'toothStatus': _selectedStatus,
         'procedure': _selectedProc,
+        'materials': _materialCtrl.text.trim(),
+        'pricePerSession': price,
         'sessionIndex': 1,
         'totalSessions': _selectedProc == 'علاج عصب' ? 3 : 1,
+        'nextSessionDate':
+            DateTime.now().add(const Duration(days: 7)).toIso8601String(),
         'status': 'done',
       },
       createdAt: DateTime.now(),
     );
     await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(entry);
     await _load();
+  }
+
+  @override
+  void dispose() {
+    _materialCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -163,21 +187,49 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'مخطط الأسنان (FDI - ${teeth.length} سن)',
+                'مخطط الأسنان (${teeth.length} سن)',
                 style: CustomAppFontStyle.bold14,
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: _statusColors.entries.map((entry) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: entry.value,
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(color: AppColors.grayE2E8F0),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(entry.key, style: CustomAppFontStyle.regular11),
+                    ],
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
                 children: teeth.map((t) {
-                  final hasWork = _toothEntries.any((e) => e.data['toothFdi'] == t);
+                  final match = _toothEntries
+                      .where((e) => e.data['toothFdi'] == t)
+                      .toList();
+                  final status = match.isNotEmpty
+                      ? (match.first.data['toothStatus']?.toString() ?? 'حشو')
+                      : 'سليم';
                   final isSel = _selectedTooth == t;
                   return ChoiceChip(
                     label: Text('$t'),
                     selected: isSel,
                     selectedColor: AppColors.primaryLight,
-                    backgroundColor: hasWork ? const Color(0xFFFEF3C7) : null,
+                    backgroundColor: _statusColors[status],
                     onSelected: (_) => setState(() => _selectedTooth = t),
                   );
                 }).toList(),
@@ -185,6 +237,23 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
               const SizedBox(height: 10),
               Row(
                 children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _selectedStatus,
+                      decoration: const InputDecoration(
+                        labelText: 'حالة السن',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      items: _statusColors.keys
+                          .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) setState(() => _selectedStatus = v);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _selectedProc,
@@ -199,6 +268,33 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
                       onChanged: (v) {
                         if (v != null) setState(() => _selectedProc = v);
                       },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _materialCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'المادة المستخدمة',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _priceCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'سعر الجلسة (ج.م)',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),

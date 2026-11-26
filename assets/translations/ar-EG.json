@@ -1630,5 +1630,16 @@
   "marital_single": "آنسة / أعزب",
   "marital_married": "مدام / متزوج",
   "marital_divorced": "مطلقة / مطلق",
-  "marital_widowed": "أرملة / أرمل"
+  "marital_widowed": "أرملة / أرمل",
+  "specialty_complaint_findings": "الشكوى والفحص السريري",
+  "pediatrics_milestones": "تطور النمو والمهارات",
+  "before_after_photos": "صور قبل وبعد",
+  "add_before_after_comparison": "+ إضافة مقارنة قبل وبعد",
+  "before_after_subtitle": "معرض مقارنة البداية والنهاية وسجلات المتابعة الدورية الخاصة بالتخصصات",
+  "ophth_iop_acuity": "فحص العيون وضغط العين وحدة الإبصار",
+  "ophth_iop_right": "ضغط العين اليمنى",
+  "ophth_iop_left": "ضغط العين اليسرى",
+  "ophth_va_right": "حدة الإبصار (يمين)",
+  "ophth_va_left": "حدة الإبصار (يسار)",
+  "ophth_glasses_rx": "وصفة النظارة (التحدب / الاستجماتيزم / المحور)"
 }

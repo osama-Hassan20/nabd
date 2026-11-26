@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
@@ -6,7 +5,6 @@ import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
 import 'package:eyadty/features/patients/presentation/manager/patients_cubit.dart';
-import 'package:eyadty/features/patients/presentation/manager/patients_state.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
 
 class PatientClinicalAlertsBanner extends StatelessWidget {

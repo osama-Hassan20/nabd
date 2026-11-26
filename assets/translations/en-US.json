@@ -1630,5 +1630,16 @@
   "marital_single": "Single",
   "marital_married": "Married",
   "marital_divorced": "Divorced",
-  "marital_widowed": "Widowed"
+  "marital_widowed": "Widowed",
+  "specialty_complaint_findings": "Complaint & Findings",
+  "pediatrics_milestones": "Developmental Milestones",
+  "before_after_photos": "Before / After Photos",
+  "add_before_after_comparison": "+ Add Before / After",
+  "before_after_subtitle": "Before & After gallery and periodic specialty follow-up records",
+  "ophth_iop_acuity": "Ophthalmology Exam (IOP & Visual Acuity)",
+  "ophth_iop_right": "Right Eye IOP",
+  "ophth_iop_left": "Left Eye IOP",
+  "ophth_va_right": "Right Eye VA",
+  "ophth_va_left": "Left Eye VA",
+  "ophth_glasses_rx": "Glasses Rx (Sphere / Cyl / Axis)"
 }

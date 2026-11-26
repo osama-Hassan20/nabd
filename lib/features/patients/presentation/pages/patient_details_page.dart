@@ -21,7 +21,6 @@ import 'package:eyadty/features/patients/presentation/widgets/patient_details_se
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_emr_tab_bar.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_lab_radiology_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_profile_card_section.dart';
-import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_specialty_tracking_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_stats_cards_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_surgical_history_section.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_treatment_plans_section.dart';

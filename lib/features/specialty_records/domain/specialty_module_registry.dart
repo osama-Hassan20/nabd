@@ -6,6 +6,7 @@ import 'package:eyadty/features/specialty_records/domain/specialty_record_module
 import 'package:eyadty/features/specialty_records/presentation/modules/chronic_and_msk_modules.dart';
 import 'package:eyadty/features/specialty_records/presentation/modules/dentistry_module.dart';
 import 'package:eyadty/features/specialty_records/presentation/modules/dermatology_cosmetic_module.dart';
+import 'package:eyadty/features/specialty_records/presentation/modules/nutrition_module.dart';
 import 'package:eyadty/features/specialty_records/presentation/modules/obgyn_module.dart';
 import 'package:eyadty/features/specialty_records/presentation/modules/ophthalmology_module.dart';
 import 'package:eyadty/features/specialty_records/presentation/modules/pediatrics_module.dart';
@@ -56,10 +57,7 @@ class SpecialtyModuleRegistry {
           trendFieldLabels: ['مقياس المزاج / النوم'],
         );
       case MedicalSpecialty.nutrition:
-        return const StructuredGenericModule(
-          specialty: MedicalSpecialty.nutrition,
-          trendFieldLabels: ['السعرات المستهدفة', 'نسبة الدهون'],
-        );
+        return const NutritionModule();
       case MedicalSpecialty.generalSurgery:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.generalSurgery,

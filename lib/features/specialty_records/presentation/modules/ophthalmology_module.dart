@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
@@ -117,23 +118,23 @@ class _OphthalmologyFormWidgetState extends State<_OphthalmologyFormWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('فحص العيون والانكسار (IOP / VA / Rx)', style: CustomAppFontStyle.bold14),
+          Text('ophth_iop_acuity'.tr(), style: CustomAppFontStyle.bold14),
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: TextField(controller: _iopRCtrl, decoration: const InputDecoration(labelText: 'IOP OD', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _iopRCtrl, decoration: InputDecoration(labelText: 'ophth_iop_right'.tr(), border: const OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: _iopLCtrl, decoration: const InputDecoration(labelText: 'IOP OS', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _iopLCtrl, decoration: InputDecoration(labelText: 'ophth_iop_left'.tr(), border: const OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: _vaRCtrl, decoration: const InputDecoration(labelText: 'VA OD', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _vaRCtrl, decoration: InputDecoration(labelText: 'ophth_va_right'.tr(), border: const OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: _vaLCtrl, decoration: const InputDecoration(labelText: 'VA OS', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _vaLCtrl, decoration: InputDecoration(labelText: 'ophth_va_left'.tr(), border: const OutlineInputBorder(), isDense: true))),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: TextField(controller: _refractionCtrl, decoration: const InputDecoration(labelText: 'وصفة النظارة (Sph / Cyl / Axis)', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _refractionCtrl, decoration: InputDecoration(labelText: 'ophth_glasses_rx'.tr(), border: const OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
               ElevatedButton(onPressed: _save, child: const Text('حفظ الفحص')),
             ],
