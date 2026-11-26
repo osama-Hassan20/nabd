@@ -128,12 +128,14 @@ class _AppLayoutState extends State<AppLayout> {
                             child: Column(
                               spacing: 16,
                               children: [
-                                SizedBox(
-                                  height: AdaptiveLayout.getResponsiveValue(
-                                    context: context,
-                                    mobile: 82,
-                                    tablet: 82,
-                                    desktop: 90,
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: AdaptiveLayout.getResponsiveValue(
+                                      context: context,
+                                      mobile: 65,
+                                      tablet: 70,
+                                      desktop: 76,
+                                    ),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
