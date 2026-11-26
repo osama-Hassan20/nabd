@@ -536,49 +536,6 @@ class DrugsMockRepoImpl implements DrugsRepo {
     // ─── Prescription Templates Seed ─────────────────────────────────────────
     _templates.addAll([
       PrescriptionTemplateModel(
-        id: 'TPL-000',
-        doctorId: 'DOC-01',
-        name: 'بروتوكول مغص معوي حاد وتقلصات',
-        description: 'تسكين فوري للمغص والتقلصات المعوية واضطرابات القولون',
-        isActive: true,
-        createdAt: seedDate,
-        updatedAt: seedDate,
-        items: const [
-          PrescriptionTemplateItemModel(
-            drugId: 'DRUG-016',
-            drugName: 'Visceralgine 50mg',
-            scientificName: 'Tiemonium Methylsulfate',
-            concentration: '50mg',
-            dosage: 'قرص واحد',
-            frequency: '3 مرات يومياً قبل الوجبات',
-            duration: '5 أيام',
-            instructions: 'يؤخذ عند الشعور بالمغص أو قبل الوجبات بنصف ساعة',
-            orderIndex: 0,
-          ),
-          PrescriptionTemplateItemModel(
-            drugId: 'DRUG-015',
-            drugName: 'Motinorm 10mg',
-            scientificName: 'Domperidone',
-            concentration: '10mg',
-            dosage: 'قرص واحد',
-            frequency: '3 مرات يومياً قبل الأكل',
-            duration: '5 أيام',
-            instructions: 'لتنظيم حركة المعدة ومنع الغثيان',
-            orderIndex: 1,
-          ),
-          PrescriptionTemplateItemModel(
-            drugId: 'DRUG-010',
-            drugName: 'Panadol Extra',
-            scientificName: 'Paracetamol / Caffeine',
-            concentration: '500mg/65mg',
-            dosage: 'قرصان',
-            frequency: 'عند اللزوم كل 6 ساعات',
-            duration: '3 أيام',
-            orderIndex: 2,
-          ),
-        ],
-      ),
-      PrescriptionTemplateModel(
         id: 'TPL-001',
         doctorId: 'DOC-01',
         name: 'بروتوكول نزلة معوية',
@@ -884,7 +841,7 @@ class DrugsMockRepoImpl implements DrugsRepo {
     final matches = _templates.where((t) {
       if (t.isActive != true) return false;
       if (doctorId.isEmpty) return true;
-      return t.doctorId == doctorId || t.doctorId == null || t.doctorId == 'DOC-01';
+      return t.doctorId == doctorId;
     }).toList();
     return Right(matches);
   }

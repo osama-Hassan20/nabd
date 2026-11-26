@@ -256,7 +256,7 @@ void main() {
       await tester.tap(submitBtn);
       await tester.pumpAndSettle();
 
-      expect(find.text('required_field'.tr()), findsOneWidget);
+      expect(find.text('please_enter_branch_name'.tr()), findsOneWidget);
     });
 
     testWidgets('ToggleBranchStatusDialog blocks deactivating main branch', (tester) async {

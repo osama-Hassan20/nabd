@@ -162,7 +162,7 @@ void main() {
   });
 
   group('PatientModel Helpers & Calculations', () {
-    test('Contains exactly 38 fields', () {
+    test('Contains exactly 44 fields', () {
       final now = DateTime(2026, 11, 7);
       final lmp = DateTime(2026, 10, 15);
       final p = PatientModel(
@@ -206,8 +206,8 @@ void main() {
         updatedAt: now,
       );
 
-      // Verify all 38 fields are assigned
-      expect(p.props.length, 38);
+      // Verify all 44 fields are assigned
+      expect(p.props.length, 44);
       expect(p.phoneHasWhatsapp, isTrue);
       expect(p.lastMenstrualPeriodDate, lmp);
       expect(p.detailedAddress, 'شارع عباس العقاد');

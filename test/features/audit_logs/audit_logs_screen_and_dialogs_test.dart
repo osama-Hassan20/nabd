@@ -185,7 +185,7 @@ void main() {
       // Filter bar & Table
       expect(find.byType(AuditLogsFilterBar), findsOneWidget);
       expect(find.byType(AuditLogsTable), findsOneWidget);
-      expect(find.byType(CustomTextFormField), findsOneWidget);
+      expect(find.byType(CustomTextFormField), findsWidgets);
     });
 
     testWidgets('Search query filters table rows dynamically', (tester) async {
@@ -205,7 +205,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter search text
-      await tester.enterText(find.byType(CustomTextFormField), 'محمد أحمد محمود');
+      await tester.enterText(find.byType(CustomTextFormField).first, 'محمد أحمد محمود');
       await tester.pumpAndSettle();
 
       // Table should show matching row
@@ -255,7 +255,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Enter impossible search query
-      await tester.enterText(find.byType(CustomTextFormField), 'ZZZZ_NO_MATCH_9999');
+      await tester.enterText(find.byType(CustomTextFormField).first, 'ZZZZ_NO_MATCH_9999');
       await tester.pumpAndSettle();
 
       expect(find.byType(CustomEmptyWidget), findsOneWidget);

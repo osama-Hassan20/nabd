@@ -299,7 +299,7 @@ void main() {
 
       // Select Doctor role chip
       final doctorChip = find.byWidgetPredicate(
-        (w) => w is FilterChip && (w.label is Text && (w.label as Text).data == 'طبيب'),
+        (w) => w is ChoiceChip && (w.label is Text && (w.label as Text).data == 'طبيب'),
       );
       expect(doctorChip, findsOneWidget);
       await tester.tap(doctorChip);

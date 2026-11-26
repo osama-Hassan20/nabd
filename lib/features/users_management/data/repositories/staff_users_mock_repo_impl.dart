@@ -382,9 +382,10 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
             (storedPassword == password || storedPassword == cleanPassword)) ||
         cleanPassword == '123456' ||
         cleanPassword == '!Eyadty2026' ||
+        cleanPassword == 'password123' ||
         password == '123456' ||
         password == '!Eyadty2026' ||
-        cleanPassword.length >= 6; // Seamless access for demo accounts
+        password == 'password123';
 
     if (!isMatchingPassword) {
       auditLogger.log(

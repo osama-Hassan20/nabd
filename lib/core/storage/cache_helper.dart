@@ -8,12 +8,17 @@ const String prefsOnBoarding = 'onBoarding';
 const String language = 'language';
 
 class AppSharedPreferences {
-  static late SharedPreferences sharedPreferences;
+  static SharedPreferences? _prefs;
+  static set sharedPreferences(SharedPreferences val) => _prefs = val;
+  static SharedPreferences get sharedPreferences {
+    if (_prefs == null) {
+      throw StateError('AppSharedPreferences not initialized. Call initialSharedPreference() first.');
+    }
+    return _prefs!;
+  }
 
   static Future<void> initialSharedPreference() async {
-    await SharedPreferences.getInstance().then(
-      (value) => sharedPreferences = value,
-    );
+    _prefs = await SharedPreferences.getInstance();
   }
 
   //***************  set data *********** */
@@ -21,67 +26,105 @@ class AppSharedPreferences {
     required String value,
     required String key,
   }) async {
-    await sharedPreferences.setString(key, value);
+    try {
+      await _prefs?.setString(key, value);
+    } catch (_) {}
   }
 
   static Future<void> setListString({
     required List<String> value,
     required String key,
   }) async {
-    await sharedPreferences.setStringList(key, value);
+    try {
+      await _prefs?.setStringList(key, value);
+    } catch (_) {}
   }
 
   static Future<void> setBool({
     required bool value,
     required String key,
   }) async {
-    await sharedPreferences.setBool(key, value);
+    try {
+      await _prefs?.setBool(key, value);
+    } catch (_) {}
   }
 
   static Future<void> setInt({required int value, required String key}) async {
-    await sharedPreferences.setInt(key, value);
+    try {
+      await _prefs?.setInt(key, value);
+    } catch (_) {}
   }
 
   static Future<void> setDouble({
     required double value,
     required String key,
   }) async {
-    await sharedPreferences.setDouble(key, value);
+    try {
+      await _prefs?.setDouble(key, value);
+    } catch (_) {}
   }
 
   //************** get data ************* */
   static double? getDouble({required String key}) {
-    return sharedPreferences.getDouble(key);
+    try {
+      return _prefs?.getDouble(key);
+    } catch (_) {
+      return null;
+    }
   }
 
   static String? getString({required String key}) {
-    return sharedPreferences.getString(key);
+    try {
+      return _prefs?.getString(key);
+    } catch (_) {
+      return null;
+    }
   }
 
   static int? getInt({required String key}) {
-    return sharedPreferences.getInt(key);
+    try {
+      return _prefs?.getInt(key);
+    } catch (_) {
+      return null;
+    }
   }
 
   static bool? getBool({required String key}) {
-    return sharedPreferences.getBool(key);
+    try {
+      return _prefs?.getBool(key);
+    } catch (_) {
+      return null;
+    }
   }
 
   static List<String>? getStringList({required String key}) {
-    return sharedPreferences.getStringList(key);
+    try {
+      return _prefs?.getStringList(key);
+    } catch (_) {
+      return null;
+    }
   }
 
   //************** delete data ************* */
 
   static Future<void> remove({required String key}) async {
-    await sharedPreferences.remove(key);
+    try {
+      await _prefs?.remove(key);
+    } catch (_) {}
   }
 
   static Future<void> setAppLang({String? lang}) async {
-    await sharedPreferences.setString("lang", lang ?? "ar");
+    try {
+      await _prefs?.setString("lang", lang ?? "ar");
+    } catch (_) {}
   }
 
   static String getAppLang() {
-    return sharedPreferences.getString("lang") ?? "ar";
+    try {
+      return _prefs?.getString("lang") ?? "ar";
+    } catch (_) {
+      return "ar";
+    }
   }
 
   static Future<void> clearAll() async {

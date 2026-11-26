@@ -91,8 +91,12 @@ class DataModeService {
     this._syncCoordinator,
     bool initialReachable = true,
   })  : _reachabilityProbe = reachabilityProbe ?? _defaultHttpProbe {
-    final persistedForced =
-        AppSharedPreferences.getBool(key: forcedLocalKey) ?? false;
+    bool persistedForced = false;
+    try {
+      persistedForced = AppSharedPreferences.getBool(key: forcedLocalKey) ?? false;
+    } catch (_) {
+      persistedForced = false;
+    }
     _state = DataModeState(
       mode: _calculateEffectiveMode(
         forcedLocal: persistedForced,

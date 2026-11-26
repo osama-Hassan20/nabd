@@ -158,10 +158,14 @@ class BranchesTable extends StatelessWidget {
           children: [
             Icon(Icons.access_time_rounded, size: 14, color: colors.textSecondary),
             const SizedBox(width: 6),
-            Text(
-              hoursText,
-              style: CustomAppFontStyle.medium12.copyWith(
-                color: colors.textPrimary,
+            Flexible(
+              child: Text(
+                hoursText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: CustomAppFontStyle.medium12.copyWith(
+                  color: colors.textPrimary,
+                ),
               ),
             ),
           ],

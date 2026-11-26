@@ -1590,5 +1590,16 @@
   "conflicts_detected": "تعارضات بحاجة لمراجعة",
   "close": "إغلاق",
   "profile": "الملف الشخصي",
-  "log_out": "تسجيل الخروج"
+  "log_out": "تسجيل الخروج",
+  "please_enter_branch_name": "يرجى إدخال اسم الفرع",
+  "address_hint": "العنوان بالتفصيل",
+  "please_enter_address": "يرجى إدخال العنوان",
+  "address_and_contact": "العنوان والاتصال",
+  "rooms_and_staff": "العيادات والطاقم",
+  "saved_successfully": "تم الحفظ بنجاح",
+  "failed_to_save": "فشل الحفظ",
+  "default_hourly_rate_hint": "سعر الساعة الافتراضي",
+  "egp": "ج.م",
+  "drug_added_success": "تم إضافة الدواء بنجاح",
+  "no_active_compensation_rule": "لا توجد قاعدة تعويض نشطة للطبيب"
 }

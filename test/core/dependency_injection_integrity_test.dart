@@ -1,3 +1,4 @@
+import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +31,7 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    await AppSharedPreferences.initialSharedPreference();
     await GetIt.instance.reset();
     await setupGetIt();
   });
