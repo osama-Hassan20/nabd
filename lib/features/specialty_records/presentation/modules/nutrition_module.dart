@@ -132,6 +132,7 @@ class _NutritionRecordWidgetState extends State<_NutritionRecordWidget> {
 
   PatientModel? _patient;
   List<SpecialtyRecordEntryModel> _entries = [];
+  String? _validationError;
 
   @override
   void initState() {
@@ -175,6 +176,21 @@ class _NutritionRecordWidgetState extends State<_NutritionRecordWidget> {
   }
 
   Future<void> _saveMeasurement() async {
+    final hasAny = _weightCtrl.text.trim().isNotEmpty ||
+        _heightCtrl.text.trim().isNotEmpty ||
+        _waistCtrl.text.trim().isNotEmpty ||
+        _hipCtrl.text.trim().isNotEmpty ||
+        _bodyFatCtrl.text.trim().isNotEmpty ||
+        _intolerancesCtrl.text.trim().isNotEmpty ||
+        _supplementsCtrl.text.trim().isNotEmpty ||
+        _mealPlanCtrl.text.trim().isNotEmpty;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إدخال قياس أو خطة غذائية قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     final w = double.tryParse(_weightCtrl.text.trim());
     final h = double.tryParse(_heightCtrl.text.trim());
@@ -360,6 +376,13 @@ class _NutritionRecordWidgetState extends State<_NutritionRecordWidget> {
                 ],
               ),
               const SizedBox(height: 8),
+              if (_validationError != null) ...[
+                Text(
+                  _validationError!,
+                  style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+                ),
+                const SizedBox(height: 6),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -412,6 +435,13 @@ class _NutritionRecordWidgetState extends State<_NutritionRecordWidget> {
                 ],
               ),
               const SizedBox(height: 8),
+              if (_validationError != null) ...[
+                Text(
+                  _validationError!,
+                  style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+                ),
+                const SizedBox(height: 6),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -438,6 +468,13 @@ class _NutritionRecordWidgetState extends State<_NutritionRecordWidget> {
                 ],
               ),
               const SizedBox(height: 8),
+              if (_validationError != null) ...[
+                Text(
+                  _validationError!,
+                  style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+                ),
+                const SizedBox(height: 6),
+              ],
               Row(
                 children: [
                   Expanded(

@@ -74,8 +74,21 @@ class _OphthalmologyFormWidgetState extends State<_OphthalmologyFormWidget> {
   final _vaRCtrl = TextEditingController(text: '6/6');
   final _vaLCtrl = TextEditingController(text: '6/6');
   final _refractionCtrl = TextEditingController();
+  String? _validationError;
 
   Future<void> _save() async {
+    final hasAny = _iopRCtrl.text.trim().isNotEmpty ||
+        _iopLCtrl.text.trim().isNotEmpty ||
+        _vaRCtrl.text.trim().isNotEmpty ||
+        _vaLCtrl.text.trim().isNotEmpty ||
+        _refractionCtrl.text.trim().isNotEmpty;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(
       SpecialtyRecordEntryModel(
@@ -132,6 +145,13 @@ class _OphthalmologyFormWidgetState extends State<_OphthalmologyFormWidget> {
             ],
           ),
           const SizedBox(height: 8),
+          if (_validationError != null) ...[
+            Text(
+              _validationError!,
+              style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+            ),
+            const SizedBox(height: 6),
+          ],
           Row(
             children: [
               Expanded(child: TextField(controller: _refractionCtrl, decoration: InputDecoration(labelText: 'ophth_glasses_rx'.tr(), border: const OutlineInputBorder(), isDense: true))),

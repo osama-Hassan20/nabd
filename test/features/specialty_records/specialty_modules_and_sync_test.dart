@@ -42,14 +42,18 @@ void main() {
     });
 
     test('3. OB/GYN pregnancy countdown formats month and remaining weeks', () {
-      final lmp = DateTime.now().subtract(const Duration(days: 140)); // ~20w
+      final now = DateTime(2026, 11, 26, 12, 0);
+      final lmp = now.subtract(const Duration(days: 140)); // exactly 20w
       final patient = PatientModel(
         id: 'P-OB',
         gender: GenderEnum.female,
         isPregnant: true,
         lastMenstrualPeriodDate: lmp,
       );
-      final countdown = ObstetricsGynecologyModule.formatPregnancyCountdown(patient);
+      final countdown = ObstetricsGynecologyModule.formatPregnancyCountdown(
+        patient,
+        now: now,
+      );
       expect(countdown, contains('الشهر 5 من 9'));
       expect(countdown, contains('باقي 20 أسبوع'));
     });

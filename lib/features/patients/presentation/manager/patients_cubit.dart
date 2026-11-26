@@ -669,6 +669,11 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
     final finalPhone = (phone ?? form.phone).trim();
     final finalAddress = (address ?? form.detailedAddress).trim();
 
+    final effectiveGender = (form.gender == null || form.gender == GenderEnum.unknown) &&
+            (form.isPregnant || form.isNursing)
+        ? GenderEnum.female
+        : form.gender;
+
     final patientModel = PatientModel(
       id: form.id,
       fileNumber: form.fileNumber,
@@ -676,7 +681,7 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
       phone: finalPhone,
       phoneHasWhatsapp: form.phoneHasWhatsapp,
       dateOfBirth: form.dateOfBirth,
-      gender: form.gender,
+      gender: effectiveGender,
       bloodGroup: form.bloodGroup,
       allergies: form.allergies,
       chronicDiseases: form.chronicDiseases,

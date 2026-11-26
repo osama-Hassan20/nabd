@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_specialty_records_repo.dart';
@@ -124,7 +125,10 @@ class _BeforeAfterPhotoUploadCardState
     extends State<_BeforeAfterPhotoUploadCard> {
   final _beforeCtrl = TextEditingController();
   final _afterCtrl = TextEditingController();
-  final _notesCtrl = TextEditingController();
+  final _picker = ImagePicker();
+  String? _beforePath;
+  String? _afterPath;
+  String? _validationError;
   List<SpecialtyRecordEntryModel> _photos = [];
 
   @override
@@ -148,7 +152,35 @@ class _BeforeAfterPhotoUploadCardState
     });
   }
 
+  Future<void> _pickImage(bool isBefore) async {
+    try {
+      final file = await _picker.pickImage(source: ImageSource.gallery);
+      if (file == null || !mounted) return;
+      setState(() {
+        if (isBefore) {
+          _beforePath = file.path;
+          _beforeCtrl.text = file.name;
+        } else {
+          _afterPath = file.path;
+          _afterCtrl.text = file.name;
+        }
+        _validationError = null;
+      });
+    } catch (_) {}
+  }
+
   Future<void> _savePhotoEntry() async {
+    final hasAny = (_beforePath != null && _beforePath!.isNotEmpty) ||
+        (_afterPath != null && _afterPath!.isNotEmpty) ||
+        _beforeCtrl.text.trim().isNotEmpty ||
+        _afterCtrl.text.trim().isNotEmpty;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إرفاق صورة أو وصف واحد على الأقل قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(
       SpecialtyRecordEntryModel(
@@ -158,13 +190,10 @@ class _BeforeAfterPhotoUploadCardState
         specialty: widget.specialty,
         kind: 'before_after_photo',
         data: {
-          'beforeLabel': _beforeCtrl.text.trim().isEmpty
-              ? 'صورة قبل الإجراء'
-              : _beforeCtrl.text.trim(),
-          'afterLabel': _afterCtrl.text.trim().isEmpty
-              ? 'صورة بعد الإجراء'
-              : _afterCtrl.text.trim(),
-          'notes': _notesCtrl.text.trim(),
+          'beforeLabel': _beforeCtrl.text.trim(),
+          'afterLabel': _afterCtrl.text.trim(),
+          if (_beforePath != null) 'beforePath': _beforePath,
+          if (_afterPath != null) 'afterPath': _afterPath,
           'capturedAt': DateTime.now().toIso8601String(),
         },
         createdAt: DateTime.now(),
@@ -172,7 +201,8 @@ class _BeforeAfterPhotoUploadCardState
     );
     _beforeCtrl.clear();
     _afterCtrl.clear();
-    _notesCtrl.clear();
+    _beforePath = null;
+    _afterPath = null;
     await _load();
   }
 
@@ -180,7 +210,6 @@ class _BeforeAfterPhotoUploadCardState
   void dispose() {
     _beforeCtrl.dispose();
     _afterCtrl.dispose();
-    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -210,10 +239,15 @@ class _BeforeAfterPhotoUploadCardState
               Expanded(
                 child: TextField(
                   controller: _beforeCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'وصف / ملف صورة قبل',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: 'صورة قبل',
+                    border: const OutlineInputBorder(),
                     isDense: true,
+                    suffixIcon: IconButton(
+                      tooltip: 'اختيار صورة قبل',
+                      icon: const Icon(Icons.add_a_photo_outlined, size: 18),
+                      onPressed: () => _pickImage(true),
+                    ),
                   ),
                 ),
               ),
@@ -221,10 +255,15 @@ class _BeforeAfterPhotoUploadCardState
               Expanded(
                 child: TextField(
                   controller: _afterCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'وصف / ملف صورة بعد',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: 'صورة بعد',
+                    border: const OutlineInputBorder(),
                     isDense: true,
+                    suffixIcon: IconButton(
+                      tooltip: 'اختيار صورة بعد',
+                      icon: const Icon(Icons.add_a_photo_outlined, size: 18),
+                      onPressed: () => _pickImage(false),
+                    ),
                   ),
                 ),
               ),
@@ -236,10 +275,17 @@ class _BeforeAfterPhotoUploadCardState
               ),
             ],
           ),
+          if (_validationError != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              _validationError!,
+              style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+            ),
+          ],
           if (_photos.isNotEmpty) ...[
             const SizedBox(height: 8),
             ..._photos.map((p) => Text(
-                  '• قبل: ${p.data['beforeLabel']} ← بعد: ${p.data['afterLabel']}',
+                  '• قبل: ${p.data['beforeLabel'] ?? '-'} ← بعد: ${p.data['afterLabel'] ?? '-'}',
                   style: CustomAppFontStyle.regular12,
                 )),
           ],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/features/patients/data/models/enums/gender_enum.dart';
 import 'package:eyadty/features/specialty_records/domain/specialty_module_registry.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
@@ -204,7 +205,20 @@ class _PatientSpecialtyRegistryTab extends StatefulWidget {
 
 class _PatientSpecialtyRegistryTabState
     extends State<_PatientSpecialtyRegistryTab> {
-  MedicalSpecialty _selected = MedicalSpecialty.generalPractice;
+  late MedicalSpecialty _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.patient.isPregnant == true &&
+        widget.patient.gender != GenderEnum.male) {
+      _selected = MedicalSpecialty.obstetricsGynecology;
+    } else if (widget.patient.isChild()) {
+      _selected = MedicalSpecialty.pediatrics;
+    } else {
+      _selected = MedicalSpecialty.generalPractice;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

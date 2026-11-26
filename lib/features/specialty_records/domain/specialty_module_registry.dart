@@ -39,34 +39,40 @@ class SpecialtyModuleRegistry {
       case MedicalSpecialty.ent:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.ent,
-          trendFieldLabels: ['اختبار السمع (dB)', 'منظار الأنف'],
+          customHeaderAr: 'فحص الأنف والأذن والحنجرة',
+          trendFieldLabels: ['اختبار السمع (dB)', 'منظار الأنف والحنجرة'],
         );
       case MedicalSpecialty.urology:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.urology,
-          trendFieldLabels: ['معدل التدفق / PSA'],
+          customHeaderAr: 'سجل المسالك البولية',
+          trendFieldLabels: ['معدل التدفق / IPSS', 'تحليل PSA / السونار'],
         );
       case MedicalSpecialty.neurology:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.neurology,
-          trendFieldLabels: ['تقييم الأعصاب / الصداع'],
+          customHeaderAr: 'سجل المخ والأعصاب',
+          trendFieldLabels: ['القوة الحركية / GCS', 'تكرار الصداع / النوبات'],
         );
       case MedicalSpecialty.psychiatry:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.psychiatry,
-          trendFieldLabels: ['مقياس المزاج / النوم'],
+          customHeaderAr: 'سجل الصحة النفسية',
+          trendFieldLabels: ['مقياس المزاج / النوم', 'تقييم PHQ-9 / GAD-7'],
         );
       case MedicalSpecialty.nutrition:
         return const NutritionModule();
       case MedicalSpecialty.generalSurgery:
         return const StructuredGenericModule(
           specialty: MedicalSpecialty.generalSurgery,
-          trendFieldLabels: ['متابعة الجرح / الغيار'],
+          customHeaderAr: 'سجل الجراحة العامة',
+          trendFieldLabels: ['موضع الجراحة وحالة الجرح', 'الدرنقة / الغرز'],
         );
       case MedicalSpecialty.generalPractice:
       case MedicalSpecialty.other:
         return StructuredGenericModule(
           specialty: specialty,
+          isGenericFallback: true,
           trendFieldLabels: const ['مؤشر المتابعة'],
         );
     }

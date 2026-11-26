@@ -227,6 +227,17 @@ class PatientModel extends Equatable {
   factory PatientModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const PatientModel();
 
+    final parsedGender =
+        json['gender'] != null ? GenderEnum.fromValue(json['gender']) : null;
+    final parsedPregnant =
+        json['isPregnant'] as bool? ?? json['is_pregnant'] as bool?;
+    final parsedNursing =
+        json['isNursing'] as bool? ?? json['is_nursing'] as bool?;
+    final effectiveGender = (parsedGender == null || parsedGender == GenderEnum.unknown) &&
+            (parsedPregnant == true || parsedNursing == true)
+        ? GenderEnum.female
+        : parsedGender;
+
     return PatientModel(
       id: json['id']?.toString(),
       fileNumber:
@@ -240,7 +251,7 @@ class PatientModel extends Equatable {
           : (json['date_of_birth'] != null
               ? DateTime.tryParse(json['date_of_birth'].toString())
               : null),
-      gender: json['gender'] != null ? GenderEnum.fromValue(json['gender']) : null,
+      gender: effectiveGender,
       bloodGroup: json['bloodGroup'] != null
           ? BloodGroupEnum.fromValue(json['bloodGroup'])
           : (json['blood_group'] != null

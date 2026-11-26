@@ -59,9 +59,9 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  group('Per-Specialty Module Widget Tests (Open, Save, Outbox)', () {
+  group('Per-Specialty Module Widget Tests (Validation, Open, Save, Outbox)', () {
     for (final spec in MedicalSpecialty.values) {
-      testWidgets('${spec.value} module opens, saves, and appears in outbox',
+      testWidgets('${spec.value} module blocks empty save, then saves with input and writes to outbox',
           (tester) async {
         tester.view.physicalSize = const Size(1280, 900);
         tester.view.devicePixelRatio = 1.0;
@@ -86,30 +86,39 @@ void main() {
           allergies: spec == MedicalSpecialty.nutrition
               ? const ['فول سوداني']
               : null,
-          weightKg: 70,
-          heightCm: 170,
         );
 
         final module = SpecialtyModuleRegistry.forSpecialty(spec);
         await tester.pumpWidget(_wrapWidget(module.buildPatientTab(patient)));
         await tester.pumpAndSettle();
 
-        // Tap the primary save/add button in the module
-        final buttonFinder = find.byWidgetPredicate(
-          (w) =>
-              w is ElevatedButton ||
-              (w is TextButton &&
-                  (w.child is Text &&
-                          ((w.child as Text).data ?? '').contains('إضافة') ||
-                      true)),
-        );
-
+        final textFields = find.byType(TextField);
         if (find.byType(ElevatedButton).evaluate().isNotEmpty) {
+          // Clear any pre-filled fields for modules with defaults (ophthalmology)
+          for (int i = 0; i < textFields.evaluate().length; i++) {
+            await tester.enterText(textFields.at(i), '');
+          }
+          await tester.pump();
           await tester.tap(find.byType(ElevatedButton).first);
+          await tester.pumpAndSettle();
+
+          // Empty save should be blocked for forms with text fields (except dentistry which has chip+dropdown)
+          if (spec != MedicalSpecialty.dentistry) {
+            expect(await store.getPendingOutboxEntries(), isEmpty,
+                reason: '${spec.value} should block empty save');
+          }
+
+          if (textFields.evaluate().isNotEmpty) {
+            await tester.enterText(textFields.first, '120');
+            await tester.pump();
+          }
+          await tester.tap(find.byType(ElevatedButton).first);
+          await tester.pumpAndSettle();
         } else {
-          await tester.tap(buttonFinder.first);
+          final btn = find.byType(TextButton).first;
+          await tester.tap(btn);
+          await tester.pumpAndSettle();
         }
-        await tester.pumpAndSettle();
 
         final outbox = await store.getPendingOutboxEntries();
         expect(
@@ -145,6 +154,30 @@ void main() {
 
       expect(find.textContaining('تم إخفاء جدول تطعيمات الأطفال'), findsOneWidget);
       expect(find.text('تسجيل التطعيم'), findsNothing);
+    });
+
+    testWidgets('OB/GYN requires female patient and rejects male patient',
+        (tester) async {
+      const male = PatientModel(
+        id: 'PAT-M',
+        name: 'مريض ذكر',
+        gender: GenderEnum.male,
+      );
+      final mod = SpecialtyModuleRegistry.forSpecialty(
+          MedicalSpecialty.obstetricsGynecology);
+      await tester.pumpWidget(_wrapWidget(mod.buildPatientTab(male)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ملف النساء والتوليد متاح للمريضات الإناث فقط.'), findsOneWidget);
+    });
+
+    test('PatientModel derives female gender when isPregnant is true and gender omitted', () {
+      final p = PatientModel.fromJson({
+        'id': 'PAT-DERIVED',
+        'name': 'مريضة حامل',
+        'isPregnant': true,
+      });
+      expect(p.gender, equals(GenderEnum.female));
     });
 
     test('OB/GYN countdown shows trimester and overdue warning when past EDD', () {

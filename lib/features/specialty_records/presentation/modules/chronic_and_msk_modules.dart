@@ -24,7 +24,9 @@ class ChronicCareModule implements SpecialtyRecordModule {
         'bp': '',
         'glucoseMgDl': null,
         'hba1c': null,
-        'weightKg': null,
+        'heartRate': null,
+        'ecgEchoNotes': '',
+        'tshLevel': null,
         'medicationChanges': '',
       };
 
@@ -60,11 +62,23 @@ class _ChronicCareWidget extends StatefulWidget {
 
 class _ChronicCareWidgetState extends State<_ChronicCareWidget> {
   final _bpCtrl = TextEditingController();
-  final _glucoseCtrl = TextEditingController();
-  final _hba1cCtrl = TextEditingController();
+  final _field2Ctrl = TextEditingController();
+  final _field3Ctrl = TextEditingController();
   final _medCtrl = TextEditingController();
+  String? _validationError;
 
   Future<void> _save() async {
+    final hasAny = _bpCtrl.text.trim().isNotEmpty ||
+        _field2Ctrl.text.trim().isNotEmpty ||
+        _field3Ctrl.text.trim().isNotEmpty ||
+        _medCtrl.text.trim().isNotEmpty;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(
       SpecialtyRecordEntryModel(
@@ -74,9 +88,9 @@ class _ChronicCareWidgetState extends State<_ChronicCareWidget> {
         specialty: widget.specialty,
         kind: 'chronic_followup',
         data: {
-          'bp': _bpCtrl.text.trim(),
-          'glucoseMgDl': num.tryParse(_glucoseCtrl.text.trim()),
-          'hba1c': num.tryParse(_hba1cCtrl.text.trim()),
+          'primaryMetric': _bpCtrl.text.trim(),
+          'secondaryMetric': _field2Ctrl.text.trim(),
+          'tertiaryMetric': _field3Ctrl.text.trim(),
           'medicationChanges': _medCtrl.text.trim(),
         },
         createdAt: DateTime.now(),
@@ -87,14 +101,28 @@ class _ChronicCareWidgetState extends State<_ChronicCareWidget> {
   @override
   void dispose() {
     _bpCtrl.dispose();
-    _glucoseCtrl.dispose();
-    _hba1cCtrl.dispose();
+    _field2Ctrl.dispose();
+    _field3Ctrl.dispose();
     _medCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isCardio = widget.specialty == MedicalSpecialty.cardiology;
+    final isEndo = widget.specialty == MedicalSpecialty.endocrinology;
+
+    final title = isCardio
+        ? 'متابعة القلب والأوعية الدموية'
+        : (isEndo ? 'متابعة الغدد الصماء والسكر' : 'متابعة الباطنة والأمراض المزمنة');
+    final label1 = isEndo ? 'السكر الصائم (مجم/دل)' : 'ضغط الدم (BP)';
+    final label2 = isCardio
+        ? 'معدل النبض (bpm)'
+        : (isEndo ? 'السكر التراكمي (HbA1c)' : 'السكر (مجم/دل)');
+    final label3 = isCardio
+        ? 'نتائج ECG / الإيكو (EF%)'
+        : (isEndo ? 'تحليل الغدة TSH' : 'فحص الأجهزة الحيوية');
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -105,21 +133,28 @@ class _ChronicCareWidgetState extends State<_ChronicCareWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('متابعة الأمراض المزمنة', style: CustomAppFontStyle.bold14),
+          Text(title, style: CustomAppFontStyle.bold14),
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: TextField(controller: _bpCtrl, decoration: const InputDecoration(labelText: 'ضغط الدم', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _bpCtrl, decoration: InputDecoration(labelText: label1, border: const OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: _glucoseCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السكر (مجم/دل)', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _field2Ctrl, decoration: InputDecoration(labelText: label2, border: const OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: _hba1cCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السكر التراكمي', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _field3Ctrl, decoration: InputDecoration(labelText: label3, border: const OutlineInputBorder(), isDense: true))),
             ],
           ),
           const SizedBox(height: 8),
+          if (_validationError != null) ...[
+            Text(
+              _validationError!,
+              style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+            ),
+            const SizedBox(height: 6),
+          ],
           Row(
             children: [
-              Expanded(child: TextField(controller: _medCtrl, decoration: const InputDecoration(labelText: 'تعديلات الأدوية', border: OutlineInputBorder(), isDense: true))),
+              Expanded(child: TextField(controller: _medCtrl, decoration: const InputDecoration(labelText: 'تعديلات الأدوية والجرعات', border: OutlineInputBorder(), isDense: true))),
               const SizedBox(width: 8),
               ElevatedButton(onPressed: _save, child: const Text('حفظ المتابعة')),
             ],
@@ -146,6 +181,7 @@ class MusculoskeletalModule implements SpecialtyRecordModule {
         'injuryOrSurgeryDate': '',
         'diagnosis': '',
         'romNotes': '',
+        'painScore': '',
         'castOrBraceDates': '',
         'imagingNotes': '',
         'physioReferral': false,
@@ -205,8 +241,10 @@ class _OrthopedicsAndPhysioWidgetState
   final _romCtrl = TextEditingController();
   final _castDatesCtrl = TextEditingController();
   final _imagingCtrl = TextEditingController();
+  final _painScoreCtrl = TextEditingController();
   String _side = 'يمين';
   bool _physioReferral = false;
+  String? _validationError;
   List<SpecialtyRecordEntryModel> _entries = [];
 
   @override
@@ -231,6 +269,20 @@ class _OrthopedicsAndPhysioWidgetState
   }
 
   Future<void> _saveAssessment() async {
+    final hasAny = _siteCtrl.text.trim().isNotEmpty ||
+        _diagnosisCtrl.text.trim().isNotEmpty ||
+        _romCtrl.text.trim().isNotEmpty ||
+        _castDatesCtrl.text.trim().isNotEmpty ||
+        _imagingCtrl.text.trim().isNotEmpty ||
+        _painScoreCtrl.text.trim().isNotEmpty ||
+        _physioReferral;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     await getIt<OfflineFirstSpecialtyRecordsRepo>().saveEntry(
       SpecialtyRecordEntryModel(
@@ -244,6 +296,7 @@ class _OrthopedicsAndPhysioWidgetState
           'side': _side,
           'diagnosis': _diagnosisCtrl.text.trim(),
           'romNotes': _romCtrl.text.trim(),
+          'painScore': _painScoreCtrl.text.trim(),
           'castOrBraceDates': _castDatesCtrl.text.trim(),
           'imagingNotes': _imagingCtrl.text.trim(),
           'physioReferral': _physioReferral,
@@ -261,11 +314,14 @@ class _OrthopedicsAndPhysioWidgetState
     _romCtrl.dispose();
     _castDatesCtrl.dispose();
     _imagingCtrl.dispose();
+    _painScoreCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isPhysio = widget.specialty == MedicalSpecialty.physiotherapy;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -280,9 +336,7 @@ class _OrthopedicsAndPhysioWidgetState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.specialty == MedicalSpecialty.orthopedics
-                    ? 'تقييم العظام والمفاصل'
-                    : 'تقييم العلاج الطبيعي',
+                isPhysio ? 'تقييم العلاج الطبيعي والتأهيل' : 'تقييم العظام والمفاصل',
                 style: CustomAppFontStyle.bold14,
               ),
               const SizedBox(height: 10),
@@ -319,9 +373,9 @@ class _OrthopedicsAndPhysioWidgetState
                   Expanded(
                     child: TextField(
                       controller: _diagnosisCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'التشخيص / تاريخ الإصابة',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: isPhysio ? 'خطة الجلسات والتشخيص' : 'التشخيص / تاريخ الإصابة',
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                     ),
@@ -335,23 +389,36 @@ class _OrthopedicsAndPhysioWidgetState
                     child: TextField(
                       controller: _romCtrl,
                       decoration: const InputDecoration(
-                        labelText: 'المدى الحركي',
+                        labelText: 'المدى الحركي (ROM)',
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _castDatesCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'تواريخ الجبس / الدعامة',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                  if (isPhysio)
+                    Expanded(
+                      child: TextField(
+                        controller: _painScoreCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'مقياس الألم (0-10)',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: TextField(
+                        controller: _castDatesCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'تواريخ الجبس / الدعامة',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
                       ),
                     ),
-                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
@@ -366,13 +433,22 @@ class _OrthopedicsAndPhysioWidgetState
                 ],
               ),
               const SizedBox(height: 6),
+              if (_validationError != null) ...[
+                Text(
+                  _validationError!,
+                  style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+                ),
+                const SizedBox(height: 6),
+              ],
               Row(
                 children: [
-                  Checkbox(
-                    value: _physioReferral,
-                    onChanged: (v) => setState(() => _physioReferral = v ?? false),
-                  ),
-                  const Text('تحويل إلى العلاج الطبيعي'),
+                  if (!isPhysio) ...[
+                    Checkbox(
+                      value: _physioReferral,
+                      onChanged: (v) => setState(() => _physioReferral = v ?? false),
+                    ),
+                    const Text('تحويل إلى العلاج الطبيعي'),
+                  ],
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: _saveAssessment,
@@ -399,9 +475,7 @@ class _OrthopedicsAndPhysioWidgetState
           doctorId: widget.doctorId,
           doctorName: widget.doctorName,
           specialty: widget.specialty,
-          title: widget.specialty == MedicalSpecialty.physiotherapy
-              ? 'جلسات العلاج الطبيعي والتأهيل'
-              : 'جلسات وباقات العظام',
+          title: isPhysio ? 'جلسات العلاج الطبيعي والتأهيل' : 'جلسات وباقات العظام',
           procedureOptions: const ['جلسة تأهيل حركي', 'علاج طبيعي كهربائي', 'متابعة إصابة'],
         ),
       ],

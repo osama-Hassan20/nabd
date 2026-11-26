@@ -103,6 +103,7 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
   final _milestonesCtrl = TextEditingController();
   DateTime? _dob;
   List<SpecialtyRecordEntryModel> _entries = [];
+  String? _validationError;
 
   @override
   void initState() {
@@ -149,6 +150,18 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
   }
 
   Future<void> _saveGrowthEntry() async {
+    final hasAny = _weightCtrl.text.trim().isNotEmpty ||
+        _heightCtrl.text.trim().isNotEmpty ||
+        _hcCtrl.text.trim().isNotEmpty ||
+        _feedingCtrl.text.trim().isNotEmpty ||
+        _milestonesCtrl.text.trim().isNotEmpty;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     final w = double.tryParse(_weightCtrl.text.trim());
     final h = double.tryParse(_heightCtrl.text.trim());
@@ -347,6 +360,13 @@ class _PediatricsRecordWidgetState extends State<_PediatricsRecordWidget> {
             ],
           ),
           const SizedBox(height: 8),
+          if (_validationError != null) ...[
+            Text(
+              _validationError!,
+              style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+            ),
+            const SizedBox(height: 6),
+          ],
           Align(
             alignment: AlignmentDirectional.centerEnd,
             child: ElevatedButton.icon(

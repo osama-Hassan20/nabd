@@ -5,6 +5,7 @@ import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_specialty_records_repo.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/patients/data/models/enums/gender_enum.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
 import 'package:eyadty/features/patients/domain/repo/patients_repo.dart';
 import 'package:eyadty/features/specialty_records/data/models/specialty_record_entry_model.dart';
@@ -110,6 +111,7 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
   final _usNotesCtrl = TextEditingController();
   PatientModel? _patient;
   List<SpecialtyRecordEntryModel> _entries = [];
+  String? _validationError;
 
   @override
   void initState() {
@@ -138,6 +140,18 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
   }
 
   Future<void> _saveAntenatal() async {
+    final hasAny = _weightCtrl.text.trim().isNotEmpty ||
+        _bpCtrl.text.trim().isNotEmpty ||
+        _fhrCtrl.text.trim().isNotEmpty ||
+        _fundalCtrl.text.trim().isNotEmpty ||
+        _usNotesCtrl.text.trim().isNotEmpty;
+    if (!hasAny) {
+      setState(() {
+        _validationError = 'يرجى إدخال بيانات في حقل واحد على الأقل قبل الحفظ.';
+      });
+      return;
+    }
+    setState(() => _validationError = null);
     if (!getIt.isRegistered<OfflineFirstSpecialtyRecordsRepo>()) return;
     final entry = SpecialtyRecordEntryModel(
       id: '',
@@ -200,6 +214,29 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (_patient != null && _patient!.gender != GenderEnum.female) {
+      return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.grayE2E8F0),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'ملف النساء والتوليد متاح للمريضات الإناث فقط.',
+                style: CustomAppFontStyle.semiBold13.copyWith(color: AppColors.warning),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final countdown = ObstetricsGynecologyModule.formatPregnancyCountdown(_patient);
     final isOverdue = _patient?.isPregnant == true &&
         _patient?.computedEdd != null &&
@@ -301,6 +338,13 @@ class _ObGynRecordWidgetState extends State<_ObGynRecordWidget> {
             ),
           ),
           const SizedBox(height: 8),
+          if (_validationError != null) ...[
+            Text(
+              _validationError!,
+              style: CustomAppFontStyle.medium12.copyWith(color: AppColors.error),
+            ),
+            const SizedBox(height: 6),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
