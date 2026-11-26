@@ -12,6 +12,7 @@ import 'package:eyadty/core/offline/sync/sync_engine.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_bookings_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_drugs_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_patients_repo.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_visits_repo.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
@@ -405,11 +406,21 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<VisitsMockRepoImpl>(
     () => VisitsMockRepoImpl(bookingsRepo: getIt<BookingsRepo>()),
   );
+  getIt.registerLazySingleton<OfflineFirstVisitsRepo>(
+    () => OfflineFirstVisitsRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteRepo: getIt<VisitsMockRepoImpl>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
+    ),
+  );
   getIt.registerLazySingleton<VisitsRepo>(
-    () => getIt<VisitsMockRepoImpl>(),
+    () => getIt<OfflineFirstVisitsRepo>(),
   );
   getIt.registerLazySingleton<ActiveVisitLookup>(
-    () => getIt<VisitsMockRepoImpl>(),
+    () => getIt<OfflineFirstVisitsRepo>(),
   );
 
   getIt.registerLazySingleton<GetDoctorQueueUseCase>(

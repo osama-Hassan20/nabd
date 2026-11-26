@@ -897,6 +897,7 @@
   "visits_allergy_warning": "تحذير: هذا المريض لديه حساسية موثقة",
   "visits_assigned_doctor": "الطبيب المعالج",
   "visits_auto_saved": "تم الحفظ تلقائياً",
+  "visits_save_failed": "فشل الحفظ التلقائي",
   "visits_bmi": "مؤشر كتلة الجسم",
   "visits_bmi_normal": "طبيعي",
   "visits_bmi_obese": "سمنة",

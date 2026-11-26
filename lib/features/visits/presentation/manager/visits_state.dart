@@ -17,6 +17,7 @@ class VisitsState extends Equatable {
   final String? filterDoctorId;
   final DateTime? filterDate;
   final bool isAutoSaving;
+  final bool autoSaveFailed;
   final bool canEditDiagnosis;
   final bool canViewNotes;
 
@@ -33,6 +34,7 @@ class VisitsState extends Equatable {
     this.filterDoctorId,
     this.filterDate,
     this.isAutoSaving = false,
+    this.autoSaveFailed = false,
     this.canEditDiagnosis = false,
     this.canViewNotes = false,
   });
@@ -55,6 +57,7 @@ class VisitsState extends Equatable {
     bool clearFilterDoctorId = false,
     DateTime? filterDate,
     bool? isAutoSaving,
+    bool? autoSaveFailed,
     bool? canEditDiagnosis,
     bool? canViewNotes,
   }) {
@@ -75,6 +78,7 @@ class VisitsState extends Equatable {
           : (filterDoctorId ?? this.filterDoctorId),
       filterDate: filterDate ?? this.filterDate,
       isAutoSaving: isAutoSaving ?? this.isAutoSaving,
+      autoSaveFailed: autoSaveFailed ?? this.autoSaveFailed,
       canEditDiagnosis: canEditDiagnosis ?? this.canEditDiagnosis,
       canViewNotes: canViewNotes ?? this.canViewNotes,
     );
@@ -94,6 +98,7 @@ class VisitsState extends Equatable {
         filterDoctorId,
         filterDate,
         isAutoSaving,
+        autoSaveFailed,
         canEditDiagnosis,
         canViewNotes,
       ];

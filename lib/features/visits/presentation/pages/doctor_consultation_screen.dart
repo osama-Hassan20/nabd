@@ -309,6 +309,19 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                             color: AppColors.gray,
                           ),
                         ),
+                      ] else if (state.autoSaveFailed) ...[
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          size: 14,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'visits_save_failed'.tr(),
+                          style: CustomAppFontStyle.medium12.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
                       ] else if (state.formState.lastSavedAt != null &&
                           !state.formState.isDirty) ...[
                         const Icon(

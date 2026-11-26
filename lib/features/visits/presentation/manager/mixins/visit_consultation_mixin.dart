@@ -275,7 +275,7 @@ mixin VisitConsultationMixin on SafeCubit<VisitsState> {
     );
     if (!canEdit) return;
 
-    emit(state.copyWith(isAutoSaving: true));
+    emit(state.copyWith(isAutoSaving: true, autoSaveFailed: false));
 
     final draft = state.formState.toVisitModel(active);
     final res = await saveVisitDraftUseCase(draft);
@@ -287,12 +287,16 @@ mixin VisitConsultationMixin on SafeCubit<VisitsState> {
 
     res.fold(
       (failure) {
-        emit(state.copyWith(isAutoSaving: false));
+        emit(state.copyWith(
+          isAutoSaving: false,
+          autoSaveFailed: true,
+        ));
       },
       (saved) {
         emit(
           state.copyWith(
             isAutoSaving: false,
+            autoSaveFailed: false,
             activeVisit: saved,
             formState: state.formState.copyWith(
               isDirty: false,

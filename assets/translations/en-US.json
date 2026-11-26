@@ -885,6 +885,7 @@
   "visits_allergy_warning": "Warning: This patient has documented allergies",
   "visits_assigned_doctor": "Assigned Doctor",
   "visits_auto_saved": "Auto-saved",
+  "visits_save_failed": "Auto-save failed",
   "visits_bmi": "BMI",
   "visits_bmi_normal": "Normal",
   "visits_bmi_obese": "Obese",
