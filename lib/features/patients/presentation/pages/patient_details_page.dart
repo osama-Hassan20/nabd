@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/routing/routes.dart';
+import 'package:eyadty/features/specialty_records/domain/specialty_module_registry.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
@@ -184,10 +186,48 @@ class PatientDetailsPage extends StatelessWidget {
       1 => PatientActiveMedicationsSection(patient: patient),
       2 => PatientLabRadiologySection(patient: patient),
       3 => const PatientSurgicalHistorySection(),
-      4 => const PatientSpecialtyTrackingSection(),
+      4 => _PatientSpecialtyRegistryTab(patient: patient),
       5 => const PatientTreatmentPlansSection(),
       6 => const PatientBookingsSection(),
       _ => PatientConsultationsHistorySection(patient: patient),
     };
+  }
+}
+
+class _PatientSpecialtyRegistryTab extends StatefulWidget {
+  final PatientModel patient;
+  const _PatientSpecialtyRegistryTab({required this.patient});
+
+  @override
+  State<_PatientSpecialtyRegistryTab> createState() =>
+      _PatientSpecialtyRegistryTabState();
+}
+
+class _PatientSpecialtyRegistryTabState
+    extends State<_PatientSpecialtyRegistryTab> {
+  MedicalSpecialty _selected = MedicalSpecialty.generalPractice;
+
+  @override
+  Widget build(BuildContext context) {
+    final module = SpecialtyModuleRegistry.forSpecialty(_selected);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: MedicalSpecialty.values.map((spec) {
+            return ChoiceChip(
+              avatar: Icon(spec.icon, size: 16),
+              label: Text(spec.labelKey.tr()),
+              selected: _selected == spec,
+              onSelected: (_) => setState(() => _selected = spec),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        module.buildPatientTab(widget.patient),
+      ],
+    );
   }
 }

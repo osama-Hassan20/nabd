@@ -6,6 +6,7 @@ import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
 
 void main() {
@@ -86,6 +87,40 @@ void main() {
       final items = searchRes.getOrElse(() => throw 'failed').items ?? [];
       expect(items.length, equals(1));
       expect(items.first.name, equals('فاطمة حسن'));
+    });
+
+    test('A5j: Marking booking as noShow persists and updates getBookingSummary noShowCount', () async {
+      final today = DateTime.now();
+      final b = BookingModel(
+        id: 'B-NOSHOW-1',
+        patientId: 'P1',
+        patientName: 'عميل لم يحضر',
+        date: DateTime(today.year, today.month, today.day, 10, 0),
+        appointmentTime: DateTime(today.year, today.month, today.day, 10, 0),
+        status: BookingStatusEnum.scheduled,
+        branchId: 'branch-1',
+      );
+
+      await bookingsRepo.createBooking(b);
+      final changeRes = await bookingsRepo.changeBookingStatus(
+        const ChangeBookingStatusParams(
+          bookingId: 'B-NOSHOW-1',
+          newStatus: BookingStatusEnum.noShow,
+        ),
+      );
+      expect(changeRes.isRight(), isTrue);
+
+      final listRes = await bookingsRepo.getBookings(const PaginationParams());
+      final found = (listRes.getOrElse(() => throw 'err').bookings ?? [])
+          .firstWhere((item) => item.id == 'B-NOSHOW-1');
+      expect(found.status, equals(BookingStatusEnum.noShow));
+
+      final summaryRes = await bookingsRepo.getBookingSummary(
+        date: today,
+        branchId: 'branch-1',
+      );
+      final summary = summaryRes.getOrElse(() => throw 'err');
+      expect(summary.noShowCount, equals(1));
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'enums/visit_status_enum.dart';
 import 'prescription_item_model.dart';
 import 'visit_addendum_model.dart';
@@ -14,6 +15,7 @@ class VisitModel extends Equatable {
   final String? doctorId;
   final String? doctorName;
   final String? specialty;
+  final MedicalSpecialty? specialtyCode;
   final VisitStatusEnum? status;
   final VitalsModel? vitals;
   final String? chiefComplaint;
@@ -40,6 +42,7 @@ class VisitModel extends Equatable {
     this.doctorId,
     this.doctorName,
     this.specialty,
+    this.specialtyCode,
     this.status,
     this.vitals,
     this.chiefComplaint,
@@ -69,6 +72,11 @@ class VisitModel extends Equatable {
       doctorId: json['doctorId'] as String?,
       doctorName: json['doctorName'] as String?,
       specialty: json['specialty'] as String?,
+      specialtyCode: json['specialtyCode'] != null
+          ? MedicalSpecialty.fromValue(json['specialtyCode']?.toString())
+          : (json['specialty'] != null
+              ? MedicalSpecialty.fromValue(json['specialty']?.toString())
+              : null),
       status: VisitStatusEnum.fromValue(json['status'] as String?),
       vitals: json['vitals'] != null
           ? VitalsModel.fromJson(json['vitals'] as Map<String, dynamic>)
@@ -118,6 +126,7 @@ class VisitModel extends Equatable {
       'doctorId': doctorId,
       'doctorName': doctorName,
       'specialty': specialty,
+      if (specialtyCode != null) 'specialtyCode': specialtyCode?.value,
       'status': status?.value,
       'vitals': vitals?.toJson(),
       'chiefComplaint': chiefComplaint,
@@ -146,6 +155,7 @@ class VisitModel extends Equatable {
     String? doctorId,
     String? doctorName,
     String? specialty,
+    MedicalSpecialty? specialtyCode,
     VisitStatusEnum? status,
     VitalsModel? vitals,
     String? chiefComplaint,
@@ -172,6 +182,7 @@ class VisitModel extends Equatable {
       doctorId: doctorId ?? this.doctorId,
       doctorName: doctorName ?? this.doctorName,
       specialty: specialty ?? this.specialty,
+      specialtyCode: specialtyCode ?? this.specialtyCode,
       status: status ?? this.status,
       vitals: vitals ?? this.vitals,
       chiefComplaint: chiefComplaint ?? this.chiefComplaint,

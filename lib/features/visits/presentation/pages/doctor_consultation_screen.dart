@@ -25,8 +25,10 @@ import '../widgets/patient_allergy_banner.dart';
 import '../widgets/prescription_editor_panel.dart';
 import '../widgets/visit_addenda_timeline.dart';
 import '../widgets/vitals_input_panel.dart';
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
 import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_lab_radiology_section.dart';
+import 'package:eyadty/features/specialty_records/domain/specialty_module_registry.dart';
 
 class DoctorConsultationScreen extends StatefulWidget {
   final String visitId;
@@ -725,6 +727,13 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                       )
                     : null,
               ),
+              if (state.activeVisit != null) ...[
+                const SizedBox(height: 20),
+                SpecialtyModuleRegistry.forSpecialty(
+                  state.activeVisit!.specialtyCode ??
+                      MedicalSpecialty.fromValue(state.activeVisit!.specialty),
+                ).buildVisitSection(state.activeVisit!),
+              ],
             ],
           ] else ...[
             vitalsSection,
@@ -743,6 +752,13 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
                       )
                     : null,
               ),
+              if (state.activeVisit != null) ...[
+                const SizedBox(height: 16),
+                SpecialtyModuleRegistry.forSpecialty(
+                  state.activeVisit!.specialtyCode ??
+                      MedicalSpecialty.fromValue(state.activeVisit!.specialty),
+                ).buildVisitSection(state.activeVisit!),
+              ],
             ],
           ],
           if (state.activeVisit?.addenda != null &&

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'enums/doctor_gender_enum.dart';
 import 'enums/doctor_status_enum.dart';
@@ -8,6 +9,7 @@ class DoctorModel {
   final String? phone;
   final String? image;
   final String? specialty;
+  final List<MedicalSpecialty> specialties;
   final DoctorGenderEnum? gender;
   final DoctorStatusEnum? status;
   final int? todayTasksCount;
@@ -22,6 +24,7 @@ class DoctorModel {
     this.phone,
     this.image,
     this.specialty,
+    this.specialties = const [],
     this.gender,
     this.status,
     this.todayTasksCount,
@@ -31,6 +34,16 @@ class DoctorModel {
     this.updatedAt,
   });
 
+  List<MedicalSpecialty> get effectiveSpecialties {
+    if (specialties.isNotEmpty) return specialties;
+    if (specialty != null && specialty!.trim().isNotEmpty) {
+      return MedicalSpecialty.parseMultiple(specialty);
+    }
+    return const [MedicalSpecialty.generalPractice];
+  }
+
+  MedicalSpecialty get primarySpecialty => effectiveSpecialties.first;
+
   String get defaultAvatar => AppIcons.user;
 
   String get avatarPath =>
@@ -38,12 +51,25 @@ class DoctorModel {
 
   factory DoctorModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const DoctorModel();
+    final legacySpec = json['specialty'] as String?;
+    final rawSpecialties = json['specialties'];
+    List<MedicalSpecialty> parsedSpecialties = const [];
+    if (rawSpecialties is List && rawSpecialties.isNotEmpty) {
+      parsedSpecialties = rawSpecialties
+          .map((e) => MedicalSpecialty.fromValue(e?.toString()))
+          .toSet()
+          .toList();
+    } else if (legacySpec != null && legacySpec.trim().isNotEmpty) {
+      parsedSpecialties = MedicalSpecialty.parseMultiple(legacySpec);
+    }
+
     return DoctorModel(
       id: json['id']?.toString(),
       name: json['name'] as String?,
       phone: json['phone'] as String?,
       image: json['image'] as String?,
-      specialty: json['specialty'] as String?,
+      specialty: legacySpec,
+      specialties: parsedSpecialties,
       gender: DoctorGenderEnum.fromValue(json['gender'] as String?),
       status: DoctorStatusEnum.fromValue(json['status'] as String?),
       todayTasksCount: json['todayTasksCount'] as int? ?? json['today_tasks_count'] as int?,
@@ -65,6 +91,8 @@ class DoctorModel {
       if (phone != null) 'phone': phone,
       if (image != null) 'image': image,
       if (specialty != null) 'specialty': specialty,
+      if (specialties.isNotEmpty)
+        'specialties': specialties.map((e) => e.value).toList(),
       if (gender != null) 'gender': gender?.value,
       if (status != null) 'status': status?.value,
       if (todayTasksCount != null) 'todayTasksCount': todayTasksCount,
@@ -83,6 +111,7 @@ class DoctorModel {
     String? phone,
     String? image,
     String? specialty,
+    List<MedicalSpecialty>? specialties,
     DoctorGenderEnum? gender,
     DoctorStatusEnum? status,
     int? todayTasksCount,
@@ -97,6 +126,7 @@ class DoctorModel {
       phone: phone ?? this.phone,
       image: image ?? this.image,
       specialty: specialty ?? this.specialty,
+      specialties: specialties ?? this.specialties,
       gender: gender ?? this.gender,
       status: status ?? this.status,
       todayTasksCount: todayTasksCount ?? this.todayTasksCount,
@@ -109,4 +139,3 @@ class DoctorModel {
     );
   }
 }
-

@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:eyadty/core/base/safe_cubit.dart';
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/mixins/search_mixin.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
@@ -282,6 +284,7 @@ class DoctorsCubit extends SafeCubit<DoctorsState> with SearchMixin {
     required String name,
     required String phone,
     String? specialty,
+    List<MedicalSpecialty>? specialties,
     DoctorGenderEnum? gender,
     String? image,
   }) async {
@@ -296,11 +299,24 @@ class DoctorsCubit extends SafeCubit<DoctorsState> with SearchMixin {
     final form = state.formState;
     final isEdit = form?.doctorId != null;
 
+    final resolvedSpecialties = specialties ??
+        (specialty != null && specialty.trim().isNotEmpty
+            ? MedicalSpecialty.parseMultiple(specialty)
+            : (form?.specialty != null && form!.specialty!.trim().isNotEmpty
+                ? MedicalSpecialty.parseMultiple(form.specialty)
+                : const <MedicalSpecialty>[]));
+
+    final resolvedSpecialtyLabel = specialty ??
+        (resolvedSpecialties.isNotEmpty
+            ? resolvedSpecialties.map((s) => s.labelKey.tr()).join('، ')
+            : form?.specialty);
+
     final model = DoctorModel(
       id: form?.doctorId,
       name: name,
       phone: phone,
-      specialty: specialty ?? form?.specialty,
+      specialty: resolvedSpecialtyLabel,
+      specialties: resolvedSpecialties,
       gender: gender ?? form?.gender ?? DoctorGenderEnum.male,
       image: image,
     );

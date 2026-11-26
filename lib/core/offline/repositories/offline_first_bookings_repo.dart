@@ -107,9 +107,15 @@ class OfflineFirstBookingsRepo implements BookingsRepo {
         await remoteRes.fold(
           (failure) async {},
           (response) async {
+            final pendingOutbox = await localStore.getPendingOutboxEntries();
+            final pendingBookingIds = pendingOutbox
+                .where((e) => e.entityType == 'booking')
+                .map((e) => e.localId)
+                .toSet();
             await localStore.runInTransaction((txn) async {
               for (final b in response.bookings ?? <BookingModel>[]) {
                 final localId = b.id ?? 'BOOK-${DateTime.now().microsecondsSinceEpoch}';
+                if (pendingBookingIds.contains(localId)) continue;
                 txn.upsertEntity(
                   LocalEntityRecord(
                     localId: localId,
@@ -396,8 +402,21 @@ class OfflineFirstBookingsRepo implements BookingsRepo {
     return existingRes.fold(
       (failure) => Left(failure),
       (booking) async {
-        final updated = booking.copyWith(status: params.newStatus);
+        final updated = booking.copyWith(
+          status: params.newStatus,
+          rescheduledTo: params.rescheduledTo ?? booking.rescheduledTo,
+          postponeReason: params.postponeReason ?? booking.postponeReason,
+          cancelReason: params.cancelReason ?? booking.cancelReason,
+          cancelledBy: params.cancelledBy ?? booking.cancelledBy,
+          cancelledAt: params.cancelledAt ?? booking.cancelledAt,
+          arrivalTime: params.arrivalTime ?? booking.arrivalTime,
+        );
         final updateRes = await updateBooking(updated);
+        if (dataModeService.isOnline && remoteRepo != null) {
+          try {
+            await remoteRepo!.changeBookingStatus(params);
+          } catch (_) {}
+        }
         return updateRes.fold(
           (f) => Left(f),
           (_) => const Right(unit),

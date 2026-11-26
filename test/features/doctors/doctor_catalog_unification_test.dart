@@ -22,13 +22,13 @@ void main() {
       staffUsersRepo = StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger());
     });
 
-    test('1. DoctorsMockRepoImpl contains exactly the 6 canonical doctors DOC-01 through DOC-06', () async {
+    test('1. DoctorsMockRepoImpl contains the 6 canonical doctors DOC-01 through DOC-06 plus specialty seed doctors', () async {
       final res = await doctorsRepo.getDoctors(params: paginationParams);
       final doctors = res.getOrElse(() => throw Exception('Failed to get doctors')).doctors;
 
-      expect(doctors.length, equals(6));
+      expect(doctors.length, equals(13));
       final ids = doctors.map((d) => d.id).toSet();
-      expect(ids, equals({'DOC-01', 'DOC-02', 'DOC-03', 'DOC-04', 'DOC-05', 'DOC-06'}));
+      expect(ids, containsAll({'DOC-01', 'DOC-02', 'DOC-03', 'DOC-04', 'DOC-05', 'DOC-06'}));
 
       final names = doctors.map((d) => d.name).toList();
       expect(names, containsAll([

@@ -3,9 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_hr_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
+import 'package:eyadty/features/hr/data/models/doctor_settlement_model.dart';
 import 'package:eyadty/features/hr/data/models/employee_ledger_entry_model.dart';
 import 'package:eyadty/features/hr/data/models/enums/ledger_entry_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/payroll_status_enum.dart';
+import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_period_model.dart';
 import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
 
@@ -129,6 +131,57 @@ void main() {
       expect(periodsRes.isRight(), isTrue);
       final periods = periodsRes.getOrElse(() => []);
       expect(periods.any((p) => p.id == 'PAY-11-2026' && p.status == PayrollStatusEnum.confirmed), isTrue);
+    });
+
+    test('3. Doctor settlement confirm works offline/after restart and survives rebuild (A5i)', () async {
+      final sharedStorage = <String, String>{};
+      final store1 = InMemoryTransactionalStore(
+        storageWriter: (k, v) async => sharedStorage[k] = v,
+        storageReader: (k) => sharedStorage[k],
+        storageRemover: (k) async => sharedStorage.remove(k),
+      );
+
+      final repo1 = OfflineFirstHrRepo(
+        localStore: store1,
+        dataModeService: dataModeService,
+        remoteRepo: remoteRepo,
+        getCurrentAccountId: () => 'default',
+        getCurrentBranchId: () => 'branch_1',
+      );
+
+      final draft = DoctorSettlementModel(
+        id: 'SET-LOCAL-1',
+        doctorId: 'DOC-01',
+        doctorName: 'د. أحمد',
+        branchId: 'branch_1',
+        status: SettlementStatusEnum.draft,
+        netPayablePiastres: 1000000,
+        periodStart: DateTime(2026, 11, 1),
+        periodEnd: DateTime(2026, 11, 30),
+        createdAt: DateTime.now(),
+      );
+      await repo1.saveDoctorSettlement(draft);
+
+      // Simulate restart with fresh remoteRepo (doesn't have SET-LOCAL-1)
+      final store2 = InMemoryTransactionalStore(
+        storageWriter: (k, v) async => sharedStorage[k] = v,
+        storageReader: (k) => sharedStorage[k],
+        storageRemover: (k) async => sharedStorage.remove(k),
+      );
+      final repo2 = OfflineFirstHrRepo(
+        localStore: store2,
+        dataModeService: dataModeService,
+        remoteRepo: HrMockRepoImpl(),
+        getCurrentAccountId: () => 'default',
+        getCurrentBranchId: () => 'branch_1',
+      );
+
+      final confirmRes = await repo2.confirmDoctorSettlement(
+        settlementId: 'SET-LOCAL-1',
+        confirmedByUserId: 'USER-OWNER',
+      );
+      expect(confirmRes.isRight(), isTrue);
+      expect(confirmRes.getOrElse(() => throw 'err').status, equals(SettlementStatusEnum.confirmed));
     });
   });
 }

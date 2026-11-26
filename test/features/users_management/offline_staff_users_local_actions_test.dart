@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_staff_users_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
+import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
 
@@ -68,6 +70,56 @@ void main() {
         currentUserId: 'USER-OWNER',
       );
       expect(deleteRes.isRight(), isTrue);
+    });
+
+    test('A5k: saveRole persists updated permissions across store rebuild', () async {
+      final sharedStorage = <String, String>{};
+      final dataMode = DataModeService();
+      dataMode.setReachabilityForTesting(true);
+
+      final store1 = InMemoryTransactionalStore(
+        dataModeService: dataMode,
+        storageWriter: (k, v) async => sharedStorage[k] = v,
+        storageReader: (k) => sharedStorage[k],
+        storageRemover: (k) async => sharedStorage.remove(k),
+      );
+      final repo1 = OfflineFirstStaffUsersRepo(
+        localStore: store1,
+        dataModeService: dataMode,
+        remoteRepo: StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
+        getCurrentAccountId: () => 'default',
+        getCurrentBranchId: () => 'branch_1',
+      );
+
+      final rolesRes = await repo1.getRoles();
+      final roles = rolesRes.getOrElse(() => []);
+      final targetRole = roles.firstWhere((r) => r.id == RoleIds.branchManager);
+      final updatedPerms = [...(targetRole.permissions ?? <StaffPermissionEnum>[]), StaffPermissionEnum.confirmDoctorSettlement];
+
+      final saveRes = await repo1.saveRole(
+        role: targetRole.copyWith(permissions: updatedPerms),
+        currentUserId: 'USER-OWNER',
+      );
+      expect(saveRes.isRight(), isTrue);
+
+      // Rebuild store from storage
+      final store2 = InMemoryTransactionalStore(
+        dataModeService: dataMode,
+        storageWriter: (k, v) async => sharedStorage[k] = v,
+        storageReader: (k) => sharedStorage[k],
+        storageRemover: (k) async => sharedStorage.remove(k),
+      );
+      final repo2 = OfflineFirstStaffUsersRepo(
+        localStore: store2,
+        dataModeService: dataMode,
+        remoteRepo: StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
+        getCurrentAccountId: () => 'default',
+        getCurrentBranchId: () => 'branch_1',
+      );
+
+      final reloadedRoles = (await repo2.getRoles()).getOrElse(() => []);
+      final reloaded = reloadedRoles.firstWhere((r) => r.id == RoleIds.branchManager);
+      expect(reloaded.permissions, contains(StaffPermissionEnum.confirmDoctorSettlement));
     });
   });
 }

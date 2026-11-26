@@ -147,8 +147,9 @@ class _BookingsPageView extends StatelessWidget {
 
     return BlocListener<BookingsCubit, BookingsState>(
       listenWhen: (prev, curr) =>
-          prev.errMessage != curr.errMessage ||
-          prev.actionSuccessMessage != curr.actionSuccessMessage,
+          (prev.errMessage != curr.errMessage && curr.errMessage != null) ||
+          (prev.actionSuccessMessage != curr.actionSuccessMessage &&
+              curr.actionSuccessMessage != null),
       listener: (context, state) {
         if (state.errMessage != null) {
           CustomToast(

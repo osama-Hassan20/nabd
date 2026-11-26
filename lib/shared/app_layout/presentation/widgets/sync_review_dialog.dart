@@ -42,6 +42,7 @@ class _SyncReviewDialogState extends State<SyncReviewDialog> {
 
   static const Map<String, String> sectionTitles = {
     'patient': 'المرضى',
+    'specialty_record_entry': 'السجل التخصصي',
     'booking': 'الحجوزات والمواعيد',
     'visit': 'الزيارات الطبية',
     'drug': 'الأدوية والمستحضرات',

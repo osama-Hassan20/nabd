@@ -12,6 +12,7 @@ import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/features/patients/data/models/egyptian_governorates.dart';
 import 'package:eyadty/features/patients/data/models/enums/gender_enum.dart';
+import 'package:eyadty/features/patients/data/models/enums/marital_status_enum.dart';
 import 'package:eyadty/features/patients/data/models/enums/medical_catalog_type_enum.dart';
 import 'package:eyadty/features/patients/data/models/kinship_relations.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
@@ -842,166 +843,318 @@ class _AddEditPatientDialogState extends State<AddEditPatientDialog> {
         ),
         const SizedBox(height: 20),
 
-        // Female Only Section (Neutral styling box: Pregnancy, Nursing, LMP)
+        // Female Only Section (بيانات الأنثى)
         if (form.gender == GenderEnum.female) ...[
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: colors.surfaceLevel1,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: colors.borderSubtle),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.female_rounded,
-                      size: 18,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'female_health_details'.tr(),
-                      style: CustomAppFontStyle.semiBold13.copyWith(
-                        color: colors.textPrimary,
-                      ),
-                    ),
-                  ],
+          Builder(
+            builder: (context) {
+              final ageYears = form.ageYears;
+              final hidePregnancyFields = ageYears != null && ageYears < 12;
+              final computedEdd = form.estimatedDueDate ??
+                  form.lastMenstrualPeriodDate?.add(const Duration(days: 280));
+              final lmpForCalc = form.lastMenstrualPeriodDate ??
+                  computedEdd?.subtract(const Duration(days: 280));
+              int? gestWeeks;
+              int? gestMonth;
+              if (form.isPregnant && lmpForCalc != null) {
+                final days = CairoTimeHelper.now().difference(lmpForCalc).inDays;
+                gestWeeks = (days ~/ 7).clamp(0, 42);
+                gestMonth = (gestWeeks / 4.3).ceil().clamp(1, 9);
+              }
+
+              return Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: colors.surfaceLevel1,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: form.isPregnant,
-                            activeColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            onChanged: (v) =>
-                                patientsCubit.updateFormIsPregnant(v ?? false),
-                          ),
-                          const SizedBox(width: 4),
-                          InkWell(
-                            onTap: () => patientsCubit
-                                .updateFormIsPregnant(!form.isPregnant),
-                            child: Text(
-                              'is_pregnant'.tr(),
-                              style: CustomAppFontStyle.medium13.copyWith(
-                                color: colors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: form.isNursing,
-                            activeColor: colors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            onChanged: (v) =>
-                                patientsCubit.updateFormIsNursing(v ?? false),
-                          ),
-                          const SizedBox(width: 4),
-                          InkWell(
-                            onTap: () => patientsCubit
-                                .updateFormIsNursing(!form.isNursing),
-                            child: Text(
-                              'is_nursing'.tr(),
-                              style: CustomAppFontStyle.medium13.copyWith(
-                                color: colors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.female_rounded,
+                          size: 18,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'بيانات الأنثى',
+                          style: CustomAppFontStyle.semiBold13.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Marital status chips
                     Text(
-                      'last_menstrual_period_date'.tr(),
-                      style: CustomAppFontStyle.medium13.copyWith(
-                        color: colors.textPrimary,
+                      'الحالة الاجتماعية',
+                      style: CustomAppFontStyle.medium12.copyWith(
+                        color: colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: () => _selectLmpDate(
-                              context,
-                              form.lastMenstrualPeriodDate,
-                              form.dateOfBirth,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: MaritalStatus.values.map((m) {
+                        final selected = form.maritalStatus == m;
+                        return ChoiceChip(
+                          label: Text(m.femaleLabel()),
+                          selected: selected,
+                          onSelected: (val) => patientsCubit
+                              .updateFormMaritalStatus(val ? m : null),
+                        );
+                      }).toList(),
+                    ),
+                    if (!hidePregnancyFields) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: form.isPregnant,
+                              title: Text('حامل', style: CustomAppFontStyle.medium13),
+                              onChanged: (v) =>
+                                  patientsCubit.updateFormIsPregnant(v ?? false),
                             ),
-                            child: Container(
-                              height: 44,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: colors.surfaceLevel1,
+                          ),
+                          Expanded(
+                            child: CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: form.isNursing,
+                              title: Text('مرضع', style: CustomAppFontStyle.medium13),
+                              onChanged: (v) =>
+                                  patientsCubit.updateFormIsNursing(v ?? false),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (form.isPregnant && form.isNursing)
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: form.pregnantAndNursingConfirmed,
+                          title: Text(
+                            'تأكيد تسجيل الحمل والرضاعة معاً',
+                            style: CustomAppFontStyle.medium12.copyWith(
+                              color: AppColors.warning,
+                            ),
+                          ),
+                          onChanged: (v) => patientsCubit
+                              .updateFormPregnantAndNursingConfirmed(v ?? false),
+                        ),
+                      if (form.isPregnant) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: colors.borderSubtle),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today_outlined,
-                                    size: 16,
-                                    color: colors.primary,
+                                onTap: () => _selectLmpDate(
+                                  context,
+                                  form.lastMenstrualPeriodDate,
+                                  form.dateOfBirth,
+                                ),
+                                child: InputDecorator(
+                                  decoration: const InputDecoration(
+                                    labelText: 'تاريخ آخر دورة (LMP)',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
+                                  child: Text(
                                     form.lastMenstrualPeriodDate != null
                                         ? DateFormat('yyyy-MM-dd').format(
                                             form.lastMenstrualPeriodDate!,
                                           )
-                                        : 'select_date'.tr(),
-                                    style:
-                                        CustomAppFontStyle.regular13.copyWith(
-                                      color:
-                                          form.lastMenstrualPeriodDate != null
-                                              ? colors.textPrimary
-                                              : colors.textSecondary,
-                                    ),
+                                        : 'اختر التاريخ',
                                   ),
-                                ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () async {
+                                  final now = CairoTimeHelper.now();
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: computedEdd ??
+                                        now.add(const Duration(days: 140)),
+                                    firstDate: now,
+                                    lastDate: now.add(const Duration(days: 300)),
+                                  );
+                                  if (picked != null) {
+                                    patientsCubit
+                                        .updateFormEstimatedDueDate(picked);
+                                  }
+                                },
+                                child: InputDecorator(
+                                  decoration: const InputDecoration(
+                                    labelText: 'تاريخ الولادة المتوقع (EDD)',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  child: Text(
+                                    computedEdd != null
+                                        ? DateFormat('yyyy-MM-dd')
+                                            .format(computedEdd)
+                                        : 'يحسب تلقائياً أو بالسونار',
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (gestWeeks != null) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'عمر الحمل: الأسبوع $gestWeeks (الشهر $gestMonth من 9)',
+                              style: CustomAppFontStyle.semiBold12.copyWith(
+                                color: AppColors.primary,
                               ),
                             ),
                           ),
-                        ),
-                        if (form.lastMenstrualPeriodDate != null) ...[
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.clear,
-                              size: 18,
-                              color: AppColors.gray71717A,
-                            ),
-                            onPressed: () => patientsCubit
-                                .updateFormLastMenstrualPeriodDate(null),
-                          ),
                         ],
                       ],
-                    ),
+                      if (form.isNursing) ...[
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          initialValue:
+                              form.nursingBabyAgeMonths?.toString() ?? '',
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'عمر الرضيع (بالشهور - اختياري)',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (v) => patientsCubit
+                              .updateFormNursingBabyAgeMonths(int.tryParse(v)),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              initialValue:
+                                  form.gravidaCount?.toString() ?? '',
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'الحمل (G)',
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (v) => patientsCubit
+                                  .updateFormGravidaCount(int.tryParse(v)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: form.paraCount?.toString() ?? '',
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'الولادات (P)',
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (v) => patientsCubit
+                                  .updateFormParaCount(int.tryParse(v)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue:
+                                  form.miscarriageCount?.toString() ?? '',
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'إجهاض',
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (v) => patientsCubit
+                                  .updateFormMiscarriageCount(int.tryParse(v)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue:
+                                  form.cesareanCount?.toString() ?? '',
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'قيصري',
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (v) => patientsCubit
+                                  .updateFormCesareanCount(int.tryParse(v)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        initialValue: form.contraceptionMethod,
+                        decoration: const InputDecoration(
+                          labelText: 'وسيلة منع الحمل (اختياري)',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: patientsCubit.updateFormContraceptionMethod,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: form.isMenopause,
+                              title: Text('انقطاع الطمث',
+                                  style: CustomAppFontStyle.medium12),
+                              onChanged: (v) => patientsCubit
+                                  .updateFormIsMenopause(v ?? false),
+                            ),
+                          ),
+                          Expanded(
+                            child: CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: form.hasPregnancyAllergyWarning,
+                              title: Text('تحذير حساسية بالحمل',
+                                  style: CustomAppFontStyle.medium12),
+                              onChanged: (v) => patientsCubit
+                                  .updateFormPregnancyAllergyWarning(v ?? false),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
           const SizedBox(height: 20),
         ],

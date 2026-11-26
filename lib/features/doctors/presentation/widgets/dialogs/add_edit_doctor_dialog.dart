@@ -2,7 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
+import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_use_case.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
@@ -89,6 +92,8 @@ class _AddEditDoctorDialogState extends State<AddEditDoctorDialog> {
   late final TextEditingController _specialtyController;
   late final TextEditingController _genderController;
   late DoctorGenderEnum _selectedGender;
+  late Set<MedicalSpecialty> _selectedSpecialties;
+  List<MedicalSpecialty> _availableSpecialties = MedicalSpecialty.values;
 
   @override
   void initState() {
@@ -103,10 +108,30 @@ class _AddEditDoctorDialogState extends State<AddEditDoctorDialog> {
       initialPhone = initialPhone.replaceFirst('+974', '').trim();
     }
     _phoneController = TextEditingController(text: initialPhone);
-    _specialtyController =
-        TextEditingController(text: widget.doctor?.specialty ?? '');
+    _selectedSpecialties =
+        Set<MedicalSpecialty>.from(widget.doctor?.effectiveSpecialties ?? []);
+    if (widget.doctor == null) {
+      _selectedSpecialties = {MedicalSpecialty.generalPractice};
+    }
+    _specialtyController = TextEditingController(
+      text: widget.doctor?.specialty ??
+          _selectedSpecialties.map((s) => s.labelKey.tr()).join('، '),
+    );
     _selectedGender = widget.doctor?.gender ?? DoctorGenderEnum.male;
     _genderController = TextEditingController(text: _selectedGender.label);
+    _loadEnabledSpecialties();
+  }
+
+  Future<void> _loadEnabledSpecialties() async {
+    if (!getIt.isRegistered<GetCompanySettingsUseCase>()) return;
+    final res = await getIt<GetCompanySettingsUseCase>()(NoParams());
+    res.fold((_) {}, (settings) {
+      if (mounted && settings.enabledSpecialties.isNotEmpty) {
+        setState(() {
+          _availableSpecialties = settings.enabledSpecialties;
+        });
+      }
+    });
   }
 
   @override
@@ -128,10 +153,19 @@ class _AddEditDoctorDialogState extends State<AddEditDoctorDialog> {
       countryCode: '+20',
     );
 
+    if (_selectedSpecialties.isEmpty) {
+      CustomToast(
+        context: context,
+        header: 'field_required'.tr(),
+      ).showErrorToast();
+      return;
+    }
+
     final success = await widget.doctorsCubit.saveDoctor(
       name: _nameController.text.trim(),
       phone: formattedPhone,
-      specialty: _specialtyController.text.trim(),
+      specialty: _selectedSpecialties.map((s) => s.labelKey.tr()).join('، '),
+      specialties: _selectedSpecialties.toList(),
       gender: _selectedGender,
     );
 
@@ -214,27 +248,43 @@ class _AddEditDoctorDialogState extends State<AddEditDoctorDialog> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Specialty Field
-                        CustomTextFormField(
-                          controller: _specialtyController,
-                          headerText: 'specialty'.tr(),
-                          hintText: 'specialty_hint'.tr(),
-                          isRequired: true,
-                          prefixWidget: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: CustomAssetImage(
-                              path: AppIcons.service,
-                              width: 18,
-                              height: 18,
-                              color: AppColors.primary,
-                            ),
+                        // Specialties Multi-Select
+                        Text(
+                          'specialty'.tr(),
+                          style: CustomAppFontStyle.medium14.copyWith(
+                            color: AppColors.darkText,
                           ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'field_required'.tr();
-                            }
-                            return null;
-                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _availableSpecialties.map((spec) {
+                            final isSelected = _selectedSpecialties.contains(spec);
+                            return FilterChip(
+                              avatar: Icon(
+                                spec.icon,
+                                size: 16,
+                                color: isSelected ? AppColors.primary : AppColors.gray,
+                              ),
+                              label: Text(spec.labelKey.tr()),
+                              selected: isSelected,
+                              selectedColor: AppColors.primaryLight,
+                              checkmarkColor: AppColors.primary,
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    _selectedSpecialties.add(spec);
+                                  } else if (_selectedSpecialties.length > 1) {
+                                    _selectedSpecialties.remove(spec);
+                                  }
+                                  _specialtyController.text = _selectedSpecialties
+                                      .map((s) => s.labelKey.tr())
+                                      .join('، ');
+                                });
+                              },
+                            );
+                          }).toList(),
                         ),
                         const SizedBox(height: 20),
 

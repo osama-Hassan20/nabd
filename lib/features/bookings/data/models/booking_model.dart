@@ -1,3 +1,4 @@
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
 import 'enums/booking_status_enum.dart';
@@ -19,6 +20,7 @@ class BookingModel {
   final String? doctorName;
   final String? clinicRoom;
   final String? specialty;
+  final MedicalSpecialty? specialtyCode;
   final BookingTypeEnum? visitType;
   final BookingStatusEnum? status;
   final PaymentStatusEnum? paymentStatus;
@@ -78,6 +80,7 @@ class BookingModel {
     this.doctorName,
     this.clinicRoom,
     this.specialty,
+    this.specialtyCode,
     this.visitType,
     this.status,
     this.paymentStatus,
@@ -217,6 +220,11 @@ class BookingModel {
       doctorName: dName,
       clinicRoom: json['clinicRoom'] as String? ?? 'عيادة 1',
       specialty: json['specialty'] as String? ?? json['serviceName'] as String?,
+      specialtyCode: json['specialtyCode'] != null
+          ? MedicalSpecialty.fromValue(json['specialtyCode']?.toString())
+          : (json['specialty'] != null
+              ? MedicalSpecialty.fromValue(json['specialty']?.toString())
+              : null),
       visitType: vType,
       status: BookingStatusEnum.fromValue(json['status']?.toString()),
       paymentStatus: PaymentStatusEnum.fromValue(json['paymentStatus']?.toString()),
@@ -295,6 +303,7 @@ class BookingModel {
       if (doctorName != null) 'doctorName': doctorName,
       if (clinicRoom != null) 'clinicRoom': clinicRoom,
       if (specialty != null) 'specialty': specialty,
+      if (specialtyCode != null) 'specialtyCode': specialtyCode?.value,
       if (visitType != null) 'visitType': visitType?.value,
       if (status != null) 'status': status?.value,
       if (paymentStatus != null) 'paymentStatus': paymentStatus?.value,
@@ -354,6 +363,7 @@ class BookingModel {
     String? doctorName,
     String? clinicRoom,
     String? specialty,
+    MedicalSpecialty? specialtyCode,
     BookingTypeEnum? visitType,
     BookingStatusEnum? status,
     PaymentStatusEnum? paymentStatus,
@@ -409,6 +419,7 @@ class BookingModel {
       doctorName: doctorName ?? this.doctorName,
       clinicRoom: clinicRoom ?? this.clinicRoom,
       specialty: specialty ?? this.specialty,
+      specialtyCode: specialtyCode ?? this.specialtyCode,
       visitType: visitType ?? this.visitType,
       status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,

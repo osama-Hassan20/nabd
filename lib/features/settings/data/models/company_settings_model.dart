@@ -1,3 +1,4 @@
+import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'enums/clinic_type_enum.dart';
 import 'enums/print_format_enum.dart';
 import 'prescription_template_model.dart';
@@ -10,6 +11,7 @@ class CompanySettingsModel {
   final String? phone;
   final String? address;
   final ClinicTypeEnum clinicType;
+  final List<MedicalSpecialty> enabledSpecialties;
   final num? defaultHourlyRate;
   final List<String>? workingDays;
   final String? openingTime;
@@ -32,6 +34,7 @@ class CompanySettingsModel {
     this.phone,
     this.address,
     this.clinicType = ClinicTypeEnum.polyclinic,
+    this.enabledSpecialties = MedicalSpecialty.values,
     this.defaultHourlyRate,
     this.workingDays,
     this.openingTime,
@@ -75,6 +78,13 @@ class CompanySettingsModel {
       phone: json['phone'] as String?,
       address: json['address'] as String?,
       clinicType: ClinicTypeEnum.fromValue(json['clinicType'] as String?),
+      enabledSpecialties: (json['enabledSpecialties'] is List &&
+              (json['enabledSpecialties'] as List).isNotEmpty)
+          ? (json['enabledSpecialties'] as List)
+              .map((e) => MedicalSpecialty.fromValue(e?.toString()))
+              .toSet()
+              .toList()
+          : MedicalSpecialty.values,
       defaultHourlyRate: json['defaultHourlyRate'] as num?,
       workingDays: (json['workingDays'] as List<dynamic>?)
           ?.map((e) => e.toString())
@@ -108,6 +118,7 @@ class CompanySettingsModel {
       if (phone != null) 'phone': phone,
       if (address != null) 'address': address,
       'clinicType': clinicType.value,
+      'enabledSpecialties': enabledSpecialties.map((e) => e.value).toList(),
       if (defaultHourlyRate != null) 'defaultHourlyRate': defaultHourlyRate,
       if (workingDays != null) 'workingDays': workingDays,
       if (openingTime != null) 'openingTime': openingTime,
@@ -142,6 +153,7 @@ class CompanySettingsModel {
     String? phone,
     String? address,
     ClinicTypeEnum? clinicType,
+    List<MedicalSpecialty>? enabledSpecialties,
     num? defaultHourlyRate,
     List<String>? workingDays,
     String? openingTime,
@@ -164,6 +176,7 @@ class CompanySettingsModel {
       phone: phone ?? this.phone,
       address: address ?? this.address,
       clinicType: clinicType ?? this.clinicType,
+      enabledSpecialties: enabledSpecialties ?? this.enabledSpecialties,
       defaultHourlyRate: defaultHourlyRate ?? this.defaultHourlyRate,
       workingDays: workingDays ?? this.workingDays,
       openingTime: openingTime ?? this.openingTime,

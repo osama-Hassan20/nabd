@@ -7,6 +7,7 @@ import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.d
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 import '../../data/models/enums/blood_group_enum.dart';
 import '../../data/models/enums/gender_enum.dart';
+import '../../data/models/enums/marital_status_enum.dart';
 import '../../data/models/medical_catalog_item_model.dart';
 import '../../data/models/patient_model.dart';
 
@@ -26,6 +27,17 @@ class PatientFormState extends Equatable {
   final bool isPregnant;
   final bool isNursing;
   final DateTime? lastMenstrualPeriodDate;
+  final MaritalStatus? maritalStatus;
+  final DateTime? estimatedDueDate;
+  final int? nursingBabyAgeMonths;
+  final int? gravidaCount;
+  final int? paraCount;
+  final int? miscarriageCount;
+  final int? cesareanCount;
+  final String contraceptionMethod;
+  final bool isMenopause;
+  final bool hasPregnancyAllergyWarning;
+  final bool pregnantAndNursingConfirmed;
   final String? governorate;
   final String city;
   final String detailedAddress;
@@ -56,6 +68,17 @@ class PatientFormState extends Equatable {
     this.isPregnant = false,
     this.isNursing = false,
     this.lastMenstrualPeriodDate,
+    this.maritalStatus,
+    this.estimatedDueDate,
+    this.nursingBabyAgeMonths,
+    this.gravidaCount,
+    this.paraCount,
+    this.miscarriageCount,
+    this.cesareanCount,
+    this.contraceptionMethod = '',
+    this.isMenopause = false,
+    this.hasPregnancyAllergyWarning = false,
+    this.pregnantAndNursingConfirmed = false,
     this.governorate,
     this.city = '',
     this.detailedAddress = '',
@@ -132,6 +155,19 @@ class PatientFormState extends Equatable {
     bool? isNursing,
     DateTime? lastMenstrualPeriodDate,
     bool clearLmpDate = false,
+    MaritalStatus? maritalStatus,
+    bool clearMaritalStatus = false,
+    DateTime? estimatedDueDate,
+    bool clearEddDate = false,
+    int? nursingBabyAgeMonths,
+    int? gravidaCount,
+    int? paraCount,
+    int? miscarriageCount,
+    int? cesareanCount,
+    String? contraceptionMethod,
+    bool? isMenopause,
+    bool? hasPregnancyAllergyWarning,
+    bool? pregnantAndNursingConfirmed,
     String? governorate,
     bool clearGovernorate = false,
     String? city,
@@ -167,6 +203,23 @@ class PatientFormState extends Equatable {
       lastMenstrualPeriodDate: clearLmpDate
           ? null
           : (lastMenstrualPeriodDate ?? this.lastMenstrualPeriodDate),
+      maritalStatus: clearMaritalStatus
+          ? null
+          : (maritalStatus ?? this.maritalStatus),
+      estimatedDueDate: clearEddDate
+          ? null
+          : (estimatedDueDate ?? this.estimatedDueDate),
+      nursingBabyAgeMonths: nursingBabyAgeMonths ?? this.nursingBabyAgeMonths,
+      gravidaCount: gravidaCount ?? this.gravidaCount,
+      paraCount: paraCount ?? this.paraCount,
+      miscarriageCount: miscarriageCount ?? this.miscarriageCount,
+      cesareanCount: cesareanCount ?? this.cesareanCount,
+      contraceptionMethod: contraceptionMethod ?? this.contraceptionMethod,
+      isMenopause: isMenopause ?? this.isMenopause,
+      hasPregnancyAllergyWarning:
+          hasPregnancyAllergyWarning ?? this.hasPregnancyAllergyWarning,
+      pregnantAndNursingConfirmed:
+          pregnantAndNursingConfirmed ?? this.pregnantAndNursingConfirmed,
       governorate: clearGovernorate ? null : (governorate ?? this.governorate),
       city: city ?? this.city,
       detailedAddress: detailedAddress ?? this.detailedAddress,
@@ -205,6 +258,17 @@ class PatientFormState extends Equatable {
         isPregnant,
         isNursing,
         lastMenstrualPeriodDate,
+        maritalStatus,
+        estimatedDueDate,
+        nursingBabyAgeMonths,
+        gravidaCount,
+        paraCount,
+        miscarriageCount,
+        cesareanCount,
+        contraceptionMethod,
+        isMenopause,
+        hasPregnancyAllergyWarning,
+        pregnantAndNursingConfirmed,
         governorate,
         city,
         detailedAddress,

@@ -24,6 +24,8 @@ import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
 import '../../data/models/clinical_record_models.dart';
 import '../../data/models/enums/blood_group_enum.dart';
 import '../../data/models/enums/gender_enum.dart';
+import '../../data/models/enums/marital_status_enum.dart';
+import '../../domain/helpers/female_intake_validator.dart';
 import '../../data/models/enums/medical_catalog_type_enum.dart';
 import '../../data/models/medical_catalog_item_model.dart';
 import '../../data/models/patient_model.dart';
@@ -163,6 +165,16 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
           isPregnant: patient.isPregnant ?? false,
           isNursing: patient.isNursing ?? false,
           lastMenstrualPeriodDate: patient.lastMenstrualPeriodDate,
+          maritalStatus: patient.maritalStatus,
+          estimatedDueDate: patient.estimatedDueDate,
+          nursingBabyAgeMonths: patient.nursingBabyAgeMonths,
+          gravidaCount: patient.gravidaCount,
+          paraCount: patient.paraCount,
+          miscarriageCount: patient.miscarriageCount,
+          cesareanCount: patient.cesareanCount,
+          contraceptionMethod: patient.contraceptionMethod ?? '',
+          isMenopause: patient.isMenopause ?? false,
+          hasPregnancyAllergyWarning: patient.hasPregnancyAllergyWarning ?? false,
           governorate: patient.governorate,
           city: patient.city ?? '',
           detailedAddress: patient.detailedAddress ?? '',
@@ -385,6 +397,78 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
     ));
   }
 
+  void updateFormMaritalStatus(MaritalStatus? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(
+        maritalStatus: value,
+        clearMaritalStatus: value == null,
+      ),
+    ));
+  }
+
+  void updateFormEstimatedDueDate(DateTime? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(
+        estimatedDueDate: value,
+        clearEddDate: value == null,
+      ),
+    ));
+  }
+
+  void updateFormNursingBabyAgeMonths(int? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(nursingBabyAgeMonths: value),
+    ));
+  }
+
+  void updateFormGravidaCount(int? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(gravidaCount: value),
+    ));
+  }
+
+  void updateFormParaCount(int? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(paraCount: value),
+    ));
+  }
+
+  void updateFormMiscarriageCount(int? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(miscarriageCount: value),
+    ));
+  }
+
+  void updateFormCesareanCount(int? value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(cesareanCount: value),
+    ));
+  }
+
+  void updateFormContraceptionMethod(String value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(contraceptionMethod: value),
+    ));
+  }
+
+  void updateFormIsMenopause(bool value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(isMenopause: value),
+    ));
+  }
+
+  void updateFormPregnancyAllergyWarning(bool value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(hasPregnancyAllergyWarning: value),
+    ));
+  }
+
+  void updateFormPregnantAndNursingConfirmed(bool value) {
+    emit(state.copyWith(
+      formState: state.formState?.copyWith(pregnantAndNursingConfirmed: value),
+    ));
+  }
+
   void updateFormGovernorate(String? value) {
     emit(state.copyWith(
       formState: state.formState?.copyWith(
@@ -542,6 +626,25 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
     final form = state.formState;
     if (form == null) return false;
 
+    final femaleValidation = FemaleIntakeValidator.validate(
+      gender: form.gender,
+      dateOfBirth: form.dateOfBirth,
+      isPregnant: form.isPregnant,
+      isNursing: form.isNursing,
+      lmpDate: form.lastMenstrualPeriodDate,
+      eddDate: form.estimatedDueDate,
+      pregnantAndNursingConfirmed: form.pregnantAndNursingConfirmed,
+    );
+    if (!femaleValidation.isValid) {
+      emit(state.copyWith(
+        formTabsWithErrors: const {1},
+        activeFormTab: 1,
+        actionStatus: RequestStatusEnum.failure,
+        actionErrMessage: femaleValidation.errors.first,
+      ));
+      return false;
+    }
+
     // Multi-tab validation
     final invalidTabs = validateAllTabs();
     if (invalidTabs.isNotEmpty) {
@@ -582,6 +685,20 @@ class PatientsCubit extends SafeCubit<PatientsState> with SearchMixin {
       isPregnant: form.isPregnant,
       isNursing: form.isNursing,
       lastMenstrualPeriodDate: form.lastMenstrualPeriodDate,
+      maritalStatus: form.maritalStatus,
+      estimatedDueDate: form.estimatedDueDate ??
+          (form.isPregnant && form.lastMenstrualPeriodDate != null
+              ? form.lastMenstrualPeriodDate!.add(const Duration(days: 280))
+              : null),
+      nursingBabyAgeMonths: form.nursingBabyAgeMonths,
+      gravidaCount: form.gravidaCount,
+      paraCount: form.paraCount,
+      miscarriageCount: form.miscarriageCount,
+      cesareanCount: form.cesareanCount,
+      contraceptionMethod:
+          form.contraceptionMethod.isNotEmpty ? form.contraceptionMethod : null,
+      isMenopause: form.isMenopause,
+      hasPregnancyAllergyWarning: form.hasPregnancyAllergyWarning,
       governorate: form.governorate,
       city: form.city.isNotEmpty ? form.city : null,
       detailedAddress: finalAddress,

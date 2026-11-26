@@ -3,6 +3,7 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'clinical_record_models.dart';
 import 'enums/blood_group_enum.dart';
 import 'enums/gender_enum.dart';
+import 'enums/marital_status_enum.dart';
 import 'patient_treatment_plan_model.dart';
 
 class PatientModel extends Equatable {
@@ -26,6 +27,16 @@ class PatientModel extends Equatable {
   final bool? isPregnant;
   final bool? isNursing;
   final DateTime? lastMenstrualPeriodDate;
+  final MaritalStatus? maritalStatus;
+  final DateTime? estimatedDueDate;
+  final int? nursingBabyAgeMonths;
+  final int? gravidaCount;
+  final int? paraCount;
+  final int? miscarriageCount;
+  final int? cesareanCount;
+  final String? contraceptionMethod;
+  final bool? isMenopause;
+  final bool? hasPregnancyAllergyWarning;
 
   // 4. العنوان الإقليمي
   final String? governorate;
@@ -88,6 +99,16 @@ class PatientModel extends Equatable {
     this.isPregnant,
     this.isNursing,
     this.lastMenstrualPeriodDate,
+    this.maritalStatus,
+    this.estimatedDueDate,
+    this.nursingBabyAgeMonths,
+    this.gravidaCount,
+    this.paraCount,
+    this.miscarriageCount,
+    this.cesareanCount,
+    this.contraceptionMethod,
+    this.isMenopause,
+    this.hasPregnancyAllergyWarning,
     this.governorate,
     this.city,
     this.detailedAddress,
@@ -181,6 +202,28 @@ class PatientModel extends Equatable {
       gender == null ||
       gender == GenderEnum.unknown;
 
+  DateTime? get computedEdd =>
+      estimatedDueDate ?? lastMenstrualPeriodDate?.add(const Duration(days: 280));
+
+  int? gestationalWeeks({DateTime? customNow}) {
+    if (isPregnant != true) return null;
+    final lmp = lastMenstrualPeriodDate ??
+        computedEdd?.subtract(const Duration(days: 280));
+    if (lmp == null) return null;
+    final now = customNow ?? CairoTimeHelper.now();
+    final days = DateTime(now.year, now.month, now.day)
+        .difference(DateTime(lmp.year, lmp.month, lmp.day))
+        .inDays;
+    if (days < 0) return 0;
+    return (days ~/ 7).clamp(0, 42);
+  }
+
+  int? gestationalMonth({DateTime? customNow}) {
+    final weeks = gestationalWeeks(customNow: customNow);
+    if (weeks == null) return null;
+    return ((weeks / 4.3).ceil()).clamp(1, 9);
+  }
+
   factory PatientModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const PatientModel();
 
@@ -223,6 +266,28 @@ class PatientModel extends Equatable {
           : (json['last_menstrual_period_date'] != null
               ? DateTime.tryParse(json['last_menstrual_period_date'].toString())
               : null),
+      maritalStatus: MaritalStatus.fromValue(
+          json['maritalStatus'] as String? ?? json['marital_status'] as String?),
+      estimatedDueDate: json['estimatedDueDate'] != null
+          ? DateTime.tryParse(json['estimatedDueDate'].toString())
+          : (json['estimated_due_date'] != null
+              ? DateTime.tryParse(json['estimated_due_date'].toString())
+              : null),
+      nursingBabyAgeMonths: json['nursingBabyAgeMonths'] as int? ??
+          json['nursing_baby_age_months'] as int?,
+      gravidaCount: json['gravidaCount'] as int? ?? json['gravida_count'] as int?,
+      paraCount: json['paraCount'] as int? ?? json['para_count'] as int?,
+      miscarriageCount:
+          json['miscarriageCount'] as int? ?? json['miscarriage_count'] as int?,
+      cesareanCount:
+          json['cesareanCount'] as int? ?? json['cesarean_count'] as int?,
+      contraceptionMethod: json['contraceptionMethod'] as String? ??
+          json['contraception_method'] as String?,
+      isMenopause:
+          json['isMenopause'] as bool? ?? json['is_menopause'] as bool?,
+      hasPregnancyAllergyWarning:
+          json['hasPregnancyAllergyWarning'] as bool? ??
+              json['has_pregnancy_allergy_warning'] as bool?,
       governorate: json['governorate'] as String?,
       city: json['city'] as String?,
       detailedAddress: json['detailedAddress'] as String? ??
@@ -328,6 +393,20 @@ class PatientModel extends Equatable {
       if (lastMenstrualPeriodDate != null)
         'last_menstrual_period_date':
             lastMenstrualPeriodDate?.toIso8601String(),
+      if (maritalStatus != null) 'marital_status': maritalStatus?.value,
+      if (estimatedDueDate != null)
+        'estimated_due_date': estimatedDueDate?.toIso8601String(),
+      if (nursingBabyAgeMonths != null)
+        'nursing_baby_age_months': nursingBabyAgeMonths,
+      if (gravidaCount != null) 'gravida_count': gravidaCount,
+      if (paraCount != null) 'para_count': paraCount,
+      if (miscarriageCount != null) 'miscarriage_count': miscarriageCount,
+      if (cesareanCount != null) 'cesarean_count': cesareanCount,
+      if (contraceptionMethod != null)
+        'contraception_method': contraceptionMethod,
+      if (isMenopause != null) 'is_menopause': isMenopause,
+      if (hasPregnancyAllergyWarning != null)
+        'has_pregnancy_allergy_warning': hasPregnancyAllergyWarning,
       if (governorate != null) 'governorate': governorate,
       if (city != null) 'city': city,
       if (detailedAddress != null) 'detailed_address': detailedAddress,
@@ -392,6 +471,17 @@ class PatientModel extends Equatable {
     bool? isNursing,
     DateTime? lastMenstrualPeriodDate,
     bool clearLmpDate = false,
+    MaritalStatus? maritalStatus,
+    DateTime? estimatedDueDate,
+    bool clearEddDate = false,
+    int? nursingBabyAgeMonths,
+    int? gravidaCount,
+    int? paraCount,
+    int? miscarriageCount,
+    int? cesareanCount,
+    String? contraceptionMethod,
+    bool? isMenopause,
+    bool? hasPregnancyAllergyWarning,
     String? governorate,
     String? city,
     String? detailedAddress,
@@ -440,6 +530,19 @@ class PatientModel extends Equatable {
       lastMenstrualPeriodDate: clearLmpDate
           ? null
           : (lastMenstrualPeriodDate ?? this.lastMenstrualPeriodDate),
+      maritalStatus: maritalStatus ?? this.maritalStatus,
+      estimatedDueDate: clearEddDate
+          ? null
+          : (estimatedDueDate ?? this.estimatedDueDate),
+      nursingBabyAgeMonths: nursingBabyAgeMonths ?? this.nursingBabyAgeMonths,
+      gravidaCount: gravidaCount ?? this.gravidaCount,
+      paraCount: paraCount ?? this.paraCount,
+      miscarriageCount: miscarriageCount ?? this.miscarriageCount,
+      cesareanCount: cesareanCount ?? this.cesareanCount,
+      contraceptionMethod: contraceptionMethod ?? this.contraceptionMethod,
+      isMenopause: isMenopause ?? this.isMenopause,
+      hasPregnancyAllergyWarning:
+          hasPregnancyAllergyWarning ?? this.hasPregnancyAllergyWarning,
       governorate: governorate ?? this.governorate,
       city: city ?? this.city,
       detailedAddress: detailedAddress ?? this.detailedAddress,
@@ -493,6 +596,16 @@ class PatientModel extends Equatable {
         isPregnant,
         isNursing,
         lastMenstrualPeriodDate,
+        maritalStatus,
+        estimatedDueDate,
+        nursingBabyAgeMonths,
+        gravidaCount,
+        paraCount,
+        miscarriageCount,
+        cesareanCount,
+        contraceptionMethod,
+        isMenopause,
+        hasPregnancyAllergyWarning,
         governorate,
         city,
         detailedAddress,

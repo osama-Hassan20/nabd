@@ -21,6 +21,22 @@ mixin VisitPrescriptionMixin on SafeCubit<VisitsState> {
 
   static const int maxPrescriptionItems = 20;
 
+  static String? checkPregnancyLactationWarning({
+    required DrugModel drug,
+    PatientModel? patient,
+  }) {
+    if (patient == null) return null;
+    final warnings = <String>[];
+    if (patient.isPregnant == true && drug.unsafeInPregnancy) {
+      warnings.add('تحذير: الدواء "${drug.name ?? ''}" غير آمن أثناء الحمل.');
+    }
+    if (patient.isNursing == true && drug.unsafeInLactation) {
+      warnings.add('تحذير: الدواء "${drug.name ?? ''}" غير آمن أثناء الرضاعة.');
+    }
+    if (warnings.isEmpty) return null;
+    return warnings.join('\n');
+  }
+
   bool addPrescriptionItem(PrescriptionItemModel item) {
     final currentItems = List<PrescriptionItemModel>.from(
       state.formState.prescriptionItems ?? const [],

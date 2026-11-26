@@ -136,9 +136,10 @@ class _BookingDetailsView extends StatelessWidget {
 
     return BlocConsumer<BookingsCubit, BookingsState>(
       listenWhen: (prev, curr) =>
-          prev.errMessage != curr.errMessage ||
-          prev.actionSuccessMessage != curr.actionSuccessMessage ||
-          prev.isDeleted != curr.isDeleted,
+          (prev.errMessage != curr.errMessage && curr.errMessage != null) ||
+          (prev.actionSuccessMessage != curr.actionSuccessMessage &&
+              curr.actionSuccessMessage != null) ||
+          (prev.isDeleted != curr.isDeleted && curr.isDeleted),
       listener: (context, state) {
         if (state.isDeleted) {
           CustomToast(

@@ -249,7 +249,33 @@ class OfflineFirstHrRepo implements HrRepo {
       confirmedByUserId: confirmedByUserId,
       isOwnerSelfConfirmed: isOwnerSelfConfirmed,
     );
-    return res.fold((failure) => Left(failure), (saved) async {
+    return res.fold((failure) async {
+      if (!dataModeService.isOnline ||
+          failure.errMessage == 'settlement_not_found') {
+        final localRec = await localStore.getEntity(
+          localId: settlementId,
+          accountId: getCurrentAccountId(),
+          branchId: getCurrentBranchId(),
+        );
+        if (localRec != null && !localRec.isTombstone) {
+          final existing = DoctorSettlementModel.fromJson(localRec.payload);
+          if (existing.status != SettlementStatusEnum.draft) {
+            return const Left(
+              ValidationFailure(errMessage: 'settlement_already_confirmed'),
+            );
+          }
+          final confirmed = existing.copyWith(
+            status: SettlementStatusEnum.confirmed,
+            confirmedByUserId: confirmedByUserId,
+            confirmedAt: DateTime.now(),
+            isOwnerSelfConfirmed: isOwnerSelfConfirmed,
+          );
+          await _persistSettlementAtomic(confirmed);
+          return Right(confirmed);
+        }
+      }
+      return Left(failure);
+    }, (saved) async {
       await _persistSettlementAtomic(saved);
       return Right(saved);
     });

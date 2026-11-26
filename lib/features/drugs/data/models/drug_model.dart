@@ -15,6 +15,8 @@ class DrugModel extends Equatable {
   final String? manufacturer;
   final bool? isActive;
   final bool? isQuickAdded;
+  final bool unsafeInPregnancy;
+  final bool unsafeInLactation;
   final ReviewStatusEnum? reviewStatus;
   final DrugSourceEnum? source;
   final String? createdByUserId;
@@ -35,6 +37,8 @@ class DrugModel extends Equatable {
     this.manufacturer,
     this.isActive = true,
     this.isQuickAdded = false,
+    this.unsafeInPregnancy = false,
+    this.unsafeInLactation = false,
     this.reviewStatus = ReviewStatusEnum.approved,
     this.source = DrugSourceEnum.preset,
     this.createdByUserId,
@@ -58,6 +62,8 @@ class DrugModel extends Equatable {
       manufacturer: json['manufacturer'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       isQuickAdded: json['isQuickAdded'] as bool? ?? false,
+      unsafeInPregnancy: json['unsafeInPregnancy'] as bool? ?? false,
+      unsafeInLactation: json['unsafeInLactation'] as bool? ?? false,
       reviewStatus: ReviewStatusEnum.fromJson(json['reviewStatus'] as String?),
       source: DrugSourceEnum.fromJson(json['source'] as String?),
       createdByUserId: json['createdByUserId'] as String?,
@@ -85,6 +91,8 @@ class DrugModel extends Equatable {
       if (manufacturer != null) 'manufacturer': manufacturer,
       if (isActive != null) 'isActive': isActive,
       if (isQuickAdded != null) 'isQuickAdded': isQuickAdded,
+      if (unsafeInPregnancy) 'unsafeInPregnancy': unsafeInPregnancy,
+      if (unsafeInLactation) 'unsafeInLactation': unsafeInLactation,
       if (reviewStatus != null) 'reviewStatus': reviewStatus?.toJson(),
       if (source != null) 'source': source?.toJson(),
       if (createdByUserId != null) 'createdByUserId': createdByUserId,
@@ -107,6 +115,8 @@ class DrugModel extends Equatable {
     String? manufacturer,
     bool? isActive,
     bool? isQuickAdded,
+    bool? unsafeInPregnancy,
+    bool? unsafeInLactation,
     ReviewStatusEnum? reviewStatus,
     DrugSourceEnum? source,
     String? createdByUserId,
@@ -127,6 +137,8 @@ class DrugModel extends Equatable {
       manufacturer: manufacturer ?? this.manufacturer,
       isActive: isActive ?? this.isActive,
       isQuickAdded: isQuickAdded ?? this.isQuickAdded,
+      unsafeInPregnancy: unsafeInPregnancy ?? this.unsafeInPregnancy,
+      unsafeInLactation: unsafeInLactation ?? this.unsafeInLactation,
       reviewStatus: reviewStatus ?? this.reviewStatus,
       source: source ?? this.source,
       createdByUserId: createdByUserId ?? this.createdByUserId,

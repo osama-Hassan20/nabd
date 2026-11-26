@@ -19,6 +19,7 @@ import 'package:eyadty/core/offline/repositories/offline_first_medical_catalogs_
 import 'package:eyadty/core/offline/repositories/offline_first_medical_services_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_patients_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_settings_repo.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_specialty_records_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_staff_users_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_visits_repo.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
@@ -1274,6 +1275,16 @@ Future<void> setupGetIt() async {
       getBranchComparisonUseCase: getIt<GetBranchComparisonUseCase>(),
       getDoctorPerformanceUseCase: getIt<GetDoctorPerformanceUseCase>(),
       getHourlyTrafficUseCase: getIt<GetHourlyTrafficUseCase>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<OfflineFirstSpecialtyRecordsRepo>(
+    () => OfflineFirstSpecialtyRecordsRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
     ),
   );
 }

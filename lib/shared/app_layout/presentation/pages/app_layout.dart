@@ -54,19 +54,32 @@ class _AppLayoutState extends State<AppLayout> {
     final modeService = getIt<DataModeService>();
     DataMode previousMode = modeService.currentMode;
 
+    Future<void> checkAndShowGate() async {
+      if (!getIt.isRegistered<TransactionalLocalStore>()) return;
+      final store = getIt<TransactionalLocalStore>();
+      final entries = await store.getAllOutboxEntries();
+      final hasPending = entries.any((e) => e.status != OutboxStatus.acknowledged);
+
+      if (hasPending && mounted) {
+        SyncReviewDialog.show(context, isBlockingGate: true);
+      }
+    }
+
+    // Check at app start if already online with pending outbox entries
+    if (modeService.currentMode == DataMode.online) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          checkAndShowGate();
+        }
+      });
+    }
+
     _dataModeSub = modeService.stream.listen((state) async {
       final wasOffline = previousMode != DataMode.online;
       previousMode = state.mode;
 
       if (wasOffline && state.mode == DataMode.online) {
-        if (!getIt.isRegistered<TransactionalLocalStore>()) return;
-        final store = getIt<TransactionalLocalStore>();
-        final entries = await store.getAllOutboxEntries();
-        final hasPending = entries.any((e) => e.status != OutboxStatus.acknowledged);
-
-        if (hasPending && mounted) {
-          SyncReviewDialog.show(context, isBlockingGate: true);
-        }
+        await checkAndShowGate();
       }
     });
   }

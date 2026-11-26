@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
@@ -20,6 +21,21 @@ class CustomToast {
     this.type = ToastificationType.success,
   });
 
+  static final RegExp _i18nKeyRegex = RegExp(r'^[a-z0-9_]+$');
+
+  static String localizeMessage(String raw) {
+    if (raw == 'No internet connection, please try again!') {
+      return 'ميزة الاتصال بالانترنت غير متوفرة';
+    }
+    if (_i18nKeyRegex.hasMatch(raw)) {
+      try {
+        final translated = raw.tr();
+        if (translated != raw) return translated;
+      } catch (_) {}
+    }
+    return raw;
+  }
+
   void showTopToast() {
     toastification.show(
       showIcon: type == ToastificationType.warning ? true : false,
@@ -32,9 +48,7 @@ class CustomToast {
       type: type,
       context: context,
       title: Text(
-        header == 'No internet connection, please try again!'
-            ? "ميزة الاتصال بالانترنت غير متوفرة"
-            : header,
+        localizeMessage(header),
         style: CustomAppFontStyle.regular15.copyWith(
           color: type == ToastificationType.success
               ? const Color(0xff007834)
@@ -44,7 +58,7 @@ class CustomToast {
         maxLines: 3,
       ),
       description: description != null
-          ? Text(description!, style: CustomAppFontStyle.regular14)
+          ? Text(localizeMessage(description!), style: CustomAppFontStyle.regular14)
           : null,
       autoCloseDuration: Duration(seconds: duration),
     );
@@ -60,15 +74,13 @@ class CustomToast {
       type: ToastificationType.error,
       context: context,
       title: Text(
-        header == 'No internet connection, please try again!'
-            ? "ميزة الاتصال بالانترنت غير متوفرة"
-            : header,
+        localizeMessage(header),
         style: CustomAppFontStyle.regular15.copyWith(color: AppColors.red),
         textAlign: TextAlign.start,
         maxLines: 3,
       ),
       description: description != null
-          ? Text(description!, style: CustomAppFontStyle.regular14)
+          ? Text(localizeMessage(description!), style: CustomAppFontStyle.regular14)
           : null,
       autoCloseDuration: Duration(seconds: duration),
     );

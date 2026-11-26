@@ -77,6 +77,65 @@ class PatientClinicalAlertsBanner extends StatelessWidget {
           Divider(height: 1, color: colors.borderSubtle),
           const SizedBox(height: 14),
 
+          if (currentPatient.isPregnant == true ||
+              currentPatient.isNursing == true ||
+              currentPatient.hasPregnancyAllergyWarning == true) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (currentPatient.isPregnant == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDF2F8),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFEC4899)),
+                    ),
+                    child: Text(
+                      currentPatient.gestationalWeeks() != null
+                          ? 'حامل - الأسبوع ${currentPatient.gestationalWeeks()}'
+                          : 'حامل',
+                      style: CustomAppFontStyle.bold12.copyWith(
+                        color: const Color(0xFFBE185D),
+                      ),
+                    ),
+                  ),
+                if (currentPatient.isNursing == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF3B82F6)),
+                    ),
+                    child: Text(
+                      currentPatient.nursingBabyAgeMonths != null
+                          ? 'مرضع (عمر الرضيع ${currentPatient.nursingBabyAgeMonths} شهر)'
+                          : 'مرضع',
+                      style: CustomAppFontStyle.bold12.copyWith(
+                        color: const Color(0xFF1D4ED8),
+                      ),
+                    ),
+                  ),
+                if (currentPatient.hasPregnancyAllergyWarning == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.error),
+                    ),
+                    child: Text(
+                      'تحذير حساسية أثناء الحمل',
+                      style: CustomAppFontStyle.bold12.copyWith(color: AppColors.error),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+          ],
+
           // 1. Allergies Warning Card
           Container(
             padding: const EdgeInsets.all(12),

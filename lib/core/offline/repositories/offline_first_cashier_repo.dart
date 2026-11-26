@@ -151,8 +151,11 @@ class OfflineFirstCashierRepo implements CashierRepo {
 
     return res.fold(
       (failure) async {
-        // If remote fails with shift_not_found but we have local shift, close locally
-        if (shiftRec != null && !shiftRec.isTombstone) {
+        // Only fall back to local close when offline or remote says shift_not_found
+        // (e.g. locally created shift not yet synced or lost from mock memory on restart).
+        final canFallback = !dataModeService.isOnline ||
+            failure.errMessage == 'shift_not_found';
+        if (canFallback && shiftRec != null && !shiftRec.isTombstone) {
           try {
             final shift = CashierShiftModel.fromJson(shiftRec.payload);
             final expected = shift.expectedCashPiastres ?? 0;
@@ -516,8 +519,11 @@ class OfflineFirstCashierRepo implements CashierRepo {
 
     return res.fold(
       (failure) async {
-        // If remote failed with cashier_validation_shift_required but local shift exists and is open
-        if (shiftRec != null && !shiftRec.isTombstone) {
+        // Only fall back to local movement when offline or remote says cashier_validation_shift_required
+        // (e.g. locally opened shift not yet synced or lost from mock memory on restart).
+        final canFallback = !dataModeService.isOnline ||
+            failure.errMessage == 'cashier_validation_shift_required';
+        if (canFallback && shiftRec != null && !shiftRec.isTombstone) {
           try {
             final now = DateTime.now();
             final movId = 'CSM-${now.millisecondsSinceEpoch}';
