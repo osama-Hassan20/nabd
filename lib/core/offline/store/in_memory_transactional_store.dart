@@ -476,6 +476,70 @@ class InMemoryTransactionalStore implements TransactionalLocalStore {
   }
 
   @override
+  Future<void> discardOutboxOperation(
+    String operationId, {
+    bool discardDependents = true,
+  }) async {
+    final entry = _outbox[operationId];
+    if (entry == null) return;
+
+    if (discardDependents) {
+      final dependentRef1 = '${entry.entityType}:${entry.localId}';
+      final dependentRef2 = entry.localId;
+      final dependents = _outbox.values.where((o) =>
+          o.operationId != operationId &&
+          (o.dependencyRefs.contains(dependentRef1) ||
+              o.dependencyRefs.contains(dependentRef2))).toList();
+
+      for (final dep in dependents) {
+        await discardOutboxOperation(dep.operationId, discardDependents: true);
+      }
+    }
+
+    final entity = _entities[entry.localId];
+    if (entity != null) {
+      if (entry.operation == OutboxOperationType.create) {
+        _entities.remove(entry.localId);
+      } else if (entry.operation == OutboxOperationType.update) {
+        if (entry.previousPayload != null) {
+          _entities[entry.localId] = entity.copyWith(
+            payload: entry.previousPayload!,
+            localRevision: entry.baseRevision,
+            syncStatus: SyncStatus.synced,
+            isProvisional: false,
+            updatedAt: DateTime.now(),
+          );
+        } else if (entity.serverId == null) {
+          _entities.remove(entry.localId);
+        }
+      } else if (entry.operation == OutboxOperationType.delete) {
+        if (entry.previousPayload != null) {
+          _entities[entry.localId] = entity.copyWith(
+            payload: entry.previousPayload!,
+            isTombstone: false,
+            syncStatus: SyncStatus.synced,
+            updatedAt: DateTime.now(),
+          );
+        } else {
+          _entities[entry.localId] = entity.copyWith(
+            isTombstone: false,
+            syncStatus: SyncStatus.synced,
+            updatedAt: DateTime.now(),
+          );
+        }
+      }
+    }
+
+    _outbox.remove(operationId);
+    _conflicts.removeWhere((k, v) =>
+        v.conflictId == 'CONF-$operationId' ||
+        (v.entityType == entry.entityType && v.localId == entry.localId));
+
+    await _saveToPersistence();
+    _notifyOutboxCount();
+  }
+
+  @override
   Future<List<ConflictRecord>> getUnresolvedConflicts() async {
     return _conflicts.values.where((c) => !c.isResolved).toList();
   }

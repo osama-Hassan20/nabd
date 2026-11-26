@@ -294,29 +294,110 @@ class OfflineFirstHrRepo implements HrRepo {
   Future<Either<Failures, List<EmployeeLedgerEntryModel>>> getEmployeeLedgerEntries({
     required String employeeId,
     String? branchId,
-  }) =>
-      remoteRepo.getEmployeeLedgerEntries(
-        employeeId: employeeId,
-        branchId: branchId,
-      );
+  }) async {
+    final bId = branchId ?? getCurrentBranchId();
+    final records = await localStore.getEntities(
+      entityType: 'hr_advance',
+      accountId: getCurrentAccountId(),
+      branchId: bId,
+    );
+
+    final localEntries = <String, EmployeeLedgerEntryModel>{};
+    for (final rec in records) {
+      if (!rec.isTombstone) {
+        try {
+          final entry = EmployeeLedgerEntryModel.fromJson(rec.payload);
+          if (entry.id != null && entry.employeeId == employeeId) {
+            localEntries[entry.id!] = entry;
+          }
+        } catch (_) {}
+      }
+    }
+
+    final remoteRes = await remoteRepo.getEmployeeLedgerEntries(
+      employeeId: employeeId,
+      branchId: bId,
+    );
+
+    remoteRes.fold((_) {}, (items) {
+      for (final item in items) {
+        if (item.id != null && !localEntries.containsKey(item.id!)) {
+          localEntries[item.id!] = item;
+        }
+      }
+    });
+
+    final sorted = localEntries.values.toList();
+    sorted.sort((a, b) => (b.date ?? b.createdAt ?? DateTime.now())
+        .compareTo(a.date ?? a.createdAt ?? DateTime.now()));
+    return Right(sorted);
+  }
 
   @override
   Future<Either<Failures, EmployeeLedgerEntryModel>> addEmployeeLedgerEntry(
     EmployeeLedgerEntryModel entry,
-  ) =>
-      remoteRepo.addEmployeeLedgerEntry(entry);
+  ) async {
+    final accountId = getCurrentAccountId();
+    final branchId = entry.branchId ?? getCurrentBranchId();
+    final now = DateTime.now();
+    final isProvisional = !dataModeService.isOnline;
+    final entryId = entry.id ?? 'LED-${now.millisecondsSinceEpoch}';
+    final toSave = entry.id == null ? EmployeeLedgerEntryModel.fromJson({...entry.toJson(), 'id': entryId}) : entry;
+
+    await localStore.runInTransaction((txn) async {
+      txn.upsertEntity(
+        LocalEntityRecord(
+          localId: entryId,
+          entityType: 'hr_advance',
+          accountId: accountId,
+          branchId: branchId,
+          payload: toSave.toJson(),
+          localRevision: 1,
+          syncStatus: isProvisional ? SyncStatus.pending : SyncStatus.synced,
+          isProvisional: isProvisional,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      txn.insertOutbox(
+        OutboxEntry(
+          operationId: 'op_hr_adv_${entryId}_${now.microsecondsSinceEpoch}',
+          entityType: 'hr_advance',
+          localId: entryId,
+          operation: OutboxOperationType.create,
+          payload: toSave.toJson(),
+          baseRevision: 1,
+          createdAt: now,
+          status: OutboxStatus.pending,
+        ),
+      );
+    });
+
+    try {
+      await remoteRepo.addEmployeeLedgerEntry(toSave);
+    } catch (_) {}
+
+    return Right(toSave);
+  }
 
   @override
   Future<Either<Failures, EmployeeLedgerEntryModel>> reverseEmployeeLedgerEntry({
     required String entryId,
     required String reason,
     required String performedByUserId,
-  }) =>
-      remoteRepo.reverseEmployeeLedgerEntry(
-        entryId: entryId,
-        reason: reason,
-        performedByUserId: performedByUserId,
-      );
+  }) async {
+    final res = await remoteRepo.reverseEmployeeLedgerEntry(
+      entryId: entryId,
+      reason: reason,
+      performedByUserId: performedByUserId,
+    );
+
+    return res.fold((failure) => Left(failure), (reversed) async {
+      await addEmployeeLedgerEntry(reversed);
+      return Right(reversed);
+    });
+  }
 
   @override
   Future<Either<Failures, List<StaffPayrollProfileModel>>> getStaffPayrollProfiles({
@@ -334,43 +415,143 @@ class OfflineFirstHrRepo implements HrRepo {
   Future<Either<Failures, List<StaffPayrollPeriodModel>>> getStaffPayrollPeriods({
     String? primaryBranchId,
     int? year,
-  }) =>
-      remoteRepo.getStaffPayrollPeriods(
-        primaryBranchId: primaryBranchId,
-        year: year,
-      );
+  }) async {
+    final bId = primaryBranchId ?? getCurrentBranchId();
+    final records = await localStore.getEntities(
+      entityType: 'hr_payroll',
+      accountId: getCurrentAccountId(),
+      branchId: bId,
+    );
+
+    final localPeriods = <String, StaffPayrollPeriodModel>{};
+    for (final rec in records) {
+      if (!rec.isTombstone) {
+        try {
+          final period = StaffPayrollPeriodModel.fromJson(rec.payload);
+          if (period.id != null && (year == null || period.year == year)) {
+            localPeriods[period.id!] = period;
+          }
+        } catch (_) {}
+      }
+    }
+
+    final remoteRes = await remoteRepo.getStaffPayrollPeriods(
+      primaryBranchId: bId,
+      year: year,
+    );
+
+    remoteRes.fold((_) {}, (items) {
+      for (final item in items) {
+        if (item.id != null && !localPeriods.containsKey(item.id!)) {
+          localPeriods[item.id!] = item;
+        }
+      }
+    });
+
+    final sorted = localPeriods.values.toList();
+    sorted.sort((a, b) => (b.createdAt ?? DateTime.now())
+        .compareTo(a.createdAt ?? DateTime.now()));
+    return Right(sorted);
+  }
 
   @override
   Future<Either<Failures, StaffPayrollPeriodModel>> getStaffPayrollPeriodById(
     String periodId,
-  ) =>
-      remoteRepo.getStaffPayrollPeriodById(periodId);
+  ) async {
+    final rec = await localStore.getEntity(
+      localId: periodId,
+      accountId: getCurrentAccountId(),
+      branchId: getCurrentBranchId(),
+    );
+
+    if (rec != null && !rec.isTombstone) {
+      try {
+        return Right(StaffPayrollPeriodModel.fromJson(rec.payload));
+      } catch (_) {}
+    }
+
+    return remoteRepo.getStaffPayrollPeriodById(periodId);
+  }
 
   @override
   Future<Either<Failures, StaffPayrollPeriodModel>> saveStaffPayrollPeriod(
     StaffPayrollPeriodModel period,
-  ) =>
-      remoteRepo.saveStaffPayrollPeriod(period);
+  ) async {
+    final accountId = getCurrentAccountId();
+    final branchId = period.primaryBranchId ?? getCurrentBranchId();
+    final now = DateTime.now();
+    final isProvisional = !dataModeService.isOnline;
+    final periodId = period.id ?? 'PAY-${now.millisecondsSinceEpoch}';
+    final toSave = period.id == null ? StaffPayrollPeriodModel.fromJson({...period.toJson(), 'id': periodId}) : period;
+
+    await localStore.runInTransaction((txn) async {
+      txn.upsertEntity(
+        LocalEntityRecord(
+          localId: periodId,
+          entityType: 'hr_payroll',
+          accountId: accountId,
+          branchId: branchId,
+          payload: toSave.toJson(),
+          localRevision: 1,
+          syncStatus: isProvisional ? SyncStatus.pending : SyncStatus.synced,
+          isProvisional: isProvisional,
+          createdAt: toSave.createdAt ?? now,
+          updatedAt: now,
+        ),
+      );
+
+      txn.insertOutbox(
+        OutboxEntry(
+          operationId: 'op_hr_pay_${periodId}_${now.microsecondsSinceEpoch}',
+          entityType: 'hr_payroll',
+          localId: periodId,
+          operation: OutboxOperationType.create,
+          payload: toSave.toJson(),
+          baseRevision: 1,
+          createdAt: now,
+          status: OutboxStatus.pending,
+        ),
+      );
+    });
+
+    try {
+      await remoteRepo.saveStaffPayrollPeriod(toSave);
+    } catch (_) {}
+
+    return Right(toSave);
+  }
 
   @override
   Future<Either<Failures, StaffPayrollPeriodModel>> confirmStaffPayrollPeriod({
     required String periodId,
     required String confirmedByUserId,
-  }) =>
-      remoteRepo.confirmStaffPayrollPeriod(
-        periodId: periodId,
-        confirmedByUserId: confirmedByUserId,
-      );
+  }) async {
+    final res = await remoteRepo.confirmStaffPayrollPeriod(
+      periodId: periodId,
+      confirmedByUserId: confirmedByUserId,
+    );
+
+    return res.fold((failure) => Left(failure), (confirmed) async {
+      await saveStaffPayrollPeriod(confirmed);
+      return Right(confirmed);
+    });
+  }
 
   @override
   Future<Either<Failures, StaffPayrollPeriodModel>> payoutStaffPayrollPeriod({
     required String periodId,
     required String paidByUserId,
-  }) =>
-      remoteRepo.payoutStaffPayrollPeriod(
-        periodId: periodId,
-        paidByUserId: paidByUserId,
-      );
+  }) async {
+    final res = await remoteRepo.payoutStaffPayrollPeriod(
+      periodId: periodId,
+      paidByUserId: paidByUserId,
+    );
+
+    return res.fold((failure) => Left(failure), (paid) async {
+      await saveStaffPayrollPeriod(paid);
+      return Right(paid);
+    });
+  }
 
   Future<void> _persistSettlementAtomic(DoctorSettlementModel settlement) async {
     final accountId = getCurrentAccountId();

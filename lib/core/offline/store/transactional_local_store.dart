@@ -60,6 +60,14 @@ abstract class TransactionalLocalStore {
     int? confirmedRevision,
   });
 
+  /// Discards an outbox operation, removes it from the outbox, and rolls back the local entity
+  /// to its previous revision/payload (or deletes it if it was created locally and never synced).
+  /// If [discardDependents] is true, also discards any operations depending on this one.
+  Future<void> discardOutboxOperation(
+    String operationId, {
+    bool discardDependents = true,
+  });
+
   /// Lists unresolved conflicts.
   Future<List<ConflictRecord>> getUnresolvedConflicts();
 

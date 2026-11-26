@@ -25,6 +25,8 @@ import '../widgets/patient_allergy_banner.dart';
 import '../widgets/prescription_editor_panel.dart';
 import '../widgets/visit_addenda_timeline.dart';
 import '../widgets/vitals_input_panel.dart';
+import 'package:eyadty/features/patients/data/models/patient_model.dart';
+import 'package:eyadty/features/patients/presentation/widgets/patient_details_sections/patient_lab_radiology_section.dart';
 
 class DoctorConsultationScreen extends StatefulWidget {
   final String visitId;
@@ -713,6 +715,16 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
             if (state.canViewNotes) ...[
               const SizedBox(height: 20),
               prescriptionSection,
+              const SizedBox(height: 20),
+              PatientLabRadiologySection(
+                patient: state.activeVisit?.patientId != null
+                    ? PatientModel(
+                        id: state.activeVisit?.patientId,
+                        name: state.activeVisit?.patientName,
+                        phone: state.activeVisit?.patientPhone,
+                      )
+                    : null,
+              ),
             ],
           ] else ...[
             vitalsSection,
@@ -721,6 +733,16 @@ class _DoctorConsultationScreenState extends State<DoctorConsultationScreen> {
               clinicalNotesSection,
               const SizedBox(height: 16),
               prescriptionSection,
+              const SizedBox(height: 16),
+              PatientLabRadiologySection(
+                patient: state.activeVisit?.patientId != null
+                    ? PatientModel(
+                        id: state.activeVisit?.patientId,
+                        name: state.activeVisit?.patientName,
+                        phone: state.activeVisit?.patientPhone,
+                      )
+                    : null,
+              ),
             ],
           ],
           if (state.activeVisit?.addenda != null &&

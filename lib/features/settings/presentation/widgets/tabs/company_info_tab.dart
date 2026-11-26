@@ -41,8 +41,13 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
     super.initState();
     final settings = widget.settingsCubit.state.settings;
     _nameController = TextEditingController(text: settings?.companyName ?? '');
+    final rawPhone = settings?.phone;
+    String initialDigits = CustomPhoneField.extractLocalDigits(rawPhone);
+    if (initialDigits.isNotEmpty && !initialDigits.startsWith('0')) {
+      initialDigits = '0$initialDigits';
+    }
     _phoneController = TextEditingController(
-      text: CustomPhoneField.extractLocalDigits(settings?.phone),
+      text: initialDigits,
     );
     _addressController = TextEditingController(text: settings?.address ?? '');
     _selectedClinicType = settings?.clinicType ?? ClinicTypeEnum.polyclinic;
@@ -56,9 +61,11 @@ class _CompanyInfoTabState extends State<CompanyInfoTab> {
     final settings = widget.settingsCubit.state.settings;
     if (_nameController.text.isEmpty && settings?.companyName != null) {
       _nameController.text = settings!.companyName!;
-      _phoneController.text = CustomPhoneField.extractLocalDigits(
-        settings.phone,
-      );
+      String initialDigits = CustomPhoneField.extractLocalDigits(settings.phone);
+      if (initialDigits.isNotEmpty && !initialDigits.startsWith('0')) {
+        initialDigits = '0$initialDigits';
+      }
+      _phoneController.text = initialDigits;
       _addressController.text = settings.address ?? '';
       _selectedClinicType = settings.clinicType;
     }

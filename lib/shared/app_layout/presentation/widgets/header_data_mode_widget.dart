@@ -5,6 +5,7 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 
+import 'sync_review_dialog.dart';
 import 'sync_status_dialog.dart';
 
 class HeaderDataModeWidget extends StatelessWidget {
@@ -48,7 +49,7 @@ class HeaderDataModeWidget extends StatelessWidget {
             // Status Chip (Clickable to open Sync Details & Conflicts)
             InkWell(
               borderRadius: BorderRadius.circular(20),
-              onTap: () => SyncStatusDialog.show(context),
+              onTap: () => SyncReviewDialog.show(context),
               child: Container(
                 key: const Key('header_data_mode_chip'),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

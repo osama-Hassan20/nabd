@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:eyadty/core/config/app_config.dart';
+import 'package:eyadty/core/offline/connectivity/platform_connectivity.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 
 enum DataMode {
@@ -85,11 +86,13 @@ class DataModeService {
 
   late DataModeState _state;
   Timer? _periodicProbeTimer;
+  StreamSubscription<bool>? _platformConnectivitySub;
 
   DataModeService({
     ReachabilityProbe? reachabilityProbe,
     this._syncCoordinator,
-    bool initialReachable = true,
+    bool? initialReachable,
+    Stream<bool>? platformConnectivityStreamOverride,
   })  : _reachabilityProbe = reachabilityProbe ?? _defaultHttpProbe {
     bool persistedForced = false;
     try {
@@ -97,15 +100,21 @@ class DataModeService {
     } catch (_) {
       persistedForced = false;
     }
+    final effectiveReachable = initialReachable ?? isPlatformOnline;
     _state = DataModeState(
       mode: _calculateEffectiveMode(
         forcedLocal: persistedForced,
-        reachable: initialReachable,
+        reachable: effectiveReachable,
       ),
       isForcedLocal: persistedForced,
-      isServerReachable: initialReachable,
+      isServerReachable: effectiveReachable,
       lastCheckedAt: DateTime.now(),
     );
+
+    final connStream = platformConnectivityStreamOverride ?? platformConnectivityStream;
+    _platformConnectivitySub = connStream.listen((online) {
+      setReachability(online);
+    });
   }
 
   Stream<DataModeState> get stream => _stateController.stream;
@@ -199,6 +208,7 @@ class DataModeService {
 
   void dispose() {
     stopPeriodicProbing();
+    _platformConnectivitySub?.cancel();
     _stateController.close();
   }
 
@@ -210,6 +220,9 @@ class DataModeService {
   }
 
   static Future<bool> _defaultHttpProbe(String url, Duration timeout) async {
+    if (AppConfig.isDemoMode) {
+      return isPlatformOnline;
+    }
     try {
       final uri = Uri.parse(url);
       final response = await http
@@ -221,8 +234,8 @@ class DataModeService {
     }
   }
 
-  @visibleForTesting
-  void setReachabilityForTesting(bool reachable) {
+  void setReachability(bool reachable) {
+    if (_state.isServerReachable == reachable) return;
     final newMode = _calculateEffectiveMode(
       forcedLocal: _state.isForcedLocal,
       reachable: reachable,
@@ -232,5 +245,10 @@ class DataModeService {
       mode: newMode,
       lastCheckedAt: DateTime.now(),
     ));
+  }
+
+  @visibleForTesting
+  void setReachabilityForTesting(bool reachable) {
+    setReachability(reachable);
   }
 }

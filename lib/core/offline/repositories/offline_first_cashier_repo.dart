@@ -2,6 +2,8 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../features/cashier/data/models/cash_movement_model.dart';
 import '../../../features/cashier/data/models/cashier_shift_model.dart';
+import '../../../features/cashier/data/models/enums/cash_movement_type_enum.dart';
+import '../../../features/cashier/data/models/enums/shift_status_enum.dart';
 import '../../../features/cashier/data/models/cashier_summary_metrics_model.dart';
 import '../../../features/cashier/data/models/payment_transaction_model.dart';
 import '../../../features/cashier/data/models/refund_transaction_model.dart';
@@ -129,17 +131,53 @@ class OfflineFirstCashierRepo implements CashierRepo {
     String? closingNotes,
     String? shortageReason,
   }) async {
+    // 1. Resolve remote shift ID if shiftId was provisional/local
+    var targetShiftId = shiftId;
+    final shiftRec = await localStore.getEntity(
+      localId: shiftId,
+      accountId: getCurrentAccountId(),
+      branchId: getCurrentBranchId(),
+    );
+    if (shiftRec?.serverId != null && shiftRec!.serverId!.isNotEmpty) {
+      targetShiftId = shiftRec.serverId!;
+    }
+
     final res = await remoteRepo.closeShift(
-      shiftId: shiftId,
+      shiftId: targetShiftId,
       actualCashCountPiastres: actualCashCountPiastres,
       closingNotes: closingNotes,
       shortageReason: shortageReason,
     );
 
-    return res.fold((failure) => Left(failure), (shift) async {
-      await _persistShiftAtomic(shift: shift, isNew: false);
-      return Right(shift);
-    });
+    return res.fold(
+      (failure) async {
+        // If remote fails with shift_not_found but we have local shift, close locally
+        if (shiftRec != null && !shiftRec.isTombstone) {
+          try {
+            final shift = CashierShiftModel.fromJson(shiftRec.payload);
+            final expected = shift.expectedCashPiastres ?? 0;
+            final diff = actualCashCountPiastres - expected;
+            final isPending = diff.abs() > 5000;
+            final updated = shift.copyWith(
+              status: isPending ? ShiftStatusEnum.closedPendingApproval : ShiftStatusEnum.closed,
+              closedAt: DateTime.now(),
+              actualCashCountPiastres: actualCashCountPiastres,
+              cashDifferencePiastres: diff,
+              closingNotes: closingNotes,
+              shortageReason: shortageReason,
+              isShortageApproved: !isPending,
+            );
+            await _persistShiftAtomic(shift: updated, isNew: false);
+            return Right(updated);
+          } catch (_) {}
+        }
+        return Left(failure);
+      },
+      (shift) async {
+        await _persistShiftAtomic(shift: shift, isNew: false);
+        return Right(shift);
+      },
+    );
   }
 
   @override
@@ -454,9 +492,20 @@ class OfflineFirstCashierRepo implements CashierRepo {
       } catch (_) {}
     }
 
+    // 1. Resolve remote shift ID if shiftId was provisional/local
+    var targetShiftId = shiftId;
+    final shiftRec = await localStore.getEntity(
+      localId: shiftId,
+      accountId: accountId,
+      branchId: branchId,
+    );
+    if (shiftRec?.serverId != null && shiftRec!.serverId!.isNotEmpty) {
+      targetShiftId = shiftRec.serverId!;
+    }
+
     final res = await remoteRepo.recordCashMovement(
       clientRequestId: clientRequestId,
-      shiftId: shiftId,
+      shiftId: targetShiftId,
       branchId: branchId,
       movementType: movementType,
       amountPiastres: amountPiastres,
@@ -465,7 +514,102 @@ class OfflineFirstCashierRepo implements CashierRepo {
       performedByUserId: performedByUserId,
     );
 
-    return res.fold((failure) => Left(failure), (movement) async {
+    return res.fold(
+      (failure) async {
+        // If remote failed with cashier_validation_shift_required but local shift exists and is open
+        if (shiftRec != null && !shiftRec.isTombstone) {
+          try {
+            final now = DateTime.now();
+            final movId = 'CSM-${now.millisecondsSinceEpoch}';
+            final type = CashMovementTypeEnum.fromValue(movementType);
+            final movement = CashMovementModel(
+              id: movId,
+              clientRequestId: clientRequestId,
+              shiftId: shiftId,
+              branchId: branchId,
+              movementType: type,
+              amountPiastres: amountPiastres,
+              reason: reason,
+              recipientName: recipientName,
+              performedByUserId: performedByUserId,
+              createdAt: now,
+            );
+
+            // Update shift balance locally
+            final shift = CashierShiftModel.fromJson(shiftRec.payload);
+            int expected = shift.expectedCashPiastres ?? 0;
+            int expenses = shift.totalExpensesPiastres ?? 0;
+            switch (type) {
+              case CashMovementTypeEnum.pettyExpense:
+                expected -= amountPiastres;
+                expenses += amountPiastres;
+                break;
+              case CashMovementTypeEnum.capitalInjection:
+                expected += amountPiastres;
+                break;
+              case CashMovementTypeEnum.bankDeposit:
+              case CashMovementTypeEnum.ownerWithdrawal:
+                expected -= amountPiastres;
+                break;
+            }
+            final updatedShift = shift.copyWith(
+              expectedCashPiastres: expected,
+              totalExpensesPiastres: expenses,
+            );
+            await _persistShiftAtomic(shift: updatedShift, isNew: false);
+
+            await localStore.runInTransaction((txn) async {
+              txn.upsertEntity(
+                LocalEntityRecord(
+                  localId: movId,
+                  entityType: 'cashier_movement',
+                  accountId: accountId,
+                  branchId: branchId,
+                  payload: movement.toJson(),
+                  localRevision: 1,
+                  syncStatus: SyncStatus.pending,
+                  isProvisional: true,
+                  createdAt: now,
+                  updatedAt: now,
+                ),
+              );
+
+              txn.upsertEntity(
+                LocalEntityRecord(
+                  localId: 'idemp_mov_$clientRequestId',
+                  entityType: 'cashier_idempotency',
+                  accountId: accountId,
+                  branchId: branchId,
+                  payload: {'movementId': movId, 'clientRequestId': clientRequestId},
+                  localRevision: 1,
+                  syncStatus: SyncStatus.synced,
+                  isProvisional: false,
+                  createdAt: now,
+                  updatedAt: now,
+                ),
+              );
+
+              txn.insertOutbox(
+                OutboxEntry(
+                  operationId: 'op_mov_${movId}_${now.microsecondsSinceEpoch}',
+                  entityType: 'cashier_movement',
+                  localId: movId,
+                  operation: OutboxOperationType.create,
+                  payload: movement.toJson(),
+                  baseRevision: 1,
+                  createdAt: now,
+                  status: OutboxStatus.pending,
+                  dependencyRefs: ['shift:$shiftId'],
+                ),
+              );
+            });
+
+            return Right(movement);
+          } catch (_) {}
+        }
+        return Left(failure);
+      },
+      (movement) async {
       final now = DateTime.now();
       final isProvisional = !dataModeService.isOnline;
       final movId = movement.id ?? 'MOV-${now.millisecondsSinceEpoch}';

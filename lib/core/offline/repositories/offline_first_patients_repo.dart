@@ -99,17 +99,53 @@ class OfflineFirstPatientsRepo implements PatientsRepo {
       includeTombstones: false,
     );
 
-    final patients = records.map((r) {
+    var patients = records.map((r) {
       final json = Map<String, dynamic>.from(r.payload);
       return PatientModel.fromJson(json);
     }).toList();
 
+    // Filter by archived
+    patients = patients.where((p) => (p.isArchived ?? false) == isArchived).toList();
+
+    // Filter by search query
+    final effectiveSearch = search ?? params.filterList.firstWhere((f) => f.key == 'search', orElse: () => const FilterParam(key: '', value: '')).value;
+    if (effectiveSearch != null && effectiveSearch.trim().isNotEmpty) {
+      final q = effectiveSearch.trim().toLowerCase();
+      patients = patients.where((p) {
+        final name = (p.name ?? '').toLowerCase();
+        final phone = (p.phone ?? '').toLowerCase();
+        final fileNumber = (p.fileNumber ?? '').toLowerCase();
+        return name.contains(q) || phone.contains(q) || fileNumber.contains(q);
+      }).toList();
+    }
+
+    if (gender != null) {
+      patients = patients.where((p) => p.gender == gender).toList();
+    }
+
+    if (bloodGroup != null) {
+      patients = patients.where((p) => p.bloodGroup == bloodGroup).toList();
+    }
+
+    if (hasDebt != null) {
+      patients = patients.where((p) => hasDebt ? ((p.outstandingBalance ?? 0) > 0) : ((p.outstandingBalance ?? 0) <= 0)).toList();
+    }
+
+    final totalCount = patients.length;
+    final page = params.page ?? 1;
+    final limit = params.limit ?? 10;
+    final totalPages = (totalCount / limit).ceil().clamp(1, 999999);
+    final startIndex = (page - 1) * limit;
+    final pagedPatients = startIndex < patients.length
+        ? patients.skip(startIndex).take(limit).toList()
+        : <PatientModel>[];
+
     return Right(
       PatientsResponseModel(
-        items: patients,
-        totalCount: patients.length,
-        totalPages: 1,
-        currentPage: 1,
+        items: pagedPatients,
+        totalCount: totalCount,
+        totalPages: totalPages,
+        currentPage: page,
       ),
     );
   }

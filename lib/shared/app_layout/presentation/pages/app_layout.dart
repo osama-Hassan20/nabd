@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/offline/data_mode_service.dart';
+import 'package:eyadty/core/offline/models/sync_status.dart';
+import 'package:eyadty/core/offline/store/transactional_local_store.dart';
+import 'package:eyadty/shared/app_layout/presentation/widgets/sync_review_dialog.dart';
 import 'package:eyadty/shared/cubit/basic_cubit.dart';
 import 'package:eyadty/core/layout_adaptive/widgets/custom_drawer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,6 +38,7 @@ class _AppLayoutState extends State<AppLayout> {
   bool isCollapsed = false;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
+  StreamSubscription<DataModeState>? _dataModeSub;
 
   @override
   void initState() {
@@ -40,10 +46,34 @@ class _AppLayoutState extends State<AppLayout> {
     isLogin = AppSharedPreferences.getString(key: AppConstants.userId) != null;
     // Load profile once for the app session
     context.read<BasicCubit>().loadSharedData();
+    _setupReconnectGate();
+  }
+
+  void _setupReconnectGate() {
+    if (!getIt.isRegistered<DataModeService>()) return;
+    final modeService = getIt<DataModeService>();
+    DataMode previousMode = modeService.currentMode;
+
+    _dataModeSub = modeService.stream.listen((state) async {
+      final wasOffline = previousMode != DataMode.online;
+      previousMode = state.mode;
+
+      if (wasOffline && state.mode == DataMode.online) {
+        if (!getIt.isRegistered<TransactionalLocalStore>()) return;
+        final store = getIt<TransactionalLocalStore>();
+        final entries = await store.getAllOutboxEntries();
+        final hasPending = entries.any((e) => e.status != OutboxStatus.acknowledged);
+
+        if (hasPending && mounted) {
+          SyncReviewDialog.show(context, isBlockingGate: true);
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _dataModeSub?.cancel();
     _scrollController.dispose();
     super.dispose();
   }

@@ -67,7 +67,7 @@ class OfflineFirstMedicalCatalogsRepo implements MedicalCatalogsRepo {
 
     var results = localEntries.values.toList();
 
-    if (category != null && category.isNotEmpty) {
+    if (category != null && category.isNotEmpty && category != 'الكل') {
       results = results.where((e) => e.category == category).toList();
     }
 
@@ -75,8 +75,8 @@ class OfflineFirstMedicalCatalogsRepo implements MedicalCatalogsRepo {
       final q = query.trim().toLowerCase();
       results = results.where((e) {
         final nameMatch = e.name.toLowerCase().contains(q);
-        final codeMatch = e.code?.toLowerCase().contains(q) ?? false;
-        final catMatch = e.category?.toLowerCase().contains(q) ?? false;
+        final codeMatch = e.code.toLowerCase().contains(q);
+        final catMatch = e.category.toLowerCase().contains(q);
         return nameMatch || codeMatch || catMatch;
       }).toList();
     }
@@ -95,7 +95,7 @@ class OfflineFirstMedicalCatalogsRepo implements MedicalCatalogsRepo {
 
     final toSave = entry.copyWith(
       id: entryId,
-      createdAt: entry.createdAt ?? now,
+      createdAt: entry.createdAt,
     );
 
     await _persistEntryAtomic(
@@ -176,8 +176,7 @@ class OfflineFirstMedicalCatalogsRepo implements MedicalCatalogsRepo {
     final accountId = getCurrentAccountId();
     final branchId = getCurrentBranchId();
 
-    for (final kind in MedicalCatalogKindEnum.values) {
-      final entityType = 'medical_catalog_${kind.name}';
+    for (final _ in MedicalCatalogKindEnum.values) {
       final existing = await localStore.getEntity(
         localId: id,
         accountId: accountId,
@@ -216,7 +215,7 @@ class OfflineFirstMedicalCatalogsRepo implements MedicalCatalogsRepo {
           localRevision: 1,
           syncStatus: isProvisional ? SyncStatus.pending : SyncStatus.synced,
           isProvisional: isProvisional,
-          createdAt: entry.createdAt ?? now,
+          createdAt: entry.createdAt,
           updatedAt: now,
         ),
       );

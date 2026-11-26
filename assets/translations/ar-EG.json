@@ -51,7 +51,7 @@
   "patient_phone_hint": "010 1234 5678",
   "patient_address_hint": "مثال: المعادي، القاهرة",
   "patient_saved_successfully": "تم حفظ بيانات المريض بنجاح",
-  "patient_deleted_successfully": "تم حذف المريض بنجاح",
+  "patient_deleted_successfully": "تمت أرشفة المريض بنجاح",
   "patient_bookings": "زيارات وحجوزات المريض",
   "no_patient_bookings": "لا توجد زيارات مسجلة لهذا المريض حتى الآن",
   "create_booking_for_patient": "حجز موعد جديد للمريض",
@@ -1601,5 +1601,10 @@
   "default_hourly_rate_hint": "سعر الساعة الافتراضي",
   "egp": "ج.م",
   "drug_added_success": "تم إضافة الدواء بنجاح",
+  "drug_updated_success": "تم تعديل بيانات الدواء بنجاح",
+  "drug_archived_success": "تمت أرشفة الدواء بنجاح",
+  "patient_archived_success": "تمت أرشفة المريض بنجاح",
+  "shift_not_found": "الوردية غير موجودة",
+  "staff_user_not_found": "المستخدم غير موجود",
   "no_active_compensation_rule": "لا توجد قاعدة تعويض نشطة للطبيب"
 }

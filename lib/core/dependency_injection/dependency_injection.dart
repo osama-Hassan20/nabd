@@ -14,7 +14,9 @@ import 'package:eyadty/core/offline/repositories/offline_first_cashier_repo.dart
 import 'package:eyadty/core/offline/repositories/offline_first_doctors_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_drugs_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_hr_repo.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_inventory_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_medical_catalogs_repo.dart';
+import 'package:eyadty/core/offline/repositories/offline_first_medical_services_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_patients_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_settings_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_staff_users_repo.dart';
@@ -245,7 +247,11 @@ Future<void> setupGetIt() async {
   );
 
   getIt.registerLazySingleton<DataModeService>(
-    () => DataModeService(),
+    () {
+      final service = DataModeService();
+      return service;
+    },
+    dispose: (service) => service.dispose(),
   );
 
   getIt.registerLazySingleton<TransactionalLocalStore>(
@@ -707,10 +713,21 @@ Future<void> setupGetIt() async {
   );
 
   // ─── Medical Services Catalog ───────────────────────────────────────────────
-  getIt.registerLazySingleton<MedicalServicesRepo>(
+  getIt.registerLazySingleton<MedicalServicesMockRepoImpl>(
     () => MedicalServicesMockRepoImpl(
       roleProvider: getIt<CurrentRoleProvider>(),
       bookingsRepo: getIt<BookingsRepo>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<MedicalServicesRepo>(
+    () => OfflineFirstMedicalServicesRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteRepo: getIt<MedicalServicesMockRepoImpl>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
     ),
   );
 
@@ -1064,8 +1081,18 @@ Future<void> setupGetIt() async {
   );
 
   // ─── Inventory & Medical Supplies Feature ────────────────────────────────────
-  getIt.registerLazySingleton<InventoryRepo>(
+  getIt.registerLazySingleton<InventoryMockRepoImpl>(
     () => InventoryMockRepoImpl(),
+  );
+  getIt.registerLazySingleton<InventoryRepo>(
+    () => OfflineFirstInventoryRepo(
+      localStore: getIt<TransactionalLocalStore>(),
+      dataModeService: getIt<DataModeService>(),
+      remoteRepo: getIt<InventoryMockRepoImpl>(),
+      getCurrentAccountId: () => 'default',
+      getCurrentBranchId: () =>
+          getIt<SessionCubit>().state.activeBranchId ?? 'branch_1',
+    ),
   );
   getIt.registerFactory<InventoryCubit>(
     () => InventoryCubit(

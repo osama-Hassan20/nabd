@@ -288,7 +288,7 @@ class _RolePermissionsMatrixDialogState
                                   final isChecked =
                                       selectedPerms.contains(perm);
                                   return FilterChip(
-                                    label: Text(perm.name),
+                                    label: Text(perm.localizedName),
                                     selected: isChecked,
                                     selectedColor: colors.isDark
                                         ? colors.primary.withValues(alpha: 0.2)

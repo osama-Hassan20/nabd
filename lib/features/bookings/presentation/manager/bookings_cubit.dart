@@ -202,10 +202,13 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     );
   }
 
-  Future<void> fetchCustomers() async {
+  Future<void> fetchCustomers({String? search}) async {
     if (getPatientsUseCase == null) return;
     final result = await getPatientsUseCase!(
-      const PaginationParams(page: 1, limit: 100),
+      PaginationParams(page: 1, limit: 500, filterList: [
+        if (search != null && search.trim().isNotEmpty)
+          FilterParam(key: 'search', value: search.trim()),
+      ]),
     );
     result.fold(
       (_) {},
@@ -218,7 +221,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
                   id: c.id ?? '',
                   name: c.name ?? '',
                   phone: c.phone ?? '',
-                  address: c.address ?? '',
+                  address: c.detailedAddress ?? c.address ?? '',
                 ),
               )
               .where((c) => c.id.isNotEmpty && c.name.isNotEmpty)

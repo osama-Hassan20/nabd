@@ -414,7 +414,7 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
     await Future.delayed(const Duration(milliseconds: 250));
 
     try {
-      final newId = 'DOC-0${_doctors.length + 1}';
+      final newId = doctor.id ?? 'DOC-0${_doctors.length + 1}';
       final newDoctor = doctor.copyWith(
         id: newId,
         todayTasksCount: 0,

@@ -19,6 +19,9 @@ import 'package:eyadty/features/bookings/presentation/widgets/booking_summary_se
 import 'package:eyadty/features/bookings/presentation/widgets/booking_type_tab_bar.dart';
 import 'package:eyadty/shared/widgets/custom_toast.dart';
 import 'package:eyadty/shared/widgets/responsive_helper/adaptive_layout.dart';
+import 'package:eyadty/core/cubits/session_cubit.dart';
+import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart';
+import 'package:eyadty/features/cashier/presentation/widgets/dialogs/collect_payment_dialog.dart';
 import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
 
@@ -83,6 +86,27 @@ class _BookingsPageView extends StatelessWidget {
       context: context,
       header: 'call_patient_success'.tr(),
     ).showTopToast();
+  }
+
+  void _onCollectPayment(BuildContext context, BookingModel booking) {
+    final cashierCubit = getIt<CashierCubit>();
+    final session = getIt<SessionCubit>().state;
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: cashierCubit,
+        child: CollectPaymentDialog(
+          bookingId: booking.id ?? '',
+          patientId: booking.patientId ?? booking.customer?.id ?? '',
+          patientName: booking.patientName ?? booking.customer?.name ?? '',
+          totalPrice: booking.consultationFee ?? 0,
+          paidAmount: booking.paidAmount ?? 0,
+          shiftId: cashierCubit.state.activeShift?.id,
+          branchId: session.activeBranchId,
+          cashierCubit: cashierCubit,
+        ),
+      ),
+    );
   }
 
   void _onStartConsultation(BuildContext context, BookingModel booking) async {
@@ -182,6 +206,7 @@ class _BookingsPageView extends StatelessWidget {
                       onCallPatient: (b) => _onCallPatient(context, b),
                       onStartConsultation: (b) =>
                           _onStartConsultation(context, b),
+                      onCollectPayment: (b) => _onCollectPayment(context, b),
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),

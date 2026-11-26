@@ -54,8 +54,15 @@ class OfflineFirstDoctorsRepo implements DoctorsRepo {
     final remoteRes = await remoteRepo.getDoctors(params: params);
     remoteRes.fold((_) {}, (response) {
       for (final doc in response.doctors) {
-        if (doc.id != null && !tombstoneIds.contains(doc.id) && !localDoctors.containsKey(doc.id)) {
-          localDoctors[doc.id!] = doc;
+        if (doc.id != null && !tombstoneIds.contains(doc.id)) {
+          // Check if localDoctors already has this doctor by id or by name/phone to prevent duplicate
+          final alreadyPresent = localDoctors.containsKey(doc.id) ||
+              localDoctors.values.any((d) =>
+                  ((d.name?.trim().isNotEmpty ?? false) && d.name?.trim().toLowerCase() == doc.name?.trim().toLowerCase()) &&
+                  ((d.phone?.trim().isNotEmpty ?? false) && d.phone?.trim() == doc.phone?.trim()));
+          if (!alreadyPresent) {
+            localDoctors[doc.id!] = doc;
+          }
         }
       }
     });
@@ -116,8 +123,6 @@ class OfflineFirstDoctorsRepo implements DoctorsRepo {
 
   @override
   Future<Either<Failures, bool>> deleteDoctor({required String id}) async {
-    final accountId = getCurrentAccountId();
-    final branchId = getCurrentBranchId();
     final now = DateTime.now();
 
     await localStore.runInTransaction((txn) async {
@@ -159,21 +164,133 @@ class OfflineFirstDoctorsRepo implements DoctorsRepo {
   @override
   Future<Either<Failures, List<DoctorLeaveModel>>> getDoctorLeaves({
     required String doctorId,
-  }) =>
-      remoteRepo.getDoctorLeaves(doctorId: doctorId);
+  }) async {
+    final accountId = getCurrentAccountId();
+    final branchId = getCurrentBranchId();
+
+    final records = await localStore.getEntities(
+      entityType: 'doctor_leave',
+      accountId: accountId,
+      branchId: branchId,
+    );
+
+    final localLeaves = <String, DoctorLeaveModel>{};
+    for (final rec in records) {
+      if (!rec.isTombstone) {
+        try {
+          final leave = DoctorLeaveModel.fromJson(rec.payload);
+          if (leave.id != null && (leave.doctorId == doctorId || leave.technicianId == doctorId)) {
+            localLeaves[leave.id!] = leave;
+          }
+        } catch (_) {}
+      }
+    }
+
+    final remoteRes = await remoteRepo.getDoctorLeaves(doctorId: doctorId);
+    remoteRes.fold((_) {}, (items) {
+      for (final l in items) {
+        final existing = records.where((r) => r.localId == l.id).firstOrNull;
+        if (existing != null && existing.isTombstone) {
+          continue;
+        }
+        if (l.id != null && !localLeaves.containsKey(l.id!)) {
+          localLeaves[l.id!] = l;
+        }
+      }
+    });
+
+    final sorted = localLeaves.values.toList();
+    sorted.sort((a, b) => (b.startDate ?? DateTime.now()).compareTo(a.startDate ?? DateTime.now()));
+    return Right(sorted);
+  }
 
   @override
   Future<Either<Failures, DoctorLeaveModel>> addDoctorLeave({
     required DoctorLeaveModel leave,
     bool force = false,
-  }) =>
-      remoteRepo.addDoctorLeave(leave: leave, force: force);
+  }) async {
+    final accountId = getCurrentAccountId();
+    final branchId = getCurrentBranchId();
+    final now = DateTime.now();
+    final isProvisional = !dataModeService.isOnline;
+    final leaveId = leave.id ?? 'LV-${now.millisecondsSinceEpoch}';
+    final toSave = leave.id == null ? DoctorLeaveModel.fromJson({...leave.toJson(), 'id': leaveId}) : leave;
+
+    await localStore.runInTransaction((txn) async {
+      txn.upsertEntity(
+        LocalEntityRecord(
+          localId: leaveId,
+          entityType: 'doctor_leave',
+          accountId: accountId,
+          branchId: branchId,
+          payload: toSave.toJson(),
+          localRevision: 1,
+          syncStatus: isProvisional ? SyncStatus.pending : SyncStatus.synced,
+          isProvisional: isProvisional,
+          createdAt: toSave.createdAt ?? now,
+          updatedAt: now,
+        ),
+      );
+
+      txn.insertOutbox(
+        OutboxEntry(
+          operationId: 'op_doc_lv_${leaveId}_${now.microsecondsSinceEpoch}',
+          entityType: 'doctor_leave',
+          localId: leaveId,
+          operation: OutboxOperationType.create,
+          payload: toSave.toJson(),
+          baseRevision: 1,
+          createdAt: now,
+          status: OutboxStatus.pending,
+        ),
+      );
+    });
+
+    try {
+      await remoteRepo.addDoctorLeave(leave: toSave, force: force);
+    } catch (_) {}
+
+    return Right(toSave);
+  }
 
   @override
   Future<Either<Failures, bool>> deleteDoctorLeave({
     required String leaveId,
-  }) =>
-      remoteRepo.deleteDoctorLeave(leaveId: leaveId);
+  }) async {
+    final accountId = getCurrentAccountId();
+    final branchId = getCurrentBranchId();
+    final now = DateTime.now();
+
+    final existing = await localStore.getEntity(
+      localId: leaveId,
+      accountId: accountId,
+      branchId: branchId,
+    );
+
+    await localStore.runInTransaction((txn) async {
+      txn.markTombstone(leaveId);
+
+      txn.insertOutbox(
+        OutboxEntry(
+          operationId: 'op_doc_lv_del_${leaveId}_${now.microsecondsSinceEpoch}',
+          entityType: 'doctor_leave',
+          localId: leaveId,
+          operation: OutboxOperationType.delete,
+          payload: {'id': leaveId},
+          previousPayload: existing?.payload,
+          baseRevision: existing?.localRevision ?? 1,
+          createdAt: now,
+          status: OutboxStatus.pending,
+        ),
+      );
+    });
+
+    try {
+      await remoteRepo.deleteDoctorLeave(leaveId: leaveId);
+    } catch (_) {}
+
+    return const Right(true);
+  }
 
   @override
   Future<Either<Failures, int>> countConflictingBookings({

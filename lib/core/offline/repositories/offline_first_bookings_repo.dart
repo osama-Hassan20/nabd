@@ -9,6 +9,8 @@ import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
 import 'package:eyadty/features/bookings/data/models/bookings_response_model.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/apply_discount_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
@@ -46,18 +48,35 @@ class OfflineFirstBookingsRepo implements BookingsRepo {
       branchId: effectiveBranchId,
     );
 
-    // Calculate local provisional summary
-    int total = records.length;
+    // Calculate local provisional summary using BookingStatisticsCalculator
+    final targetDate = date;
+    final bookings = records
+        .map((r) => BookingModel.fromJson(Map<String, dynamic>.from(r.payload)))
+        .toList();
+
+    if (targetDate != null) {
+      final summary = BookingStatisticsCalculator.calculateSummary(
+        bookings: bookings,
+        selectedDate: targetDate,
+        branchId: effectiveBranchId,
+      );
+      return Right(summary);
+    }
+
+    // If date is null (overall summary across dates)
+    int total = bookings.length;
     int pending = 0;
     int completed = 0;
     int cancelled = 0;
+    int noShow = 0;
 
-    for (final r in records) {
-      final status = r.payload['status']?.toString();
-      if (status == 'completed') {
+    for (final b in bookings) {
+      if (b.status == BookingStatusEnum.completed) {
         completed++;
-      } else if (status == 'cancelled') {
+      } else if (b.status == BookingStatusEnum.cancelled) {
         cancelled++;
+      } else if (b.status == BookingStatusEnum.noShow) {
+        noShow++;
       } else {
         pending++;
       }
@@ -69,6 +88,7 @@ class OfflineFirstBookingsRepo implements BookingsRepo {
         upcomingBookings: pending,
         completedBookings: completed,
         cancelledBookings: cancelled,
+        noShowCount: noShow,
       ),
     );
   }
@@ -120,13 +140,119 @@ class OfflineFirstBookingsRepo implements BookingsRepo {
       branchId: branchId,
     );
 
-    final bookings = records
+    var bookings = records
         .map((r) => BookingModel.fromJson(Map<String, dynamic>.from(r.payload)))
         .toList();
 
+    // Apply filtering on local store results
+    final filterList = params.filterList;
+    String? searchQuery;
+    String? branchIdFilter;
+    String? dateFilter;
+    String? statusFilter;
+    String? bookingTypeFilter;
+    String? customerIdFilter;
+
+    for (final f in filterList) {
+      if (f.key == 'search') searchQuery = f.value;
+      if (f.key == 'branchId') branchIdFilter = f.value;
+      if (f.key == 'date') dateFilter = f.value;
+      if (f.key == 'status') statusFilter = f.value;
+      if (f.key == 'bookingType') bookingTypeFilter = f.value;
+      if (f.key == 'customerId') customerIdFilter = f.value;
+    }
+
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      final q = searchQuery.trim().toLowerCase();
+      bookings = bookings.where((b) {
+        final cName = b.customerName?.toLowerCase() ?? '';
+        final cPhone = b.customerPhone?.toLowerCase() ?? '';
+        final sName = b.serviceName?.toLowerCase() ?? '';
+        final bId = b.id?.toLowerCase() ?? '';
+        return cName.contains(q) || cPhone.contains(q) || sName.contains(q) || bId.contains(q);
+      }).toList();
+    }
+
+    if (branchIdFilter != null && branchIdFilter.isNotEmpty && branchIdFilter != 'all') {
+      bookings = bookings
+          .where((b) => BookingStatisticsCalculator.matchesBranch(b, branchIdFilter))
+          .toList();
+    }
+
+    DateTime? selectedDateObj;
+    if (dateFilter != null && dateFilter.isNotEmpty && dateFilter.length == 10) {
+      selectedDateObj = DateTime.tryParse(dateFilter);
+    }
+
+    if (statusFilter != null && statusFilter.isNotEmpty && statusFilter != 'all') {
+      final statusEnum = BookingStatusEnum.fromValue(statusFilter);
+      if (statusEnum != null && selectedDateObj != null) {
+        bookings = bookings.where((b) {
+          return BookingStatisticsCalculator.matchesStatusFilter(
+            b,
+            statusEnum,
+            selectedDate: selectedDateObj!,
+            branchId: branchIdFilter,
+          );
+        }).toList();
+      } else if (statusEnum != null) {
+        bookings = bookings.where((b) => b.status == statusEnum).toList();
+      }
+    } else if (selectedDateObj != null) {
+      bookings = bookings.where((b) {
+        return BookingStatisticsCalculator.matchesStatusFilter(
+          b,
+          null,
+          selectedDate: selectedDateObj!,
+          branchId: branchIdFilter,
+        );
+      }).toList();
+    } else if (dateFilter != null && dateFilter.length == 7) {
+      bookings = bookings.where((b) {
+        final d = b.appointmentTime ?? b.date;
+        if (d == null) return false;
+        final monthFormatted = "${d.year}-${d.month.toString().padLeft(2, '0')}";
+        return monthFormatted == dateFilter;
+      }).toList();
+    }
+
+    if (bookingTypeFilter != null && bookingTypeFilter.isNotEmpty && bookingTypeFilter != 'all') {
+      bookings = bookings.where((b) {
+        return b.bookingType?.value.toLowerCase() == bookingTypeFilter;
+      }).toList();
+    }
+
+    if (customerIdFilter != null && customerIdFilter.isNotEmpty) {
+      bookings = bookings.where((b) {
+        return b.customerId == customerIdFilter || b.customer?.id == customerIdFilter;
+      }).toList();
+    }
+
+    // Sort by date desc
+    bookings.sort((a, b) {
+      final dateA = a.date ?? DateTime(1970);
+      final dateB = b.date ?? DateTime(1970);
+      return dateB.compareTo(dateA);
+    });
+
+    final totalCount = bookings.length;
+    final page = params.page ?? 1;
+    final limit = params.limit ?? 10;
+    final totalPages = (totalCount / limit).ceil().clamp(1, 999999);
+    final startIndex = (page - 1) * limit;
+    final pagedBookings = startIndex < bookings.length
+        ? bookings.skip(startIndex).take(limit).toList()
+        : <BookingModel>[];
+
     return Right(
       BookingsResponseModel(
-        bookings: bookings,
+        bookings: pagedBookings,
+        pagination: PaginationModel(
+          page: page,
+          limit: limit,
+          total: totalCount,
+          pages: totalPages,
+        ),
       ),
     );
   }

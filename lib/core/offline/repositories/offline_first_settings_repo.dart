@@ -138,8 +138,6 @@ class OfflineFirstSettingsRepo implements SettingsRepo {
 
   @override
   Future<Either<Failures, Unit>> deleteSpecialHoliday(String holidayId) async {
-    final branchId = getCurrentBranchId();
-    final accountId = getCurrentAccountId();
     final now = DateTime.now();
 
     await localStore.runInTransaction((txn) async {

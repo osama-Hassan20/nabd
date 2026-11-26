@@ -24,6 +24,25 @@ class SyncPushResult {
   });
 }
 
+class BatchPushResult {
+  final bool success;
+  final List<SyncPushResult> operationResults;
+  final String? errorMessage;
+
+  const BatchPushResult({
+    required this.success,
+    required this.operationResults,
+    this.errorMessage,
+  });
+
+  SyncPushResult? getResultFor(String operationId) {
+    for (final r in operationResults) {
+      if (r.operationId == operationId) return r;
+    }
+    return null;
+  }
+}
+
 class RemoteEntityChange {
   final String serverId;
   final String? localId;
@@ -60,6 +79,9 @@ abstract class RemoteSyncApi {
   /// Pushes an outbox operation to the remote server.
   /// Server contract requires strict idempotency keyed by [entry.operationId].
   Future<SyncPushResult> pushOperation(OutboxEntry entry);
+
+  /// Pushes a batch of outbox operations in a single round-trip.
+  Future<BatchPushResult> pushBatch(List<OutboxEntry> operations);
 
   /// Pulls incremental changes since [cursor].
   /// [cursor] is an opaque server-issued string, never a wall-clock time.

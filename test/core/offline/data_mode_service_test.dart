@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -124,6 +125,32 @@ void main() {
       // ACK is safely recorded and not dropped
       expect(coordinator.recordedAcks.containsKey('op_123'), isTrue);
       expect(coordinator.recordedAcks['op_123']!['status'], 'acknowledged');
+    });
+
+    test('4. Platform connectivity stream changes update reachability and mode automatically', () async {
+      final controller = StreamController<bool>.broadcast();
+      final service = DataModeService(
+        reachabilityProbe: (url, timeout) async => true,
+        initialReachable: true,
+        platformConnectivityStreamOverride: controller.stream,
+      );
+
+      expect(service.currentMode, DataMode.online);
+
+      // Browser fires offline event
+      controller.add(false);
+      await Future.delayed(Duration.zero);
+      expect(service.currentMode, DataMode.offline);
+      expect(service.state.isServerReachable, isFalse);
+
+      // Browser fires online event
+      controller.add(true);
+      await Future.delayed(Duration.zero);
+      expect(service.currentMode, DataMode.online);
+      expect(service.state.isServerReachable, isTrue);
+
+      await controller.close();
+      service.dispose();
     });
   });
 

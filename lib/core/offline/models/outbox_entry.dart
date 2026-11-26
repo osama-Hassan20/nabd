@@ -13,6 +13,7 @@ class OutboxEntry extends Equatable {
   final String? lastError;
   final OutboxStatus status;
   final List<String> dependencyRefs;
+  final Map<String, dynamic>? previousPayload;
 
   const OutboxEntry({
     required this.operationId,
@@ -26,6 +27,7 @@ class OutboxEntry extends Equatable {
     this.lastError,
     this.status = OutboxStatus.pending,
     this.dependencyRefs = const [],
+    this.previousPayload,
   });
 
   OutboxEntry copyWith({
@@ -40,6 +42,7 @@ class OutboxEntry extends Equatable {
     String? lastError,
     OutboxStatus? status,
     List<String>? dependencyRefs,
+    Map<String, dynamic>? previousPayload,
   }) {
     return OutboxEntry(
       operationId: operationId ?? this.operationId,
@@ -53,6 +56,7 @@ class OutboxEntry extends Equatable {
       lastError: lastError ?? this.lastError,
       status: status ?? this.status,
       dependencyRefs: dependencyRefs ?? this.dependencyRefs,
+      previousPayload: previousPayload ?? this.previousPayload,
     );
   }
 
@@ -68,6 +72,7 @@ class OutboxEntry extends Equatable {
         'lastError': lastError,
         'status': status.name,
         'dependencyRefs': dependencyRefs,
+        'previousPayload': previousPayload,
       };
 
   factory OutboxEntry.fromJson(Map<String, dynamic> json) => OutboxEntry(
@@ -85,6 +90,9 @@ class OutboxEntry extends Equatable {
                 ?.map((e) => e.toString())
                 .toList() ??
             const [],
+        previousPayload: json['previousPayload'] != null
+            ? Map<String, dynamic>.from(json['previousPayload'] as Map)
+            : null,
       );
 
   @override
@@ -100,5 +108,6 @@ class OutboxEntry extends Equatable {
         lastError,
         status,
         dependencyRefs,
+        previousPayload,
       ];
 }

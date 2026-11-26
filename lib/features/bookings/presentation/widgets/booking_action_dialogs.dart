@@ -57,12 +57,6 @@ class BookingActionDialogs {
           listener: (ctx, state) {
             if (state.actionStatus == RequestStatusEnum.success) {
               ctx.pop(true);
-              CustomToast(
-                context: ctx,
-                header: (state.actionSuccessMessage ??
-                        'status_updated_successfully')
-                    .tr(),
-              ).showTopToast();
             } else if (state.actionStatus == RequestStatusEnum.failure) {
               CustomToast(
                 context: ctx,
@@ -240,17 +234,8 @@ class BookingActionDialogs {
           listener: (ctx, state) {
             if (state.actionStatus == RequestStatusEnum.success) {
               ctx.pop(true);
-              CustomToast(
-                context: ctx,
-                header: (state.actionSuccessMessage ??
-                        'booking_deleted_successfully')
-                    .tr(),
-              ).showTopToast();
             } else if (state.actionStatus == RequestStatusEnum.failure) {
-              CustomToast(
-                context: ctx,
-                header: state.errMessage ?? 'error_occurred'.tr(),
-              ).showErrorToast();
+              ctx.pop(false);
             }
           },
           builder: (ctx, state) => DeleteBookingDialog(

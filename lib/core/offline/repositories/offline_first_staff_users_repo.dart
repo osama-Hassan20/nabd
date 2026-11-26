@@ -115,16 +115,32 @@ class OfflineFirstStaffUsersRepo implements StaffUsersRepo {
     required String temporaryPassword,
     required String currentUserId,
   }) async {
-    final res = await remoteRepo.createStaffUser(
-      user: user,
-      temporaryPassword: temporaryPassword,
-      currentUserId: currentUserId,
-    );
+    // 1. Try remote repo first if online
+    if (dataModeService.isOnline) {
+      final res = await remoteRepo.createStaffUser(
+        user: user,
+        temporaryPassword: temporaryPassword,
+        currentUserId: currentUserId,
+      );
 
-    return res.fold((failure) => Left(failure), (created) async {
-      await _persistUserAtomic(created, OutboxOperationType.create);
-      return Right(created);
-    });
+      return res.fold((failure) => Left(failure), (created) async {
+        await _persistUserAtomic(created, OutboxOperationType.create);
+        return Right(created);
+      });
+    }
+
+    // 2. Offline creation
+    final now = DateTime.now();
+    final uId = (user.id != null && user.id!.isNotEmpty) ? user.id! : 'USER-${now.millisecondsSinceEpoch}';
+    final localCreated = user.copyWith(
+      id: uId,
+      isActive: true,
+      isDeleted: false,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await _persistUserAtomic(localCreated, OutboxOperationType.create);
+    return Right(localCreated);
   }
 
   @override
@@ -132,15 +148,38 @@ class OfflineFirstStaffUsersRepo implements StaffUsersRepo {
     required StaffUserModel user,
     required String currentUserId,
   }) async {
-    final res = await remoteRepo.updateStaffUser(
-      user: user,
-      currentUserId: currentUserId,
-    );
+    // If online, try remote repo first; if it returns staff_user_not_found or fails because user was added locally, update localStore!
+    if (dataModeService.isOnline) {
+      final res = await remoteRepo.updateStaffUser(
+        user: user,
+        currentUserId: currentUserId,
+      );
 
-    return res.fold((failure) => Left(failure), (updated) async {
+      if (res.isRight()) {
+        final updated = res.getOrElse(() => user);
+        await _persistUserAtomic(updated, OutboxOperationType.update);
+        return Right(updated);
+      }
+
+      // Check if user exists locally
+      final localRec = await localStore.getEntity(
+        localId: user.id ?? '',
+        accountId: getCurrentAccountId(),
+        branchId: getCurrentBranchId(),
+      );
+
+      if (localRec != null && !localRec.isTombstone) {
+        final updated = user.copyWith(updatedAt: DateTime.now());
+        await _persistUserAtomic(updated, OutboxOperationType.update);
+        return Right(updated);
+      }
+
+      return res;
+    } else {
+      final updated = user.copyWith(updatedAt: DateTime.now());
       await _persistUserAtomic(updated, OutboxOperationType.update);
       return Right(updated);
-    });
+    }
   }
 
   @override
@@ -149,19 +188,40 @@ class OfflineFirstStaffUsersRepo implements StaffUsersRepo {
     required bool isActive,
     required String currentUserId,
   }) async {
-    final res = await remoteRepo.toggleStaffUserStatus(
-      userId: userId,
-      isActive: isActive,
-      currentUserId: currentUserId,
-    );
+    if (dataModeService.isOnline) {
+      final res = await remoteRepo.toggleStaffUserStatus(
+        userId: userId,
+        isActive: isActive,
+        currentUserId: currentUserId,
+      );
 
-    return res.fold((failure) => Left(failure), (_) async {
+      if (res.isRight()) {
+        final userRes = await getStaffUserById(userId);
+        userRes.fold((_) {}, (u) async {
+          await _persistUserAtomic(u.copyWith(isActive: isActive), OutboxOperationType.update);
+        });
+        return const Right(unit);
+      }
+
+      // Check if user exists locally
       final userRes = await getStaffUserById(userId);
-      userRes.fold((_) {}, (u) async {
+      if (userRes.isRight()) {
+        final u = userRes.getOrElse(() => throw 'failed');
         await _persistUserAtomic(u.copyWith(isActive: isActive), OutboxOperationType.update);
-      });
-      return const Right(unit);
-    });
+        return const Right(unit);
+      }
+
+      return res;
+    } else {
+      final userRes = await getStaffUserById(userId);
+      return userRes.fold(
+        (failure) => Left(failure),
+        (u) async {
+          await _persistUserAtomic(u.copyWith(isActive: isActive), OutboxOperationType.update);
+          return const Right(unit);
+        },
+      );
+    }
   }
 
   @override
@@ -170,34 +230,49 @@ class OfflineFirstStaffUsersRepo implements StaffUsersRepo {
     required String currentUserId,
     bool forceWithActiveBookings = false,
   }) async {
-    final res = await remoteRepo.deleteStaffUser(
-      userId: userId,
-      currentUserId: currentUserId,
-      forceWithActiveBookings: forceWithActiveBookings,
-    );
+    if (dataModeService.isOnline) {
+      final res = await remoteRepo.deleteStaffUser(
+        userId: userId,
+        currentUserId: currentUserId,
+        forceWithActiveBookings: forceWithActiveBookings,
+      );
 
-    return res.fold((failure) => Left(failure), (_) async {
-      final accountId = getCurrentAccountId();
-      final branchId = getCurrentBranchId();
-      final now = DateTime.now();
+      if (res.isRight()) {
+        await _markUserDeletedAtomic(userId);
+        return const Right(unit);
+      }
 
-      await localStore.runInTransaction((txn) async {
-        txn.markTombstone(userId);
-        txn.insertOutbox(
-          OutboxEntry(
-            operationId: 'op_user_del_${userId}_${now.microsecondsSinceEpoch}',
-            entityType: 'staff_user',
-            localId: userId,
-            operation: OutboxOperationType.delete,
-            payload: {'id': userId},
-            baseRevision: 1,
-            createdAt: now,
-            status: OutboxStatus.pending,
-          ),
-        );
-      });
+      // Check if user exists locally
+      final userRes = await getStaffUserById(userId);
+      if (userRes.isRight()) {
+        await _markUserDeletedAtomic(userId);
+        return const Right(unit);
+      }
 
+      return res;
+    } else {
+      await _markUserDeletedAtomic(userId);
       return const Right(unit);
+    }
+  }
+
+  Future<void> _markUserDeletedAtomic(String userId) async {
+    final now = DateTime.now();
+
+    await localStore.runInTransaction((txn) async {
+      txn.markTombstone(userId);
+      txn.insertOutbox(
+        OutboxEntry(
+          operationId: 'op_user_del_${userId}_${now.microsecondsSinceEpoch}',
+          entityType: 'staff_user',
+          localId: userId,
+          operation: OutboxOperationType.delete,
+          payload: {'id': userId},
+          baseRevision: 1,
+          createdAt: now,
+          status: OutboxStatus.pending,
+        ),
+      );
     });
   }
 
@@ -226,15 +301,83 @@ class OfflineFirstStaffUsersRepo implements StaffUsersRepo {
       );
 
   @override
-  Future<Either<Failure, List<RoleDefinitionModel>>> getRoles() =>
-      remoteRepo.getRoles();
+  Future<Either<Failure, List<RoleDefinitionModel>>> getRoles() async {
+    final accountId = getCurrentAccountId();
+    final branchId = getCurrentBranchId();
+
+    final records = await localStore.getEntities(
+      entityType: 'staff_role',
+      accountId: accountId,
+      branchId: branchId,
+    );
+
+    final localRoles = <String, RoleDefinitionModel>{};
+    for (final rec in records) {
+      if (!rec.isTombstone) {
+        try {
+          final r = RoleDefinitionModel.fromJson(rec.payload);
+          if (r.id != null) localRoles[r.id!] = r;
+        } catch (_) {}
+      }
+    }
+
+    final remoteRes = await remoteRepo.getRoles();
+    remoteRes.fold((_) {}, (roles) {
+      for (final r in roles) {
+        if (r.id != null && !localRoles.containsKey(r.id!)) {
+          localRoles[r.id!] = r;
+        }
+      }
+    });
+
+    return Right(localRoles.values.toList());
+  }
 
   @override
   Future<Either<Failure, RoleDefinitionModel>> saveRole({
     required RoleDefinitionModel role,
     required String currentUserId,
-  }) =>
-      remoteRepo.saveRole(role: role, currentUserId: currentUserId);
+  }) async {
+    final res = await remoteRepo.saveRole(role: role, currentUserId: currentUserId);
+
+    final toSave = res.fold((_) => role, (saved) => saved);
+    final accountId = getCurrentAccountId();
+    final branchId = getCurrentBranchId();
+    final now = DateTime.now();
+    final roleId = toSave.id ?? 'ROLE-${now.millisecondsSinceEpoch}';
+
+    await localStore.runInTransaction((txn) async {
+      txn.upsertEntity(
+        LocalEntityRecord(
+          localId: roleId,
+          entityType: 'staff_role',
+          accountId: accountId,
+          branchId: branchId,
+          payload: toSave.toJson(),
+          localRevision: 1,
+          syncStatus: SyncStatus.synced,
+          isProvisional: false,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      txn.insertOutbox(
+        OutboxEntry(
+          operationId: 'op_role_${roleId}_${now.microsecondsSinceEpoch}',
+          entityType: 'staff_role',
+          localId: roleId,
+          operation: OutboxOperationType.update,
+          payload: toSave.toJson(),
+          baseRevision: 1,
+          createdAt: now,
+          status: OutboxStatus.pending,
+        ),
+      );
+    });
+
+    return Right(toSave);
+  }
 
   Future<void> _persistUserAtomic(StaffUserModel user, OutboxOperationType operation) async {
     final accountId = getCurrentAccountId();

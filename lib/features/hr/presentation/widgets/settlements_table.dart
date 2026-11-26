@@ -7,6 +7,7 @@ import '../../../../core/layout_adaptive/widgets/cutom_table.dart';
 import '../../../../core/utils/extensions/theme_mode_extensions.dart';
 import '../../../../core/utils/theme/app_colors.dart';
 import '../../../../core/utils/theme/custom_app_font_styles.dart';
+import '../../../../shared/widgets/custom_toast.dart';
 import '../../../cashier/domain/helpers/money.dart';
 import '../../data/models/doctor_settlement_model.dart';
 import '../../data/models/enums/settlement_status_enum.dart';
@@ -213,7 +214,21 @@ class _SettlementActionsCell extends StatelessWidget {
                 ),
               );
               if (confirm == true && settlement.id != null) {
-                cubit.confirmSettlement(settlement.id!);
+                final success = await cubit.confirmSettlement(settlement.id!);
+                if (context.mounted) {
+                  if (success) {
+                    CustomToast(
+                      context: context,
+                      header: 'hr_settlement_confirmed_successfully'.tr(),
+                    ).showTopToast();
+                  } else {
+                    final err = cubit.state.errorMessage ?? 'error_occurred';
+                    CustomToast(
+                      context: context,
+                      header: err.tr(),
+                    ).showErrorToast();
+                  }
+                }
               }
             },
           ),

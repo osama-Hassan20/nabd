@@ -74,8 +74,13 @@ class SyncEngine implements InFlightSyncCoordinator {
     );
   }
 
-  /// Triggers an immediate single-flight synchronization pass.
-  Future<SyncReport> syncNow() async {
+  /// Triggers a synchronization pass.
+  /// [operationIds]: optional subset of operation IDs to sync.
+  /// [entityTypes]: optional subset of sections/entityTypes to sync.
+  Future<SyncReport> syncNow({
+    List<String>? operationIds,
+    List<String>? entityTypes,
+  }) async {
     // 1. Guard against concurrent sync runs (Single-flight lock)
     if (_isSyncRunning) {
       return const SyncReport(error: 'Sync already in progress');
@@ -103,7 +108,7 @@ class SyncEngine implements InFlightSyncCoordinator {
 
     try {
       // 3. Crash recovery: recover any stale inFlight operations back to pending
-      final allPending = await localStore.getPendingOutboxEntries(limit: 100);
+      final allPending = await localStore.getPendingOutboxEntries(limit: 200);
       for (final entry in allPending) {
         if (entry.status == OutboxStatus.inFlight) {
           await localStore.updateOutboxStatus(
@@ -114,96 +119,148 @@ class SyncEngine implements InFlightSyncCoordinator {
       }
 
       // 4. Retrieve fresh pending outbox entries
-      final entriesToSync = await localStore.getPendingOutboxEntries(limit: 50);
+      final freshPending = await localStore.getPendingOutboxEntries(limit: 200);
 
-      // Track permanently failed operation localIds to block dependents
-      final permanentlyFailedOperations = <String>{};
+      // Filter by entityTypes or operationIds if specified
+      var selectedEntries = freshPending.where((entry) {
+        if (operationIds != null && !operationIds.contains(entry.operationId)) {
+          return false;
+        }
+        if (entityTypes != null && !entityTypes.contains(entry.entityType)) {
+          return false;
+        }
+        return true;
+      }).toList();
 
-      for (final entry in entriesToSync) {
-        // If user activated Forced Local mode while this loop was executing, halt new requests!
+      // Section subset dependency auto-include:
+      // If a selected operation depends on an unselected one, auto-include the parent operation
+      final selectedOpIds = selectedEntries.map((e) => e.operationId).toSet();
+      final selectedEntities = selectedEntries.map((e) => '${e.entityType}:${e.localId}').toSet();
+
+      for (final entry in List<OutboxEntry>.from(selectedEntries)) {
+        for (final depRef in entry.dependencyRefs) {
+          if (!selectedEntities.contains(depRef)) {
+            // Find in freshPending
+            final parent = freshPending.where((p) =>
+                '${p.entityType}:${p.localId}' == depRef || p.localId == depRef).firstOrNull;
+            if (parent != null && !selectedOpIds.contains(parent.operationId)) {
+              selectedEntries.add(parent);
+              selectedOpIds.add(parent.operationId);
+              selectedEntities.add('${parent.entityType}:${parent.localId}');
+            }
+          }
+        }
+      }
+
+      selectedEntries.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+      // 5. Chunk operations (limit 50 per batch)
+      const chunkSize = 50;
+      for (int i = 0; i < selectedEntries.length; i += chunkSize) {
         if (_modeSwitchedToLocalMidFlight ||
             dataModeService.currentMode != DataMode.online) {
           break;
         }
 
-        // Dependency Check: patient before appointment before visit before payment
-        final isDependencyBlocked = entry.dependencyRefs.any(
-          (dep) => permanentlyFailedOperations.contains(dep),
+        final chunk = selectedEntries.sublist(
+          i,
+          min(i + chunkSize, selectedEntries.length),
         );
-
-        if (isDependencyBlocked) {
-          blocked++;
-          await localStore.updateOutboxStatus(
-            operationId: entry.operationId,
-            status: OutboxStatus.blocked,
-            lastError: 'Blocked by failure of dependent operation',
-          );
-          permanentlyFailedOperations.add('${entry.entityType}:${entry.localId}');
-          continue;
-        }
 
         // Mark in-flight
-        await localStore.updateOutboxStatus(
-          operationId: entry.operationId,
-          status: OutboxStatus.inFlight,
-        );
-        pushed++;
+        for (final entry in chunk) {
+          await localStore.updateOutboxStatus(
+            operationId: entry.operationId,
+            status: OutboxStatus.inFlight,
+          );
+          pushed++;
+        }
 
         try {
-          final result = await remoteApi.pushOperation(entry);
+          final batchResult = await remoteApi.pushBatch(chunk);
 
-          if (result.hasConflict) {
-            conflicts++;
-            await _handleConflict(entry, result.serverConflictVersion ?? {});
-            await localStore.updateOutboxStatus(
-              operationId: entry.operationId,
-              status: OutboxStatus.failed,
-              lastError: 'Conflict detected: local and server versions preserved',
-            );
-          } else if (result.success) {
-            acknowledged++;
-            // Reconcile and record ACK safely (even if mode changed mid-flight)
-            await localStore.acknowledgeOutboxOperation(
-              operationId: entry.operationId,
-              serverId: result.serverId,
-              serverCursor: result.serverCursor,
-              confirmedRevision: result.confirmedRevision,
-            );
-          } else {
-            failed++;
-            if (!result.isRetryable) {
-              permanentlyFailedOperations
-                  .add('${entry.entityType}:${entry.localId}');
-              await localStore.updateOutboxStatus(
-                operationId: entry.operationId,
-                status: OutboxStatus.failed,
-                lastError: result.errorMessage ?? 'Non-retryable remote error',
-              );
-            } else {
-              // Exponential backoff marker
-              final backoffSeconds = min(pow(2, entry.attemptCount).toInt(), 60);
+          for (final entry in chunk) {
+            final result = batchResult.getResultFor(entry.operationId);
+            if (result == null) {
+              failed++;
               await localStore.updateOutboxStatus(
                 operationId: entry.operationId,
                 status: OutboxStatus.pending,
-                lastError: 'Retryable error (backoff ${backoffSeconds}s): ${result.errorMessage}',
+                lastError: 'No result returned from batch push',
               );
+              continue;
+            }
+
+            if (result.hasConflict) {
+              conflicts++;
+              await _handleConflict(entry, result.serverConflictVersion ?? {});
+              await localStore.updateOutboxStatus(
+                operationId: entry.operationId,
+                status: OutboxStatus.failed,
+                lastError: 'Conflict detected: local and server versions preserved',
+              );
+            } else if (result.success) {
+              acknowledged++;
+              await localStore.acknowledgeOutboxOperation(
+                operationId: entry.operationId,
+                serverId: result.serverId,
+                serverCursor: result.serverCursor,
+                confirmedRevision: result.confirmedRevision,
+              );
+            } else if (result.errorMessage == 'skipped_dependency_failed') {
+              blocked++;
+              await localStore.updateOutboxStatus(
+                operationId: entry.operationId,
+                status: OutboxStatus.blocked,
+                lastError: 'Blocked by failure of dependent operation',
+              );
+            } else {
+              failed++;
+              if (!result.isRetryable) {
+                await localStore.updateOutboxStatus(
+                  operationId: entry.operationId,
+                  status: OutboxStatus.failed,
+                  lastError: result.errorMessage ?? 'Non-retryable remote error',
+                );
+              } else {
+                final backoffSeconds = min(pow(2, entry.attemptCount).toInt(), 60);
+                await localStore.updateOutboxStatus(
+                  operationId: entry.operationId,
+                  status: OutboxStatus.pending,
+                  lastError: 'Retryable error (backoff ${backoffSeconds}s): ${result.errorMessage}',
+                );
+              }
             }
           }
         } catch (e) {
-          failed++;
-          // Network interruption or timeout: keep pending for retry
-          await localStore.updateOutboxStatus(
-            operationId: entry.operationId,
-            status: OutboxStatus.pending,
-            lastError: e.toString(),
-          );
+          failed += chunk.length;
+          for (final entry in chunk) {
+            await localStore.updateOutboxStatus(
+              operationId: entry.operationId,
+              status: OutboxStatus.pending,
+              lastError: e.toString(),
+            );
+          }
         }
       }
 
-      // 5. Pull changes from remote using server-issued cursors
+      // 6. Pull changes from remote using server-issued cursors
       if (!_modeSwitchedToLocalMidFlight &&
           dataModeService.currentMode == DataMode.online) {
-        final entityTypes = ['patient', 'booking', 'visit', 'payment'];
+        final entityTypes = [
+          'patient',
+          'booking',
+          'visit',
+          'payment',
+          'drug',
+          'doctor',
+          'inventory',
+          'medical_catalog',
+          'settings',
+          'staff_user',
+          'hr_advance',
+          'hr_payroll',
+        ];
         for (final type in entityTypes) {
           final cursor = await localStore.getSyncCursor(type);
           try {
@@ -243,6 +300,68 @@ class SyncEngine implements InFlightSyncCoordinator {
       duration: stopwatch.elapsed,
       error: syncError,
     );
+  }
+
+  /// Discards a specific outbox operation, rolling back its local entity.
+  Future<void> discardOperation(
+    String operationId, {
+    bool discardDependents = true,
+  }) async {
+    await localStore.discardOutboxOperation(
+      operationId,
+      discardDependents: discardDependents,
+    );
+  }
+
+  /// Discards all operations in a specific section.
+  Future<void> discardSection(String entityType) async {
+    final all = await localStore.getAllOutboxEntries();
+    final sectionEntries = all.where((e) => e.entityType == entityType).toList();
+    for (final entry in sectionEntries) {
+      await localStore.discardOutboxOperation(entry.operationId, discardDependents: true);
+    }
+  }
+
+  /// Resolves a conflict by keeping local changes (re-push with updated base revision).
+  Future<void> resolveConflictKeepMine(ConflictRecord conflict) async {
+    final op = await localStore.getOutboxEntry(conflict.conflictId.replaceFirst('CONF-', ''));
+    if (op != null) {
+      final serverRev = conflict.serverVersion['revision'] as int? ?? op.baseRevision + 1;
+      await localStore.runInTransaction((txn) async {
+        txn.resolveConflict(conflict.conflictId, op.payload);
+        txn.insertOutbox(op.copyWith(
+          baseRevision: serverRev,
+          status: OutboxStatus.pending,
+          lastError: null,
+        ));
+      });
+      await syncNow(operationIds: [op.operationId]);
+    }
+  }
+
+  /// Resolves a conflict by accepting the server version (discard local).
+  Future<void> resolveConflictKeepServer(ConflictRecord conflict) async {
+    final opId = conflict.conflictId.replaceFirst('CONF-', '');
+    await discardOperation(opId, discardDependents: true);
+    final entity = await localStore.getEntity(
+      localId: conflict.localId,
+      accountId: 'default',
+      branchId: 'branch_1',
+    );
+    if (entity != null && conflict.serverVersion['payload'] != null) {
+      final serverPayload = Map<String, dynamic>.from(conflict.serverVersion['payload'] as Map);
+      final serverRev = conflict.serverVersion['revision'] as int? ?? entity.localRevision;
+      await localStore.runInTransaction((txn) async {
+        txn.resolveConflict(conflict.conflictId, serverPayload);
+        txn.upsertEntity(entity.copyWith(
+          payload: serverPayload,
+          localRevision: serverRev,
+          syncStatus: SyncStatus.synced,
+          isProvisional: false,
+          updatedAt: DateTime.now(),
+        ));
+      });
+    }
   }
 
   Future<void> _handleConflict(

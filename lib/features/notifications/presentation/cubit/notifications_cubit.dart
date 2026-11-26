@@ -1,18 +1,37 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/audit_logger.dart';
+import '../../../../core/storage/cache_helper.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../data/models/notification_item_model.dart';
 import 'notifications_state.dart';
 
 class NotificationsCubit extends Cubit<NotificationsState> {
   final AuditLogger? auditLogger;
+  static const String readNotificationsKey = 'eyadty_read_notifications_ids';
 
   NotificationsCubit({this.auditLogger})
       : super(
           NotificationsState(
-            notifications: _seedInitialNotifications(),
+            notifications: _loadNotifications(),
           ),
         );
+
+  static List<NotificationItemModel> _loadNotifications() {
+    final seeded = _seedInitialNotifications();
+    try {
+      final readIdsStr = AppSharedPreferences.getString(key: readNotificationsKey);
+      if (readIdsStr != null && readIdsStr.isNotEmpty) {
+        final readIds = readIdsStr.split(',').toSet();
+        return seeded.map((n) {
+          if (readIds.contains(n.id)) {
+            return n.copyWith(isRead: true);
+          }
+          return n;
+        }).toList();
+      }
+    } catch (_) {}
+    return seeded;
+  }
 
   static List<NotificationItemModel> _seedInitialNotifications() {
     final now = CairoTimeHelper.now();
@@ -87,12 +106,21 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       return n;
     }).toList();
 
+    _persistReadIds(updated);
     emit(state.copyWith(notifications: updated));
   }
 
   void markAllAsRead() {
     final updated = state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+    _persistReadIds(updated);
     emit(state.copyWith(notifications: updated));
+  }
+
+  void _persistReadIds(List<NotificationItemModel> list) {
+    try {
+      final readIds = list.where((n) => n.isRead).map((n) => n.id).join(',');
+      AppSharedPreferences.setString(key: readNotificationsKey, value: readIds);
+    } catch (_) {}
   }
 
   void clearAll() {
