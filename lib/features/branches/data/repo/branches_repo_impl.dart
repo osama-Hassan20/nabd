@@ -4,26 +4,26 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/providers/active_bookings_count_provider.dart';
 import '../../../../core/services/audit_logger.dart';
 import '../../../settings/data/models/special_holiday_model.dart';
-import '../../../settings/data/repo/settings_mock_repo_impl.dart';
+import '../../../settings/data/repo/settings_repo_impl.dart';
 import '../../../settings/domain/repo/settings_repo.dart';
 import '../../domain/repo/branches_repo.dart';
 import '../models/branch_model.dart';
 import '../models/copy_branch_settings_param.dart';
 
-class BranchesMockRepoImpl implements BranchesRepo {
+class BranchesRepoImpl implements BranchesRepo {
   final AuditLogger? auditLogger;
   final ActiveBookingsCountProvider? activeBookingsProvider;
 
-  BranchesMockRepoImpl({
+  BranchesRepoImpl({
     this.auditLogger,
     this.activeBookingsProvider,
   }) {
-    _initMockData();
+    _seedLocalData();
   }
 
   final List<BranchModel> _branches = [];
 
-  void _initMockData() {
+  void _seedLocalData() {
     _branches.addAll([
       BranchModel(
         id: 'branch_1',
@@ -212,7 +212,7 @@ class BranchesMockRepoImpl implements BranchesRepo {
 
       if (getIt.isRegistered<SettingsRepo>()) {
         final settingsRepo = getIt<SettingsRepo>();
-        if (settingsRepo is SettingsMockRepoImpl) {
+        if (settingsRepo is SettingsRepoImpl) {
           settingsRepo.syncFromBranchModel(updated);
         }
       }
@@ -290,7 +290,7 @@ class BranchesMockRepoImpl implements BranchesRepo {
 
       if (getIt.isRegistered<SettingsRepo>()) {
         final settingsRepo = getIt<SettingsRepo>();
-        if (settingsRepo is SettingsMockRepoImpl) {
+        if (settingsRepo is SettingsRepoImpl) {
           settingsRepo.syncFromBranchModel(updated);
         }
       }
@@ -401,7 +401,7 @@ class BranchesMockRepoImpl implements BranchesRepo {
 
       if (getIt.isRegistered<SettingsRepo>()) {
         final settingsRepo = getIt<SettingsRepo>();
-        if (settingsRepo is SettingsMockRepoImpl) {
+        if (settingsRepo is SettingsRepoImpl) {
           settingsRepo.copyBranchSettings(
             sourceBranchId: srcId,
             targetBranchId: targetId,

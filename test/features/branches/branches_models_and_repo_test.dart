@@ -6,17 +6,17 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/branches/data/models/branch_model.dart';
 import 'package:eyadty/features/branches/data/models/copy_branch_settings_param.dart';
-import 'package:eyadty/features/branches/data/repo/branches_mock_repo_impl.dart';
+import 'package:eyadty/features/branches/data/repo/branches_repo_impl.dart';
 import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
+class FakeActiveBookingsProvider implements ActiveBookingsCountProvider {
   final Map<String, int> doctorCounts;
   final Map<String, int> branchCounts;
 
-  MockActiveBookingsProvider({
+  FakeActiveBookingsProvider({
     this.doctorCounts = const {},
     this.branchCounts = const {},
   });
@@ -32,11 +32,11 @@ class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
   }
 }
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -45,9 +45,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -123,15 +123,15 @@ void main() {
     });
   });
 
-  group('BranchesMockRepoImpl Unit Tests', () {
+  group('BranchesRepoImpl Unit Tests', () {
     late InMemoryAuditLogger auditLogger;
-    late BranchesMockRepoImpl repo;
+    late BranchesRepoImpl repo;
 
     setUp(() {
       auditLogger = InMemoryAuditLogger();
-      repo = BranchesMockRepoImpl(
+      repo = BranchesRepoImpl(
         auditLogger: auditLogger,
-        activeBookingsProvider: MockActiveBookingsProvider(
+        activeBookingsProvider: FakeActiveBookingsProvider(
           branchCounts: {'branch_2': 5},
         ),
       );
@@ -310,15 +310,15 @@ void main() {
   });
 
   group('PermissionEvaluator & manageBranches RBAC Tests', () {
-    late MockUserSessionProvider userProvider;
-    late MockRolesSessionProvider rolesProvider;
+    late FakeUserSessionProvider userProvider;
+    late FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator evaluator;
 
     setUp(() {
-      rolesProvider = MockRolesSessionProvider(
+      rolesProvider = FakeRolesSessionProvider(
         roles: RoleDefinitionModel.defaultSystemRoles(),
       );
-      userProvider = MockUserSessionProvider();
+      userProvider = FakeUserSessionProvider();
       evaluator = PermissionEvaluator(
         userProvider: userProvider,
         rolesProvider: rolesProvider,

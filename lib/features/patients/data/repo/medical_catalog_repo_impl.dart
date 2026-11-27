@@ -4,10 +4,10 @@ import 'package:eyadty/core/utils/helpers/arabic_text_helper.dart';
 import '../../domain/repo/medical_catalog_repo.dart';
 import '../models/medical_catalog_item_model.dart';
 
-class MedicalCatalogMockRepoImpl implements MedicalCatalogRepo {
+class MedicalCatalogRepoImpl implements MedicalCatalogRepo {
   final List<MedicalCatalogItemModel> _items = [];
 
-  MedicalCatalogMockRepoImpl() {
+  MedicalCatalogRepoImpl() {
     _initSeedData();
   }
 

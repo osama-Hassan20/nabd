@@ -161,7 +161,7 @@ class SessionCubit extends Cubit<SessionState>
     emit(state.copyWith(activeBranchId: branchId));
   }
 
-  void switchMockUser(StaffUserModel user) {
+  void switchDemoUser(StaffUserModel user) {
     final activeBranch = user.branchAssignments
             ?.where((b) => b.isPrimary == true)
             .firstOrNull

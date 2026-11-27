@@ -13,7 +13,7 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/contracts/active_visit_lookup.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
@@ -35,7 +35,7 @@ import 'package:eyadty/features/bookings/presentation/widgets/free_booking_badge
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/save_role_use_case.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
@@ -83,8 +83,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late SessionCubit sessionCubit;
-  late BookingsMockRepoImpl bookingsRepo;
-  late StaffUsersMockRepoImpl staffUsersRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late StaffUsersRepoImpl staffUsersRepo;
   late InMemoryAuditLogger auditLogger;
   late BookingsCubit bookingsCubit;
   late StaffUsersCubit staffUsersCubit;
@@ -151,8 +151,8 @@ void main() {
   setUp(() {
     getIt.reset();
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    staffUsersRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
-    bookingsRepo = BookingsMockRepoImpl();
+    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+    bookingsRepo = BookingsRepoImpl();
 
     sessionCubit = SessionCubit(
       SessionState.initial().copyWith(

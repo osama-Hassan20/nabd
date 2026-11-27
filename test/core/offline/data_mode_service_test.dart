@@ -8,7 +8,7 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/shared/app_layout/presentation/widgets/header_data_mode_widget.dart';
 
-class MockSyncCoordinator implements InFlightSyncCoordinator {
+class FakeSyncCoordinator implements InFlightSyncCoordinator {
   bool inProgress = false;
   bool modeSwitchedCalled = false;
   final Map<String, Map<String, dynamic>> recordedAcks = {};
@@ -106,7 +106,7 @@ void main() {
     });
 
     test('3. In-flight sync safety: switching to forcedLocal notifies coordinator and preserves ACK', () async {
-      final coordinator = MockSyncCoordinator();
+      final coordinator = FakeSyncCoordinator();
       coordinator.inProgress = true;
 
       final service = DataModeService(

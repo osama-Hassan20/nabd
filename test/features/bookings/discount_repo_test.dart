@@ -4,7 +4,7 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/contracts/active_visit_lookup.dart';
 import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
@@ -20,7 +20,7 @@ import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_us
 import 'package:eyadty/features/bookings/domain/use_cases/remove_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/visits/data/models/enums/visit_status_enum.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
@@ -35,10 +35,10 @@ class _FakeCurrentUserProvider implements CurrentUserProvider {
 }
 
 void main() {
-  late BookingsMockRepoImpl repo;
+  late BookingsRepoImpl repo;
 
   setUp(() {
-    repo = BookingsMockRepoImpl();
+    repo = BookingsRepoImpl();
   });
 
   group('B-DISC M-2: Repository, Calculator & Discount Operations Tests', () {
@@ -277,7 +277,7 @@ void main() {
         'T7: Changing consultationFee on discounted booking revalidates and resets discount if invalid',
         () async {
       final auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      final staffRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
+      final staffRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
       final userProvider = _FakeCurrentUserProvider();
       final ownerRes = await staffRepo.getStaffUserById('USER-OWNER');
       userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
@@ -332,7 +332,7 @@ void main() {
     test('T8: BookingsCubit applyDiscount and removeDiscount integration',
         () async {
       final auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      final staffRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
+      final staffRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
 
       final applyUseCase = ApplyBookingDiscountUseCase(
         bookingsRepo: repo,

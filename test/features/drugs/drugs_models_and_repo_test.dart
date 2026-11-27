@@ -3,7 +3,7 @@ import 'package:eyadty/features/drugs/data/models/drug_category_model.dart';
 import 'package:eyadty/features/drugs/data/models/drug_model.dart';
 import 'package:eyadty/features/drugs/data/models/enums/drug_source_enum.dart';
 import 'package:eyadty/features/drugs/data/models/enums/review_status_enum.dart';
-import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/data/repo/drugs_repo_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -81,11 +81,11 @@ void main() {
     });
   });
 
-  group('DrugsMockRepoImpl Tests', () {
-    late DrugsMockRepoImpl repo;
+  group('DrugsRepoImpl Tests', () {
+    late DrugsRepoImpl repo;
 
     setUp(() {
-      repo = DrugsMockRepoImpl();
+      repo = DrugsRepoImpl();
     });
 
     test('4. Initializes with 25 seed drugs and 8 categories', () async {

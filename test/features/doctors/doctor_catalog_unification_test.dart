@@ -1,28 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
-import 'package:eyadty/features/settings/data/repo/medical_services_mock_repo_impl.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/medical_services_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_state.dart';
 
 void main() {
   group('R-1: Doctor Catalog Unification Tests', () {
-    late DoctorsMockRepoImpl doctorsRepo;
-    late BookingsMockRepoImpl bookingsRepo;
-    late MedicalServicesMockRepoImpl medicalServicesRepo;
-    late StaffUsersMockRepoImpl staffUsersRepo;
+    late DoctorsRepoImpl doctorsRepo;
+    late BookingsRepoImpl bookingsRepo;
+    late MedicalServicesRepoImpl medicalServicesRepo;
+    late StaffUsersRepoImpl staffUsersRepo;
     final paginationParams = const PaginationParams(page: 1, limit: 100);
 
     setUp(() {
-      doctorsRepo = DoctorsMockRepoImpl();
-      bookingsRepo = BookingsMockRepoImpl();
-      medicalServicesRepo = MedicalServicesMockRepoImpl();
-      staffUsersRepo = StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger());
+      doctorsRepo = DoctorsRepoImpl();
+      bookingsRepo = BookingsRepoImpl();
+      medicalServicesRepo = MedicalServicesRepoImpl();
+      staffUsersRepo = StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger());
     });
 
-    test('1. DoctorsMockRepoImpl contains the 6 canonical doctors DOC-01 through DOC-06 plus specialty seed doctors', () async {
+    test('1. DoctorsRepoImpl contains the 6 canonical doctors DOC-01 through DOC-06 plus specialty seed doctors', () async {
       final res = await doctorsRepo.getDoctors(params: paginationParams);
       final doctors = res.getOrElse(() => throw Exception('Failed to get doctors')).doctors;
 
@@ -41,7 +41,7 @@ void main() {
       ]));
     });
 
-    test('2. Every doctorId in BookingsMockRepoImpl exists in DoctorsMockRepoImpl', () async {
+    test('2. Every doctorId in BookingsRepoImpl exists in DoctorsRepoImpl', () async {
       final doctorsRes = await doctorsRepo.getDoctors(params: paginationParams);
       final validDoctorIds = doctorsRes.getOrElse(() => throw Exception('Failed to get doctors')).doctors.map((d) => d.id).toSet();
 
@@ -63,7 +63,7 @@ void main() {
       }
     });
 
-    test('3. Every assigned doctor in MedicalServicesMockRepoImpl exists in DoctorsMockRepoImpl', () async {
+    test('3. Every assigned doctor in MedicalServicesRepoImpl exists in DoctorsRepoImpl', () async {
       final doctorsRes = await doctorsRepo.getDoctors(params: paginationParams);
       final validDoctorIds = doctorsRes.getOrElse(() => throw Exception('Failed to get doctors')).doctors.map((d) => d.id).toSet();
 
@@ -81,7 +81,7 @@ void main() {
       }
     });
 
-    test('4. Every practicing doctor in StaffUsersMockRepoImpl links to an existing doctor profile', () async {
+    test('4. Every practicing doctor in StaffUsersRepoImpl links to an existing doctor profile', () async {
       final doctorsRes = await doctorsRepo.getDoctors(params: paginationParams);
       final validDoctorIds = doctorsRes.getOrElse(() => throw Exception('Failed to get doctors')).doctors.map((d) => d.id).toSet();
 

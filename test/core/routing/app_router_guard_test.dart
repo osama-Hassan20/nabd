@@ -195,7 +195,7 @@ void main() {
       expect(router.state.uri.path, equals(AppRouter.forbidden));
 
       // Switch user to Owner live while on the page
-      sessionCubit.switchMockUser(ownerUser);
+      sessionCubit.switchDemoUser(ownerUser);
       await tester.pumpAndSettle();
 
       // GoRouter automatically re-evaluated via refreshListenable and redirected to /settings/users!

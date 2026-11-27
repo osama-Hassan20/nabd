@@ -3,18 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/drugs/data/models/drug_model.dart';
-import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/data/repo/drugs_repo_impl.dart';
 import 'package:eyadty/features/drugs/domain/helpers/drug_csv_import_engine.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/import_drugs_use_case.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -23,9 +23,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -33,10 +33,10 @@ class MockRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('Milestone 7: Drug Import Engine Tests (CSV & UTF-8 BOM)', () {
-    late DrugsMockRepoImpl repo;
+    late DrugsRepoImpl repo;
     late InMemoryAuditLogger auditLogger;
-    late MockUserSessionProvider userProvider;
-    late MockRolesSessionProvider rolesProvider;
+    late FakeUserSessionProvider userProvider;
+    late FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator permissionEvaluator;
     late ImportDrugsUseCase importDrugsUseCase;
 
@@ -58,12 +58,12 @@ void main() {
     );
 
     setUp(() {
-      repo = DrugsMockRepoImpl();
+      repo = DrugsRepoImpl();
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      rolesProvider = MockRolesSessionProvider(
+      rolesProvider = FakeRolesSessionProvider(
         roles: RoleDefinitionModel.defaultSystemRoles(),
       );
-      userProvider = MockUserSessionProvider(user: directorUser);
+      userProvider = FakeUserSessionProvider(user: directorUser);
       permissionEvaluator = PermissionEvaluator(
         userProvider: userProvider,
         rolesProvider: rolesProvider,

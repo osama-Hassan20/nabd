@@ -9,7 +9,7 @@ import '../models/role_definition_model.dart';
 import '../models/staff_user_model.dart';
 import 'staff_users_repo.dart';
 
-class StaffUsersMockRepoImpl implements StaffUsersRepo {
+class StaffUsersRepoImpl implements StaffUsersRepo {
   final AuditLogger auditLogger;
   final ActiveBookingsCountProvider? activeBookingsProvider;
 
@@ -17,11 +17,11 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
   final List<RoleDefinitionModel> _roles = [];
   final Map<String, String> _passwords = {};
 
-  StaffUsersMockRepoImpl({
+  StaffUsersRepoImpl({
     required this.auditLogger,
     this.activeBookingsProvider,
   }) {
-    _initMockData();
+    _seedLocalData();
   }
 
   /// Expose unmodifiable lists for inspection / testing
@@ -36,7 +36,7 @@ class StaffUsersMockRepoImpl implements StaffUsersRepo {
     StaffPermissionEnum.toggleStaffUserStatus,
   };
 
-  void _initMockData() {
+  void _seedLocalData() {
     // 1. Seed the 7 assignable system roles
     _roles.addAll(RoleDefinitionModel.defaultSystemRoles());
 

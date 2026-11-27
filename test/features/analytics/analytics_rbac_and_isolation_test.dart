@@ -4,7 +4,7 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/analytics/data/models/enums/analytics_time_range_enum.dart';
-import 'package:eyadty/features/analytics/data/repo/analytics_mock_repo_impl.dart';
+import 'package:eyadty/features/analytics/data/repo/analytics_repo_impl.dart';
 import 'package:eyadty/features/analytics/domain/use_cases/get_analytics_summary_use_case.dart';
 import 'package:eyadty/features/analytics/domain/use_cases/get_doctor_performance_use_case.dart';
 import 'package:eyadty/features/analytics/domain/use_cases/get_hourly_traffic_use_case.dart';
@@ -13,11 +13,11 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -26,16 +26,16 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
 void main() {
-  late AnalyticsMockRepoImpl mockRepo;
+  late AnalyticsRepoImpl mockRepo;
   late InMemoryAuditLogger auditLogger;
 
   // Roles
@@ -104,7 +104,7 @@ void main() {
   );
 
   setUp(() {
-    mockRepo = const AnalyticsMockRepoImpl();
+    mockRepo = const AnalyticsRepoImpl();
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
   });
 
@@ -113,8 +113,8 @@ void main() {
     // 1. RBAC Entry Guard (accessAnalytics)
     // -------------------------------------------------------------------------
     test('1. User without accessAnalytics permission receives permission_denied error', () async {
-      final session = MockUserSessionProvider(user: unauthorizedUser);
-      final roles = MockRolesSessionProvider(roles: [unauthorizedRole]);
+      final session = FakeUserSessionProvider(user: unauthorizedUser);
+      final roles = FakeRolesSessionProvider(roles: [unauthorizedRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -133,8 +133,8 @@ void main() {
     });
 
     test('2. Revenue trend use case denies user without accessAnalytics permission', () async {
-      final session = MockUserSessionProvider(user: unauthorizedUser);
-      final roles = MockRolesSessionProvider(roles: [unauthorizedRole]);
+      final session = FakeUserSessionProvider(user: unauthorizedUser);
+      final roles = FakeRolesSessionProvider(roles: [unauthorizedRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final revenueUc = GetRevenueTrendUseCase(
@@ -148,8 +148,8 @@ void main() {
     });
 
     test('3. Doctor performance use case denies user without accessAnalytics permission', () async {
-      final session = MockUserSessionProvider(user: unauthorizedUser);
-      final roles = MockRolesSessionProvider(roles: [unauthorizedRole]);
+      final session = FakeUserSessionProvider(user: unauthorizedUser);
+      final roles = FakeRolesSessionProvider(roles: [unauthorizedRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final doctorUc = GetDoctorPerformanceUseCase(
@@ -166,8 +166,8 @@ void main() {
     // 2. Financial Privacy Masking (viewFinancialReports)
     // -------------------------------------------------------------------------
     test('4. User without viewFinancialReports has revenue and profit fields masked to null in summary', () async {
-      final session = MockUserSessionProvider(user: clinicalUser);
-      final roles = MockRolesSessionProvider(roles: [clinicalStaffRole]);
+      final session = FakeUserSessionProvider(user: clinicalUser);
+      final roles = FakeRolesSessionProvider(roles: [clinicalStaffRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -195,8 +195,8 @@ void main() {
     });
 
     test('5. User with viewFinancialReports sees full unmasked financial metrics in summary', () async {
-      final session = MockUserSessionProvider(user: branch1ManagerUser);
-      final roles = MockRolesSessionProvider(roles: [branchManagerRole]);
+      final session = FakeUserSessionProvider(user: branch1ManagerUser);
+      final roles = FakeRolesSessionProvider(roles: [branchManagerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -223,8 +223,8 @@ void main() {
     });
 
     test('6. User without viewFinancialReports is denied access to revenue trend usecase', () async {
-      final session = MockUserSessionProvider(user: clinicalUser);
-      final roles = MockRolesSessionProvider(roles: [clinicalStaffRole]);
+      final session = FakeUserSessionProvider(user: clinicalUser);
+      final roles = FakeRolesSessionProvider(roles: [clinicalStaffRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final revenueUc = GetRevenueTrendUseCase(
@@ -242,8 +242,8 @@ void main() {
     });
 
     test('7. User without viewFinancialReports has revenue masked in doctor leaderboard', () async {
-      final session = MockUserSessionProvider(user: clinicalUser);
-      final roles = MockRolesSessionProvider(roles: [clinicalStaffRole]);
+      final session = FakeUserSessionProvider(user: clinicalUser);
+      final roles = FakeRolesSessionProvider(roles: [clinicalStaffRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final doctorUc = GetDoctorPerformanceUseCase(
@@ -272,8 +272,8 @@ void main() {
     // 3. Multi-Branch Isolation & Fail-Closed Guard
     // -------------------------------------------------------------------------
     test('8. Branch manager restricted to branch_1 is denied access when querying branch_2', () async {
-      final session = MockUserSessionProvider(user: branch1ManagerUser);
-      final roles = MockRolesSessionProvider(roles: [branchManagerRole]);
+      final session = FakeUserSessionProvider(user: branch1ManagerUser);
+      final roles = FakeRolesSessionProvider(roles: [branchManagerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -295,8 +295,8 @@ void main() {
     });
 
     test('9. Branch manager restricted to branch_1 successfully queries their own branch', () async {
-      final session = MockUserSessionProvider(user: branch1ManagerUser);
-      final roles = MockRolesSessionProvider(roles: [branchManagerRole]);
+      final session = FakeUserSessionProvider(user: branch1ManagerUser);
+      final roles = FakeRolesSessionProvider(roles: [branchManagerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -318,8 +318,8 @@ void main() {
     });
 
     test('10. Owner user can access all branches consolidated (branchId == null)', () async {
-      final session = MockUserSessionProvider(user: ownerUser);
-      final roles = MockRolesSessionProvider(roles: [ownerRole]);
+      final session = FakeUserSessionProvider(user: ownerUser);
+      final roles = FakeRolesSessionProvider(roles: [ownerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -345,8 +345,8 @@ void main() {
     });
 
     test('11. Owner user can freely switch between branch_1, branch_2 and branch_3', () async {
-      final session = MockUserSessionProvider(user: ownerUser);
-      final roles = MockRolesSessionProvider(roles: [ownerRole]);
+      final session = FakeUserSessionProvider(user: ownerUser);
+      final roles = FakeRolesSessionProvider(roles: [ownerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -368,8 +368,8 @@ void main() {
     // 4. Audit Logging Whitelist & Zero PII
     // -------------------------------------------------------------------------
     test('12. Successful analytics summary call logs audit event with whitelisted IDs and enums', () async {
-      final session = MockUserSessionProvider(user: branch1ManagerUser);
-      final roles = MockRolesSessionProvider(roles: [branchManagerRole]);
+      final session = FakeUserSessionProvider(user: branch1ManagerUser);
+      final roles = FakeRolesSessionProvider(roles: [branchManagerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final summaryUc = GetAnalyticsSummaryUseCase(
@@ -394,8 +394,8 @@ void main() {
     });
 
     test('13. Denied call does NOT produce audit entry (no audit on failure rule)', () async {
-      final session = MockUserSessionProvider(user: unauthorizedUser);
-      final roles = MockRolesSessionProvider(roles: [unauthorizedRole]);
+      final session = FakeUserSessionProvider(user: unauthorizedUser);
+      final roles = FakeRolesSessionProvider(roles: [unauthorizedRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final initialLogsCount = auditLogger.getLogs().length;
@@ -428,8 +428,8 @@ void main() {
     });
 
     test('15. Hourly traffic covers clinic operating hours from 09:00 to 22:00', () async {
-      final session = MockUserSessionProvider(user: ownerUser);
-      final roles = MockRolesSessionProvider(roles: [ownerRole]);
+      final session = FakeUserSessionProvider(user: ownerUser);
+      final roles = FakeRolesSessionProvider(roles: [ownerRole]);
       final perm = PermissionEvaluator(userProvider: session, rolesProvider: roles);
 
       final trafficUc = GetHourlyTrafficUseCase(

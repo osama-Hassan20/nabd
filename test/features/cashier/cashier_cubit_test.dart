@@ -10,7 +10,7 @@ import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.d
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/cashier/data/models/enums/cash_movement_type_enum.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:eyadty/features/cashier/domain/contracts/cashier_policy.dart';
 import 'package:eyadty/features/cashier/domain/helpers/cashier_shift_calculator.dart';
 import 'package:eyadty/features/cashier/domain/helpers/payment_reconciliation_helper.dart';
@@ -28,11 +28,11 @@ import 'package:eyadty/features/users_management/data/models/role_definition_mod
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -41,17 +41,17 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
-class MockStaffUsersRepo implements StaffUsersRepo {
+class FakeStaffUsersRepo implements StaffUsersRepo {
   List<StaffUserModel> users;
-  MockStaffUsersRepo({required this.users});
+  FakeStaffUsersRepo({required this.users});
 
   @override
   Future<Either<Failures, List<StaffUserModel>>> getStaffUsers({
@@ -67,7 +67,7 @@ class MockStaffUsersRepo implements StaffUsersRepo {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class MockBookingsRepo implements BookingsRepo {
+class FakeBookingsRepo implements BookingsRepo {
   final Map<String, BookingModel> bookings = {};
 
   void addBooking(BookingModel b) {
@@ -95,12 +95,12 @@ class MockBookingsRepo implements BookingsRepo {
 }
 
 void main() {
-  late CashierMockRepoImpl cashierRepo;
-  late MockBookingsRepo bookingsRepo;
-  late MockStaffUsersRepo staffUsersRepo;
+  late CashierRepoImpl cashierRepo;
+  late FakeBookingsRepo bookingsRepo;
+  late FakeStaffUsersRepo staffUsersRepo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
 
   late GetActiveShiftUseCase getActiveShiftUseCase;
@@ -143,11 +143,11 @@ void main() {
   );
 
   setUp(() {
-    cashierRepo = CashierMockRepoImpl(seedInitialData: false);
-    bookingsRepo = MockBookingsRepo();
-    staffUsersRepo = MockStaffUsersRepo(users: [cashierUser, managerUser]);
+    cashierRepo = CashierRepoImpl(seedInitialData: false);
+    bookingsRepo = FakeBookingsRepo();
+    staffUsersRepo = FakeStaffUsersRepo(users: [cashierUser, managerUser]);
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    userProvider = MockUserSessionProvider(user: cashierUser, branch: 'branch_1');
+    userProvider = FakeUserSessionProvider(user: cashierUser, branch: 'branch_1');
 
     final systemRoles = RoleDefinitionModel.defaultSystemRoles();
     final updatedRoles = systemRoles.map((r) {
@@ -175,7 +175,7 @@ void main() {
       return r;
     }).toList();
 
-    rolesProvider = MockRolesSessionProvider(roles: updatedRoles);
+    rolesProvider = FakeRolesSessionProvider(roles: updatedRoles);
     permissionEvaluator = PermissionEvaluator(
       userProvider: userProvider,
       rolesProvider: rolesProvider,

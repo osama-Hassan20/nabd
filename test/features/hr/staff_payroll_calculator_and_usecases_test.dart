@@ -9,7 +9,7 @@ import 'package:eyadty/features/hr/data/models/enums/payroll_status_enum.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_item_model.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_period_model.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_profile_model.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/helpers/staff_payroll_calculator.dart';
 import 'package:eyadty/features/hr/domain/use_cases/confirm_staff_payroll_period_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/generate_staff_payroll_period_use_case.dart';
@@ -42,7 +42,7 @@ class PayrollTestRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('Staff Payroll Domain Engine Tests (Plan F-06 M-4)', () {
-    late HrMockRepoImpl repo;
+    late HrRepoImpl repo;
     late InMemoryAuditLogger auditLogger;
     late PayrollTestUserSessionProvider userProvider;
     late PayrollTestRolesSessionProvider rolesProvider;
@@ -65,7 +65,7 @@ void main() {
     );
 
     setUp(() {
-      repo = HrMockRepoImpl(seedInitialData: false);
+      repo = HrRepoImpl(seedInitialData: false);
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
       rolesProvider = PayrollTestRolesSessionProvider(

@@ -11,7 +11,7 @@ import '../models/enums/review_status_enum.dart';
 import '../models/prescription_template_item_model.dart';
 import '../models/prescription_template_model.dart';
 
-class DrugsMockRepoImpl implements DrugsRepo {
+class DrugsRepoImpl implements DrugsRepo {
   final List<DrugModel> _drugs = [];
   final List<DrugCategoryModel> _categories = [];
   final List<PrescriptionTemplateModel> _templates = [];
@@ -19,7 +19,7 @@ class DrugsMockRepoImpl implements DrugsRepo {
   int _idCounter = 25;
   int _templateIdCounter = 3;
 
-  DrugsMockRepoImpl() {
+  DrugsRepoImpl() {
     _initSeed();
   }
 

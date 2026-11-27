@@ -4,7 +4,7 @@ import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/apply_booking_discount_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/apply_discount_params.dart';
@@ -14,7 +14,7 @@ import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_cas
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/params/update_role_discount_policy_params.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,8 +38,8 @@ class FakeRolesProvider implements RolesProvider {
 }
 
 void main() {
-  late BookingsMockRepoImpl bookingsRepo;
-  late StaffUsersMockRepoImpl staffUsersRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late StaffUsersRepoImpl staffUsersRepo;
   late InMemoryAuditLogger auditLogger;
   late FakeCurrentUserProvider userProvider;
   late FakeRolesProvider rolesProvider;
@@ -51,8 +51,8 @@ void main() {
 
   setUp(() async {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    staffUsersRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
-    bookingsRepo = BookingsMockRepoImpl();
+    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+    bookingsRepo = BookingsRepoImpl();
     userProvider = FakeCurrentUserProvider();
     rolesProvider = FakeRolesProvider();
     permissionEvaluator = PermissionEvaluator(

@@ -2,21 +2,21 @@ import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/helpers/arabic_text_helper.dart';
 import 'package:eyadty/core/utils/helpers/egyptian_phone_helper.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/patients/data/models/egyptian_governorates.dart';
 import 'package:eyadty/features/patients/data/models/enums/blood_group_enum.dart';
 import 'package:eyadty/features/patients/data/models/enums/gender_enum.dart';
 import 'package:eyadty/features/patients/data/models/kinship_relations.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
-import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
-import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/medical_catalog_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_repo_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class MockRoleProvider implements CurrentRoleProvider {
+class FakeRoleProvider implements CurrentRoleProvider {
   @override
   UserRoleEnum currentRole;
 
-  MockRoleProvider(this.currentRole);
+  FakeRoleProvider(this.currentRole);
 }
 
 void main() {
@@ -80,10 +80,10 @@ void main() {
   });
 
   group('MedicalCatalogItemModel and MockRepo Tests', () {
-    late MedicalCatalogMockRepoImpl catalogRepo;
+    late MedicalCatalogRepoImpl catalogRepo;
 
     setUp(() {
-      catalogRepo = MedicalCatalogMockRepoImpl();
+      catalogRepo = MedicalCatalogRepoImpl();
     });
 
     test('Initializes with seed allergies and chronic diseases', () async {
@@ -316,9 +316,9 @@ void main() {
     });
   });
 
-  group('PatientsMockRepoImpl Tests', () {
+  group('PatientsRepoImpl Tests', () {
     test('Initializes with seed patients, correctly separates active vs archived', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       final activeRes = await repo.getPatients(params: const PaginationParams(page: 1, limit: 10));
       expect(activeRes.isRight(), isTrue);
@@ -339,9 +339,9 @@ void main() {
       });
     });
 
-    test('Data consistency between BookingsMockRepoImpl and PatientsMockRepoImpl', () async {
-      final bookingsRepo = BookingsMockRepoImpl();
-      final patientsRepo = PatientsMockRepoImpl(bookingsRepo: bookingsRepo);
+    test('Data consistency between BookingsRepoImpl and PatientsRepoImpl', () async {
+      final bookingsRepo = BookingsRepoImpl();
+      final patientsRepo = PatientsRepoImpl(bookingsRepo: bookingsRepo);
 
       final activeRes = await patientsRepo.getPatients(
         params: const PaginationParams(page: 1, limit: 10),
@@ -387,7 +387,7 @@ void main() {
     });
 
     test('Duplicate phone emits warning by default and allows bypass via allowDuplicatePhone', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       // Duplicate phone without flag -> Returns DuplicatePhoneWarningFailure
       final dupPhoneRes = await repo.addPatient(
@@ -410,7 +410,7 @@ void main() {
     });
 
     test('findPatientsByPhone finds all non-archived matching patients', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       final searchRes = await repo.findPatientsByPhone(phone: '01012345678');
       expect(searchRes.isRight(), isTrue);
@@ -421,7 +421,7 @@ void main() {
     });
 
     test('Enforces child guardian requirement on add', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       final childWithoutGuardian = await repo.addPatient(
         patient: PatientModel(
@@ -445,7 +445,7 @@ void main() {
     });
 
     test('Rejects archiving a patient with debt balance', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       // PAT-000102 has 150 EGP debt
       final debtArchive = await repo.archivePatient(id: 'PAT-000102');
@@ -456,7 +456,7 @@ void main() {
     });
 
     test('Rejects archiving a patient with upcoming appointments', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       // PAT-000101 has upcoming appointment today
       final upcomingArchive = await repo.archivePatient(id: 'PAT-000101');
@@ -467,7 +467,7 @@ void main() {
     });
 
     test('Allows valid unarchive of archived patient', () async {
-      final repo = PatientsMockRepoImpl();
+      final repo = PatientsRepoImpl();
 
       // PAT-000106 is archived -> unarchive it
       final unarchiveRes = await repo.unarchivePatient(id: 'PAT-000106');

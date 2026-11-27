@@ -7,14 +7,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/helpers/egyptian_phone_helper.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_schedule_model.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/add_doctor_leave_use_case.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/add_doctor_use_case.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/delete_doctor_leave_use_case.dart';
@@ -28,7 +28,7 @@ import 'package:eyadty/features/doctors/domain/use_cases/update_doctor_use_case.
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 import 'package:eyadty/features/doctors/presentation/widgets/doctor_details_sections/doctor_schedule_card_section.dart';
 import 'package:eyadty/features/doctors/presentation/widgets/doctor_details_sections/doctor_stats_cards_section.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 import 'package:eyadty/shared/widgets/custom_push_container_button.dart';
 
 Widget wrapWithTestApp(Widget child) {
@@ -55,16 +55,16 @@ void main() {
   });
 
   group('R-4: F-00 Audit & UI Verification Tests', () {
-    late DoctorsMockRepoImpl doctorsRepo;
-    late BookingsMockRepoImpl bookingsRepo;
-    late SettingsMockRepoImpl settingsRepo;
+    late DoctorsRepoImpl doctorsRepo;
+    late BookingsRepoImpl bookingsRepo;
+    late SettingsRepoImpl settingsRepo;
     late DoctorsCubit cubit;
 
     setUp(() {
       CairoTimeHelper.setFixedClock(DateTime(2026, 11, 8, 8, 30));
-      settingsRepo = SettingsMockRepoImpl();
-      bookingsRepo = BookingsMockRepoImpl(settingsRepo: settingsRepo);
-      doctorsRepo = DoctorsMockRepoImpl(
+      settingsRepo = SettingsRepoImpl();
+      bookingsRepo = BookingsRepoImpl(settingsRepo: settingsRepo);
+      doctorsRepo = DoctorsRepoImpl(
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,
       );

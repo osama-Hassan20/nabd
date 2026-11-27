@@ -8,7 +8,7 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/helpers/egyptian_phone_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import '../../domain/repo/patients_repo.dart';
 import '../models/clinical_record_models.dart';
@@ -19,25 +19,25 @@ import '../models/patient_model.dart';
 import '../models/patient_treatment_plan_model.dart';
 import '../models/patients_response_model.dart';
 
-class PatientsMockRepoImpl implements PatientsRepo {
+class PatientsRepoImpl implements PatientsRepo {
   final ApiConsumer? apiConsumer;
   final CurrentRoleProvider? roleProvider;
   final BookingsRepo? bookingsRepo;
   final PatientBalanceLookup? balanceLookup;
 
-  PatientsMockRepoImpl({
+  PatientsRepoImpl({
     this.apiConsumer,
     this.roleProvider,
     this.bookingsRepo,
     this.balanceLookup,
   }) {
-    _initMockData();
+    _seedLocalData();
   }
 
   final List<PatientModel> _patients = [];
   int _sequenceCounter = 109;
 
-  late final BookingsRepo _fallbackBookingsRepo = BookingsMockRepoImpl();
+  late final BookingsRepo _fallbackBookingsRepo = BookingsRepoImpl();
 
   BookingsRepo get _effectiveBookingsRepo {
     if (bookingsRepo != null) return bookingsRepo!;
@@ -58,7 +58,7 @@ class PatientsMockRepoImpl implements PatientsRepo {
   PatientModel _enrichWithBookingStats(PatientModel patient) {
     List<BookingModel> allBookings = const [];
     final repo = _effectiveBookingsRepo;
-    if (repo is BookingsMockRepoImpl) {
+    if (repo is BookingsRepoImpl) {
       allBookings = repo.bookings;
     }
 
@@ -135,7 +135,7 @@ class PatientsMockRepoImpl implements PatientsRepo {
     );
   }
 
-  void _initMockData() {
+  void _seedLocalData() {
     final now = CairoTimeHelper.now();
 
     _patients.addAll([

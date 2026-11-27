@@ -6,19 +6,19 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/features/branches/data/models/branch_model.dart';
 import 'package:eyadty/features/branches/data/models/copy_branch_settings_param.dart';
-import 'package:eyadty/features/branches/data/repo/branches_mock_repo_impl.dart';
+import 'package:eyadty/features/branches/data/repo/branches_repo_impl.dart';
 import 'package:eyadty/features/branches/domain/repo/branches_repo.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late SettingsMockRepoImpl settingsRepo;
-  late BranchesMockRepoImpl branchesRepo;
+  late SettingsRepoImpl settingsRepo;
+  late BranchesRepoImpl branchesRepo;
   late SessionCubit sessionCubit;
 
   setUpAll(() async {
@@ -32,8 +32,8 @@ void main() {
     if (getIt.isRegistered<BranchesRepo>()) getIt.unregister<BranchesRepo>();
 
     sessionCubit = SessionCubit(SessionState.initial());
-    settingsRepo = SettingsMockRepoImpl();
-    branchesRepo = BranchesMockRepoImpl(
+    settingsRepo = SettingsRepoImpl();
+    branchesRepo = BranchesRepoImpl(
       auditLogger: InMemoryAuditLogger(),
     );
 
@@ -47,7 +47,7 @@ void main() {
       fullName: 'Owner Test',
       isOwner: true,
     );
-    sessionCubit.switchMockUser(ownerUser);
+    sessionCubit.switchDemoUser(ownerUser);
     sessionCubit.switchBranch('branch_1');
   });
 

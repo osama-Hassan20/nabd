@@ -1,6 +1,6 @@
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/params/update_role_discount_policy_params.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/save_role_use_case.dart';
 import 'package:eyadty/features/users_management/domain/use_cases/update_role_discount_policy_use_case.dart';
@@ -8,13 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late InMemoryAuditLogger auditLogger;
-  late StaffUsersMockRepoImpl staffUsersRepo;
+  late StaffUsersRepoImpl staffUsersRepo;
   late UpdateRoleDiscountPolicyUseCase updatePolicyUseCase;
   late SaveRoleUseCase saveRoleUseCase;
 
   setUp(() {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    staffUsersRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
+    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
     updatePolicyUseCase = UpdateRoleDiscountPolicyUseCase(
       staffUsersRepo: staffUsersRepo,
       auditLogger: auditLogger,
@@ -126,7 +126,7 @@ void main() {
     });
 
     test(
-        'T5: Non-owner attempting to grant free consultation via StaffUsersMockRepoImpl.saveRole -> Left(Failure: disc_policy_owner_only)',
+        'T5: Non-owner attempting to grant free consultation via StaffUsersRepoImpl.saveRole -> Left(Failure: disc_policy_owner_only)',
         () async {
       final rolesRes = await staffUsersRepo.getRoles();
       final receptionRole = rolesRes

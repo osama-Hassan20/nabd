@@ -3,14 +3,14 @@ import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
-import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/features/visits/data/models/enums/visit_status_enum.dart';
 import 'package:eyadty/features/visits/data/models/vitals_model.dart';
-import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/data/repo/visits_repo_impl.dart';
 import 'package:eyadty/features/visits/domain/use_cases/finalize_visit_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/get_doctor_queue_use_case.dart';
 import 'package:eyadty/features/visits/domain/use_cases/get_visit_by_booking_id_use_case.dart';
@@ -19,11 +19,11 @@ import 'package:eyadty/features/visits/domain/use_cases/save_visit_draft_use_cas
 import 'package:eyadty/features/visits/domain/use_cases/start_consultation_use_case.dart';
 import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -32,21 +32,21 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
 void main() {
-  late BookingsMockRepoImpl bookingsRepo;
-  late VisitsMockRepoImpl visitsRepo;
-  late PatientsMockRepoImpl patientsRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late VisitsRepoImpl visitsRepo;
+  late PatientsRepoImpl patientsRepo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
   late SessionCubit sessionCubit;
 
@@ -60,15 +60,15 @@ void main() {
   late VisitsCubit cubit;
 
   setUp(() {
-    bookingsRepo = BookingsMockRepoImpl();
-    visitsRepo = VisitsMockRepoImpl(bookingsRepo: bookingsRepo);
-    patientsRepo = PatientsMockRepoImpl();
+    bookingsRepo = BookingsRepoImpl();
+    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
+    patientsRepo = PatientsRepoImpl();
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
-    rolesProvider = MockRolesSessionProvider(
+    rolesProvider = FakeRolesSessionProvider(
       roles: RoleDefinitionModel.defaultSystemRoles(),
     );
-    userProvider = MockUserSessionProvider();
+    userProvider = FakeUserSessionProvider();
 
     // Default: Doctor DOC-01
     const docUser = StaffUserModel(
@@ -158,7 +158,7 @@ void main() {
     });
 
     test('T2: loadDoctorQueue for Admin / Owner returns all doctors in branch', () async {
-      sessionCubit.switchMockUser(
+      sessionCubit.switchDemoUser(
         const StaffUserModel(
           id: 'USR-OWNER',
           fullName: 'المالك',
@@ -194,7 +194,7 @@ void main() {
     });
 
     test('T4: loadActiveVisit for Nurse rejects loading (requires viewConsultationNotes)', () async {
-      sessionCubit.switchMockUser(
+      sessionCubit.switchDemoUser(
         const StaffUserModel(
           id: 'USR-NURSE-01',
           fullName: 'ممرضة فاطمة',
@@ -259,7 +259,7 @@ void main() {
     });
 
     test('T6b: loadActiveVisit when permission denied never emits audit log', () async {
-      sessionCubit.switchMockUser(
+      sessionCubit.switchDemoUser(
         const StaffUserModel(
           id: 'USR-NURSE-01',
           fullName: 'ممرضة فاطمة',
@@ -399,7 +399,7 @@ void main() {
       expect(cubit.state.canEditDiagnosis, isTrue);
 
       // Switch to Nurse role
-      sessionCubit.switchMockUser(
+      sessionCubit.switchDemoUser(
         const StaffUserModel(
           id: 'USR-NURSE-01',
           fullName: 'ممرضة فاطمة',
@@ -444,7 +444,7 @@ void main() {
       expect(cubit.hasActiveTimer, isTrue);
 
       // Switch to another doctor
-      sessionCubit.switchMockUser(
+      sessionCubit.switchDemoUser(
         const StaffUserModel(
           id: 'USR-DOC-99',
           fullName: 'د. مستخدم آخر',

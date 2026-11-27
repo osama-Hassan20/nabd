@@ -25,17 +25,17 @@ import 'package:eyadty/features/doctors/domain/repo/doctors_repo.dart';
 import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 
-class BookingsMockRepoImpl implements BookingsRepo {
+class BookingsRepoImpl implements BookingsRepo {
   final ApiConsumer? apiConsumer;
   final DoctorsRepo? doctorsRepo;
   final SettingsRepo? settingsRepo;
 
-  BookingsMockRepoImpl({
+  BookingsRepoImpl({
     this.apiConsumer,
     this.doctorsRepo,
     this.settingsRepo,
   }) {
-    _initMockData();
+    _seedLocalData();
   }
 
   DoctorsRepo? get _effectiveDoctorsRepo {
@@ -66,7 +66,7 @@ class BookingsMockRepoImpl implements BookingsRepo {
     }).toList();
   }
 
-  void _initMockData() {
+  void _seedLocalData() {
     final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -1061,5 +1061,3 @@ class BookingsMockRepoImpl implements BookingsRepo {
     }
   }
 }
-
-typedef BookingsRepoImpl = BookingsMockRepoImpl;

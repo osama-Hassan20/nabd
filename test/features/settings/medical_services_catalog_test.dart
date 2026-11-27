@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
@@ -12,7 +12,7 @@ import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_us
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
 import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
-import 'package:eyadty/features/settings/data/repo/medical_services_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/medical_services_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/use_cases/add_medical_service_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/delete_medical_service_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/get_medical_services_use_case.dart';
@@ -35,8 +35,8 @@ class TestRoleProvider implements CurrentRoleProvider {
 void main() {
   group('Medical Services Catalog Unit Tests (Phase 2)', () {
     late TestRoleProvider roleProvider;
-    late BookingsMockRepoImpl bookingsRepo;
-    late MedicalServicesMockRepoImpl servicesRepo;
+    late BookingsRepoImpl bookingsRepo;
+    late MedicalServicesRepoImpl servicesRepo;
     late GetMedicalServicesUseCase getMedicalServicesUseCase;
     late AddMedicalServiceUseCase addMedicalServiceUseCase;
     late UpdateMedicalServiceUseCase updateMedicalServiceUseCase;
@@ -46,8 +46,8 @@ void main() {
 
     setUp(() {
       roleProvider = TestRoleProvider();
-      bookingsRepo = BookingsMockRepoImpl();
-      servicesRepo = MedicalServicesMockRepoImpl(
+      bookingsRepo = BookingsRepoImpl();
+      servicesRepo = MedicalServicesRepoImpl(
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
       );

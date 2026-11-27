@@ -8,7 +8,7 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/constants/app_constants.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 import 'package:eyadty/shared/auth/presentation/cubits/login/login_cubit.dart';
 import 'package:eyadty/shared/auth/presentation/pages/login_page.dart';
@@ -29,7 +29,7 @@ Widget _buildLocalizedApp(Widget child) {
 
 void main() {
   late InMemoryAuditLogger auditLogger;
-  late StaffUsersMockRepoImpl repo;
+  late StaffUsersRepoImpl repo;
   late SessionCubit sessionCubit;
   late LoginCubit loginCubit;
 
@@ -45,7 +45,7 @@ void main() {
     await AppSharedPreferences.initialSharedPreference();
 
     auditLogger = InMemoryAuditLogger();
-    repo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
+    repo = StaffUsersRepoImpl(auditLogger: auditLogger);
     sessionCubit = SessionCubit(const SessionState());
     loginCubit = LoginCubit(staffUsersRepo: repo, sessionCubit: sessionCubit);
 

@@ -8,7 +8,7 @@ import '../../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../../patients/domain/repo/patients_repo.dart';
 import '../../../data/models/enums/visit_status_enum.dart';
 import '../../../data/models/visit_model.dart';
-import '../../../data/repo/visits_mock_repo_impl.dart';
+import '../../../data/repo/visits_repo_impl.dart';
 import '../../../domain/repo/visits_repo.dart';
 import '../../../domain/use_cases/finalize_visit_use_case.dart';
 import '../../../domain/use_cases/save_visit_draft_use_case.dart';
@@ -107,8 +107,8 @@ mixin VisitConsultationMixin on SafeCubit<VisitsState> {
 
     // 3. Find visit
     VisitModel? visit;
-    if (visitsRepo is VisitsMockRepoImpl) {
-      visit = (visitsRepo as VisitsMockRepoImpl)
+    if (visitsRepo is VisitsRepoImpl) {
+      visit = (visitsRepo as VisitsRepoImpl)
           .visits
           .where((v) => v.id == visitId)
           .firstOrNull;

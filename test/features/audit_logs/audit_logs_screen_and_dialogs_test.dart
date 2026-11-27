@@ -9,7 +9,7 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
-import 'package:eyadty/features/audit_logs/data/repo/audit_logs_mock_repo_impl.dart';
+import 'package:eyadty/features/audit_logs/data/repo/audit_logs_repo_impl.dart';
 import 'package:eyadty/features/audit_logs/domain/repo/audit_logs_repo.dart';
 import 'package:eyadty/features/audit_logs/presentation/cubit/audit_logs_cubit.dart';
 import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
@@ -45,7 +45,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late InMemoryAuditLogger auditLogger;
-  late AuditLogsMockRepoImpl repo;
+  late AuditLogsRepoImpl repo;
   late AuditLogsCubit cubit;
   late SessionCubit sessionCubit;
 
@@ -60,7 +60,7 @@ void main() {
     await getIt.reset();
 
     auditLogger = InMemoryAuditLogger(seedInitialLogs: true);
-    repo = AuditLogsMockRepoImpl(auditLogger: auditLogger);
+    repo = AuditLogsRepoImpl(auditLogger: auditLogger);
     cubit = AuditLogsCubit(repo: repo);
     sessionCubit = SessionCubit(SessionState.initial());
 
@@ -76,7 +76,7 @@ void main() {
       isOwner: true,
       isActive: true,
     );
-    sessionCubit.switchMockUser(owner);
+    sessionCubit.switchDemoUser(owner);
     sessionCubit.switchBranch('branch_1');
   });
 

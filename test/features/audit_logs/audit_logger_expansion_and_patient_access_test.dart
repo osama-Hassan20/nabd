@@ -5,13 +5,13 @@ import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
-import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
-import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/medical_catalog_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_repo_impl.dart';
 import 'package:eyadty/features/patients/domain/use_cases/add_medical_catalog_item_use_case.dart';
 import 'package:eyadty/features/patients/domain/use_cases/add_patient_use_case.dart';
 import 'package:eyadty/features/patients/domain/use_cases/archive_patient_use_case.dart';
@@ -174,7 +174,7 @@ void main() {
         isOwner: true,
         isActive: true,
       );
-      sessionCubit.switchMockUser(owner);
+      sessionCubit.switchDemoUser(owner);
       expect(sessionCubit.can(StaffPermissionEnum.viewAuditLogs), isTrue);
 
       // 2. Non-owner roles (branch manager, doctor, reception, etc.)
@@ -200,7 +200,7 @@ void main() {
             ),
           ],
         );
-        sessionCubit.switchMockUser(staffUser);
+        sessionCubit.switchDemoUser(staffUser);
         expect(
           sessionCubit.can(StaffPermissionEnum.viewAuditLogs),
           isFalse,
@@ -210,9 +210,9 @@ void main() {
     });
 
     test('PatientsCubit.fetchPatientDetails logs view_patient_profile event automatically', () async {
-      final bookingsRepo = BookingsMockRepoImpl();
-      final patientsRepo = PatientsMockRepoImpl(bookingsRepo: bookingsRepo);
-      final catalogRepo = MedicalCatalogMockRepoImpl();
+      final bookingsRepo = BookingsRepoImpl();
+      final patientsRepo = PatientsRepoImpl(bookingsRepo: bookingsRepo);
+      final catalogRepo = MedicalCatalogRepoImpl();
 
       final cubit = PatientsCubit(
         getPatientsUseCase: GetPatientsUseCase(repo: patientsRepo),
@@ -238,7 +238,7 @@ void main() {
         isOwner: false,
         isActive: true,
       );
-      sessionCubit.switchMockUser(doctorUser);
+      sessionCubit.switchDemoUser(doctorUser);
       sessionCubit.switchBranch('branch_1');
 
       // Fetch patient details for seeded patient 'PAT-000101'

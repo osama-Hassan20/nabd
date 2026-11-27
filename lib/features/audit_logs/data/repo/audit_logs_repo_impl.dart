@@ -4,10 +4,10 @@ import '../../../../core/services/audit_logger.dart';
 import '../../../users_management/data/models/security_audit_log_model.dart';
 import '../../domain/repo/audit_logs_repo.dart';
 
-class AuditLogsMockRepoImpl implements AuditLogsRepo {
+class AuditLogsRepoImpl implements AuditLogsRepo {
   final AuditLogger auditLogger;
 
-  AuditLogsMockRepoImpl({required this.auditLogger});
+  AuditLogsRepoImpl({required this.auditLogger});
 
   @override
   Future<Either<Failures, List<SecurityAuditLogModel>>> getAuditLogs({

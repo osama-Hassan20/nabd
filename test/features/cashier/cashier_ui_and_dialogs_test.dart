@@ -18,7 +18,7 @@ import 'package:eyadty/features/cashier/data/models/cashier_shift_model.dart';
 import 'package:eyadty/features/cashier/data/models/cashier_summary_metrics_model.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
 import 'package:eyadty/features/cashier/data/models/payment_transaction_model.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:eyadty/features/cashier/domain/contracts/cashier_policy.dart';
 import 'package:eyadty/features/cashier/domain/helpers/cashier_shift_calculator.dart';
 import 'package:eyadty/features/cashier/domain/helpers/payment_reconciliation_helper.dart';
@@ -47,11 +47,11 @@ import 'package:eyadty/features/users_management/data/repositories/staff_users_r
 import 'package:dartz/dartz.dart';
 import 'package:eyadty/core/errors/failures.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -60,15 +60,15 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
-class MockStaffUsersRepo implements StaffUsersRepo {
+class FakeStaffUsersRepo implements StaffUsersRepo {
   @override
   Future<Either<Failures, List<StaffUserModel>>> getStaffUsers({
     String? branchId,
@@ -82,7 +82,7 @@ class MockStaffUsersRepo implements StaffUsersRepo {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class MockBookingsRepo implements BookingsRepo {
+class FakeBookingsRepo implements BookingsRepo {
   final Map<String, BookingModel> bookings = {};
 
   void addBooking(BookingModel b) {
@@ -136,12 +136,12 @@ Widget _buildTestApp({
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late CashierMockRepoImpl cashierRepo;
-  late MockBookingsRepo bookingsRepo;
-  late MockStaffUsersRepo staffUsersRepo;
+  late CashierRepoImpl cashierRepo;
+  late FakeBookingsRepo bookingsRepo;
+  late FakeStaffUsersRepo staffUsersRepo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
 
   late GetActiveShiftUseCase getActiveShiftUseCase;
@@ -178,11 +178,11 @@ void main() {
   });
 
   setUp(() {
-    cashierRepo = CashierMockRepoImpl(seedInitialData: false);
-    bookingsRepo = MockBookingsRepo();
-    staffUsersRepo = MockStaffUsersRepo();
+    cashierRepo = CashierRepoImpl(seedInitialData: false);
+    bookingsRepo = FakeBookingsRepo();
+    staffUsersRepo = FakeStaffUsersRepo();
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    userProvider = MockUserSessionProvider(user: cashierUser, branch: 'branch_1');
+    userProvider = FakeUserSessionProvider(user: cashierUser, branch: 'branch_1');
 
     final systemRoles = RoleDefinitionModel.defaultSystemRoles();
     final updatedRoles = systemRoles.map((r) {
@@ -197,7 +197,7 @@ void main() {
       ]);
     }).toList();
 
-    rolesProvider = MockRolesSessionProvider(roles: updatedRoles);
+    rolesProvider = FakeRolesSessionProvider(roles: updatedRoles);
     permissionEvaluator = PermissionEvaluator(
       userProvider: userProvider,
       rolesProvider: rolesProvider,

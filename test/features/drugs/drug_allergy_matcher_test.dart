@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('DrugAllergyMatcher Tests', () {
-    // Standard mock catalog items matching MedicalCatalogMockRepoImpl
+    // Standard mock catalog items matching MedicalCatalogRepoImpl
     final catalogAllergies = [
       const MedicalCatalogItemModel(
         id: 'CAT-ALL-001',

@@ -6,18 +6,18 @@ import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 
 void main() {
   late InMemoryTransactionalStore store;
   late DataModeService dataModeService;
-  late StaffUsersMockRepoImpl mockRemoteRepo;
+  late StaffUsersRepoImpl mockRemoteRepo;
   late OfflineFirstStaffUsersRepo repo;
 
   setUp(() {
     store = InMemoryTransactionalStore();
     dataModeService = DataModeService();
-    mockRemoteRepo = StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger());
+    mockRemoteRepo = StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger());
     repo = OfflineFirstStaffUsersRepo(
       localStore: store,
       remoteRepo: mockRemoteRepo,
@@ -86,7 +86,7 @@ void main() {
       final repo1 = OfflineFirstStaffUsersRepo(
         localStore: store1,
         dataModeService: dataMode,
-        remoteRepo: StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
+        remoteRepo: StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -112,7 +112,7 @@ void main() {
       final repo2 = OfflineFirstStaffUsersRepo(
         localStore: store2,
         dataModeService: dataMode,
-        remoteRepo: StaffUsersMockRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
+        remoteRepo: StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );

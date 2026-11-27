@@ -11,8 +11,8 @@ import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/hr/data/models/doctor_settlement_item_model.dart';
 import 'package:eyadty/features/hr/data/models/doctor_settlement_model.dart';
 import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
-import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_mock_lookup.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_lookup.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/use_cases/calculate_doctor_settlement_draft_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/confirm_doctor_settlement_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/confirm_staff_payroll_period_use_case.dart';
@@ -33,11 +33,11 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -46,9 +46,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -94,11 +94,11 @@ void main() {
   });
 
   group('Doctor Settlements UI & Dialogs Tests (Plan F-06 M-6)', () {
-    late HrMockRepoImpl repo;
-    late DoctorSettlementVisitsMockLookup visitsLookup;
+    late HrRepoImpl repo;
+    late DoctorSettlementVisitsLookupImpl visitsLookup;
     late InMemoryAuditLogger auditLogger;
-    late MockUserSessionProvider userProvider;
-    late MockRolesSessionProvider rolesProvider;
+    late FakeUserSessionProvider userProvider;
+    late FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator permissionEvaluator;
     late SessionCubit sessionCubit;
     late HrCubit hrCubit;
@@ -134,15 +134,15 @@ void main() {
     );
 
     setUp(() {
-      repo = HrMockRepoImpl(seedInitialData: false);
-      visitsLookup = DoctorSettlementVisitsMockLookup();
+      repo = HrRepoImpl(seedInitialData: false);
+      visitsLookup = DoctorSettlementVisitsLookupImpl();
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
-      rolesProvider = MockRolesSessionProvider(
+      rolesProvider = FakeRolesSessionProvider(
         roles: [...RoleDefinitionModel.defaultSystemRoles(), managerRole, accountantRole],
       );
 
-      userProvider = MockUserSessionProvider(user: defaultManagerUser);
+      userProvider = FakeUserSessionProvider(user: defaultManagerUser);
 
       permissionEvaluator = PermissionEvaluator(
         userProvider: userProvider,

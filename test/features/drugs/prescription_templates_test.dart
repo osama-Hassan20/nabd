@@ -1,7 +1,7 @@
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/drugs/data/models/prescription_template_item_model.dart';
 import 'package:eyadty/features/drugs/data/models/prescription_template_model.dart';
-import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/data/repo/drugs_repo_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -65,10 +65,10 @@ void main() {
   });
 
   group('Doctor Privacy Isolation & Template CRUD Tests', () {
-    late DrugsMockRepoImpl repo;
+    late DrugsRepoImpl repo;
 
     setUp(() {
-      repo = DrugsMockRepoImpl();
+      repo = DrugsRepoImpl();
     });
 
     test('3. Doctor Privacy: DOC-01 retrieves only their own templates', () async {

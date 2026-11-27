@@ -4,13 +4,13 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_doctors_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_leave_model.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late DataModeService dataModeService;
-  late DoctorsMockRepoImpl remoteRepo;
+  late DoctorsRepoImpl remoteRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -18,7 +18,7 @@ void main() {
       reachabilityProbe: (_, __) async => true,
       initialReachable: true,
     );
-    remoteRepo = DoctorsMockRepoImpl();
+    remoteRepo = DoctorsRepoImpl();
   });
 
   tearDown(() {

@@ -1,6 +1,6 @@
 import '../../data/models/booking_model.dart';
 import '../../data/models/enums/booking_status_enum.dart';
-import '../../data/repo/bookings_mock_repo_impl.dart';
+import '../../data/repo/bookings_repo_impl.dart';
 import '../../domain/repo/bookings_repo.dart';
 import '../../../patients/domain/contracts/patient_balance_lookup.dart';
 
@@ -14,8 +14,8 @@ class BookingPatientBalanceLookupImpl implements PatientBalanceLookup {
     String? fileNumber,
   }) {
     List<BookingModel> allBookings = const [];
-    if (bookingsRepo is BookingsMockRepoImpl) {
-      allBookings = (bookingsRepo as BookingsMockRepoImpl).bookings;
+    if (bookingsRepo is BookingsRepoImpl) {
+      allBookings = (bookingsRepo as BookingsRepoImpl).bookings;
     }
 
     return allBookings.where((b) {

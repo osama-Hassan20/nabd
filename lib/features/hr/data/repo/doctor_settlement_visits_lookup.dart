@@ -1,9 +1,9 @@
 import '../../domain/contracts/doctor_settlement_visits_lookup.dart';
 
-class DoctorSettlementVisitsMockLookup implements DoctorSettlementVisitsLookup {
+class DoctorSettlementVisitsLookupImpl implements DoctorSettlementVisitsLookup {
   final List<SettlementVisitCandidate> _candidates = [];
 
-  DoctorSettlementVisitsMockLookup({List<SettlementVisitCandidate>? initialCandidates}) {
+  DoctorSettlementVisitsLookupImpl({List<SettlementVisitCandidate>? initialCandidates}) {
     if (initialCandidates != null) {
       _candidates.addAll(initialCandidates);
     }

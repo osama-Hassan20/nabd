@@ -1,24 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/reassign_technician_params.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/visits/data/models/vitals_model.dart';
-import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/data/repo/visits_repo_impl.dart';
 
 void main() {
-  late BookingsMockRepoImpl bookingsRepo;
-  late VisitsMockRepoImpl visitsRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late VisitsRepoImpl visitsRepo;
   late ChangeBookingStatusUseCase changeBookingStatusUseCase;
   late ReassignTechnicianUseCase reassignTechnicianUseCase;
   late DeleteBookingUseCase deleteBookingUseCase;
 
   setUp(() {
-    bookingsRepo = BookingsMockRepoImpl();
-    visitsRepo = VisitsMockRepoImpl(bookingsRepo: bookingsRepo);
+    bookingsRepo = BookingsRepoImpl();
+    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
 
     changeBookingStatusUseCase = ChangeBookingStatusUseCase(
       repo: bookingsRepo,

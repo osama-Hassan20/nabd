@@ -12,7 +12,7 @@ import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/constants/app_list.dart';
-import 'package:eyadty/features/audit_logs/data/repo/audit_logs_mock_repo_impl.dart';
+import 'package:eyadty/features/audit_logs/data/repo/audit_logs_repo_impl.dart';
 import 'package:eyadty/features/audit_logs/domain/repo/audit_logs_repo.dart';
 import 'package:eyadty/features/audit_logs/presentation/cubit/audit_logs_cubit.dart';
 import 'package:eyadty/features/audit_logs/presentation/pages/audit_logs_page.dart';
@@ -56,7 +56,7 @@ void main() {
 
     auditLogger = InMemoryAuditLogger(seedInitialLogs: true);
     sessionCubit = SessionCubit(SessionState.initial());
-    final repo = AuditLogsMockRepoImpl(auditLogger: auditLogger);
+    final repo = AuditLogsRepoImpl(auditLogger: auditLogger);
     final cubit = AuditLogsCubit(repo: repo);
 
     getIt.registerSingleton<AuditLogger>(auditLogger);
@@ -165,7 +165,7 @@ void main() {
           ),
         ],
       );
-      sessionCubit.switchMockUser(receptionist);
+      sessionCubit.switchDemoUser(receptionist);
       sessionCubit.switchBranch('branch_1');
 
       final router = createAppRouter(
@@ -209,7 +209,7 @@ void main() {
         isOwner: true,
         isActive: true,
       );
-      sessionCubit.switchMockUser(owner);
+      sessionCubit.switchDemoUser(owner);
       sessionCubit.switchBranch('branch_1');
 
       final router = createAppRouter(
@@ -250,7 +250,7 @@ void main() {
                 isOwner: true,
                 isActive: true,
               );
-              sessionCubit.switchMockUser(owner);
+              sessionCubit.switchDemoUser(owner);
               final ownerItems = layoutItems(context);
               final hasAuditLogForOwner = ownerItems.any((item) => item.id == 'audit_logs');
               expect(hasAuditLogForOwner, isTrue);
@@ -269,7 +269,7 @@ void main() {
                   ),
                 ],
               );
-              sessionCubit.switchMockUser(receptionist);
+              sessionCubit.switchDemoUser(receptionist);
               final receptionistItems = layoutItems(context);
               final hasAuditLogForReceptionist = receptionistItems.any((item) => item.id == 'audit_logs');
               expect(hasAuditLogForReceptionist, isFalse);

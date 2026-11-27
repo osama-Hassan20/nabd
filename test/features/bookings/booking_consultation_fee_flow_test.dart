@@ -3,7 +3,7 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_booking_by_id_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
@@ -15,18 +15,18 @@ import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
-import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 
 void main() {
   group('Booking Consultation Fee Flow Tests (Removal of hourlyRate)', () {
-    late BookingsMockRepoImpl repo;
+    late BookingsRepoImpl repo;
     late CreateBookingUseCase createBookingUseCase;
     late UpdateBookingUseCase updateBookingUseCase;
     late GetBookingByIdUseCase getBookingByIdUseCase;
 
     setUp(() {
-      repo = BookingsMockRepoImpl();
+      repo = BookingsRepoImpl();
       createBookingUseCase = CreateBookingUseCase(repo: repo);
       updateBookingUseCase = UpdateBookingUseCase(repo: repo);
       getBookingByIdUseCase = GetBookingByIdUseCase(repo: repo);
@@ -97,8 +97,8 @@ void main() {
     });
 
     test('3. Cubit Form Flow: Changing consultationFee updates price without hourly multiplication', () async {
-      final patientsRepo = PatientsMockRepoImpl();
-      final doctorsRepo = DoctorsMockRepoImpl();
+      final patientsRepo = PatientsRepoImpl();
+      final doctorsRepo = DoctorsRepoImpl();
 
       final cubit = BookingsCubit(
         getBookingSummaryUseCase: GetBookingSummaryUseCase(repo: repo),

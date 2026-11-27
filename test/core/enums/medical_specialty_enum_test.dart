@@ -8,7 +8,7 @@ import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
 import 'package:eyadty/features/doctors/data/models/enums/doctor_gender_enum.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 
@@ -79,7 +79,7 @@ void main() {
       );
       final repo1 = OfflineFirstDoctorsRepo(
         localStore: store1,
-        remoteRepo: DoctorsMockRepoImpl(),
+        remoteRepo: DoctorsRepoImpl(),
         dataModeService: dataMode,
         getCurrentAccountId: () => 'acc-1',
         getCurrentBranchId: () => 'branch-1',
@@ -105,7 +105,7 @@ void main() {
       );
       final repo2 = OfflineFirstDoctorsRepo(
         localStore: store2,
-        remoteRepo: DoctorsMockRepoImpl(),
+        remoteRepo: DoctorsRepoImpl(),
         dataModeService: dataMode,
         getCurrentAccountId: () => 'acc-1',
         getCurrentBranchId: () => 'branch-1',

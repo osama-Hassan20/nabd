@@ -6,15 +6,15 @@ import 'package:eyadty/features/analytics/data/models/enums/analytics_time_range
 import 'package:eyadty/features/analytics/data/models/hourly_traffic_metric_model.dart';
 import 'package:eyadty/features/analytics/data/models/revenue_trend_point_model.dart';
 import 'package:eyadty/features/analytics/data/models/service_revenue_distribution_model.dart';
-import 'package:eyadty/features/analytics/data/repo/analytics_mock_repo_impl.dart';
+import 'package:eyadty/features/analytics/data/repo/analytics_repo_impl.dart';
 
 void main() {
-  group('AnalyticsMockRepoImpl Unit Tests (Plan F-07 M-2)', () {
-    late AnalyticsMockRepoImpl repo;
+  group('AnalyticsRepoImpl Unit Tests (Plan F-07 M-2)', () {
+    late AnalyticsRepoImpl repo;
 
     setUp(() {
       CairoTimeHelper.setFixedClock(DateTime(2026, 11, 15, 12, 0, 0));
-      repo = AnalyticsMockRepoImpl(seedInitialData: true);
+      repo = AnalyticsRepoImpl(seedInitialData: true);
     });
 
     tearDown(() {
@@ -282,7 +282,7 @@ void main() {
     // 8. Seed Initial Data Flag Tests
     // -------------------------------------------------------------------------
     test('23. Unseeded repo returns empty/default summary', () async {
-      final unseededRepo = AnalyticsMockRepoImpl(seedInitialData: false);
+      final unseededRepo = AnalyticsRepoImpl(seedInitialData: false);
       final res = await unseededRepo.getAnalyticsSummary(timeRange: AnalyticsTimeRangeEnum.today);
       expect(res.isRight(), isTrue);
       final summary = res.getOrElse(() => throw StateError(''));
@@ -290,7 +290,7 @@ void main() {
     });
 
     test('24. Unseeded repo returns empty list for trend and branches', () async {
-      final unseededRepo = AnalyticsMockRepoImpl(seedInitialData: false);
+      final unseededRepo = AnalyticsRepoImpl(seedInitialData: false);
       final trend = await unseededRepo.getRevenueTrend(timeRange: AnalyticsTimeRangeEnum.today);
       final branches = await unseededRepo.getBranchComparison(timeRange: AnalyticsTimeRangeEnum.today);
 
@@ -299,7 +299,7 @@ void main() {
     });
 
     test('25. Unseeded repo returns empty list for doctors, traffic, and services', () async {
-      final unseededRepo = AnalyticsMockRepoImpl(seedInitialData: false);
+      final unseededRepo = AnalyticsRepoImpl(seedInitialData: false);
       final docs = await unseededRepo.getDoctorPerformance(timeRange: AnalyticsTimeRangeEnum.today);
       final traffic = await unseededRepo.getHourlyTraffic(timeRange: AnalyticsTimeRangeEnum.today);
       final services = await unseededRepo.getServiceDistribution(timeRange: AnalyticsTimeRangeEnum.today);

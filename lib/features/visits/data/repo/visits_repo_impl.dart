@@ -6,7 +6,7 @@ import '../../../../core/uses_cases/params.dart';
 import '../../../../core/utils/helpers/cairo_time_helper.dart';
 import '../../../bookings/data/models/booking_model.dart';
 import '../../../bookings/data/models/enums/booking_status_enum.dart';
-import '../../../bookings/data/repo/bookings_mock_repo_impl.dart';
+import '../../../bookings/data/repo/bookings_repo_impl.dart';
 import '../../../bookings/domain/contracts/active_visit_lookup.dart';
 import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../domain/repo/visits_repo.dart';
@@ -17,11 +17,11 @@ import '../models/visit_addendum_model.dart';
 import '../models/visit_model.dart';
 import '../models/vitals_model.dart';
 
-class VisitsMockRepoImpl implements VisitsRepo, ActiveVisitLookup {
+class VisitsRepoImpl implements VisitsRepo, ActiveVisitLookup {
   final BookingsRepo? bookingsRepo;
 
-  VisitsMockRepoImpl({this.bookingsRepo}) {
-    initMockData();
+  VisitsRepoImpl({this.bookingsRepo}) {
+    seedLocalData();
   }
 
   BookingsRepo? get _effectiveBookingsRepo {
@@ -36,7 +36,7 @@ class VisitsMockRepoImpl implements VisitsRepo, ActiveVisitLookup {
 
   List<VisitModel> get visits => List.unmodifiable(_visits);
 
-  void initMockData() {
+  void seedLocalData() {
     _visits.clear();
     final now = CairoTimeHelper.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -261,7 +261,7 @@ class VisitsMockRepoImpl implements VisitsRepo, ActiveVisitLookup {
     List<BookingModel> candidateBookings = [];
     final repo = _effectiveBookingsRepo;
 
-    if (repo is BookingsMockRepoImpl) {
+    if (repo is BookingsRepoImpl) {
       candidateBookings = repo.bookings;
     } else if (repo != null) {
       final res = await repo.getBookings(

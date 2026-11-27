@@ -7,7 +7,7 @@ import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
-import 'package:eyadty/features/branches/data/repo/branches_mock_repo_impl.dart';
+import 'package:eyadty/features/branches/data/repo/branches_repo_impl.dart';
 import 'package:eyadty/features/branches/domain/repo/branches_repo.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
@@ -39,7 +39,7 @@ Widget _buildLocalizedApp({
 }
 
 void main() {
-  late BranchesMockRepoImpl branchesRepo;
+  late BranchesRepoImpl branchesRepo;
   late SessionCubit sessionCubit;
 
   setUpAll(() async {
@@ -57,7 +57,7 @@ void main() {
       getIt.unregister<SessionCubit>();
     }
 
-    branchesRepo = BranchesMockRepoImpl(
+    branchesRepo = BranchesRepoImpl(
       auditLogger: InMemoryAuditLogger(),
     );
     getIt.registerLazySingleton<BranchesRepo>(() => branchesRepo);
@@ -107,7 +107,7 @@ void main() {
           BranchAssignmentModel(branchId: 'branch_2', roleIds: [RoleIds.branchManager]),
         ],
       );
-      sessionCubit.switchMockUser(owner);
+      sessionCubit.switchDemoUser(owner);
 
       await tester.pumpWidget(
         _buildLocalizedApp(
@@ -138,7 +138,7 @@ void main() {
           BranchAssignmentModel(branchId: 'branch_1', roleIds: [RoleIds.reception]),
         ],
       );
-      sessionCubit.switchMockUser(receptionist);
+      sessionCubit.switchDemoUser(receptionist);
 
       await tester.pumpWidget(
         _buildLocalizedApp(

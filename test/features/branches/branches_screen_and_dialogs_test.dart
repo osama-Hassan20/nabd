@@ -9,7 +9,7 @@ import 'package:eyadty/core/providers/active_bookings_count_provider.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/features/branches/data/models/branch_model.dart';
-import 'package:eyadty/features/branches/data/repo/branches_mock_repo_impl.dart';
+import 'package:eyadty/features/branches/data/repo/branches_repo_impl.dart';
 import 'package:eyadty/features/branches/domain/repo/branches_repo.dart';
 import 'package:eyadty/features/branches/presentation/cubit/branches_cubit.dart';
 import 'package:eyadty/features/branches/presentation/pages/dialogs/add_edit_branch_dialog.dart';
@@ -22,9 +22,9 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
+class FakeActiveBookingsProvider implements ActiveBookingsCountProvider {
   final Map<String, int> counts;
-  MockActiveBookingsProvider(this.counts);
+  FakeActiveBookingsProvider(this.counts);
 
   @override
   Future<int> countActiveFutureBookingsForDoctor(String doctorId) async {
@@ -59,7 +59,7 @@ Widget _buildLocalizedApp({
 
 void main() {
   late InMemoryAuditLogger auditLogger;
-  late BranchesMockRepoImpl repo;
+  late BranchesRepoImpl repo;
   late SessionCubit sessionCubit;
   late BranchesCubit branchesCubit;
 
@@ -88,17 +88,17 @@ void main() {
     }
 
     auditLogger = InMemoryAuditLogger();
-    final bookingsProvider = MockActiveBookingsProvider({'branch_2': 3});
+    final bookingsProvider = FakeActiveBookingsProvider({'branch_2': 3});
     getIt.registerLazySingleton<ActiveBookingsCountProvider>(() => bookingsProvider);
 
-    repo = BranchesMockRepoImpl(
+    repo = BranchesRepoImpl(
       auditLogger: auditLogger,
       activeBookingsProvider: bookingsProvider,
     );
     getIt.registerLazySingleton<BranchesRepo>(() => repo);
 
     sessionCubit = SessionCubit(SessionState.initial());
-    sessionCubit.switchMockUser(
+    sessionCubit.switchDemoUser(
       const StaffUserModel(
         id: 'USER-OWNER',
         fullName: 'د. طارق المنشاوي',

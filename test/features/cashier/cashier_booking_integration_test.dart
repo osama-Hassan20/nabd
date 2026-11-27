@@ -9,14 +9,14 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/discount_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/data/services/booking_patient_balance_lookup_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/bookings_table.dart';
-import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_repo_impl.dart';
 
 class _FakeUserProvider implements CurrentUserProvider {
   @override
@@ -58,13 +58,13 @@ void main() {
   });
 
   group('Cashier & Bookings Integration - M-5 Tests', () {
-    late BookingsMockRepoImpl bookingsRepo;
+    late BookingsRepoImpl bookingsRepo;
     late CreateBookingUseCase createBookingUseCase;
     late UpdateBookingUseCase updateBookingUseCase;
     late DeleteBookingUseCase deleteBookingUseCase;
 
     setUp(() {
-      bookingsRepo = BookingsMockRepoImpl();
+      bookingsRepo = BookingsRepoImpl();
       createBookingUseCase = CreateBookingUseCase(
         repo: bookingsRepo,
         currentUserProvider: _FakeUserProvider(),
@@ -302,9 +302,9 @@ void main() {
       expect(totalPaid, 150);
     });
 
-    test('13. PatientsMockRepoImpl with lookup computes PAT-000102 debt as 150 EGP', () async {
+    test('13. PatientsRepoImpl with lookup computes PAT-000102 debt as 150 EGP', () async {
       final lookup = BookingPatientBalanceLookupImpl(bookingsRepo);
-      final patientsRepo = PatientsMockRepoImpl(
+      final patientsRepo = PatientsRepoImpl(
         bookingsRepo: bookingsRepo,
         balanceLookup: lookup,
       );
@@ -317,9 +317,9 @@ void main() {
       expect(patient.totalPaidAmount, 150);
     });
 
-    test('14. PatientsMockRepoImpl with lookup computes PAT-000105 debt as 0 EGP', () async {
+    test('14. PatientsRepoImpl with lookup computes PAT-000105 debt as 0 EGP', () async {
       final lookup = BookingPatientBalanceLookupImpl(bookingsRepo);
-      final patientsRepo = PatientsMockRepoImpl(
+      final patientsRepo = PatientsRepoImpl(
         bookingsRepo: bookingsRepo,
         balanceLookup: lookup,
       );

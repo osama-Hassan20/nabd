@@ -9,7 +9,7 @@ import 'package:eyadty/core/providers/active_bookings_count_provider.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 import 'package:eyadty/features/users_management/presentation/cubit/staff_users_cubit.dart';
 import 'package:eyadty/features/users_management/presentation/cubit/staff_users_state.dart';
@@ -20,9 +20,9 @@ import 'package:eyadty/features/users_management/presentation/pages/dialogs/togg
 import 'package:eyadty/features/users_management/presentation/pages/users_management_page.dart';
 import 'package:eyadty/features/users_management/presentation/widgets/staff_users_table.dart';
 
-class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
+class FakeActiveBookingsProvider implements ActiveBookingsCountProvider {
   final Map<String, int> counts;
-  MockActiveBookingsProvider(this.counts);
+  FakeActiveBookingsProvider(this.counts);
 
   @override
   Future<int> countActiveFutureBookingsForDoctor(String doctorId) async {
@@ -57,7 +57,7 @@ Widget _buildLocalizedApp({
 
 void main() {
   late InMemoryAuditLogger auditLogger;
-  late StaffUsersMockRepoImpl repo;
+  late StaffUsersRepoImpl repo;
   late SessionCubit sessionCubit;
   late StaffUsersCubit staffUsersCubit;
 
@@ -73,9 +73,9 @@ void main() {
     await AppSharedPreferences.initialSharedPreference();
 
     auditLogger = InMemoryAuditLogger();
-    repo = StaffUsersMockRepoImpl(
+    repo = StaffUsersRepoImpl(
       auditLogger: auditLogger,
-      activeBookingsProvider: MockActiveBookingsProvider({'DOC-01': 3}),
+      activeBookingsProvider: FakeActiveBookingsProvider({'DOC-01': 3}),
     );
     sessionCubit = SessionCubit(SessionState.initial());
     staffUsersCubit = StaffUsersCubit(staffUsersRepo: repo);

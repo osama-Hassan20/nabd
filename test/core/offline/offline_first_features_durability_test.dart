@@ -11,24 +11,24 @@ import 'package:eyadty/core/offline/repositories/offline_first_settings_repo.dar
 import 'package:eyadty/core/offline/repositories/offline_first_staff_users_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:eyadty/features/cashier/domain/repo/cashier_repo.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 import 'package:eyadty/features/doctors/domain/repo/doctors_repo.dart';
 import 'package:eyadty/features/hr/data/models/doctor_compensation_rule_model.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/repo/hr_repo.dart';
 import 'package:eyadty/features/medical_catalogs/data/models/enums/medical_catalog_kind_enum.dart';
 import 'package:eyadty/features/medical_catalogs/data/models/medical_catalog_entry_model.dart';
-import 'package:eyadty/features/medical_catalogs/data/repo/medical_catalogs_mock_repo_impl.dart';
+import 'package:eyadty/features/medical_catalogs/data/repo/medical_catalogs_repo_impl.dart';
 import 'package:eyadty/features/medical_catalogs/domain/repo/medical_catalogs_repo.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/settings/data/models/enums/clinic_type_enum.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 
 void main() {
@@ -56,7 +56,7 @@ void main() {
 
   group('Offline Cashier Durability & Idempotency', () {
     test('Cashier open shift, payment with idempotency, and reload durability', () async {
-      final mockCashier = CashierMockRepoImpl(seedInitialData: false);
+      final mockCashier = CashierRepoImpl(seedInitialData: false);
       final cashierRepo = OfflineFirstCashierRepo(
         localStore: store,
         dataModeService: dataModeService,
@@ -123,7 +123,7 @@ void main() {
       final restartedRepo = OfflineFirstCashierRepo(
         localStore: restartedStore,
         dataModeService: DataModeService(initialReachable: false),
-        remoteRepo: CashierMockRepoImpl(seedInitialData: false),
+        remoteRepo: CashierRepoImpl(seedInitialData: false),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -137,7 +137,7 @@ void main() {
 
   group('Offline Medical Catalogs Durability', () {
     test('Add, search, delete, and reload catalogs', () async {
-      final mockCatalogs = MedicalCatalogsMockRepoImpl();
+      final mockCatalogs = MedicalCatalogsRepoImpl();
       final catalogsRepo = OfflineFirstMedicalCatalogsRepo(
         localStore: store,
         dataModeService: dataModeService,
@@ -176,7 +176,7 @@ void main() {
       final restartedRepo = OfflineFirstMedicalCatalogsRepo(
         localStore: restartedStore,
         dataModeService: DataModeService(initialReachable: false),
-        remoteRepo: MedicalCatalogsMockRepoImpl(),
+        remoteRepo: MedicalCatalogsRepoImpl(),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -195,7 +195,7 @@ void main() {
       final settingsRepo = OfflineFirstSettingsRepo(
         localStore: store,
         dataModeService: dataModeService,
-        remoteRepo: SettingsMockRepoImpl(),
+        remoteRepo: SettingsRepoImpl(),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -218,7 +218,7 @@ void main() {
       final restartedSettings = OfflineFirstSettingsRepo(
         localStore: restartedStore,
         dataModeService: DataModeService(initialReachable: false),
-        remoteRepo: SettingsMockRepoImpl(),
+        remoteRepo: SettingsRepoImpl(),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -232,7 +232,7 @@ void main() {
       final hrRepo = OfflineFirstHrRepo(
         localStore: store,
         dataModeService: dataModeService,
-        remoteRepo: HrMockRepoImpl(seedInitialData: false),
+        remoteRepo: HrRepoImpl(seedInitialData: false),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -256,7 +256,7 @@ void main() {
       final restartedHr = OfflineFirstHrRepo(
         localStore: restartedStore,
         dataModeService: DataModeService(initialReachable: false),
-        remoteRepo: HrMockRepoImpl(seedInitialData: false),
+        remoteRepo: HrRepoImpl(seedInitialData: false),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );

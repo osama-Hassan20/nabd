@@ -12,8 +12,8 @@ import 'package:eyadty/features/hr/data/models/enums/employee_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/ledger_entry_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_profile_model.dart';
-import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_mock_lookup.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_lookup.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/contracts/doctor_settlement_visits_lookup.dart';
 import 'package:eyadty/features/hr/domain/use_cases/calculate_doctor_settlement_draft_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/confirm_doctor_settlement_use_case.dart';
@@ -54,8 +54,8 @@ class CubitTestRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('HrCubit Lifecycle and State Management Tests (Plan F-06 M-5)', () {
-    late HrMockRepoImpl repo;
-    late DoctorSettlementVisitsMockLookup visitsLookup;
+    late HrRepoImpl repo;
+    late DoctorSettlementVisitsLookupImpl visitsLookup;
     late InMemoryAuditLogger auditLogger;
     late CubitTestUserSessionProvider userProvider;
     late CubitTestRolesSessionProvider rolesProvider;
@@ -89,8 +89,8 @@ void main() {
     );
 
     setUp(() {
-      repo = HrMockRepoImpl(seedInitialData: false);
-      visitsLookup = DoctorSettlementVisitsMockLookup();
+      repo = HrRepoImpl(seedInitialData: false);
+      visitsLookup = DoctorSettlementVisitsLookupImpl();
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
       rolesProvider = CubitTestRolesSessionProvider(

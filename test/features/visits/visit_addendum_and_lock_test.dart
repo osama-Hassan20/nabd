@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
@@ -10,15 +10,15 @@ import 'package:eyadty/features/visits/data/models/enums/addendum_change_type_en
 import 'package:eyadty/features/visits/data/models/prescription_item_model.dart';
 import 'package:eyadty/features/visits/data/models/visit_addendum_model.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
-import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/data/repo/visits_repo_impl.dart';
 import 'package:eyadty/features/visits/domain/use_cases/add_visit_addendum_use_case.dart';
 import 'package:eyadty/features/visits/presentation/helpers/effective_prescription_calculator.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -27,34 +27,34 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
 void main() {
-  late BookingsMockRepoImpl bookingsRepo;
-  late VisitsMockRepoImpl visitsRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late VisitsRepoImpl visitsRepo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
   late AddVisitAddendumUseCase addVisitAddendumUseCase;
 
   setUp(() {
-    bookingsRepo = BookingsMockRepoImpl();
-    visitsRepo = VisitsMockRepoImpl(bookingsRepo: bookingsRepo);
+    bookingsRepo = BookingsRepoImpl();
+    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
-    rolesProvider = MockRolesSessionProvider(
+    rolesProvider = FakeRolesSessionProvider(
       roles: RoleDefinitionModel.defaultSystemRoles(),
     );
 
     // Default: assigned doctor DOC-01
-    userProvider = MockUserSessionProvider(
+    userProvider = FakeUserSessionProvider(
       user: const StaffUserModel(
         id: 'USR-DOC-1',
         fullName: 'د. حسام الدين مصطفى',

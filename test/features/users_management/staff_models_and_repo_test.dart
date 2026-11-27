@@ -6,11 +6,11 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 
-class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
+class FakeActiveBookingsProvider implements ActiveBookingsCountProvider {
   final Map<String, int> counts;
-  MockActiveBookingsProvider(this.counts);
+  FakeActiveBookingsProvider(this.counts);
 
   @override
   Future<int> countActiveFutureBookingsForDoctor(String doctorId) async {
@@ -25,13 +25,13 @@ class MockActiveBookingsProvider implements ActiveBookingsCountProvider {
 
 void main() {
   late InMemoryAuditLogger auditLogger;
-  late StaffUsersMockRepoImpl repo;
+  late StaffUsersRepoImpl repo;
 
   setUp(() {
     auditLogger = InMemoryAuditLogger();
-    repo = StaffUsersMockRepoImpl(
+    repo = StaffUsersRepoImpl(
       auditLogger: auditLogger,
-      activeBookingsProvider: MockActiveBookingsProvider({'DOC-01': 3}),
+      activeBookingsProvider: FakeActiveBookingsProvider({'DOC-01': 3}),
     );
   });
 

@@ -7,7 +7,7 @@ import 'package:eyadty/features/drugs/data/models/drug_model.dart';
 import 'package:eyadty/features/drugs/data/models/enums/review_status_enum.dart';
 import 'package:eyadty/features/drugs/data/models/prescription_template_item_model.dart';
 import 'package:eyadty/features/drugs/data/models/prescription_template_model.dart';
-import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/data/repo/drugs_repo_impl.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/add_drug_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/archive_drug_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/delete_prescription_template_use_case.dart';
@@ -18,16 +18,16 @@ import 'package:eyadty/features/drugs/domain/use_cases/save_prescription_templat
 import 'package:eyadty/features/drugs/domain/use_cases/update_allergy_aliases_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/update_drug_use_case.dart';
 import 'package:eyadty/features/drugs/presentation/manager/drugs_cubit.dart';
-import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/medical_catalog_repo_impl.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -36,9 +36,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -46,11 +46,11 @@ class MockRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('DrugsCubit & Page Milestone 6 Suite', () {
-    late DrugsMockRepoImpl repo;
-    late MedicalCatalogMockRepoImpl medicalCatalogRepo;
+    late DrugsRepoImpl repo;
+    late MedicalCatalogRepoImpl medicalCatalogRepo;
     late InMemoryAuditLogger auditLogger;
-    late MockUserSessionProvider userProvider;
-    late MockRolesSessionProvider rolesProvider;
+    late FakeUserSessionProvider userProvider;
+    late FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator permissionEvaluator;
 
     late GetDrugsCatalogUseCase getDrugsUseCase;
@@ -88,13 +88,13 @@ void main() {
     );
 
     setUp(() {
-      repo = DrugsMockRepoImpl();
-      medicalCatalogRepo = MedicalCatalogMockRepoImpl();
+      repo = DrugsRepoImpl();
+      medicalCatalogRepo = MedicalCatalogRepoImpl();
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      rolesProvider = MockRolesSessionProvider(
+      rolesProvider = FakeRolesSessionProvider(
         roles: RoleDefinitionModel.defaultSystemRoles(),
       );
-      userProvider = MockUserSessionProvider(user: directorUser);
+      userProvider = FakeUserSessionProvider(user: directorUser);
       permissionEvaluator = PermissionEvaluator(
         userProvider: userProvider,
         rolesProvider: rolesProvider,

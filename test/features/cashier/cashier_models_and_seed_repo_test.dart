@@ -9,7 +9,7 @@ import 'package:eyadty/features/cashier/data/models/enums/cash_movement_type_enu
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
 import 'package:eyadty/features/cashier/data/models/payment_transaction_model.dart';
 import 'package:eyadty/features/cashier/data/models/refund_transaction_model.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -161,7 +161,7 @@ void main() {
     });
 
     test('11. Seed matching: branch_1 shift SHIFT-CAI-01 matches 2050.0 EGP expected cash', () async {
-      final repo = CashierMockRepoImpl();
+      final repo = CashierRepoImpl();
       final shiftRes = await repo.getCurrentShift(
         branchId: 'branch_1',
         cashierUserId: 'USER-REC',
@@ -180,7 +180,7 @@ void main() {
     });
 
     test('12. Seed matching: branch_2 and branch_3 shifts reconcile with reception users', () async {
-      final repo = CashierMockRepoImpl();
+      final repo = CashierRepoImpl();
 
       // Branch 2: مدينة نصر with USER-REC-2 (هدى مصطفى)
       final shift2Res = await repo.getCurrentShift(
@@ -209,7 +209,7 @@ void main() {
     });
 
     test('13. Seed matching: All 11 seed bookings reconcile with ledger transactions and patient totals', () async {
-      final repo = CashierMockRepoImpl();
+      final repo = CashierRepoImpl();
 
       // MED-101: 300 EGP card
       final p101 = await repo.getPaymentsByBookingId(bookingId: 'MED-101');
@@ -278,7 +278,7 @@ void main() {
         final mockTime = DateTime(2026, 11, 11, hours[i], minutes[i]);
         CairoTimeHelper.setFixedClock(mockTime);
 
-        final repo = CashierMockRepoImpl();
+        final repo = CashierRepoImpl();
         expect(repo, isNotNull);
 
         CairoTimeHelper.resetFixedClock();
@@ -286,7 +286,7 @@ void main() {
     });
 
     test('15. Idempotency and Rollback: cached on identical params, rejected on conflict, restored on rollback', () async {
-      final repo = CashierMockRepoImpl(seedInitialData: false);
+      final repo = CashierRepoImpl(seedInitialData: false);
       await repo.openShift(
         branchId: 'branch_1',
         cashierUserId: 'USER-REC',
@@ -358,7 +358,7 @@ void main() {
     });
 
     test('16. Close shift: verifies diff threshold <= 50.0 EGP closes normally vs pending approval', () async {
-      final repo = CashierMockRepoImpl(seedInitialData: false);
+      final repo = CashierRepoImpl(seedInitialData: false);
       final shift = (await repo.openShift(
         branchId: 'branch_1',
         cashierUserId: 'USER-REC',

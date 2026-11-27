@@ -6,7 +6,7 @@ import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 
@@ -24,19 +24,19 @@ import '../models/enums/doctor_gender_enum.dart';
 import '../models/enums/doctor_status_enum.dart';
 import '../models/enums/week_day_enum.dart';
 
-class DoctorsMockRepoImpl implements DoctorsRepo {
+class DoctorsRepoImpl implements DoctorsRepo {
   final ApiConsumer? apiConsumer;
   final CurrentRoleProvider? roleProvider;
   final BookingsRepo? bookingsRepo;
   final SettingsRepo? settingsRepo;
 
-  DoctorsMockRepoImpl({
+  DoctorsRepoImpl({
     this.apiConsumer,
     this.roleProvider,
     this.bookingsRepo,
     this.settingsRepo,
   }) {
-    _initMockData();
+    _seedLocalData();
   }
 
   final List<DoctorModel> _doctors = [];
@@ -44,13 +44,13 @@ class DoctorsMockRepoImpl implements DoctorsRepo {
   final Map<String, DoctorScheduleModel> _schedules = {};
 
   List<BookingModel> _getAllBookings() {
-    if (bookingsRepo is BookingsMockRepoImpl) {
-      return (bookingsRepo as BookingsMockRepoImpl).bookings;
+    if (bookingsRepo is BookingsRepoImpl) {
+      return (bookingsRepo as BookingsRepoImpl).bookings;
     }
     return [];
   }
 
-  void _initMockData() {
+  void _seedLocalData() {
     final now = CairoTimeHelper.now();
 
     // ─── Initial Leaves ────────────────────────────────────────────────────────

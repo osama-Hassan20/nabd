@@ -6,20 +6,20 @@ import '../../../bookings/domain/repo/bookings_repo.dart';
 import '../../domain/repo/medical_services_repo.dart';
 import '../models/medical_service_model.dart';
 
-class MedicalServicesMockRepoImpl implements MedicalServicesRepo {
+class MedicalServicesRepoImpl implements MedicalServicesRepo {
   final CurrentRoleProvider? roleProvider;
   final BookingsRepo? bookingsRepo;
 
-  MedicalServicesMockRepoImpl({
+  MedicalServicesRepoImpl({
     this.roleProvider,
     this.bookingsRepo,
   }) {
-    _initMockData();
+    _seedLocalData();
   }
 
   final List<MedicalServiceModel> _services = [];
 
-  void _initMockData() {
+  void _seedLocalData() {
     _services.addAll([
       const MedicalServiceModel(
         id: 'SRV-01',

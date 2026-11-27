@@ -13,7 +13,7 @@ import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/features/settings/data/models/company_settings_model.dart';
 import 'package:eyadty/features/settings/data/models/enums/print_format_enum.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/repo/settings_repo.dart';
 import 'package:eyadty/features/settings/domain/use_cases/add_special_holiday_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/change_password_use_case.dart';
@@ -27,11 +27,11 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -40,9 +40,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -103,10 +103,10 @@ Widget _buildLocalizedTab({
 }
 
 void main() {
-  late SettingsMockRepoImpl repo;
+  late SettingsRepoImpl repo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
   late UpdatePrintSettingsUseCase updatePrintSettingsUseCase;
 
@@ -118,7 +118,7 @@ void main() {
   });
 
   setUp(() {
-    repo = SettingsMockRepoImpl();
+    repo = SettingsRepoImpl();
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
     final ownerRole = RoleDefinitionModel(
@@ -137,9 +137,9 @@ void main() {
       permissions: [StaffPermissionEnum.accessPatients],
     );
 
-    rolesProvider = MockRolesSessionProvider(roles: [ownerRole, receptionistRole]);
+    rolesProvider = FakeRolesSessionProvider(roles: [ownerRole, receptionistRole]);
 
-    userProvider = MockUserSessionProvider(
+    userProvider = FakeUserSessionProvider(
       user: const StaffUserModel(
         id: 'user_owner',
         fullName: 'د. مالك',
@@ -368,7 +368,7 @@ void main() {
     });
   });
 
-  group('SettingsMockRepoImpl Print Settings Persistence', () {
+  group('SettingsRepoImpl Print Settings Persistence', () {
     test('preserves print formats when general settings are updated without overriding print formats', () async {
       await repo.updateCompanySettings(
         const CompanySettingsModel(

@@ -3,7 +3,7 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_cashier_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 
 void main() {
   group('OfflineFirstCashierRepo A5d & A5q Rehydrate & Fallback Tests', () {
@@ -23,7 +23,7 @@ void main() {
       final repo1 = OfflineFirstCashierRepo(
         localStore: store1,
         dataModeService: dataMode,
-        remoteRepo: CashierMockRepoImpl(),
+        remoteRepo: CashierRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -43,7 +43,7 @@ void main() {
       final repoOnline = OfflineFirstCashierRepo(
         localStore: store1,
         dataModeService: dataMode,
-        remoteRepo: CashierMockRepoImpl(),
+        remoteRepo: CashierRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -74,7 +74,7 @@ void main() {
       final repo2 = OfflineFirstCashierRepo(
         localStore: store2,
         dataModeService: dataMode,
-        remoteRepo: CashierMockRepoImpl(),
+        remoteRepo: CashierRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -100,7 +100,7 @@ void main() {
       final repo1 = OfflineFirstCashierRepo(
         localStore: store1,
         dataModeService: dataMode,
-        remoteRepo: CashierMockRepoImpl(),
+        remoteRepo: CashierRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -118,7 +118,7 @@ void main() {
       final repoOnline = OfflineFirstCashierRepo(
         localStore: store1,
         dataModeService: dataMode,
-        remoteRepo: CashierMockRepoImpl(),
+        remoteRepo: CashierRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -145,7 +145,7 @@ void main() {
       final repo2 = OfflineFirstCashierRepo(
         localStore: store2,
         dataModeService: dataMode,
-        remoteRepo: CashierMockRepoImpl(),
+        remoteRepo: CashierRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );

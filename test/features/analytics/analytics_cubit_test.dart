@@ -5,7 +5,7 @@ import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/features/analytics/data/models/enums/analytics_tab_enum.dart';
 import 'package:eyadty/features/analytics/data/models/enums/analytics_time_range_enum.dart';
-import 'package:eyadty/features/analytics/data/repo/analytics_mock_repo_impl.dart';
+import 'package:eyadty/features/analytics/data/repo/analytics_repo_impl.dart';
 import 'package:eyadty/features/analytics/domain/use_cases/get_analytics_summary_use_case.dart';
 import 'package:eyadty/features/analytics/domain/use_cases/get_branch_comparison_use_case.dart';
 import 'package:eyadty/features/analytics/domain/use_cases/get_doctor_performance_use_case.dart';
@@ -16,11 +16,11 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -29,9 +29,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -39,10 +39,10 @@ class MockRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('AnalyticsCubit State Management Tests (Plan F-07 M-4)', () {
-    late AnalyticsMockRepoImpl repo;
+    late AnalyticsRepoImpl repo;
     late InMemoryAuditLogger auditLogger;
-    late MockUserSessionProvider userProvider;
-    late MockRolesSessionProvider rolesProvider;
+    late FakeUserSessionProvider userProvider;
+    late FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator permissionEvaluator;
 
     late GetAnalyticsSummaryUseCase getSummaryUseCase;
@@ -70,13 +70,13 @@ void main() {
     );
 
     setUp(() {
-      repo = AnalyticsMockRepoImpl(seedInitialData: true);
+      repo = AnalyticsRepoImpl(seedInitialData: true);
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
-      rolesProvider = MockRolesSessionProvider(
+      rolesProvider = FakeRolesSessionProvider(
         roles: [allAdminRole, ...RoleDefinitionModel.defaultSystemRoles()],
       );
-      userProvider = MockUserSessionProvider(user: adminUser, branch: 'branch_1');
+      userProvider = FakeUserSessionProvider(user: adminUser, branch: 'branch_1');
 
       permissionEvaluator = PermissionEvaluator(
         userProvider: userProvider,

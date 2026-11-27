@@ -6,14 +6,14 @@ import 'package:eyadty/core/offline/repositories/offline_first_drugs_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/features/drugs/data/models/drug_model.dart';
-import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/data/repo/drugs_repo_impl.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late InMemoryTransactionalStore store;
   late DataModeService dataModeService;
-  late DrugsMockRepoImpl mockRemote;
+  late DrugsRepoImpl mockRemote;
   late OfflineFirstDrugsRepo repo;
 
   setUpAll(() async {
@@ -32,7 +32,7 @@ void main() {
       persistToStorage: true,
     );
 
-    mockRemote = DrugsMockRepoImpl();
+    mockRemote = DrugsRepoImpl();
 
     repo = OfflineFirstDrugsRepo(
       localStore: store,

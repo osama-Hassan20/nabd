@@ -3,10 +3,10 @@ import 'package:eyadty/core/enums/payment_method.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/cashier/data/models/enums/cash_movement_type_enum.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:eyadty/features/cashier/domain/contracts/cashier_policy.dart';
 import 'package:eyadty/features/cashier/domain/helpers/payment_reconciliation_helper.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/approve_shortage_use_case.dart';
@@ -15,18 +15,18 @@ import 'package:eyadty/features/cashier/domain/use_cases/collect_payment_use_cas
 import 'package:eyadty/features/cashier/domain/use_cases/open_shift_drawer_use_case.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/record_drawer_expense_use_case.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/refund_payment_use_case.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/use_cases/update_print_settings_use_case.dart';
 import 'package:eyadty/features/users_management/data/models/branch_assignment_model.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
-import 'package:eyadty/features/users_management/data/repositories/staff_users_mock_repo_impl.dart';
+import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -35,32 +35,32 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
 void main() {
-  late CashierMockRepoImpl cashierRepo;
-  late BookingsMockRepoImpl bookingsRepo;
-  late StaffUsersMockRepoImpl staffUsersRepo;
-  late SettingsMockRepoImpl settingsRepo;
+  late CashierRepoImpl cashierRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late StaffUsersRepoImpl staffUsersRepo;
+  late SettingsRepoImpl settingsRepo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator evaluator;
   const policy = CashierPolicy();
   const reconciliationHelper = PaymentReconciliationHelper();
 
   setUp(() {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    cashierRepo = CashierMockRepoImpl(seedInitialData: false);
-    bookingsRepo = BookingsMockRepoImpl();
-    staffUsersRepo = StaffUsersMockRepoImpl(auditLogger: auditLogger);
-    settingsRepo = SettingsMockRepoImpl();
+    cashierRepo = CashierRepoImpl(seedInitialData: false);
+    bookingsRepo = BookingsRepoImpl();
+    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+    settingsRepo = SettingsRepoImpl();
 
     final ownerRole = RoleDefinitionModel(
       id: 'role_owner',
@@ -70,9 +70,9 @@ void main() {
       permissions: StaffPermissionEnum.values.toList(),
     );
 
-    rolesProvider = MockRolesSessionProvider(roles: [ownerRole]);
+    rolesProvider = FakeRolesSessionProvider(roles: [ownerRole]);
 
-    userProvider = MockUserSessionProvider(
+    userProvider = FakeUserSessionProvider(
       user: const StaffUserModel(
         id: 'usr_cashier_audit',
         fullName: 'كاشير التدقيق',

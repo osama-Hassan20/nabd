@@ -6,14 +6,14 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:eyadty/features/cashier/domain/helpers/payment_reconciliation_helper.dart';
 
-class MockFailingBookingsRepo implements BookingsRepo {
+class FakeFailingBookingsRepo implements BookingsRepo {
   final Map<String, BookingModel> bookings = {};
   bool failOnUpdate = false;
 
-  MockFailingBookingsRepo();
+  FakeFailingBookingsRepo();
 
   void addBooking(BookingModel booking) {
     bookings[booking.id!] = booking;
@@ -43,14 +43,14 @@ class MockFailingBookingsRepo implements BookingsRepo {
 }
 
 void main() {
-  late CashierMockRepoImpl cashierRepo;
-  late MockFailingBookingsRepo bookingsRepo;
+  late CashierRepoImpl cashierRepo;
+  late FakeFailingBookingsRepo bookingsRepo;
   late InMemoryAuditLogger auditLogger;
   const saga = PaymentReconciliationHelper();
 
   setUp(() {
-    cashierRepo = CashierMockRepoImpl(seedInitialData: false);
-    bookingsRepo = MockFailingBookingsRepo();
+    cashierRepo = CashierRepoImpl(seedInitialData: false);
+    bookingsRepo = FakeFailingBookingsRepo();
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
   });
 

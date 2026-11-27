@@ -4,17 +4,17 @@ import 'package:eyadty/core/offline/repositories/offline_first_doctors_repo.dart
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_model.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 
 void main() {
   late InMemoryTransactionalStore store;
-  late DoctorsMockRepoImpl mockRemoteRepo;
+  late DoctorsRepoImpl mockRemoteRepo;
   late DataModeService dataModeService;
   late OfflineFirstDoctorsRepo repo;
 
   setUp(() {
     store = InMemoryTransactionalStore();
-    mockRemoteRepo = DoctorsMockRepoImpl();
+    mockRemoteRepo = DoctorsRepoImpl();
     dataModeService = DataModeService();
     repo = OfflineFirstDoctorsRepo(
       localStore: store,

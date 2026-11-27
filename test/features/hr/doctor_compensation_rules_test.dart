@@ -7,7 +7,7 @@ import 'package:eyadty/features/hr/data/models/doctor_compensation_rule_model.da
 import 'package:eyadty/features/hr/data/models/doctor_settlement_model.dart';
 import 'package:eyadty/features/hr/data/models/enums/compensation_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/use_cases/get_active_rule_for_doctor_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/get_doctor_compensation_rules_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/save_doctor_compensation_rule_use_case.dart';
@@ -38,7 +38,7 @@ class TestRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('Doctor Compensation Rules Tests (Plan F-06 M-2)', () {
-    late HrMockRepoImpl repo;
+    late HrRepoImpl repo;
     late InMemoryAuditLogger auditLogger;
     late TestUserSessionProvider userProvider;
     late TestRolesSessionProvider rolesProvider;
@@ -56,7 +56,7 @@ void main() {
     );
 
     setUp(() {
-      repo = HrMockRepoImpl(seedInitialData: false);
+      repo = HrRepoImpl(seedInitialData: false);
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
       rolesProvider = TestRolesSessionProvider(

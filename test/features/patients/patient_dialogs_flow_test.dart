@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
@@ -10,8 +10,8 @@ import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_us
 import 'package:eyadty/features/patients/data/models/enums/blood_group_enum.dart';
 import 'package:eyadty/features/patients/data/models/enums/gender_enum.dart';
 import 'package:eyadty/features/patients/data/models/kinship_relations.dart';
-import 'package:eyadty/features/patients/data/repo/medical_catalog_mock_repo_impl.dart';
-import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/medical_catalog_repo_impl.dart';
+import 'package:eyadty/features/patients/data/repo/patients_repo_impl.dart';
 import 'package:eyadty/features/patients/domain/use_cases/add_medical_catalog_item_use_case.dart';
 import 'package:eyadty/features/patients/domain/use_cases/add_patient_use_case.dart';
 import 'package:eyadty/features/patients/domain/use_cases/archive_patient_use_case.dart';
@@ -29,9 +29,9 @@ import 'package:eyadty/features/patients/presentation/widgets/form_components/ki
 import 'package:eyadty/features/patients/presentation/widgets/quick_add_patient_dialog.dart';
 
 PatientsCubit createTestPatientsCubit() {
-  final bookingsRepo = BookingsMockRepoImpl();
-  final patientsRepo = PatientsMockRepoImpl(bookingsRepo: bookingsRepo);
-  final catalogRepo = MedicalCatalogMockRepoImpl();
+  final bookingsRepo = BookingsRepoImpl();
+  final patientsRepo = PatientsRepoImpl(bookingsRepo: bookingsRepo);
+  final catalogRepo = MedicalCatalogRepoImpl();
 
   return PatientsCubit(
     getPatientsUseCase: GetPatientsUseCase(repo: patientsRepo),

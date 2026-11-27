@@ -19,11 +19,11 @@ import 'package:eyadty/features/visits/data/models/visit_model.dart';
 import 'package:eyadty/features/visits/domain/use_cases/print_prescription_use_case.dart';
 import 'package:eyadty/features/visits/presentation/helpers/prescription_pdf_generator.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -32,9 +32,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -43,8 +43,8 @@ class MockRolesSessionProvider implements RolesProvider {
 void main() {
   ByteData? fontData;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator permissionEvaluator;
   late PrintPrescriptionUseCase printPrescriptionUseCase;
 
@@ -57,11 +57,11 @@ void main() {
 
   setUp(() {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    rolesProvider = MockRolesSessionProvider(
+    rolesProvider = FakeRolesSessionProvider(
       roles: RoleDefinitionModel.defaultSystemRoles(),
     );
 
-    userProvider = MockUserSessionProvider(
+    userProvider = FakeUserSessionProvider(
       user: const StaffUserModel(
         id: 'USR-DOC-01',
         fullName: 'د. حسام الدين',

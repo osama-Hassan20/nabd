@@ -11,8 +11,8 @@ import '../models/enums/shift_status_enum.dart';
 import '../models/payment_transaction_model.dart';
 import '../models/refund_transaction_model.dart';
 
-class CashierMockRepoImpl implements CashierRepo {
-  CashierMockRepoImpl({bool seedInitialData = true}) {
+class CashierRepoImpl implements CashierRepo {
+  CashierRepoImpl({bool seedInitialData = true}) {
     if (seedInitialData) {
       _initSeedData();
     }

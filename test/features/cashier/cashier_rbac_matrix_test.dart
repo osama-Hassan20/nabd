@@ -5,7 +5,7 @@ import 'package:eyadty/features/users_management/data/models/branch_assignment_m
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 
-class _MockUserSessionProvider implements CurrentUserProvider {
+class _FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branchId = 'branch_1';
 
@@ -16,9 +16,9 @@ class _MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branchId;
 }
 
-class _MockRolesSessionProvider implements RolesProvider {
+class _FakeRolesSessionProvider implements RolesProvider {
   final List<RoleDefinitionModel> roles;
-  const _MockRolesSessionProvider({required this.roles});
+  const _FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -26,8 +26,8 @@ class _MockRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('Cashier RBAC Matrix - M-5 Tests', () {
-    late _MockUserSessionProvider userProvider;
-    late _MockRolesSessionProvider rolesProvider;
+    late _FakeUserSessionProvider userProvider;
+    late _FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator evaluator;
 
     setUp(() {
@@ -45,8 +45,8 @@ void main() {
           .map((r) => r.id == RoleIds.branchManager ? updatedManager : r)
           .toList();
 
-      rolesProvider = _MockRolesSessionProvider(roles: testRoles);
-      userProvider = _MockUserSessionProvider();
+      rolesProvider = _FakeRolesSessionProvider(roles: testRoles);
+      userProvider = _FakeUserSessionProvider();
       evaluator = PermissionEvaluator(
         userProvider: userProvider,
         rolesProvider: rolesProvider,

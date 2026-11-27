@@ -5,10 +5,10 @@ import '../../domain/repo/medical_catalogs_repo.dart';
 import '../models/enums/medical_catalog_kind_enum.dart';
 import '../models/medical_catalog_entry_model.dart';
 
-class MedicalCatalogsMockRepoImpl implements MedicalCatalogsRepo {
+class MedicalCatalogsRepoImpl implements MedicalCatalogsRepo {
   final List<MedicalCatalogEntryModel> _entries = [];
 
-  MedicalCatalogsMockRepoImpl() {
+  MedicalCatalogsRepoImpl() {
     _seedData();
   }
 

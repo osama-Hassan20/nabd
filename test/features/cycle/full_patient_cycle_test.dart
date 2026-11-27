@@ -14,8 +14,8 @@ import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 import 'package:eyadty/features/drugs/data/models/drug_model.dart';
 import 'package:eyadty/features/patients/data/models/enums/gender_enum.dart';
 import 'package:eyadty/features/patients/data/models/enums/marital_status_enum.dart';
@@ -28,7 +28,7 @@ import 'package:eyadty/features/visits/data/models/enums/visit_status_enum.dart'
 import 'package:eyadty/features/visits/data/models/prescription_item_model.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 import 'package:eyadty/features/visits/data/models/vitals_model.dart';
-import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/data/repo/visits_repo_impl.dart';
 import 'package:eyadty/features/visits/presentation/manager/mixins/visit_prescription_mixin.dart';
 
 void main() {
@@ -50,7 +50,7 @@ void main() {
         final store1 = buildStore();
         final doctorsRepo = OfflineFirstDoctorsRepo(
           localStore: store1,
-          remoteRepo: DoctorsMockRepoImpl(),
+          remoteRepo: DoctorsRepoImpl(),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',
@@ -71,14 +71,14 @@ void main() {
         );
         final cashierRepo = OfflineFirstCashierRepo(
           localStore: store1,
-          remoteRepo: CashierMockRepoImpl(),
+          remoteRepo: CashierRepoImpl(),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',
         );
         final visitsRepo = OfflineFirstVisitsRepo(
           localStore: store1,
-          remoteRepo: VisitsMockRepoImpl(),
+          remoteRepo: VisitsRepoImpl(),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',
@@ -264,7 +264,7 @@ void main() {
         );
         final visitsRepo2 = OfflineFirstVisitsRepo(
           localStore: store2,
-          remoteRepo: VisitsMockRepoImpl(),
+          remoteRepo: VisitsRepoImpl(),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',

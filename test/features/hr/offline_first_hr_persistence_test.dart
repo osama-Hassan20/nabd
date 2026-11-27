@@ -9,13 +9,13 @@ import 'package:eyadty/features/hr/data/models/enums/ledger_entry_type_enum.dart
 import 'package:eyadty/features/hr/data/models/enums/payroll_status_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
 import 'package:eyadty/features/hr/data/models/staff_payroll_period_model.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late DataModeService dataModeService;
-  late HrMockRepoImpl remoteRepo;
+  late HrRepoImpl remoteRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -23,7 +23,7 @@ void main() {
       reachabilityProbe: (_, __) async => true,
       initialReachable: true,
     );
-    remoteRepo = HrMockRepoImpl();
+    remoteRepo = HrRepoImpl();
   });
 
   tearDown(() {
@@ -171,7 +171,7 @@ void main() {
       final repo2 = OfflineFirstHrRepo(
         localStore: store2,
         dataModeService: dataModeService,
-        remoteRepo: HrMockRepoImpl(),
+        remoteRepo: HrRepoImpl(),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );

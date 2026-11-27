@@ -4,15 +4,15 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import '../../domain/repo/inventory_repo.dart';
 import '../models/inventory_item_model.dart';
 
-class InventoryMockRepoImpl implements InventoryRepo {
+class InventoryRepoImpl implements InventoryRepo {
   final List<InventoryItemModel> _items = [];
   final List<InventoryTransactionModel> _transactions = [];
 
-  InventoryMockRepoImpl() {
-    _initMockData();
+  InventoryRepoImpl() {
+    _seedLocalData();
   }
 
-  void _initMockData() {
+  void _seedLocalData() {
     final now = CairoTimeHelper.now();
 
     _items.addAll([

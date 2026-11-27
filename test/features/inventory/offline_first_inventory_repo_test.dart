@@ -4,13 +4,13 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_inventory_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/features/inventory/data/models/inventory_item_model.dart';
-import 'package:eyadty/features/inventory/data/repo/inventory_mock_repo_impl.dart';
+import 'package:eyadty/features/inventory/data/repo/inventory_repo_impl.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late DataModeService dataModeService;
-  late InventoryMockRepoImpl remoteRepo;
+  late InventoryRepoImpl remoteRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -18,7 +18,7 @@ void main() {
       reachabilityProbe: (_, __) async => true,
       initialReachable: true,
     );
-    remoteRepo = InventoryMockRepoImpl();
+    remoteRepo = InventoryRepoImpl();
   });
 
   tearDown(() {

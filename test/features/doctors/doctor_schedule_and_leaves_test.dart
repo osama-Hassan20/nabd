@@ -7,7 +7,7 @@ import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/get_bookings_use_case.dart';
@@ -18,7 +18,7 @@ import 'package:eyadty/features/doctors/data/models/doctor_schedule_model.dart';
 import 'package:eyadty/features/doctors/data/models/doctor_work_day_model.dart';
 import 'package:eyadty/features/doctors/data/models/enums/doctor_availability_enum.dart';
 import 'package:eyadty/features/doctors/data/models/enums/week_day_enum.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 import 'package:eyadty/features/doctors/domain/helpers/doctor_availability_helper.dart';
 import 'package:eyadty/features/doctors/domain/helpers/doctor_schedule_validator.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/add_doctor_leave_use_case.dart';
@@ -34,7 +34,7 @@ import 'package:eyadty/features/doctors/domain/use_cases/update_doctor_use_case.
 import 'package:eyadty/features/doctors/presentation/cubit/doctors_cubit.dart';
 import 'package:eyadty/features/doctors/presentation/widgets/doctor_details_sections/doctor_upcoming_availability_widget.dart';
 import 'package:eyadty/features/settings/data/models/special_holiday_model.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 
 class TestRoleProvider implements CurrentRoleProvider {
   UserRoleEnum _role = UserRoleEnum.admin;
@@ -408,17 +408,17 @@ void main() {
     });
   });
 
-  group('DoctorsMockRepoImpl Schedule & Leaves RBAC & Conflict Tests', () {
+  group('DoctorsRepoImpl Schedule & Leaves RBAC & Conflict Tests', () {
     late TestRoleProvider roleProvider;
-    late BookingsMockRepoImpl bookingsRepo;
-    late SettingsMockRepoImpl settingsRepo;
-    late DoctorsMockRepoImpl doctorsRepo;
+    late BookingsRepoImpl bookingsRepo;
+    late SettingsRepoImpl settingsRepo;
+    late DoctorsRepoImpl doctorsRepo;
 
     setUp(() {
       roleProvider = TestRoleProvider();
-      bookingsRepo = BookingsMockRepoImpl();
-      settingsRepo = SettingsMockRepoImpl();
-      doctorsRepo = DoctorsMockRepoImpl(
+      bookingsRepo = BookingsRepoImpl();
+      settingsRepo = SettingsRepoImpl();
+      doctorsRepo = DoctorsRepoImpl(
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,
@@ -536,16 +536,16 @@ void main() {
 
   group('DoctorsCubit Schedule & Leaves Flow Tests', () {
     late TestRoleProvider roleProvider;
-    late BookingsMockRepoImpl bookingsRepo;
-    late SettingsMockRepoImpl settingsRepo;
-    late DoctorsMockRepoImpl doctorsRepo;
+    late BookingsRepoImpl bookingsRepo;
+    late SettingsRepoImpl settingsRepo;
+    late DoctorsRepoImpl doctorsRepo;
     late DoctorsCubit cubit;
 
     setUp(() {
       roleProvider = TestRoleProvider();
-      bookingsRepo = BookingsMockRepoImpl();
-      settingsRepo = SettingsMockRepoImpl();
-      doctorsRepo = DoctorsMockRepoImpl(
+      bookingsRepo = BookingsRepoImpl();
+      settingsRepo = SettingsRepoImpl();
+      doctorsRepo = DoctorsRepoImpl(
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,

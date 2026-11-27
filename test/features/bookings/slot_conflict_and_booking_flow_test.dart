@@ -5,7 +5,7 @@ import 'package:eyadty/core/utils/enums/request_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/booking_form_options_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/change_booking_status_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/create_booking_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/delete_booking_use_case.dart';
@@ -16,22 +16,22 @@ import 'package:eyadty/features/bookings/domain/use_cases/get_doctor_bookings_fo
 import 'package:eyadty/features/bookings/domain/use_cases/reassign_technician_use_case.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/update_booking_use_case.dart';
 import 'package:eyadty/features/bookings/presentation/manager/bookings_cubit.dart';
-import 'package:eyadty/features/doctors/data/repo/doctors_mock_repo_impl.dart';
+import 'package:eyadty/features/doctors/data/repo/doctors_repo_impl.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_leaves_use_case.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/get_doctor_schedule_use_case.dart';
 import 'package:eyadty/features/doctors/domain/use_cases/get_doctors_use_case.dart';
 import 'package:eyadty/features/settings/data/models/medical_service_model.dart';
-import 'package:eyadty/features/settings/data/repo/medical_services_mock_repo_impl.dart';
-import 'package:eyadty/features/settings/data/repo/settings_mock_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/medical_services_repo_impl.dart';
+import 'package:eyadty/features/settings/data/repo/settings_repo_impl.dart';
 import 'package:eyadty/features/settings/domain/use_cases/get_company_settings_use_case.dart';
 import 'package:eyadty/features/settings/domain/use_cases/get_medical_services_use_case.dart';
 
 void main() {
   group('Repo & Cubit Slot Conflict & Booking Flow Tests', () {
-    late BookingsMockRepoImpl bookingsRepo;
-    late DoctorsMockRepoImpl doctorsRepo;
-    late SettingsMockRepoImpl settingsRepo;
-    late MedicalServicesMockRepoImpl medicalServicesRepo;
+    late BookingsRepoImpl bookingsRepo;
+    late DoctorsRepoImpl doctorsRepo;
+    late SettingsRepoImpl settingsRepo;
+    late MedicalServicesRepoImpl medicalServicesRepo;
     late BookingsCubit cubit;
 
     final testDate = DateTime(2026, 11, 8); // الأحد
@@ -39,15 +39,15 @@ void main() {
 
     setUp(() {
       CairoTimeHelper.setFixedClock(fixedNow);
-      settingsRepo = SettingsMockRepoImpl();
-      medicalServicesRepo = MedicalServicesMockRepoImpl();
-      bookingsRepo = BookingsMockRepoImpl(settingsRepo: settingsRepo);
-      doctorsRepo = DoctorsMockRepoImpl(
+      settingsRepo = SettingsRepoImpl();
+      medicalServicesRepo = MedicalServicesRepoImpl();
+      bookingsRepo = BookingsRepoImpl(settingsRepo: settingsRepo);
+      doctorsRepo = DoctorsRepoImpl(
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,
       );
       // ربط الـ bookingsRepo بالـ doctorsRepo للفحص المتبادل
-      final dynamicRepo = BookingsMockRepoImpl(
+      final dynamicRepo = BookingsRepoImpl(
         doctorsRepo: doctorsRepo,
         settingsRepo: settingsRepo,
       );

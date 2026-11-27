@@ -12,7 +12,7 @@ import 'package:eyadty/features/visits/data/models/prescription_item_model.dart'
 import 'package:eyadty/features/visits/data/models/visit_addendum_model.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 import 'package:eyadty/features/visits/data/models/vitals_model.dart';
-import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/data/repo/visits_repo_impl.dart';
 import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
 
 void main() {
@@ -20,7 +20,7 @@ void main() {
 
   late InMemoryTransactionalStore store;
   late DataModeService dataModeService;
-  late VisitsMockRepoImpl mockRemote;
+  late VisitsRepoImpl mockRemote;
   late OfflineFirstVisitsRepo repo;
 
   setUpAll(() async {
@@ -39,7 +39,7 @@ void main() {
       persistToStorage: true,
     );
 
-    mockRemote = VisitsMockRepoImpl();
+    mockRemote = VisitsRepoImpl();
 
     repo = OfflineFirstVisitsRepo(
       localStore: store,

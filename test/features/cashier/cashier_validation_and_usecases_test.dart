@@ -7,7 +7,7 @@ import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/cashier/data/models/enums/cash_movement_type_enum.dart';
 import 'package:eyadty/features/cashier/data/models/enums/shift_status_enum.dart';
-import 'package:eyadty/features/cashier/data/repo/cashier_mock_repo_impl.dart';
+import 'package:eyadty/features/cashier/data/repo/cashier_repo_impl.dart';
 import 'package:eyadty/features/cashier/domain/contracts/cashier_policy.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/approve_shortage_use_case.dart';
 import 'package:eyadty/features/cashier/domain/use_cases/close_shift_drawer_use_case.dart';
@@ -20,11 +20,11 @@ import 'package:eyadty/features/users_management/data/models/role_definition_mod
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -33,17 +33,17 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
 }
 
-class MockStaffUsersRepo implements StaffUsersRepo {
+class FakeStaffUsersRepo implements StaffUsersRepo {
   List<StaffUserModel> users;
-  MockStaffUsersRepo({required this.users});
+  FakeStaffUsersRepo({required this.users});
 
   @override
   Future<Either<Failure, List<StaffUserModel>>> getStaffUsers({
@@ -70,10 +70,10 @@ class MockStaffUsersRepo implements StaffUsersRepo {
 }
 
 void main() {
-  late CashierMockRepoImpl repo;
+  late CashierRepoImpl repo;
   late InMemoryAuditLogger auditLogger;
-  late MockUserSessionProvider userProvider;
-  late MockRolesSessionProvider rolesProvider;
+  late FakeUserSessionProvider userProvider;
+  late FakeRolesSessionProvider rolesProvider;
   late PermissionEvaluator evaluator;
   const policy = CashierPolicy();
 
@@ -113,7 +113,7 @@ void main() {
   );
 
   setUp(() {
-    repo = CashierMockRepoImpl(seedInitialData: false);
+    repo = CashierRepoImpl(seedInitialData: false);
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
     final systemRoles = RoleDefinitionModel.defaultSystemRoles();
     final managerDef = systemRoles.firstWhere((r) => r.id == RoleIds.branchManager);
@@ -128,8 +128,8 @@ void main() {
         .map((r) => r.id == RoleIds.branchManager ? updatedManager : r)
         .toList();
 
-    rolesProvider = MockRolesSessionProvider(roles: testRoles);
-    userProvider = MockUserSessionProvider(user: receptionistUser);
+    rolesProvider = FakeRolesSessionProvider(roles: testRoles);
+    userProvider = FakeUserSessionProvider(user: receptionistUser);
     evaluator = PermissionEvaluator(
       userProvider: userProvider,
       rolesProvider: rolesProvider,
@@ -390,7 +390,7 @@ void main() {
 
     test('9. Allows owner self-approval when no other branch manager exists in branch', () async {
       userProvider.user = ownerUser;
-      final staffRepo = MockStaffUsersRepo(
+      final staffRepo = FakeStaffUsersRepo(
         users: [ownerUser, receptionistUser], // No other branch manager
       );
 
@@ -431,7 +431,7 @@ void main() {
 
     test('10. Rejects owner self-approval when another qualified branch manager exists in branch', () async {
       userProvider.user = ownerUser;
-      final staffRepo = MockStaffUsersRepo(
+      final staffRepo = FakeStaffUsersRepo(
         users: [ownerUser, managerUser, receptionistUser], // Another branch manager exists!
       );
 

@@ -14,7 +14,7 @@ import '../models/enums/settlement_status_enum.dart';
 import '../models/staff_payroll_period_model.dart';
 import '../models/staff_payroll_profile_model.dart';
 
-class HrMockRepoImpl implements HrRepo {
+class HrRepoImpl implements HrRepo {
   final List<DoctorCompensationRuleModel> _rules = [];
   final List<DoctorSettlementModel> _settlements = [];
   final List<EmployeeLedgerEntryModel> _ledgerEntries = [];
@@ -27,7 +27,7 @@ class HrMockRepoImpl implements HrRepo {
   int _payrollProfileCounter = 100;
   int _payrollPeriodCounter = 100;
 
-  HrMockRepoImpl({bool seedInitialData = true}) {
+  HrRepoImpl({bool seedInitialData = true}) {
     if (seedInitialData) {
       _initSeedData();
     }

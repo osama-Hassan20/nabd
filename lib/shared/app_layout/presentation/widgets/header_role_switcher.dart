@@ -107,7 +107,7 @@ class _HeaderRoleSwitcherState extends State<HeaderRoleSwitcher> {
             side: const BorderSide(color: AppColors.grayE2E8F0),
           ),
           onSelected: (user) {
-            sessionCubit.switchMockUser(user);
+            sessionCubit.switchDemoUser(user);
             final activeBranch = sessionCubit.state.activeBranchId ?? 'branch_1';
             AppBranchService.instance.selectBranch(activeBranch);
             appRouter.refresh();

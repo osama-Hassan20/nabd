@@ -4,17 +4,17 @@ import 'package:eyadty/core/offline/repositories/offline_first_medical_catalogs_
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/features/medical_catalogs/data/models/enums/medical_catalog_kind_enum.dart';
 import 'package:eyadty/features/medical_catalogs/data/models/medical_catalog_entry_model.dart';
-import 'package:eyadty/features/medical_catalogs/data/repo/medical_catalogs_mock_repo_impl.dart';
+import 'package:eyadty/features/medical_catalogs/data/repo/medical_catalogs_repo_impl.dart';
 
 void main() {
   late InMemoryTransactionalStore store;
-  late MedicalCatalogsMockRepoImpl mockRemoteRepo;
+  late MedicalCatalogsRepoImpl mockRemoteRepo;
   late DataModeService dataModeService;
   late OfflineFirstMedicalCatalogsRepo repo;
 
   setUp(() {
     store = InMemoryTransactionalStore();
-    mockRemoteRepo = MedicalCatalogsMockRepoImpl();
+    mockRemoteRepo = MedicalCatalogsRepoImpl();
     dataModeService = DataModeService();
     repo = OfflineFirstMedicalCatalogsRepo(
       localStore: store,

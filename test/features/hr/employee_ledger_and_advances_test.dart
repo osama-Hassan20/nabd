@@ -6,15 +6,15 @@ import 'package:eyadty/features/hr/data/models/employee_ledger_entry_model.dart'
 import 'package:eyadty/features/hr/data/models/enums/employee_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/ledger_entry_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/helpers/doctor_settlement_calculator.dart';
 
 void main() {
   group('Employee Ledger & Advances Tests (Plan 8.2)', () {
-    late HrMockRepoImpl repo;
+    late HrRepoImpl repo;
 
     setUp(() {
-      repo = HrMockRepoImpl(seedInitialData: false);
+      repo = HrRepoImpl(seedInitialData: false);
     });
 
     test('1. Add advance entry creates ledger record successfully', () async {
@@ -342,7 +342,7 @@ void main() {
     });
 
     test('12. Seed settlements marked source: mockSeed excluded from general ledger', () {
-      final seedRepo = HrMockRepoImpl(seedInitialData: true);
+      final seedRepo = HrRepoImpl(seedInitialData: true);
       final seededSettlements = seedRepo.getDoctorSettlements(doctorId: 'DOC-01');
       expect(seededSettlements, completes);
     });

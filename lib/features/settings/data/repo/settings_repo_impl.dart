@@ -9,11 +9,11 @@ import '../models/company_settings_model.dart';
 import '../models/enums/clinic_type_enum.dart';
 import '../models/special_holiday_model.dart';
 
-class SettingsMockRepoImpl implements SettingsRepo {
+class SettingsRepoImpl implements SettingsRepo {
   final ApiConsumer? apiConsumer;
 
-  SettingsMockRepoImpl({this.apiConsumer}) {
-    _initMockData();
+  SettingsRepoImpl({this.apiConsumer}) {
+    _seedLocalData();
   }
 
   final Map<String, CompanySettingsModel> _branchSettings = {};
@@ -64,7 +64,7 @@ class SettingsMockRepoImpl implements SettingsRepo {
     ),
   ];
 
-  void _initMockData() {
+  void _seedLocalData() {
     _branchSettings['branch_1'] = CompanySettingsModel(
       id: 'SETT-001',
       companyName: 'عيادتي - الفرع الرئيسي (المعادي)',
@@ -305,4 +305,3 @@ class SettingsMockRepoImpl implements SettingsRepo {
   }
 }
 
-typedef SettingsRepoImpl = SettingsMockRepoImpl;

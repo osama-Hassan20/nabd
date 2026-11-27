@@ -10,10 +10,10 @@ import '../models/hourly_traffic_metric_model.dart';
 import '../models/revenue_trend_point_model.dart';
 import '../models/service_revenue_distribution_model.dart';
 
-class AnalyticsMockRepoImpl implements AnalyticsRepo {
+class AnalyticsRepoImpl implements AnalyticsRepo {
   final bool seedInitialData;
 
-  const AnalyticsMockRepoImpl({this.seedInitialData = true});
+  const AnalyticsRepoImpl({this.seedInitialData = true});
 
   // ─── Date Range Bounds Helper ──────────────────────────────────────────────
   ({DateTime start, DateTime end}) resolveDateRange({

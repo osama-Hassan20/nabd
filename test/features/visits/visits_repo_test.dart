@@ -1,21 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
-import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
+import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
 import 'package:eyadty/features/visits/data/models/enums/visit_status_enum.dart';
 import 'package:eyadty/features/visits/data/models/visit_model.dart';
 import 'package:eyadty/features/visits/data/models/vitals_model.dart';
-import 'package:eyadty/features/visits/data/repo/visits_mock_repo_impl.dart';
+import 'package:eyadty/features/visits/data/repo/visits_repo_impl.dart';
 
 void main() {
-  late BookingsMockRepoImpl bookingsRepo;
-  late VisitsMockRepoImpl visitsRepo;
+  late BookingsRepoImpl bookingsRepo;
+  late VisitsRepoImpl visitsRepo;
 
   setUp(() {
-    bookingsRepo = BookingsMockRepoImpl();
-    visitsRepo = VisitsMockRepoImpl(bookingsRepo: bookingsRepo);
+    bookingsRepo = BookingsRepoImpl();
+    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
   });
 
-  group('VisitsMockRepoImpl Seed & ActiveVisitLookup Tests', () {
+  group('VisitsRepoImpl Seed & ActiveVisitLookup Tests', () {
     test('seed data contains initial visits VIS-001, VIS-002, VIS-003', () {
       expect(visitsRepo.visits.length, greaterThanOrEqualTo(3));
 

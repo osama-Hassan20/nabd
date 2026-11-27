@@ -99,7 +99,7 @@ class LoginCubit extends Cubit<LoginState> {
           await AppSharedPreferences.remove(key: AppConstants.userName);
         }
 
-        sessionCubit.switchMockUser(user);
+        sessionCubit.switchDemoUser(user);
         emit(SuccessLoginPushState(user: user));
       },
     );
@@ -115,7 +115,7 @@ class LoginCubit extends Cubit<LoginState> {
       key: AppConstants.userId,
       value: user.id ?? '',
     );
-    sessionCubit.switchMockUser(user);
+    sessionCubit.switchDemoUser(user);
     emit(SuccessLoginPushState(user: user));
   }
 }

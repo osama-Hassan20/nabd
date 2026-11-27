@@ -9,8 +9,8 @@ import 'package:eyadty/features/hr/data/models/employee_ledger_entry_model.dart'
 import 'package:eyadty/features/hr/data/models/enums/compensation_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/ledger_entry_type_enum.dart';
 import 'package:eyadty/features/hr/data/models/enums/settlement_status_enum.dart';
-import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_mock_lookup.dart';
-import 'package:eyadty/features/hr/data/repo/hr_mock_repo_impl.dart';
+import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_lookup.dart';
+import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
 import 'package:eyadty/features/hr/domain/contracts/doctor_settlement_visits_lookup.dart';
 import 'package:eyadty/features/hr/domain/use_cases/calculate_doctor_settlement_draft_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/confirm_doctor_settlement_use_case.dart';
@@ -42,8 +42,8 @@ class SettlementTestRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('Doctor Settlement Use Cases Tests (Plan F-06 M-3)', () {
-    late HrMockRepoImpl repo;
-    late DoctorSettlementVisitsMockLookup visitsLookup;
+    late HrRepoImpl repo;
+    late DoctorSettlementVisitsLookupImpl visitsLookup;
     late InMemoryAuditLogger auditLogger;
     late SettlementTestUserSessionProvider userProvider;
     late SettlementTestRolesSessionProvider rolesProvider;
@@ -79,8 +79,8 @@ void main() {
     );
 
     setUp(() {
-      repo = HrMockRepoImpl(seedInitialData: false);
-      visitsLookup = DoctorSettlementVisitsMockLookup();
+      repo = HrRepoImpl(seedInitialData: false);
+      visitsLookup = DoctorSettlementVisitsLookupImpl();
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
       rolesProvider = SettlementTestRolesSessionProvider(

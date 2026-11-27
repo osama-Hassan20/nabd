@@ -6,7 +6,7 @@ import 'package:eyadty/features/drugs/data/models/enums/drug_source_enum.dart';
 import 'package:eyadty/features/drugs/data/models/enums/review_status_enum.dart';
 import 'package:eyadty/features/drugs/data/models/prescription_template_item_model.dart';
 import 'package:eyadty/features/drugs/data/models/prescription_template_model.dart';
-import 'package:eyadty/features/drugs/data/repo/drugs_mock_repo_impl.dart';
+import 'package:eyadty/features/drugs/data/repo/drugs_repo_impl.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/add_drug_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/archive_drug_use_case.dart';
 import 'package:eyadty/features/drugs/domain/use_cases/delete_prescription_template_use_case.dart';
@@ -22,11 +22,11 @@ import 'package:eyadty/features/users_management/data/models/role_definition_mod
 import 'package:eyadty/features/users_management/data/models/staff_user_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class MockUserSessionProvider implements CurrentUserProvider {
+class FakeUserSessionProvider implements CurrentUserProvider {
   StaffUserModel? user;
   String? branch;
 
-  MockUserSessionProvider({this.user, this.branch = 'branch_1'});
+  FakeUserSessionProvider({this.user, this.branch = 'branch_1'});
 
   @override
   StaffUserModel? get currentUser => user;
@@ -35,9 +35,9 @@ class MockUserSessionProvider implements CurrentUserProvider {
   String? get activeBranchId => branch;
 }
 
-class MockRolesSessionProvider implements RolesProvider {
+class FakeRolesSessionProvider implements RolesProvider {
   List<RoleDefinitionModel> roles;
-  MockRolesSessionProvider({required this.roles});
+  FakeRolesSessionProvider({required this.roles});
 
   @override
   List<RoleDefinitionModel> get currentRoles => roles;
@@ -45,10 +45,10 @@ class MockRolesSessionProvider implements RolesProvider {
 
 void main() {
   group('Drugs Feature Use Cases & Governance Audit Tests', () {
-    late DrugsMockRepoImpl repo;
+    late DrugsRepoImpl repo;
     late InMemoryAuditLogger auditLogger;
-    late MockUserSessionProvider userProvider;
-    late MockRolesSessionProvider rolesProvider;
+    late FakeUserSessionProvider userProvider;
+    late FakeRolesSessionProvider rolesProvider;
     late PermissionEvaluator permissionEvaluator;
 
     late GetDrugsCatalogUseCase getDrugsUseCase;
@@ -63,10 +63,10 @@ void main() {
     late UpdateAllergyAliasesUseCase updateAliasesUseCase;
 
     setUp(() {
-      repo = DrugsMockRepoImpl();
+      repo = DrugsRepoImpl();
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      userProvider = MockUserSessionProvider();
-      rolesProvider = MockRolesSessionProvider(
+      userProvider = FakeUserSessionProvider();
+      rolesProvider = FakeRolesSessionProvider(
         roles: RoleDefinitionModel.defaultSystemRoles(),
       );
       permissionEvaluator = PermissionEvaluator(
