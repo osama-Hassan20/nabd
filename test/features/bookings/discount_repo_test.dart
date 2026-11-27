@@ -278,7 +278,7 @@ void main() {
         'T7: Changing consultationFee on discounted booking revalidates and resets discount if invalid',
         () async {
       final auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      final staffRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+      final staffRepo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: auditLogger);
       final userProvider = _FakeCurrentUserProvider();
       final ownerRes = await staffRepo.getStaffUserById('USER-OWNER');
       userProvider.user = ownerRes.getOrElse(() => const StaffUserModel());
@@ -333,7 +333,7 @@ void main() {
     test('T8: BookingsCubit applyDiscount and removeDiscount integration',
         () async {
       final auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-      final staffRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+      final staffRepo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: auditLogger);
 
       final applyUseCase = ApplyBookingDiscountUseCase(
         bookingsRepo: repo,

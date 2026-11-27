@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -85,7 +86,7 @@ void main() {
     final ownerUser = const StaffUserModel(id: 'usr_owner', isOwner: true, isActive: true);
 
     setUp(() {
-      repo = AnalyticsRepoImpl(seedInitialData: true);
+      repo = AnalyticsRepoImpl(seedInitialData: true, apiConsumer: LocalServerApiConsumer());
       rolesProvider = FakeRolesSessionProvider(roles: RoleDefinitionModel.defaultSystemRoles());
       userProvider = FakeUserSessionProvider(user: ownerUser, branch: 'branch_1');
       permissionEvaluator = PermissionEvaluator(userProvider: userProvider, rolesProvider: rolesProvider);

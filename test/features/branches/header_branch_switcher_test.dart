@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,7 +58,7 @@ void main() {
       getIt.unregister<SessionCubit>();
     }
 
-    branchesRepo = BranchesRepoImpl(
+    branchesRepo = BranchesRepoImpl(apiConsumer: LocalServerApiConsumer(), 
       auditLogger: InMemoryAuditLogger(),
     );
     getIt.registerLazySingleton<BranchesRepo>(() => branchesRepo);

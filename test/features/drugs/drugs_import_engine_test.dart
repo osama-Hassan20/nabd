@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
@@ -58,7 +59,7 @@ void main() {
     );
 
     setUp(() {
-      repo = DrugsRepoImpl();
+      repo = DrugsRepoImpl(apiConsumer: LocalServerApiConsumer());
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
       rolesProvider = FakeRolesSessionProvider(
         roles: RoleDefinitionModel.defaultSystemRoles(),

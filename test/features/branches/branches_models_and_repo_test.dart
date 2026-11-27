@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/errors/failures.dart';
@@ -129,7 +130,7 @@ void main() {
 
     setUp(() {
       auditLogger = InMemoryAuditLogger();
-      repo = BranchesRepoImpl(
+      repo = BranchesRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         auditLogger: auditLogger,
         activeBookingsProvider: FakeActiveBookingsProvider(
           branchCounts: {'branch_2': 5},

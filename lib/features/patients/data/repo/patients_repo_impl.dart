@@ -14,13 +14,31 @@ import 'package:eyadty/features/patients/domain/repo/patients_repo.dart';
 
 class PatientsRepoImpl implements PatientsRepo {
   final ApiConsumer? _apiConsumer;
+  final dynamic _balanceLookup;
 
   PatientsRepoImpl({
     ApiConsumer? apiConsumer,
     dynamic bookingsRepo,
     dynamic roleProvider,
     dynamic balanceLookup,
-  }) : _apiConsumer = apiConsumer;
+  })  : _apiConsumer = apiConsumer,
+        _balanceLookup = balanceLookup;
+
+  PatientModel _enrichWithBalance(PatientModel patient) {
+    if (_balanceLookup == null || patient.id == null) return patient;
+    final debt = _balanceLookup.calculateOutstandingBalance(
+      patientId: patient.id!,
+      fileNumber: patient.fileNumber,
+    ) as num;
+    final paid = _balanceLookup.calculateTotalPaid(
+      patientId: patient.id!,
+      fileNumber: patient.fileNumber,
+    ) as num;
+    return patient.copyWith(
+      outstandingBalance: debt,
+      totalPaidAmount: paid,
+    );
+  }
 
   ApiConsumer get _api => _apiConsumer ?? getIt<ApiConsumer>();
 
@@ -78,7 +96,11 @@ class PatientsRepoImpl implements PatientsRepo {
     try {
       final res = await _api.get(path: 'patients/$id');
       final data = res is Map ? (res['data'] ?? res) : res;
-      return right(PatientModel.fromJson(Map<String, dynamic>.from(data as Map)));
+      return right(
+        _enrichWithBalance(
+          PatientModel.fromJson(Map<String, dynamic>.from(data as Map)),
+        ),
+      );
     } catch (e) {
       return left(HttpFailureMapper.fromError(e));
     }
@@ -99,7 +121,11 @@ class PatientsRepoImpl implements PatientsRepo {
         options: _idempotentOptions(patient.id),
       );
       final data = res is Map ? (res['data'] ?? res) : res;
-      return right(PatientModel.fromJson(Map<String, dynamic>.from(data as Map)));
+      return right(
+        _enrichWithBalance(
+          PatientModel.fromJson(Map<String, dynamic>.from(data as Map)),
+        ),
+      );
     } catch (e) {
       return left(HttpFailureMapper.fromError(e));
     }
@@ -120,7 +146,11 @@ class PatientsRepoImpl implements PatientsRepo {
         options: _idempotentOptions(),
       );
       final data = res is Map ? (res['data'] ?? res) : res;
-      return right(PatientModel.fromJson(Map<String, dynamic>.from(data as Map)));
+      return right(
+        _enrichWithBalance(
+          PatientModel.fromJson(Map<String, dynamic>.from(data as Map)),
+        ),
+      );
     } catch (e) {
       return left(HttpFailureMapper.fromError(e));
     }

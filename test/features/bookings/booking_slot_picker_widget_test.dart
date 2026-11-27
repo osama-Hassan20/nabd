@@ -62,8 +62,8 @@ void main() {
 
     setUp(() {
       CairoTimeHelper.setFixedClock(DateTime(2026, 11, 8, 8, 30));
-      settingsRepo = SettingsRepoImpl();
-      medicalServicesRepo = MedicalServicesRepoImpl();
+      settingsRepo = SettingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+      medicalServicesRepo = MedicalServicesRepoImpl(apiConsumer: LocalServerApiConsumer());
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer(), settingsRepo: settingsRepo);
       doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         bookingsRepo: bookingsRepo,

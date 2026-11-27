@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
@@ -137,7 +138,7 @@ void main() {
 
   group('Offline Medical Catalogs Durability', () {
     test('Add, search, delete, and reload catalogs', () async {
-      final mockCatalogs = MedicalCatalogsRepoImpl();
+      final mockCatalogs = MedicalCatalogsRepoImpl(apiConsumer: LocalServerApiConsumer());
       final catalogsRepo = OfflineFirstMedicalCatalogsRepo(
         localStore: store,
         dataModeService: dataModeService,
@@ -176,7 +177,7 @@ void main() {
       final restartedRepo = OfflineFirstMedicalCatalogsRepo(
         localStore: restartedStore,
         dataModeService: DataModeService(initialReachable: false),
-        remoteRepo: MedicalCatalogsRepoImpl(),
+        remoteRepo: MedicalCatalogsRepoImpl(apiConsumer: LocalServerApiConsumer()),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -195,7 +196,7 @@ void main() {
       final settingsRepo = OfflineFirstSettingsRepo(
         localStore: store,
         dataModeService: dataModeService,
-        remoteRepo: SettingsRepoImpl(),
+        remoteRepo: SettingsRepoImpl(apiConsumer: LocalServerApiConsumer()),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -218,7 +219,7 @@ void main() {
       final restartedSettings = OfflineFirstSettingsRepo(
         localStore: restartedStore,
         dataModeService: DataModeService(initialReachable: false),
-        remoteRepo: SettingsRepoImpl(),
+        remoteRepo: SettingsRepoImpl(apiConsumer: LocalServerApiConsumer()),
         getCurrentAccountId: () => 'acc_test',
         getCurrentBranchId: () => 'branch_1',
       );

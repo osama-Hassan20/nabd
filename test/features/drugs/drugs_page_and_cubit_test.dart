@@ -89,7 +89,7 @@ void main() {
     );
 
     setUp(() {
-      repo = DrugsRepoImpl();
+      repo = DrugsRepoImpl(apiConsumer: LocalServerApiConsumer());
       medicalCatalogRepo = MedicalCatalogRepoImpl(apiConsumer: LocalServerApiConsumer());
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
       rolesProvider = FakeRolesSessionProvider(

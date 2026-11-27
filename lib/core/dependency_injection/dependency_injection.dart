@@ -842,7 +842,7 @@ Future<void> setupGetIt() async {
   );
 
   getIt.registerLazySingleton<CashierRepoImpl>(
-    () => CashierRepoImpl(),
+    () => CashierRepoImpl(apiConsumer: getIt<ApiConsumer>()),
   );
   getIt.registerLazySingleton<CashierRepo>(
     () => OfflineFirstCashierRepo(
@@ -1115,7 +1115,7 @@ Future<void> setupGetIt() async {
 
   // ─── HR & Doctor Settlements Feature ──────────────────────────────────────
   getIt.registerLazySingleton<HrRepoImpl>(
-    () => HrRepoImpl(seedInitialData: true),
+    () => HrRepoImpl(seedInitialData: true, apiConsumer: getIt<ApiConsumer>()),
   );
   getIt.registerLazySingleton<HrRepo>(
     () => OfflineFirstHrRepo(

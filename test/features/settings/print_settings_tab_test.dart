@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:dartz/dartz.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
@@ -118,7 +119,7 @@ void main() {
   });
 
   setUp(() {
-    repo = SettingsRepoImpl();
+    repo = SettingsRepoImpl(apiConsumer: LocalServerApiConsumer());
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
     final ownerRole = RoleDefinitionModel(

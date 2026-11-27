@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,7 +46,7 @@ void main() {
     await AppSharedPreferences.initialSharedPreference();
 
     auditLogger = InMemoryAuditLogger();
-    repo = StaffUsersRepoImpl(auditLogger: auditLogger);
+    repo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: auditLogger);
     sessionCubit = SessionCubit(const SessionState());
     loginCubit = LoginCubit(staffUsersRepo: repo, sessionCubit: sessionCubit);
 

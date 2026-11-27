@@ -1,9 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/local_server/handlers/analytics_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/audit_logs_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/auth_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/bookings_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/branches_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/cashier_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/doctors_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/drugs_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/hr_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/notifications_and_specialty_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/inventory_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/medical_catalogs_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/medical_services_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/patients_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/settings_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/staff_users_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/visits_local_handler.dart';
 import 'package:eyadty/core/local_server/local_server_db.dart';
 import 'package:eyadty/core/local_server/local_server_router.dart';
@@ -26,6 +38,18 @@ class LocalServerApiConsumer implements ApiConsumer {
     DoctorsLocalHandler.register(router);
     BookingsLocalHandler.register(router);
     VisitsLocalHandler.register(router);
+    BranchesLocalHandler.register(router);
+    MedicalServicesLocalHandler.register(router);
+    MedicalCatalogsLocalHandler.register(router);
+    InventoryLocalHandler.register(router);
+    SettingsLocalHandler.register(router);
+    AuditLogsLocalHandler.register(router);
+    AnalyticsLocalHandler.register(router);
+    StaffUsersLocalHandler.register(router);
+    DrugsLocalHandler.register(router);
+    CashierLocalHandler.register(router);
+    HrLocalHandler.register(router);
+    NotificationsAndSpecialtyLocalHandler.register(router);
   }
 
   Future<void> resetLocalData() => db.resetToSeeds();

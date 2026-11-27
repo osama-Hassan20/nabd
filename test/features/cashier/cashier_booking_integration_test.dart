@@ -1,4 +1,5 @@
 import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
+import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -64,8 +65,9 @@ void main() {
     late UpdateBookingUseCase updateBookingUseCase;
     late DeleteBookingUseCase deleteBookingUseCase;
 
-    setUp(() {
+    setUp(() async {
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+      await bookingsRepo.getBookings(PaginationParams(page: 1, limit: 100));
       createBookingUseCase = CreateBookingUseCase(
         repo: bookingsRepo,
         currentUserProvider: _FakeUserProvider(),

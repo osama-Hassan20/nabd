@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
@@ -17,7 +18,7 @@ void main() {
   setUp(() {
     store = InMemoryTransactionalStore();
     dataModeService = DataModeService();
-    mockRemoteRepo = StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger());
+    mockRemoteRepo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: InMemoryAuditLogger());
     repo = OfflineFirstStaffUsersRepo(
       localStore: store,
       remoteRepo: mockRemoteRepo,
@@ -86,7 +87,7 @@ void main() {
       final repo1 = OfflineFirstStaffUsersRepo(
         localStore: store1,
         dataModeService: dataMode,
-        remoteRepo: StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
+        remoteRepo: StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );
@@ -112,7 +113,7 @@ void main() {
       final repo2 = OfflineFirstStaffUsersRepo(
         localStore: store2,
         dataModeService: dataMode,
-        remoteRepo: StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
+        remoteRepo: StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: InMemoryAuditLogger(seedInitialLogs: false)),
         getCurrentAccountId: () => 'default',
         getCurrentBranchId: () => 'branch_1',
       );

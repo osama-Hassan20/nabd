@@ -60,8 +60,8 @@ void main() {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
     cashierRepo = CashierRepoImpl(seedInitialData: false);
     bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
-    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
-    settingsRepo = SettingsRepoImpl();
+    staffUsersRepo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: auditLogger);
+    settingsRepo = SettingsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
     final ownerRole = RoleDefinitionModel(
       id: 'role_owner',

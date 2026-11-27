@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/features/users_management/data/models/role_definition_model.dart';
 import 'package:eyadty/features/users_management/data/repositories/staff_users_repo_impl.dart';
@@ -14,7 +15,7 @@ void main() {
 
   setUp(() {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+    staffUsersRepo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: auditLogger);
     updatePolicyUseCase = UpdateRoleDiscountPolicyUseCase(
       staffUsersRepo: staffUsersRepo,
       auditLogger: auditLogger,

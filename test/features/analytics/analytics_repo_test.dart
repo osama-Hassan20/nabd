@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/analytics/data/models/branch_analytics_comparison_model.dart';
@@ -14,7 +15,7 @@ void main() {
 
     setUp(() {
       CairoTimeHelper.setFixedClock(DateTime(2026, 11, 15, 12, 0, 0));
-      repo = AnalyticsRepoImpl(seedInitialData: true);
+      repo = AnalyticsRepoImpl(seedInitialData: true, apiConsumer: LocalServerApiConsumer());
     });
 
     tearDown(() {

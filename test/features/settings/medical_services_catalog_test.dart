@@ -48,7 +48,7 @@ void main() {
     setUp(() {
       roleProvider = TestRoleProvider();
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
-      servicesRepo = MedicalServicesRepoImpl(
+      servicesRepo = MedicalServicesRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
       );

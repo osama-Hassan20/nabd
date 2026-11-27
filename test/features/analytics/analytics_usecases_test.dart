@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
@@ -76,7 +77,7 @@ void main() {
     );
 
     setUp(() {
-      repo = AnalyticsRepoImpl(seedInitialData: true);
+      repo = AnalyticsRepoImpl(seedInitialData: true, apiConsumer: LocalServerApiConsumer());
       auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
       rolesProvider = FakeRolesSessionProvider(

@@ -19,7 +19,7 @@ void main() {
     setUp(() {
       doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer());
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
-      medicalServicesRepo = MedicalServicesRepoImpl();
+      medicalServicesRepo = MedicalServicesRepoImpl(apiConsumer: LocalServerApiConsumer());
       staffUsersRepo = StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger());
     });
 

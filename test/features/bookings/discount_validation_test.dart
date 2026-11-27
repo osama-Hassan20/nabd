@@ -52,7 +52,7 @@ void main() {
 
   setUp(() async {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
+    staffUsersRepo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), auditLogger: auditLogger);
     bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
     userProvider = FakeCurrentUserProvider();
     rolesProvider = FakeRolesProvider();

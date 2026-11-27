@@ -254,7 +254,7 @@ class BookingsLocalHandler {
       final list = router.db.collection('bookings');
       final idx = list.indexWhere((b) => b['id'] == id);
       if (idx != -1) {
-        list[idx] = {...list[idx], 'isDeleted': true};
+        list[idx] = {...list[idx], 'status': 'cancelled'};
         router.db.persist();
       }
       return LocalServerRouter.ok({'deleted': true});

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -87,7 +88,7 @@ void main() {
   );
 
   setUp(() {
-    mockRepo = const AnalyticsRepoImpl();
+    mockRepo = AnalyticsRepoImpl(apiConsumer: LocalServerApiConsumer());
     userSession = FakeUserSessionProvider(user: adminUser);
     rolesSession = FakeRolesSessionProvider(roles: RoleDefinitionModel.defaultSystemRoles());
     permissionEvaluator = PermissionEvaluator(

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
@@ -32,8 +33,9 @@ void main() {
     if (getIt.isRegistered<BranchesRepo>()) getIt.unregister<BranchesRepo>();
 
     sessionCubit = SessionCubit(SessionState.initial());
-    settingsRepo = SettingsRepoImpl();
-    branchesRepo = BranchesRepoImpl(
+    final localApi = LocalServerApiConsumer();
+    settingsRepo = SettingsRepoImpl(apiConsumer: localApi);
+    branchesRepo = BranchesRepoImpl(apiConsumer: localApi, 
       auditLogger: InMemoryAuditLogger(),
     );
 

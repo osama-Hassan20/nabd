@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/drugs/data/models/drug_category_model.dart';
 import 'package:eyadty/features/drugs/data/models/drug_model.dart';
@@ -85,7 +86,7 @@ void main() {
     late DrugsRepoImpl repo;
 
     setUp(() {
-      repo = DrugsRepoImpl();
+      repo = DrugsRepoImpl(apiConsumer: LocalServerApiConsumer());
     });
 
     test('4. Initializes with 25 seed drugs and 8 categories', () async {

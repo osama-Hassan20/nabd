@@ -418,7 +418,7 @@ void main() {
     setUp(() {
       roleProvider = TestRoleProvider();
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
-      settingsRepo = SettingsRepoImpl();
+      settingsRepo = SettingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
@@ -545,7 +545,7 @@ void main() {
     setUp(() {
       roleProvider = TestRoleProvider();
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
-      settingsRepo = SettingsRepoImpl();
+      settingsRepo = SettingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -73,7 +74,7 @@ void main() {
     await AppSharedPreferences.initialSharedPreference();
 
     auditLogger = InMemoryAuditLogger();
-    repo = StaffUsersRepoImpl(
+    repo = StaffUsersRepoImpl(apiConsumer: LocalServerApiConsumer(), 
       auditLogger: auditLogger,
       activeBookingsProvider: FakeActiveBookingsProvider({'DOC-01': 3}),
     );
