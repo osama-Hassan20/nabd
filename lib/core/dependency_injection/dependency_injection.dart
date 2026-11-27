@@ -7,7 +7,9 @@ import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/store/transactional_local_store.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/offline/remote/remote_sync_api.dart';
-import 'package:eyadty/core/offline/remote/fake_remote_sync_api.dart';
+import 'package:eyadty/core/offline/remote/http_remote_sync_api.dart';
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
+import 'package:eyadty/core/local_server/local_server_sync_api.dart';
 import 'package:eyadty/core/offline/sync/sync_engine.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_bookings_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_cashier_repo.dart';
@@ -22,6 +24,7 @@ import 'package:eyadty/core/offline/repositories/offline_first_settings_repo.dar
 import 'package:eyadty/core/offline/repositories/offline_first_specialty_records_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_staff_users_repo.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_visits_repo.dart';
+import 'package:eyadty/core/api/api_consumer.dart';
 import 'package:eyadty/core/api/app_interceptor.dart';
 import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/api/end_points.dart';
@@ -182,7 +185,6 @@ import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart'
 // HR Feature
 import 'package:eyadty/features/hr/domain/repo/hr_repo.dart';
 import 'package:eyadty/features/hr/data/repo/hr_repo_impl.dart';
-import 'package:eyadty/features/hr/domain/contracts/doctor_settlement_visits_lookup.dart';
 import 'package:eyadty/features/hr/data/repo/doctor_settlement_visits_lookup.dart';
 import 'package:eyadty/features/hr/domain/use_cases/get_doctor_compensation_rules_use_case.dart';
 import 'package:eyadty/features/hr/domain/use_cases/save_doctor_compensation_rule_use_case.dart';
@@ -209,8 +211,7 @@ import 'package:eyadty/features/analytics/presentation/manager/analytics_cubit.d
 final getIt = GetIt.instance;
 
 Future<void> setupGetIt() async {
-  // Fail-loud safety gate: Prevent accidental mock repo registration in production mode
-  AppConfig.assertDemoModeAllowed('setupGetIt');
+  AppConfig.loadRuntimeBackendMode();
 
   // ─── Network & Core Services ───────────────────────────────────────────────
   getIt.registerSingleton<Dio>(
@@ -247,6 +248,15 @@ Future<void> setupGetIt() async {
     () => NotificationService(),
   );
 
+  if (AppConfig.isLocalMode) {
+    getIt.registerSingleton<LocalServerApiConsumer>(
+      const LocalServerApiConsumer(),
+    );
+    getIt.registerSingleton<ApiConsumer>(getIt<LocalServerApiConsumer>());
+  } else {
+    getIt.registerSingleton<ApiConsumer>(getIt<DioConsumer>());
+  }
+
   getIt.registerLazySingleton<DataModeService>(
     () {
       final service = DataModeService();
@@ -262,7 +272,9 @@ Future<void> setupGetIt() async {
   );
 
   getIt.registerLazySingleton<RemoteSyncApi>(
-    () => FakeRemoteSyncApi(),
+    () => AppConfig.isLocalMode
+        ? LocalServerSyncApi()
+        : HttpRemoteSyncApi(apiConsumer: getIt<ApiConsumer>()),
   );
 
   getIt.registerLazySingleton<SyncEngine>(
@@ -298,7 +310,7 @@ Future<void> setupGetIt() async {
 
   // ─── Shared & Auth ─────────────────────────────────────────────────────────
   getIt.registerLazySingleton<LoginRepo>(
-    () => LoginRepoImpl(apiConsumer: getIt<DioConsumer>()),
+    () => LoginRepoImpl(apiConsumer: getIt<ApiConsumer>()),
   );
 
   getIt.registerLazySingleton<LoginUseCase>(
@@ -306,7 +318,7 @@ Future<void> setupGetIt() async {
   );
 
   getIt.registerLazySingleton<LayoutRepo>(
-    () => LayoutRepoImpl(apiConsumer: getIt<DioConsumer>()),
+    () => LayoutRepoImpl(apiConsumer: getIt<ApiConsumer>()),
   );
 
   getIt.registerLazySingleton<GetProfileUseCase>(
@@ -321,7 +333,7 @@ Future<void> setupGetIt() async {
 
   // ─── Bookings Feature ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<BookingsRepoImpl>(
-    () => BookingsRepoImpl(apiConsumer: getIt<DioConsumer>()),
+    () => BookingsRepoImpl(apiConsumer: getIt<ApiConsumer>()),
   );
 
   getIt.registerLazySingleton<BookingsRepo>(
@@ -611,7 +623,7 @@ Future<void> setupGetIt() async {
 
   getIt.registerLazySingleton<PatientsRepoImpl>(
     () => PatientsRepoImpl(
-      apiConsumer: getIt<DioConsumer>(),
+      apiConsumer: getIt<ApiConsumer>(),
       roleProvider: getIt<CurrentRoleProvider>(),
       bookingsRepo: getIt<BookingsRepo>(),
       balanceLookup: getIt<PatientBalanceLookup>(),
@@ -676,7 +688,7 @@ Future<void> setupGetIt() async {
 
   // ─── Settings Feature ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<SettingsRepoImpl>(
-    () => SettingsRepoImpl(apiConsumer: getIt<DioConsumer>()),
+    () => SettingsRepoImpl(apiConsumer: getIt<ApiConsumer>()),
   );
   getIt.registerLazySingleton<SettingsRepo>(
     () => OfflineFirstSettingsRepo(
@@ -754,7 +766,7 @@ Future<void> setupGetIt() async {
   // ─── Doctors Feature ───────────────────────────────────────────────────────
   getIt.registerLazySingleton<DoctorsRepoImpl>(
     () => DoctorsRepoImpl(
-      apiConsumer: getIt<DioConsumer>(),
+      apiConsumer: getIt<ApiConsumer>(),
       roleProvider: getIt<CurrentRoleProvider>(),
       bookingsRepo: getIt<BookingsRepo>(),
       settingsRepo: getIt<SettingsRepo>(),

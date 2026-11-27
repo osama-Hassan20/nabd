@@ -1,15 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/api/dio_consumer.dart';
 import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/api/end_points.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
+import 'package:eyadty/core/local_server/local_server_sync_api.dart';
+import 'package:eyadty/core/offline/remote/http_remote_sync_api.dart';
+import 'package:eyadty/core/offline/remote/remote_sync_api.dart';
 
 void main() {
-  group('AppConfig & Demo Mode Safety Tests', () {
-    tearDown(() {
+  group('AppConfig & Backend Mode Switch Tests', () {
+    tearDown(() async {
       AppConfig.resetTestingOverrides();
+      await getIt.reset();
     });
 
-    test('1. Default configuration reflects mock stage', () {
+    test('1. Default configuration reflects local backend mode', () {
+      expect(AppConfig.backendMode, BackendMode.local);
+      expect(AppConfig.isLocalMode, isTrue);
+      expect(AppConfig.isRemoteMode, isFalse);
       expect(AppConfig.isDemoMode, isTrue);
       expect(AppConfig.baseUrl, 'http://192.168.1.60:1601/');
       expect(AppConfig.apiUrl, 'http://192.168.1.60:1601/api/v1/');
@@ -39,35 +49,26 @@ void main() {
       );
     });
 
-    test('5. assertDemoModeAllowed succeeds in demo mode and throws in non-demo mode', () {
-      AppConfig.setDemoModeForTesting(true);
-      expect(() => AppConfig.assertDemoModeAllowed('TestRepo'), returnsNormally);
+    test('5. setupGetIt in local mode registers LocalServerApiConsumer and LocalServerSyncApi', () async {
+      AppConfig.setBackendModeForTesting(BackendMode.local);
+      await getIt.reset();
+      await setupGetIt();
 
-      AppConfig.setDemoModeForTesting(false);
-      expect(
-        () => AppConfig.assertDemoModeAllowed('TestRepo'),
-        throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('TestRepo'),
-          ),
-        ),
-      );
+      expect(getIt.isRegistered<LocalServerApiConsumer>(), isTrue);
+      expect(getIt<ApiConsumer>(), isA<LocalServerApiConsumer>());
+      expect(getIt<RemoteSyncApi>(), isA<LocalServerSyncApi>());
     });
 
-    test('6. setupGetIt fails loudly if DEMO_MODE is false', () async {
-      AppConfig.setDemoModeForTesting(false);
-      expect(
-        () => setupGetIt(),
-        throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('setupGetIt'),
-          ),
-        ),
-      );
+    test('6. setupGetIt in remote mode never registers local server and uses DioConsumer + HttpRemoteSyncApi', () async {
+      AppConfig.setBackendModeForTesting(BackendMode.remote);
+      await getIt.reset();
+      await setupGetIt();
+
+      expect(AppConfig.isLocalMode, isFalse);
+      expect(AppConfig.isDemoMode, isFalse);
+      expect(getIt.isRegistered<LocalServerApiConsumer>(), isFalse);
+      expect(getIt<ApiConsumer>(), isA<DioConsumer>());
+      expect(getIt<RemoteSyncApi>(), isA<HttpRemoteSyncApi>());
     });
   });
 }

@@ -1,0 +1,5039 @@
+{
+ "$comment": "Backend contract for Eyadty derived from the Flutter code at commit 55d76d9. Endpoint names are ASSUMED by the client team and may be renamed by the backend developer; keep field names or provide a mapping. All ids are server UUID strings; timestamps ISO-8601 UTC; money in EGP as integer piasters OR decimal (confirm). Tenant = account; every record is scoped by accountId and branchId.",
+ "version": "1.0-draft",
+ "baseUrl": "{BASE_URL}/api/v1",
+ "conventions": {
+  "auth": "Bearer JWT access token + refresh token (admin/auth/login, admin/auth/refresh). Roles and per-permission matrix (StaffPermission enum) enforced server side.",
+  "envelope": {
+   "success": {
+    "data": "...",
+    "meta": {
+     "page": 1,
+     "limit": 20,
+     "total": 0
+    }
+   },
+   "error": {
+    "error": {
+     "code": "string",
+     "message": "string",
+     "fields": {}
+    }
+   }
+  },
+  "idempotency": "Mutations accept header Idempotency-Key = client operationId. Replays must return the original result.",
+  "revision": "Every mutable entity has integer revision; update sends baseRevision; mismatch returns 409 with serverVersion.",
+  "softDelete": "Deletes are tombstones (isDeleted + revision bump) so pull can propagate them.",
+  "immutability": "Finalized visits, payments, settlements and ledger entries are append-only: corrections via addendum or reversal entry, never overwrite."
+ },
+ "sync": {
+  "push": {
+   "request": {
+    "operations": [
+     {
+      "operationId": "uuid",
+      "entityType": "string",
+      "localId": "string",
+      "operation": "create|update|delete|appendAddendum|reverseFinancial",
+      "payload": {},
+      "baseRevision": 0,
+      "dependencyRefs": [
+       "localId of parent ops"
+      ]
+     }
+    ]
+   },
+   "response": {
+    "results": [
+     {
+      "operationId": "",
+      "success": true,
+      "serverId": "",
+      "serverCursor": "",
+      "confirmedRevision": 0,
+      "hasConflict": false,
+      "serverConflictVersion": {},
+      "errorMessage": "",
+      "isRetryable": true
+     }
+    ]
+   }
+  },
+  "pull": {
+   "request": "entityType + opaque cursor (never a wall clock)",
+   "response": {
+    "newCursor": "",
+    "changes": [
+     {
+      "serverId": "",
+      "localId": "",
+      "entityType": "",
+      "revision": 0,
+      "isDeleted": false,
+      "payload": {}
+     }
+    ]
+   }
+  },
+  "entityTypes": [
+   "booking",
+   "patient",
+   "drug",
+   "medical_service",
+   "inventory",
+   "visit",
+   "cashier_shift",
+   "cashier_payment",
+   "cashier_movement",
+   "cashier_refund",
+   "staff_user",
+   "staff_role",
+   "doctor",
+   "doctor_leave",
+   "hr_compensation_rule",
+   "hr_payroll",
+   "hr_doctor_settlement",
+   "hr_advance",
+   "holiday",
+   "settings"
+  ],
+  "enums": {
+   "OutboxOperationType": [
+    "create",
+    "update",
+    "delete",
+    "appendAddendum",
+    "reverseFinancial"
+   ],
+   "SyncStatus": [
+    "synced",
+    "pending",
+    "failed",
+    "conflict",
+    "blocked"
+   ]
+  }
+ },
+ "enums": {
+  "StaffPermissionEnum": [
+   "accessLiveQueue",
+   "createBooking",
+   "editBooking",
+   "cancelBooking",
+   "reorderQueue",
+   "accessPatients",
+   "createPatient",
+   "editPatient",
+   "viewVisitsQueue",
+   "startConsultation",
+   "recordVitals",
+   "viewMedicalRecordDiagnostics",
+   "viewConsultationNotes",
+   "viewAllDoctorsMedicalRecords",
+   "editMedicalDiagnosis",
+   "issuePrescription",
+   "manageDrugCatalog",
+   "accessDoctors",
+   "manageDoctorSchedules",
+   "manageDoctorLeaves",
+   "approveLeavesAndReferrals",
+   "viewClinicalPerformance",
+   "accessCashier",
+   "collectPayment",
+   "refundPayment"
+  ],
+  "MedicalSpecialty": [
+   "generalPractice",
+   "internalMedicine",
+   "cardiology",
+   "pediatrics",
+   "obstetricsGynecology",
+   "dentistry",
+   "orthodontics",
+   "dermatology",
+   "cosmeticPlasticSurgery",
+   "ophthalmology",
+   "ent",
+   "orthopedics",
+   "generalSurgery",
+   "urology",
+   "neurology",
+   "psychiatry",
+   "physiotherapy",
+   "nutrition",
+   "endocrinology",
+   "other"
+  ],
+  "PrintFormat": [
+   "a4",
+   "thermal80"
+  ],
+  "UserRoleEnum": [
+   "admin",
+   "doctor",
+   "reception"
+  ],
+  "PaymentMethod": [
+   "cash",
+   "card",
+   "bankTransfer"
+  ],
+  "ClinicTypeEnum": [
+   "singleDoctor",
+   "polyclinic"
+  ],
+  "PaymentStatusEnum": [
+   "paid",
+   "unpaid",
+   "partiallyPaid"
+  ],
+  "BookingStatusEnum": [
+   "waiting",
+   "inConsultation",
+   "completed",
+   "noShow",
+   "postponed",
+   "cancelled"
+  ],
+  "DiscountTypeEnum": [
+   "none",
+   "percentage",
+   "fixedAmount",
+   "free"
+  ],
+  "BookingTypeEnum": [
+   "newVisit",
+   "revisit",
+   "emergency",
+   "oneTime",
+   "recurring"
+  ],
+  "SlotStatusEnum": [
+   "available",
+   "booked",
+   "past",
+   "breakTime",
+   "insufficientTime"
+  ],
+  "DoctorGenderEnum": [
+   "male",
+   "female"
+  ],
+  "WeekDayEnum": [
+   "saturday",
+   "sunday",
+   "monday",
+   "tuesday",
+   "wednesday",
+   "thursday",
+   "friday"
+  ],
+  "DoctorStatusEnum": [
+   "available",
+   "busy",
+   "onLeave"
+  ],
+  "DoctorAvailabilityEnum": [
+   "available",
+   "notWorkingDay",
+   "onLeave",
+   "facilityHoliday",
+   "noSchedule"
+  ],
+  "BloodGroupEnum": [
+   "aPositive",
+   "aNegative",
+   "bPositive",
+   "bNegative",
+   "abPositive",
+   "abNegative",
+   "oPositive",
+   "oNegative",
+   "unknown"
+  ],
+  "MedicalCatalogTypeEnum": [
+   "allergy",
+   "chronicDisease"
+  ],
+  "GenderEnum": [
+   "male",
+   "female",
+   "unknown"
+  ],
+  "MaritalStatus": [
+   "single",
+   "married",
+   "divorced",
+   "widowed"
+  ],
+  "ShiftStatusEnum": [
+   "open",
+   "closed",
+   "closedPendingApproval",
+   "forceClosed"
+  ],
+  "CashMovementTypeEnum": [
+   "pettyExpense",
+   "capitalInjection",
+   "bankDeposit",
+   "ownerWithdrawal"
+  ],
+  "CompensationTypeEnum": [
+   "percentage",
+   "fixedPerVisit",
+   "salaryOnly",
+   "salaryPlusPercentage",
+   "salaryPlusFixed"
+  ],
+  "PayrollStatusEnum": [
+   "draft",
+   "confirmed",
+   "paid"
+  ],
+  "EmployeeTypeEnum": [
+   "doctor",
+   "staff"
+  ],
+  "LedgerEntryTypeEnum": [
+   "advance",
+   "deduction",
+   "bonus",
+   "adjustment",
+   "payout"
+  ],
+  "SettlementStatusEnum": [
+   "draft",
+   "confirmed",
+   "paid"
+  ],
+  "AnalyticsTimeRangeEnum": [
+   "today",
+   "thisWeek",
+   "thisMonth",
+   "lastMonth",
+   "custom"
+  ],
+  "DrugSourceEnum": [
+   "preset",
+   "custom",
+   "imported",
+   "quickAdd"
+  ],
+  "ReviewStatusEnum": [
+   "pending",
+   "approved",
+   "rejected",
+   "merged"
+  ],
+  "VisitStatusEnum": [
+   "triage",
+   "inProgress",
+   "finalized"
+  ],
+  "AddendumChangeTypeEnum": [
+   "dose",
+   "frequency",
+   "duration",
+   "instructions",
+   "discontinue",
+   "add",
+   "diagnosis"
+  ],
+  "MedicalCatalogKindEnum": [
+   "radiology",
+   "labTests",
+   "chronicDiseases",
+   "allergies",
+   "surgeries"
+  ]
+ },
+ "entities": {
+  "AnalyticsSummaryKpi": {
+   "source": "features/analytics/data/models/analytics_summary_kpi_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "totalRevenuePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "netProfitPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalVisitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "completedVisitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "cancelledVisitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "noShowVisitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalBookingsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "averageWaitTimeMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "averageConsultationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "outstandingDebtsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalDoctorPayoutsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalStaffPayrollPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "patientReturnRatePercent": {
+     "type": "number",
+     "nullable": true
+    },
+    "revenueGrowthRatePercent": {
+     "type": "number",
+     "nullable": true
+    },
+    "visitsGrowthRatePercent": {
+     "type": "number",
+     "nullable": true
+    }
+   }
+  },
+  "BranchAnalyticsComparison": {
+   "source": "features/analytics/data/models/branch_analytics_comparison_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchName": {
+     "type": "string",
+     "nullable": true
+    },
+    "totalRevenuePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "visitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "occupancyRatePercent": {
+     "type": "number",
+     "nullable": true
+    },
+    "shareOfTotalRevenuePercent": {
+     "type": "number",
+     "nullable": true
+    }
+   }
+  },
+  "DoctorPerformanceMetric": {
+   "source": "features/analytics/data/models/doctor_performance_metric_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialty": {
+     "type": "string",
+     "nullable": true
+    },
+    "visitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "revenueGeneratedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "doctorCommissionPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "clinicSharePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "avgConsultationDurationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "patientSatisfactionRating": {
+     "type": "number",
+     "nullable": true
+    }
+   }
+  },
+  "HourlyTrafficMetric": {
+   "source": "features/analytics/data/models/hourly_traffic_metric_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "hour": {
+     "type": "integer",
+     "nullable": true
+    },
+    "dayOfWeek": {
+     "type": "integer",
+     "nullable": true
+    },
+    "visitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "occupancyLevel": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "RevenueTrendPoint": {
+   "source": "features/analytics/data/models/revenue_trend_point_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "label": {
+     "type": "string",
+     "nullable": true
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "revenuePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "visitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "doctorSharePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "netProfitPiastres": {
+     "type": "integer",
+     "nullable": true
+    }
+   }
+  },
+  "ServiceRevenueDistribution": {
+   "source": "features/analytics/data/models/service_revenue_distribution_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "serviceName": {
+     "type": "string",
+     "nullable": true
+    },
+    "category": {
+     "type": "string",
+     "nullable": true
+    },
+    "count": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalRevenuePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "percentage": {
+     "type": "number",
+     "nullable": true
+    }
+   }
+  },
+  "Booking": {
+   "source": "features/bookings/data/models/booking_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "queueNumber": {
+     "type": "integer",
+     "nullable": true
+    },
+    "patientId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientName": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientPhone": {
+     "type": "string",
+     "nullable": true
+    },
+    "fileNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "clinicRoom": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialty": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialtyCode": {
+     "$enum": "MedicalSpecialty",
+     "nullable": true
+    },
+    "visitType": {
+     "$enum": "BookingTypeEnum",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "BookingStatusEnum",
+     "nullable": true
+    },
+    "paymentStatus": {
+     "$enum": "PaymentStatusEnum",
+     "nullable": true
+    },
+    "consultationFee": {
+     "type": "number",
+     "nullable": true
+    },
+    "paidAmount": {
+     "type": "number",
+     "nullable": true
+    },
+    "appointmentTime": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "arrivalTime": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "consultationStartTime": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "estimatedWaitMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "updatedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "durationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "cancelReason": {
+     "type": "string",
+     "nullable": true
+    },
+    "cancelledAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "cancelledBy": {
+     "type": "string",
+     "nullable": true
+    },
+    "originalAppointmentTime": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "rescheduledTo": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "postponedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "postponeReason": {
+     "type": "string",
+     "nullable": true
+    },
+    "patient": {
+     "$ref": "Patient",
+     "nullable": true
+    },
+    "customer": {
+     "type": "string",
+     "dartType": "CustomerModel",
+     "nullable": true
+    },
+    "technicians": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "dartType": "TechnicianModel"
+     }
+    },
+    "serviceId": {
+     "type": "string",
+     "nullable": true
+    },
+    "serviceName": {
+     "type": "string",
+     "nullable": true
+    },
+    "bookingType": {
+     "$enum": "BookingTypeEnum",
+     "nullable": true
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "startTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "endTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "totalPrice": {
+     "type": "number",
+     "nullable": true
+    },
+    "technicianIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "technicianNames": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "technicianId": {
+     "type": "string",
+     "nullable": true
+    },
+    "technicianName": {
+     "type": "string",
+     "nullable": true
+    },
+    "discountType": {
+     "$enum": "DiscountTypeEnum",
+     "nullable": true
+    },
+    "discountValue": {
+     "type": "number",
+     "nullable": true
+    },
+    "discountReason": {
+     "type": "string",
+     "nullable": true
+    },
+    "discountApprovedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "discountApprovedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "discountRemovedReason": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "BookingSummary": {
+   "source": "features/bookings/data/models/booking_summary_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "totalBookings": {
+     "type": "integer",
+     "nullable": true
+    },
+    "upcomingBookings": {
+     "type": "integer",
+     "nullable": true
+    },
+    "completedBookings": {
+     "type": "integer",
+     "nullable": true
+    },
+    "cancelledBookings": {
+     "type": "integer",
+     "nullable": true
+    },
+    "inWaitingCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "inConsultationCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "noShowCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "postponedCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalDiscountsGiven": {
+     "type": "number",
+     "nullable": true
+    },
+    "freeConsultationsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalNetRevenue": {
+     "type": "number",
+     "nullable": true
+    }
+   }
+  },
+  "TimeSlot": {
+   "source": "features/bookings/data/models/time_slot_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "startTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "endTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "occupiedEndTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "SlotStatusEnum",
+     "nullable": true
+    },
+    "bookedPatientName": {
+     "type": "string",
+     "nullable": true
+    },
+    "bookedBookingId": {
+     "type": "string",
+     "nullable": true
+    },
+    "serviceDurationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "bufferDurationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "isCurrentBookingSlot": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "reasonKey": {
+     "type": "string",
+     "nullable": true
+    },
+    "isMorning": {
+     "type": "boolean",
+     "nullable": true
+    }
+   }
+  },
+  "Branch": {
+   "source": "features/branches/data/models/branch_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "nameKey": {
+     "type": "string",
+     "nullable": true
+    },
+    "address": {
+     "type": "string",
+     "nullable": true
+    },
+    "phone": {
+     "type": "string",
+     "nullable": true
+    },
+    "email": {
+     "type": "string",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "isMain": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "openingTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "closingTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "workingDays": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    },
+    "specialHolidays": {
+     "type": "array",
+     "items": {
+      "$ref": "SpecialHoliday"
+     },
+     "nullable": true
+    },
+    "activeRoomsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "staffMembersCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "updatedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "CashMovement": {
+   "source": "features/cashier/data/models/cash_movement_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "clientRequestId": {
+     "type": "string",
+     "nullable": true
+    },
+    "shiftId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "movementType": {
+     "$enum": "CashMovementTypeEnum",
+     "nullable": true
+    },
+    "amountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "reason": {
+     "type": "string",
+     "nullable": true
+    },
+    "recipientName": {
+     "type": "string",
+     "nullable": true
+    },
+    "performedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "CashierShift": {
+   "source": "features/cashier/data/models/cashier_shift_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "cashierUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "cashierName": {
+     "type": "string",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "ShiftStatusEnum",
+     "nullable": true
+    },
+    "openedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "closedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "businessDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "openingBalancePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "actualCashCountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "expectedCashPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "cashDifferencePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalCashCollectedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalCardCollectedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalBankTransferPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalExpensesPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalRefundsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalCapitalInjectionsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalBankDepositsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalOwnerWithdrawalsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "closingNotes": {
+     "type": "string",
+     "nullable": true
+    },
+    "isShortageApproved": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "isOwnerSelfApproved": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "shortageApprovedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "shortageApprovedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "shortageReason": {
+     "type": "string",
+     "nullable": true
+    },
+    "forceClosedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "forceCloseReason": {
+     "type": "string",
+     "nullable": true
+    },
+    "transactionCount": {
+     "type": "integer",
+     "nullable": true
+    }
+   }
+  },
+  "CashierSummaryMetrics": {
+   "source": "features/cashier/data/models/cashier_summary_metrics_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "openingBalancePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "expectedCashPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "actualCashPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "differencePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "cashCollectedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "cardCollectedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "bankTransferPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalExpensesPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalRefundsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "transactionsCount": {
+     "type": "integer",
+     "nullable": true
+    }
+   }
+  },
+  "PaymentTransaction": {
+   "source": "features/cashier/data/models/payment_transaction_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "clientRequestId": {
+     "type": "string",
+     "nullable": true
+    },
+    "shiftId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "bookingId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientName": {
+     "type": "string",
+     "nullable": true
+    },
+    "amountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "paymentMethod": {
+     "$enum": "PaymentMethod",
+     "nullable": true
+    },
+    "referenceNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "cashierUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "cashierName": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "isRefunded": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "refundedAmountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "isVoidedBySystem": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "RefundTransaction": {
+   "source": "features/cashier/data/models/refund_transaction_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "clientRequestId": {
+     "type": "string",
+     "nullable": true
+    },
+    "originalPaymentId": {
+     "type": "string",
+     "nullable": true
+    },
+    "shiftId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "bookingId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientId": {
+     "type": "string",
+     "nullable": true
+    },
+    "refundAmountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "refundMethod": {
+     "$enum": "PaymentMethod",
+     "nullable": true
+    },
+    "reason": {
+     "type": "string",
+     "nullable": true
+    },
+    "authorizedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "authorizedByName": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "DoctorBreakTime": {
+   "source": "features/doctors/data/models/doctor_break_time_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "startTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "endTime": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "DoctorLeave": {
+   "source": "features/doctors/data/models/doctor_leave_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "startDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "endDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "reason": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "Doctor": {
+   "source": "features/doctors/data/models/doctor_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "phone": {
+     "type": "string",
+     "nullable": true
+    },
+    "image": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialty": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialties": {
+     "type": "array",
+     "items": {
+      "$enum": "MedicalSpecialty"
+     }
+    },
+    "gender": {
+     "$enum": "DoctorGenderEnum",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "DoctorStatusEnum",
+     "nullable": true
+    },
+    "todayTasksCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "upcomingBookingsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "completedBookingsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "updatedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "DoctorSchedule": {
+   "source": "features/doctors/data/models/doctor_schedule_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "workDays": {
+     "type": "array",
+     "items": {
+      "$ref": "DoctorWorkDay"
+     },
+     "nullable": true
+    },
+    "slotDurationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "bufferDurationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "isAcceptingWalkIns": {
+     "type": "boolean",
+     "nullable": true
+    }
+   }
+  },
+  "DoctorWorkDay": {
+   "source": "features/doctors/data/models/doctor_work_day_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "dayOfWeek": {
+     "$enum": "WeekDayEnum",
+     "nullable": true
+    },
+    "isWorking": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "startTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "endTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "breaks": {
+     "type": "array",
+     "items": {
+      "$ref": "DoctorBreakTime"
+     },
+     "nullable": true
+    }
+   }
+  },
+  "DrugCategory": {
+   "source": "features/drugs/data/models/drug_category_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "nameAr": {
+     "type": "string",
+     "nullable": true
+    },
+    "nameEn": {
+     "type": "string",
+     "nullable": true
+    },
+    "description": {
+     "type": "string",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    }
+   }
+  },
+  "Drug": {
+   "source": "features/drugs/data/models/drug_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "scientificName": {
+     "type": "string",
+     "nullable": true
+    },
+    "categoryId": {
+     "type": "string",
+     "nullable": true
+    },
+    "concentration": {
+     "type": "string",
+     "nullable": true
+    },
+    "defaultDosage": {
+     "type": "string",
+     "nullable": true
+    },
+    "defaultFrequency": {
+     "type": "string",
+     "nullable": true
+    },
+    "defaultDuration": {
+     "type": "string",
+     "nullable": true
+    },
+    "description": {
+     "type": "string",
+     "nullable": true
+    },
+    "manufacturer": {
+     "type": "string",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "isQuickAdded": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "unsafeInPregnancy": {
+     "type": "boolean"
+    },
+    "unsafeInLactation": {
+     "type": "boolean"
+    },
+    "reviewStatus": {
+     "$enum": "ReviewStatusEnum",
+     "nullable": true
+    },
+    "source": {
+     "$enum": "DrugSourceEnum",
+     "nullable": true
+    },
+    "createdByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "reviewedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "reviewedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "PrescriptionTemplateItem": {
+   "source": "features/drugs/data/models/prescription_template_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "drugId": {
+     "type": "string",
+     "nullable": true
+    },
+    "drugName": {
+     "type": "string",
+     "nullable": true
+    },
+    "scientificName": {
+     "type": "string",
+     "nullable": true
+    },
+    "concentration": {
+     "type": "string",
+     "nullable": true
+    },
+    "dosage": {
+     "type": "string",
+     "nullable": true
+    },
+    "frequency": {
+     "type": "string",
+     "nullable": true
+    },
+    "duration": {
+     "type": "string",
+     "nullable": true
+    },
+    "instructions": {
+     "type": "string",
+     "nullable": true
+    },
+    "orderIndex": {
+     "type": "integer",
+     "nullable": true
+    }
+   }
+  },
+  "PrescriptionTemplate": {
+   "source": "features/settings/data/models/prescription_template_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "clinicDisplayName": {
+     "type": "string"
+    },
+    "doctorDisplayName": {
+     "type": "string"
+    },
+    "doctorTitle": {
+     "type": "string"
+    },
+    "englishDoctorName": {
+     "type": "string"
+    },
+    "englishDoctorTitle": {
+     "type": "string"
+    },
+    "medicalLicenseNumber": {
+     "type": "string"
+    },
+    "ministryLicenseNumber": {
+     "type": "string"
+    },
+    "addresses": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "phoneNumbers": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "headerMode": {
+     "type": "string"
+    },
+    "headerBannerBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "headerHeight": {
+     "type": "number"
+    },
+    "headerBackgroundStyle": {
+     "type": "string"
+    },
+    "headerAlignment": {
+     "type": "string"
+    },
+    "headerLayout": {
+     "type": "string"
+    },
+    "preprintedHeaderHeight": {
+     "type": "number"
+    },
+    "preprintedFooterHeight": {
+     "type": "number"
+    },
+    "hideFooterOnPreprinted": {
+     "type": "boolean"
+    },
+    "rxLayoutStyle": {
+     "type": "string"
+    },
+    "showFollowUpBox": {
+     "type": "boolean"
+    },
+    "followUpText": {
+     "type": "string"
+    },
+    "logoImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "watermarkImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "qrCodeImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "stampImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "signatureImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "fullPageBackgroundBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "showQrCode": {
+     "type": "boolean"
+    },
+    "showMinistryLicense": {
+     "type": "boolean"
+    },
+    "showEmergencyPhones": {
+     "type": "boolean"
+    },
+    "showFileBarcode": {
+     "type": "boolean"
+    },
+    "showChronicDiseasesAndAllergies": {
+     "type": "boolean"
+    },
+    "showVitalSigns": {
+     "type": "boolean"
+    },
+    "showClinicalDiagnosis": {
+     "type": "boolean"
+    },
+    "watermarkEnabled": {
+     "type": "boolean"
+    },
+    "watermarkType": {
+     "type": "string"
+    },
+    "watermarkCustomText": {
+     "type": "string"
+    },
+    "watermarkOpacity": {
+     "type": "number"
+    },
+    "watermarkPosition": {
+     "type": "string"
+    },
+    "enableMicroprintProtection": {
+     "type": "boolean"
+    },
+    "footerMode": {
+     "type": "string"
+    },
+    "footerBannerBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "footerBackgroundStyle": {
+     "type": "string"
+    },
+    "footerShapeStyle": {
+     "type": "string"
+    },
+    "headerShapeStyle": {
+     "type": "string"
+    },
+    "includeDoctorSignature": {
+     "type": "boolean"
+    },
+    "includeOfficialStamp": {
+     "type": "boolean"
+    },
+    "officialStampText": {
+     "type": "string"
+    },
+    "legalDisclaimer": {
+     "type": "string"
+    },
+    "topMargin": {
+     "type": "number"
+    },
+    "bottomMargin": {
+     "type": "number"
+    },
+    "rightMargin": {
+     "type": "number"
+    },
+    "leftMargin": {
+     "type": "number"
+    },
+    "defaultPaperSize": {
+     "type": "string"
+    },
+    "footerHeight": {
+     "type": "number"
+    },
+    "headerMarginTop": {
+     "type": "number"
+    },
+    "headerMarginBottom": {
+     "type": "number"
+    },
+    "headerMarginRight": {
+     "type": "number"
+    },
+    "headerMarginLeft": {
+     "type": "number"
+    },
+    "bodyMarginTop": {
+     "type": "number"
+    },
+    "bodyMarginBottom": {
+     "type": "number"
+    },
+    "bodyMarginRight": {
+     "type": "number"
+    },
+    "bodyMarginLeft": {
+     "type": "number"
+    },
+    "footerMarginTop": {
+     "type": "number"
+    },
+    "footerMarginBottom": {
+     "type": "number"
+    },
+    "footerMarginRight": {
+     "type": "number"
+    },
+    "footerMarginLeft": {
+     "type": "number"
+    },
+    "enableBackPage": {
+     "type": "boolean"
+    },
+    "backPageMode": {
+     "type": "string"
+    },
+    "backPageTitle": {
+     "type": "string"
+    },
+    "backPageSubtitle": {
+     "type": "string"
+    },
+    "backPageHeaderBannerBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "backPageInstructions": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "backPageDietAdvice": {
+     "type": "string"
+    },
+    "backPageEmergencyNotes": {
+     "type": "string"
+    },
+    "backPageFooterNotes": {
+     "type": "string"
+    }
+   }
+  },
+  "DoctorCompensationRule": {
+   "source": "features/hr/data/models/doctor_compensation_rule_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "compensationType": {
+     "$enum": "CompensationTypeEnum",
+     "nullable": true
+    },
+    "commissionPercentage": {
+     "type": "number",
+     "nullable": true
+    },
+    "fixedAmountPerVisitPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "monthlyBaseSalaryPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "effectiveFrom": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "payForFreeVisits": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "DoctorSettlementItem": {
+   "source": "features/hr/data/models/doctor_settlement_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "visitId": {
+     "type": "string",
+     "nullable": true
+    },
+    "bookingId": {
+     "type": "string",
+     "nullable": true
+    },
+    "recognitionDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientName": {
+     "type": "string",
+     "nullable": true
+    },
+    "serviceName": {
+     "type": "string",
+     "nullable": true
+    },
+    "grossFeePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "discountAmountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "netAmountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "recognizedAmountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "commissionPercentageSnapshot": {
+     "type": "number",
+     "nullable": true
+    },
+    "fixedFeeSnapshotPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "doctorEarnedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "clinicSharePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "paymentStatusSnapshot": {
+     "$enum": "PaymentStatusEnum",
+     "nullable": true
+    },
+    "isFullyCollected": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "eventIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    }
+   }
+  },
+  "DoctorSettlement": {
+   "source": "features/hr/data/models/doctor_settlement_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "settlementNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "periodStart": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "periodEnd": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "SettlementStatusEnum",
+     "nullable": true
+    },
+    "totalVisitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalNetRevenuePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalDoctorCommissionPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalClinicSharePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "baseSalaryPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalBonusesPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalDeductionsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalAdvancesDeductedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "netPayablePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "compensationRuleSnapshot": {
+     "$ref": "DoctorCompensationRule",
+     "nullable": true
+    },
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "DoctorSettlementItem"
+     },
+     "nullable": true
+    },
+    "consumedEventIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    },
+    "consumedAdvanceEntryIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    },
+    "confirmedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "confirmedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "paidAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "paymentMethod": {
+     "$enum": "PaymentMethod",
+     "nullable": true
+    },
+    "paymentReferenceNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "isOwnerSelfConfirmed": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "source": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "EmployeeLedgerEntry": {
+   "source": "features/hr/data/models/employee_ledger_entry_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "employeeId": {
+     "type": "string",
+     "nullable": true
+    },
+    "employeeType": {
+     "$enum": "EmployeeTypeEnum",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "entryType": {
+     "$enum": "LedgerEntryTypeEnum",
+     "nullable": true
+    },
+    "amountPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "reason": {
+     "type": "string",
+     "nullable": true
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "performedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "clientRequestId": {
+     "type": "string",
+     "nullable": true
+    },
+    "reversesEntryId": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "StaffPayrollItem": {
+   "source": "features/hr/data/models/staff_payroll_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "staffUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "employeeName": {
+     "type": "string",
+     "nullable": true
+    },
+    "jobTitle": {
+     "type": "string",
+     "nullable": true
+    },
+    "primaryBranchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "baseSalaryPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "housingAllowancePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "transportationAllowancePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalAllowancesPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "insuranceDeductionPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "taxDeductionPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "ledgerDeductionsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "ledgerBonusesPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "advancesDeductedPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalDeductionsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "netSalaryPiastres": {
+     "type": "integer",
+     "nullable": true
+    }
+   }
+  },
+  "StaffPayrollPeriod": {
+   "source": "features/hr/data/models/staff_payroll_period_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "payrollNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "primaryBranchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "month": {
+     "type": "integer",
+     "nullable": true
+    },
+    "year": {
+     "type": "integer",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "PayrollStatusEnum",
+     "nullable": true
+    },
+    "totalEmployeesCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalBaseSalaryPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalAllowancesPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalDeductionsPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "totalNetPayablePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "StaffPayrollItem"
+     },
+     "nullable": true
+    },
+    "confirmedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "confirmedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "paidAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "StaffPayrollProfile": {
+   "source": "features/hr/data/models/staff_payroll_profile_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "staffUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "fullName": {
+     "type": "string",
+     "nullable": true
+    },
+    "jobTitle": {
+     "type": "string",
+     "nullable": true
+    },
+    "primaryBranchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "baseSalaryPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "housingAllowancePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "transportationAllowancePiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "insuranceDeductionPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "taxDeductionPiastres": {
+     "type": "integer",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "updatedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "InventoryTransaction": {
+   "source": "features/inventory/data/models/inventory_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "itemId": {
+     "type": "string"
+    },
+    "itemName": {
+     "type": "string"
+    },
+    "type": {
+     "type": "string"
+    },
+    "quantity": {
+     "type": "integer"
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "performedBy": {
+     "type": "string"
+    },
+    "notes": {
+     "type": "string"
+    }
+   }
+  },
+  "InventoryItem": {
+   "source": "features/inventory/data/models/inventory_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "code": {
+     "type": "string"
+    },
+    "category": {
+     "type": "string"
+    },
+    "unit": {
+     "type": "string"
+    },
+    "currentStock": {
+     "type": "integer"
+    },
+    "minStockAlert": {
+     "type": "integer"
+    },
+    "unitCost": {
+     "type": "number"
+    },
+    "expiryDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "shelfLocation": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "lastRestockDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "lastConsumedDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "MedicalCatalogEntry": {
+   "source": "features/medical_catalogs/data/models/medical_catalog_entry_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "code": {
+     "type": "string"
+    },
+    "kind": {
+     "$enum": "MedicalCatalogKindEnum"
+    },
+    "category": {
+     "type": "string"
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean"
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time"
+    }
+   }
+  },
+  "NotificationItem": {
+   "source": "features/notifications/data/models/notification_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "title": {
+     "type": "string"
+    },
+    "body": {
+     "type": "string"
+    },
+    "type": {
+     "type": "string",
+     "dartType": "NotificationTypeEnum"
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "isRead": {
+     "type": "boolean"
+    },
+    "senderName": {
+     "type": "string",
+     "nullable": true
+    },
+    "targetAudience": {
+     "type": "string",
+     "nullable": true
+    },
+    "actionKey": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "ActiveMedication": {
+   "source": "features/patients/data/models/clinical_record_models.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "medicationName": {
+     "type": "string"
+    },
+    "dosage": {
+     "type": "string"
+    },
+    "frequency": {
+     "type": "string"
+    },
+    "prescribedFor": {
+     "type": "string",
+     "nullable": true
+    },
+    "startDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "instructions": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "SurgicalProcedure": {
+   "source": "features/patients/data/models/clinical_record_models.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "procedureName": {
+     "type": "string"
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "hospital": {
+     "type": "string",
+     "nullable": true
+    },
+    "surgeonName": {
+     "type": "string",
+     "nullable": true
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "LabRadiology": {
+   "source": "features/patients/data/models/clinical_record_models.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "title": {
+     "type": "string"
+    },
+    "type": {
+     "type": "string"
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "centerName": {
+     "type": "string",
+     "nullable": true
+    },
+    "requestingDoctor": {
+     "type": "string",
+     "nullable": true
+    },
+    "resultSummary": {
+     "type": "string",
+     "nullable": true
+    },
+    "normalRange": {
+     "type": "string",
+     "nullable": true
+    },
+    "attachmentBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "fileUrl": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "EyeTrackingExam": {
+   "source": "features/patients/data/models/clinical_record_models.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "examDate": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "iopRight": {
+     "type": "number",
+     "nullable": true
+    },
+    "iopLeft": {
+     "type": "number",
+     "nullable": true
+    },
+    "visualAcuityRight": {
+     "type": "string",
+     "nullable": true
+    },
+    "visualAcuityLeft": {
+     "type": "string",
+     "nullable": true
+    },
+    "fundusNotes": {
+     "type": "string",
+     "nullable": true
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "BeforeAfterGalleryItem": {
+   "source": "features/patients/data/models/clinical_record_models.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "title": {
+     "type": "string"
+    },
+    "specialty": {
+     "type": "string"
+    },
+    "startDate": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "latestDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "beforeImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "afterImageBase64": {
+     "type": "string",
+     "nullable": true
+    },
+    "totalSessionsSoFar": {
+     "type": "integer"
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "clinicalNotes": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "MedicalCatalogItem": {
+   "source": "features/patients/data/models/medical_catalog_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "type": {
+     "type": "string",
+     "nullable": true
+    },
+    "aliases": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    }
+   }
+  },
+  "Patient": {
+   "source": "features/patients/data/models/patient_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "fileNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "phone": {
+     "type": "string",
+     "nullable": true
+    },
+    "phoneHasWhatsapp": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "dateOfBirth": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "gender": {
+     "$enum": "GenderEnum",
+     "nullable": true
+    },
+    "bloodGroup": {
+     "$enum": "BloodGroupEnum",
+     "nullable": true
+    },
+    "allergies": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    },
+    "chronicDiseases": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    },
+    "heightCm": {
+     "type": "number",
+     "nullable": true
+    },
+    "weightKg": {
+     "type": "number",
+     "nullable": true
+    },
+    "isPregnant": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "isNursing": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "lastMenstrualPeriodDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "maritalStatus": {
+     "$enum": "MaritalStatus",
+     "nullable": true
+    },
+    "estimatedDueDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "nursingBabyAgeMonths": {
+     "type": "integer",
+     "nullable": true
+    },
+    "gravidaCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "paraCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "miscarriageCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "cesareanCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "contraceptionMethod": {
+     "type": "string",
+     "nullable": true
+    },
+    "isMenopause": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "hasPregnancyAllergyWarning": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "governorate": {
+     "type": "string",
+     "nullable": true
+    },
+    "city": {
+     "type": "string",
+     "nullable": true
+    },
+    "detailedAddress": {
+     "type": "string",
+     "nullable": true
+    },
+    "emergencyContactName": {
+     "type": "string",
+     "nullable": true
+    },
+    "emergencyContactPhone": {
+     "type": "string",
+     "nullable": true
+    },
+    "emergencyContactRelation": {
+     "type": "string",
+     "nullable": true
+    },
+    "guardianName": {
+     "type": "string",
+     "nullable": true
+    },
+    "guardianPhone": {
+     "type": "string",
+     "nullable": true
+    },
+    "guardianRelation": {
+     "type": "string",
+     "nullable": true
+    },
+    "insuranceCompany": {
+     "type": "string",
+     "nullable": true
+    },
+    "insurancePolicyNumber": {
+     "type": "string",
+     "nullable": true
+    },
+    "insuranceCoveragePercent": {
+     "type": "number",
+     "nullable": true
+    },
+    "internalNotes": {
+     "type": "string",
+     "nullable": true
+    },
+    "isArchived": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "archivedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "archiveReason": {
+     "type": "string",
+     "nullable": true
+    },
+    "totalVisitsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "lastVisitDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "nextAppointmentDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "totalPaidAmount": {
+     "type": "number",
+     "nullable": true
+    },
+    "outstandingBalance": {
+     "type": "number",
+     "nullable": true
+    },
+    "treatmentPlans": {
+     "type": "array",
+     "items": {
+      "$ref": "PatientTreatmentPlan"
+     },
+     "nullable": true
+    },
+    "activeMedications": {
+     "type": "array",
+     "items": {
+      "$ref": "ActiveMedication"
+     },
+     "nullable": true
+    },
+    "surgicalHistory": {
+     "type": "array",
+     "items": {
+      "$ref": "SurgicalProcedure"
+     },
+     "nullable": true
+    },
+    "labAndRadiology": {
+     "type": "array",
+     "items": {
+      "$ref": "LabRadiology"
+     },
+     "nullable": true
+    },
+    "eyeExams": {
+     "type": "array",
+     "items": {
+      "$ref": "EyeTrackingExam"
+     },
+     "nullable": true
+    },
+    "beforeAfterGallery": {
+     "type": "array",
+     "items": {
+      "$ref": "BeforeAfterGalleryItem"
+     },
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "updatedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "TreatmentSessionRecord": {
+   "source": "features/patients/data/models/patient_treatment_plan_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "sessionNumber": {
+     "type": "integer"
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "doctorNotes": {
+     "type": "string"
+    },
+    "performedBy": {
+     "type": "string"
+    }
+   }
+  },
+  "TreatmentPaymentRecord": {
+   "source": "features/patients/data/models/patient_treatment_plan_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "amount": {
+     "type": "number"
+    },
+    "date": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "paymentMethod": {
+     "type": "string"
+    },
+    "notes": {
+     "type": "string"
+    }
+   }
+  },
+  "PatientTreatmentPlan": {
+   "source": "features/patients/data/models/patient_treatment_plan_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "patientId": {
+     "type": "string"
+    },
+    "serviceId": {
+     "type": "string",
+     "nullable": true
+    },
+    "serviceName": {
+     "type": "string"
+    },
+    "category": {
+     "type": "string"
+    },
+    "doctorName": {
+     "type": "string"
+    },
+    "totalAgreedPrice": {
+     "type": "number"
+    },
+    "totalPaidAmount": {
+     "type": "number"
+    },
+    "totalSessions": {
+     "type": "integer"
+    },
+    "completedSessions": {
+     "type": "integer"
+    },
+    "paymentMode": {
+     "type": "string"
+    },
+    "status": {
+     "type": "string"
+    },
+    "startDate": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "notes": {
+     "type": "string"
+    },
+    "sessions": {
+     "type": "array",
+     "items": {
+      "$ref": "TreatmentSessionRecord"
+     }
+    },
+    "payments": {
+     "type": "array",
+     "items": {
+      "$ref": "TreatmentPaymentRecord"
+     }
+    }
+   }
+  },
+  "CompanySettings": {
+   "source": "features/settings/data/models/company_settings_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "companyName": {
+     "type": "string",
+     "nullable": true
+    },
+    "logo": {
+     "type": "string",
+     "nullable": true
+    },
+    "phone": {
+     "type": "string",
+     "nullable": true
+    },
+    "address": {
+     "type": "string",
+     "nullable": true
+    },
+    "clinicType": {
+     "$enum": "ClinicTypeEnum"
+    },
+    "enabledSpecialties": {
+     "type": "array",
+     "items": {
+      "$enum": "MedicalSpecialty"
+     }
+    },
+    "defaultHourlyRate": {
+     "type": "number",
+     "nullable": true
+    },
+    "workingDays": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    },
+    "openingTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "closingTime": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialHolidays": {
+     "type": "array",
+     "items": {
+      "$ref": "SpecialHoliday"
+     },
+     "nullable": true
+    },
+    "notificationEnabled": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "reminderMinutesBefore": {
+     "type": "integer",
+     "nullable": true
+    },
+    "receiptPrintFormat": {
+     "type": "string",
+     "nullable": true
+    },
+    "shiftReportPrintFormat": {
+     "type": "string",
+     "nullable": true
+    },
+    "prescriptionPrintFormat": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorSettlementPrintFormat": {
+     "type": "string",
+     "nullable": true
+    },
+    "staffPayrollPrintFormat": {
+     "type": "string",
+     "nullable": true
+    },
+    "prescriptionTemplate": {
+     "$ref": "PrescriptionTemplate",
+     "nullable": true
+    },
+    "prescriptionCustomizationScope": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "MedicalService": {
+   "source": "features/settings/data/models/medical_service_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "consultationFee": {
+     "type": "number",
+     "nullable": true
+    },
+    "durationMinutes": {
+     "type": "integer",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "assignedDoctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "assignedDoctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "description": {
+     "type": "string",
+     "nullable": true
+    },
+    "isMultiSession": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "sessionsCount": {
+     "type": "integer",
+     "nullable": true
+    },
+    "category": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "SpecialHoliday": {
+   "source": "features/settings/data/models/special_holiday_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "startDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "endDate": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "SpecialtyRecordEntry": {
+   "source": "features/specialty_records/data/models/specialty_record_entry_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "patientId": {
+     "type": "string"
+    },
+    "visitId": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialty": {
+     "$enum": "MedicalSpecialty"
+    },
+    "kind": {
+     "type": "string"
+    },
+    "data": {
+     "type": "object"
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "createdBy": {
+     "type": "string",
+     "nullable": true
+    },
+    "revision": {
+     "type": "integer"
+    }
+   }
+  },
+  "BranchAssignment": {
+   "source": "features/users_management/data/models/branch_assignment_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "isPrimary": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "roleIds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "nullable": true
+    }
+   }
+  },
+  "RoleDefinition": {
+   "source": "features/users_management/data/models/role_definition_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "nameAr": {
+     "type": "string",
+     "nullable": true
+    },
+    "nameEn": {
+     "type": "string",
+     "nullable": true
+    },
+    "description": {
+     "type": "string",
+     "nullable": true
+    },
+    "isSystemRole": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "permissions": {
+     "type": "array",
+     "items": {
+      "$enum": "StaffPermissionEnum"
+     },
+     "nullable": true
+    },
+    "maxDiscountPercent": {
+     "type": "number",
+     "nullable": true
+    },
+    "canGrantFreeConsultation": {
+     "type": "boolean",
+     "nullable": true
+    }
+   }
+  },
+  "SecurityAuditLog": {
+   "source": "features/users_management/data/models/security_audit_log_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "eventType": {
+     "type": "string",
+     "nullable": true
+    },
+    "targetUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "targetUserName": {
+     "type": "string",
+     "nullable": true
+    },
+    "performedByUserId": {
+     "type": "string",
+     "nullable": true
+    },
+    "performedByUserName": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchName": {
+     "type": "string",
+     "nullable": true
+    },
+    "details": {
+     "type": "string",
+     "nullable": true
+    },
+    "ipAddress": {
+     "type": "string",
+     "nullable": true
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "StaffUser": {
+   "source": "features/users_management/data/models/staff_user_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "fullName": {
+     "type": "string",
+     "nullable": true
+    },
+    "email": {
+     "type": "string",
+     "nullable": true
+    },
+    "phone": {
+     "type": "string",
+     "nullable": true
+    },
+    "jobTitle": {
+     "type": "string",
+     "nullable": true
+    },
+    "isOwner": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "linkedDoctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "isActive": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "mustChangePassword": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "isDeleted": {
+     "type": "boolean",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "updatedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "lastLoginAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "branchAssignments": {
+     "type": "array",
+     "items": {
+      "$ref": "BranchAssignment"
+     },
+     "nullable": true
+    }
+   }
+  },
+  "PrescriptionItem": {
+   "source": "features/visits/data/models/prescription_item_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "drugId": {
+     "type": "string",
+     "nullable": true
+    },
+    "tradeName": {
+     "type": "string",
+     "nullable": true
+    },
+    "scientificName": {
+     "type": "string",
+     "nullable": true
+    },
+    "concentration": {
+     "type": "string",
+     "nullable": true
+    },
+    "dosage": {
+     "type": "string",
+     "nullable": true
+    },
+    "frequency": {
+     "type": "string",
+     "nullable": true
+    },
+    "frequencyPreset": {
+     "type": "string",
+     "nullable": true
+    },
+    "frequencyCustom": {
+     "type": "string",
+     "nullable": true
+    },
+    "duration": {
+     "type": "string",
+     "nullable": true
+    },
+    "durationPreset": {
+     "type": "string",
+     "nullable": true
+    },
+    "durationCustom": {
+     "type": "string",
+     "nullable": true
+    },
+    "instructions": {
+     "type": "string",
+     "nullable": true
+    },
+    "orderIndex": {
+     "type": "integer",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "VisitAddendum": {
+   "source": "features/visits/data/models/visit_addendum_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "visitId": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "createdAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "reason": {
+     "type": "string",
+     "nullable": true
+    },
+    "changeType": {
+     "$enum": "AddendumChangeTypeEnum",
+     "nullable": true
+    },
+    "affectedItemId": {
+     "type": "string",
+     "nullable": true
+    },
+    "oldItemSnapshot": {
+     "$ref": "PrescriptionItem",
+     "nullable": true
+    },
+    "newItemSnapshot": {
+     "$ref": "PrescriptionItem",
+     "nullable": true
+    },
+    "diagnosisBefore": {
+     "type": "string",
+     "nullable": true
+    },
+    "diagnosisAfter": {
+     "type": "string",
+     "nullable": true
+    },
+    "notes": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "Visit": {
+   "source": "features/visits/data/models/visit_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "nullable": true
+    },
+    "bookingId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientId": {
+     "type": "string",
+     "nullable": true
+    },
+    "branchId": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientName": {
+     "type": "string",
+     "nullable": true
+    },
+    "patientPhone": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorId": {
+     "type": "string",
+     "nullable": true
+    },
+    "doctorName": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialty": {
+     "type": "string",
+     "nullable": true
+    },
+    "specialtyCode": {
+     "$enum": "MedicalSpecialty",
+     "nullable": true
+    },
+    "status": {
+     "$enum": "VisitStatusEnum",
+     "nullable": true
+    },
+    "vitals": {
+     "$ref": "Vitals",
+     "nullable": true
+    },
+    "chiefComplaint": {
+     "type": "string",
+     "nullable": true
+    },
+    "medicalHistory": {
+     "type": "string",
+     "nullable": true
+    },
+    "physicalExam": {
+     "type": "string",
+     "nullable": true
+    },
+    "diagnosis": {
+     "type": "string",
+     "nullable": true
+    },
+    "treatmentPlan": {
+     "type": "string",
+     "nullable": true
+    },
+    "followUpNotes": {
+     "type": "string",
+     "nullable": true
+    },
+    "followUpDays": {
+     "type": "integer",
+     "nullable": true
+    },
+    "prescriptionItems": {
+     "type": "array",
+     "items": {
+      "$ref": "PrescriptionItem"
+     },
+     "nullable": true
+    },
+    "addenda": {
+     "type": "array",
+     "items": {
+      "$ref": "VisitAddendum"
+     },
+     "nullable": true
+    },
+    "triageAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "startedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "finalizedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "lastSavedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    }
+   }
+  },
+  "Vitals": {
+   "source": "features/visits/data/models/vitals_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "systolicBp": {
+     "type": "integer",
+     "nullable": true
+    },
+    "diastolicBp": {
+     "type": "integer",
+     "nullable": true
+    },
+    "heartRate": {
+     "type": "integer",
+     "nullable": true
+    },
+    "temperature": {
+     "type": "number",
+     "nullable": true
+    },
+    "oxygenSaturation": {
+     "type": "integer",
+     "nullable": true
+    },
+    "weightKg": {
+     "type": "number",
+     "nullable": true
+    },
+    "heightCm": {
+     "type": "number",
+     "nullable": true
+    },
+    "recordedAt": {
+     "type": "string",
+     "format": "date-time",
+     "nullable": true
+    },
+    "recordedByUserId": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  },
+  "Profile": {
+   "source": "shared/auth/data/models/profile_model.dart",
+   "fields": {
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "email": {
+     "type": "string"
+    },
+    "avatar": {
+     "type": "string",
+     "nullable": true
+    },
+    "roles": {
+     "type": "string",
+     "dartType": "AdminRoles"
+    }
+   }
+  },
+  "FileUpload": {
+   "source": "shared/uploads/data/models/file_upload_model.dart",
+   "fields": {
+    "id": {
+     "type": "string",
+     "format": "uuid",
+     "description": "server id (client keeps a localId until sync)"
+    },
+    "filePath": {
+     "type": "string",
+     "nullable": true
+    },
+    "fileBytes": {
+     "type": "string",
+     "dartType": "Uint8List",
+     "nullable": true
+    },
+    "fileName": {
+     "type": "string"
+    },
+    "fileType": {
+     "type": "string",
+     "dartType": "FileUploadType"
+    },
+    "mimeType": {
+     "type": "string",
+     "nullable": true
+    }
+   }
+  }
+ },
+ "endpoints": {
+  "auth": [
+   {
+    "method": "POST",
+    "path": "/api/v1/admin/auth/login",
+    "summary": "login",
+    "clientMethod": "LoginRepo.login"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/admin/auth/refresh",
+    "summary": "refresh token",
+    "clientMethod": ""
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/admin/auth/logout",
+    "summary": "logout",
+    "clientMethod": ""
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/admin/auth/profile",
+    "summary": "current profile",
+    "clientMethod": "LayoutRepo.getProfile"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/auth/forget-password",
+    "summary": "request reset",
+    "clientMethod": "ForgetPassRepo.verifyPhoneNumberInForgetPass"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/auth/verify",
+    "summary": "verify OTP",
+    "clientMethod": "ForgetPassRepo.checkOtp"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/auth/reset-password",
+    "summary": "reset password",
+    "clientMethod": "ForgetPassRepo.resetPassword"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/upload/image",
+    "summary": "upload file (multipart)",
+    "clientMethod": "FileUploadRepo.uploadFile"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/users/change-password",
+    "summary": "change password",
+    "clientMethod": "SettingsRepo.changePassword"
+   }
+  ],
+  "patients": [
+   {
+    "method": "GET",
+    "path": "/api/v1/patients",
+    "summary": "list (q,page,limit,archived,branchId)",
+    "clientMethod": "getPatients"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/patients/{id}",
+    "summary": "get",
+    "clientMethod": "getPatientById"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients",
+    "summary": "create",
+    "clientMethod": "addPatient"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/patients/{id}",
+    "summary": "update",
+    "clientMethod": "updatePatient"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/patients/search-by-phone?phone=",
+    "summary": "find by phone",
+    "clientMethod": "findPatientsByPhone"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/{id}/archive",
+    "summary": "archive",
+    "clientMethod": "archivePatient"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/{id}/unarchive",
+    "summary": "unarchive",
+    "clientMethod": "unarchivePatient"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/patients/{id}",
+    "summary": "delete",
+    "clientMethod": "deletePatient"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/check-duplicate",
+    "summary": "duplicate check",
+    "clientMethod": "checkDuplicate"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/{id}/treatment-plans",
+    "summary": "add plan",
+    "clientMethod": "addTreatmentPlan"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/patients/{id}/treatment-plans/{planId}",
+    "summary": "update plan",
+    "clientMethod": "updateTreatmentPlan"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/{id}/treatment-plans/{planId}/sessions",
+    "summary": "record session",
+    "clientMethod": "recordTreatmentSession"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/{id}/treatment-plans/{planId}/payments",
+    "summary": "record plan payment",
+    "clientMethod": "recordTreatmentPayment"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/medical-catalog-items?type=",
+    "summary": "allergy/chronic catalog",
+    "clientMethod": "MedicalCatalogRepo.getCatalogItems"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/medical-catalog-items",
+    "summary": "add catalog item",
+    "clientMethod": "MedicalCatalogRepo.addCatalogItem"
+   }
+  ],
+  "bookings": [
+   {
+    "method": "GET",
+    "path": "/api/v1/bookings/summary",
+    "summary": "summary KPIs",
+    "clientMethod": "getBookingSummary"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/bookings",
+    "summary": "list (date,doctorId,status,type,q,page)",
+    "clientMethod": "getBookings"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/bookings/{id}",
+    "summary": "get",
+    "clientMethod": "getBookingById"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/bookings",
+    "summary": "create (incl. emergency walk-in)",
+    "clientMethod": "createBooking"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/bookings/{id}",
+    "summary": "update",
+    "clientMethod": "updateBooking"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/bookings/{id}/discount",
+    "summary": "apply discount",
+    "clientMethod": "applyDiscount"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/bookings/{id}/discount",
+    "summary": "remove discount",
+    "clientMethod": "removeDiscount"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{doctorId}/bookings?date=",
+    "summary": "doctor bookings for date / slots",
+    "clientMethod": "getDoctorBookingsForDate"
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/bookings/{id}/status",
+    "summary": "change status",
+    "clientMethod": "changeBookingStatus"
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/bookings/{id}/technician",
+    "summary": "reassign",
+    "clientMethod": "reassignTechnician"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/bookings/{id}",
+    "summary": "delete / cancel",
+    "clientMethod": "deleteBooking"
+   }
+  ],
+  "visits": [
+   {
+    "method": "GET",
+    "path": "/api/v1/visits/queue?doctorId=&date=",
+    "summary": "doctor queue",
+    "clientMethod": "getDoctorQueue"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/visits/by-booking/{bookingId}",
+    "summary": "by booking",
+    "clientMethod": "getVisitByBookingId"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/visits/{id}",
+    "summary": "get",
+    "clientMethod": "getVisitById"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/patients/{id}/visits",
+    "summary": "patient visits",
+    "clientMethod": "getVisitsByPatientId"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/visits/consultation-start",
+    "summary": "upsert start",
+    "clientMethod": "upsertConsultationStart"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/visits/{id}/draft",
+    "summary": "save draft",
+    "clientMethod": "saveVisitDraft"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/visits/{id}/vitals",
+    "summary": "record vitals",
+    "clientMethod": "recordVitals"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/visits/{id}/finalize",
+    "summary": "finalize (immutable after)",
+    "clientMethod": "finalizeVisit"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/visits/{id}/addenda",
+    "summary": "append addendum",
+    "clientMethod": "addVisitAddendum"
+   }
+  ],
+  "doctors": [
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors",
+    "summary": "list",
+    "clientMethod": "getDoctors"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{id}",
+    "summary": "get",
+    "clientMethod": "getDoctorById"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/doctors",
+    "summary": "create",
+    "clientMethod": "addDoctor"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/doctors/{id}",
+    "summary": "update",
+    "clientMethod": "updateDoctor"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/doctors/{id}",
+    "summary": "delete",
+    "clientMethod": "deleteDoctor"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{id}/schedule",
+    "summary": "schedule",
+    "clientMethod": "getDoctorSchedule"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/doctors/{id}/schedule",
+    "summary": "save schedule",
+    "clientMethod": "saveDoctorSchedule"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{id}/leaves",
+    "summary": "leaves",
+    "clientMethod": "getDoctorLeaves"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/doctors/{id}/leaves",
+    "summary": "add leave",
+    "clientMethod": "addDoctorLeave"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/doctors/{id}/leaves/{leaveId}",
+    "summary": "delete leave",
+    "clientMethod": "deleteDoctorLeave"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{id}/leaves/conflicts?from=&to=",
+    "summary": "conflicting bookings count",
+    "clientMethod": "countConflictingBookings"
+   }
+  ],
+  "cashier": [
+   {
+    "method": "GET",
+    "path": "/api/v1/cashier/shifts/current",
+    "summary": "current shift",
+    "clientMethod": "getCurrentShift"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/cashier/shifts",
+    "summary": "history",
+    "clientMethod": "getShiftHistory"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/shifts/open",
+    "summary": "open",
+    "clientMethod": "openShift"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/shifts/{id}/close",
+    "summary": "close",
+    "clientMethod": "closeShift"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/shifts/{id}/force-close",
+    "summary": "force close",
+    "clientMethod": "forceCloseShift"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/shifts/{id}/approve-shortage",
+    "summary": "approve shortage",
+    "clientMethod": "approveShortage"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/payments",
+    "summary": "record payment (Idempotency-Key)",
+    "clientMethod": "recordPayment"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/payments/{id}/refund",
+    "summary": "refund",
+    "clientMethod": "refundPayment"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/movements",
+    "summary": "cash movement",
+    "clientMethod": "recordCashMovement"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/cashier/shifts/{id}/metrics",
+    "summary": "metrics",
+    "clientMethod": "getShiftMetrics"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/cashier/shifts/{id}/payments",
+    "summary": "payments of shift",
+    "clientMethod": "getPaymentsForShift"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/bookings/{id}/payments",
+    "summary": "payments by booking",
+    "clientMethod": "getPaymentsByBookingId"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/patients/{id}/payments",
+    "summary": "payments by patient",
+    "clientMethod": "getPaymentsByPatientId"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/cashier/payments/{id}/void",
+    "summary": "void rollback",
+    "clientMethod": "voidPaymentRollback"
+   }
+  ],
+  "drugs": [
+   {
+    "method": "GET",
+    "path": "/api/v1/drugs",
+    "summary": "list",
+    "clientMethod": "getDrugs"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/drug-categories",
+    "summary": "categories",
+    "clientMethod": "getCategories"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/drugs",
+    "summary": "add",
+    "clientMethod": "addDrug"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/drugs/{id}",
+    "summary": "update",
+    "clientMethod": "updateDrug"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/drugs/{id}/archive",
+    "summary": "archive",
+    "clientMethod": "archiveDrug"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/drugs/quick-add",
+    "summary": "quick add",
+    "clientMethod": "quickAddDrug"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/drugs/{id}/review",
+    "summary": "review quick add",
+    "clientMethod": "reviewQuickAddDrug"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/drugs/allergy-aliases",
+    "summary": "update aliases",
+    "clientMethod": "updateAllergyAliases"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/drugs/allergy-aliases",
+    "summary": "get aliases",
+    "clientMethod": "getAllergyAliases"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{id}/prescription-templates",
+    "summary": "templates",
+    "clientMethod": "getDoctorTemplates"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/prescription-templates/{id}",
+    "summary": "save template",
+    "clientMethod": "savePrescriptionTemplate"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/prescription-templates/{id}",
+    "summary": "delete template",
+    "clientMethod": "deletePrescriptionTemplate"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/drugs/import",
+    "summary": "batch import",
+    "clientMethod": "importDrugsBatch"
+   }
+  ],
+  "hr": [
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/compensation-rules",
+    "summary": "list",
+    "clientMethod": "getCompensationRules"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/compensation-rules/{id}",
+    "summary": "get",
+    "clientMethod": "getCompensationRuleById"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/doctors/{id}/compensation-rule/active",
+    "summary": "active rule",
+    "clientMethod": "getActiveRuleForDoctor"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/hr/compensation-rules/{id}",
+    "summary": "save",
+    "clientMethod": "saveCompensationRule"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/settlements",
+    "summary": "list",
+    "clientMethod": "getDoctorSettlements"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/settlements/{id}",
+    "summary": "get",
+    "clientMethod": "getDoctorSettlementById"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/hr/settlements/{id}",
+    "summary": "save draft",
+    "clientMethod": "saveDoctorSettlement"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/hr/settlements/{id}/confirm",
+    "summary": "confirm",
+    "clientMethod": "confirmDoctorSettlement"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/hr/settlements/{id}/payout",
+    "summary": "payout",
+    "clientMethod": "payoutDoctorSettlement"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/settlements/overlap?doctorId=&from=&to=",
+    "summary": "period overlap",
+    "clientMethod": "isPeriodOverlapping"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/ledger",
+    "summary": "ledger entries",
+    "clientMethod": "getEmployeeLedgerEntries"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/hr/ledger",
+    "summary": "add entry",
+    "clientMethod": "addEmployeeLedgerEntry"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/hr/ledger/{id}/reverse",
+    "summary": "reverse (reason required, append only)",
+    "clientMethod": "reverseEmployeeLedgerEntry"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/payroll-profiles",
+    "summary": "profiles",
+    "clientMethod": "getStaffPayrollProfiles"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/hr/payroll-profiles/{id}",
+    "summary": "save",
+    "clientMethod": "saveStaffPayrollProfile"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/payroll-periods",
+    "summary": "list",
+    "clientMethod": "getStaffPayrollPeriods"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/hr/payroll-periods/{id}",
+    "summary": "get",
+    "clientMethod": "getStaffPayrollPeriodById"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/hr/payroll-periods/{id}",
+    "summary": "save",
+    "clientMethod": "saveStaffPayrollPeriod"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/hr/payroll-periods/{id}/confirm",
+    "summary": "confirm",
+    "clientMethod": "confirmStaffPayrollPeriod"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/hr/payroll-periods/{id}/payout",
+    "summary": "payout",
+    "clientMethod": "payoutStaffPayrollPeriod"
+   }
+  ],
+  "inventory": [
+   {
+    "method": "GET",
+    "path": "/api/v1/inventory/items",
+    "summary": "list",
+    "clientMethod": "getItems"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/inventory/items",
+    "summary": "add",
+    "clientMethod": "addItem"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/inventory/items/{id}",
+    "summary": "update",
+    "clientMethod": "updateItem"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/inventory/items/{id}",
+    "summary": "delete",
+    "clientMethod": "deleteItem"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/inventory/items/{id}/consumption",
+    "summary": "consume",
+    "clientMethod": "recordConsumption"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/inventory/items/{id}/restock",
+    "summary": "restock",
+    "clientMethod": "recordRestock"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/inventory/transactions",
+    "summary": "transactions",
+    "clientMethod": "getTransactions"
+   }
+  ],
+  "medicalCatalogs": [
+   {
+    "method": "GET",
+    "path": "/api/v1/medical-catalogs/{kind}",
+    "summary": "entries (radiology|labTests|chronicDiseases|allergies|surgeries)",
+    "clientMethod": "getEntries"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/medical-catalogs/{kind}",
+    "summary": "add",
+    "clientMethod": "addEntry"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/medical-catalogs/{kind}/{id}",
+    "summary": "update",
+    "clientMethod": "updateEntry"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/medical-catalogs/{kind}/{id}",
+    "summary": "delete",
+    "clientMethod": "deleteEntry"
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/medical-catalogs/{kind}/{id}/active",
+    "summary": "toggle",
+    "clientMethod": "toggleActive"
+   }
+  ],
+  "medicalServices": [
+   {
+    "method": "GET",
+    "path": "/api/v1/medical-services",
+    "summary": "list",
+    "clientMethod": "getMedicalServices"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/medical-services/{id}",
+    "summary": "get",
+    "clientMethod": "getMedicalServiceById"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/medical-services",
+    "summary": "add",
+    "clientMethod": "addMedicalService"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/medical-services/{id}",
+    "summary": "update",
+    "clientMethod": "updateMedicalService"
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/medical-services/{id}/status",
+    "summary": "toggle",
+    "clientMethod": "toggleServiceStatus"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/medical-services/{id}",
+    "summary": "delete",
+    "clientMethod": "deleteMedicalService"
+   }
+  ],
+  "settings": [
+   {
+    "method": "GET",
+    "path": "/api/v1/settings/company",
+    "summary": "get",
+    "clientMethod": "getCompanySettings"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/settings/company",
+    "summary": "update",
+    "clientMethod": "updateCompanySettings"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/settings/special-holidays",
+    "summary": "add holiday",
+    "clientMethod": "addSpecialHoliday"
+   },
+   {
+    "method": "DELETE",
+    "path": "/api/v1/settings/special-holidays/{id}",
+    "summary": "delete holiday",
+    "clientMethod": "deleteSpecialHoliday"
+   }
+  ],
+  "branches": [
+   {
+    "method": "GET",
+    "path": "/api/v1/branches",
+    "summary": "list",
+    "clientMethod": "getBranches"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/branches/{id}",
+    "summary": "get",
+    "clientMethod": "getBranchById"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/branches",
+    "summary": "create",
+    "clientMethod": "createBranch"
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/branches/{id}",
+    "summary": "update",
+    "clientMethod": "updateBranch"
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/branches/{id}/status",
+    "summary": "toggle",
+    "clientMethod": "toggleBranchStatus"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/branches/{id}/set-main",
+    "summary": "set main",
+    "clientMethod": "setMainBranch"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/branches/{id}/copy-settings",
+    "summary": "copy settings",
+    "clientMethod": "copySettingsFromBranch"
+   }
+  ],
+  "staffUsers": [
+   {
+    "method": "GET",
+    "path": "/api/v1/staff-users",
+    "summary": "list",
+    "clientMethod": "StaffUsersRepo"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/staff-users",
+    "summary": "create",
+    "clientMethod": ""
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/staff-users/{id}",
+    "summary": "update",
+    "clientMethod": ""
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/staff-users/{id}/status",
+    "summary": "activate/deactivate",
+    "clientMethod": ""
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/roles",
+    "summary": "role definitions",
+    "clientMethod": ""
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/roles/{id}",
+    "summary": "save role + permission matrix",
+    "clientMethod": ""
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/staff-users/{id}/branch-assignments",
+    "summary": "assignments",
+    "clientMethod": ""
+   }
+  ],
+  "auditLogs": [
+   {
+    "method": "GET",
+    "path": "/api/v1/audit-logs",
+    "summary": "list (filters)",
+    "clientMethod": "getAuditLogs"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/audit-logs/{id}",
+    "summary": "get",
+    "clientMethod": "getAuditLogById"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/audit-logs/export",
+    "summary": "export csv",
+    "clientMethod": "exportAuditLogs"
+   }
+  ],
+  "analytics": [
+   {
+    "method": "GET",
+    "path": "/api/v1/analytics/summary?range=&from=&to=&branchId=",
+    "summary": "KPIs",
+    "clientMethod": "getAnalyticsSummary"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/analytics/revenue-trend",
+    "summary": "trend",
+    "clientMethod": "getRevenueTrend"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/analytics/branch-comparison",
+    "summary": "branches",
+    "clientMethod": "getBranchComparison"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/analytics/doctor-performance",
+    "summary": "doctors",
+    "clientMethod": "getDoctorPerformance"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/analytics/hourly-traffic",
+    "summary": "hours",
+    "clientMethod": "getHourlyTraffic"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/analytics/service-distribution",
+    "summary": "services",
+    "clientMethod": "getServiceDistribution"
+   }
+  ],
+  "notifications": [
+   {
+    "method": "GET",
+    "path": "/api/v1/notifications",
+    "summary": "list",
+    "clientMethod": ""
+   },
+   {
+    "method": "PATCH",
+    "path": "/api/v1/notifications/{id}/read",
+    "summary": "mark read",
+    "clientMethod": ""
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/notifications/reception-signal",
+    "summary": "call patient",
+    "clientMethod": ""
+   }
+  ],
+  "specialtyRecords": [
+   {
+    "method": "GET",
+    "path": "/api/v1/patients/{id}/specialty-records?specialty=",
+    "summary": "list",
+    "clientMethod": ""
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/patients/{id}/specialty-records",
+    "summary": "add typed record (pediatrics growth/vaccines, ob-gyn, dental, derm/cosmetic)",
+    "clientMethod": ""
+   },
+   {
+    "method": "PUT",
+    "path": "/api/v1/patients/{id}/specialty-records/{recordId}",
+    "summary": "update",
+    "clientMethod": ""
+   }
+  ],
+  "sync": [
+   {
+    "method": "POST",
+    "path": "/api/v1/sync/push",
+    "summary": "batch push of outbox operations; idempotent by operationId",
+    "clientMethod": "RemoteSyncApi.pushBatch"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/sync/pull?entityType=&cursor=",
+    "summary": "incremental pull, opaque server cursor",
+    "clientMethod": "RemoteSyncApi.pullChanges"
+   }
+  ]
+ },
+ "relations": [
+  [
+   "Booking",
+   "patientId",
+   "Patient",
+   "many-to-one"
+  ],
+  [
+   "Booking",
+   "doctorId",
+   "Doctor",
+   "many-to-one"
+  ],
+  [
+   "Booking",
+   "serviceId",
+   "MedicalService",
+   "many-to-one"
+  ],
+  [
+   "Booking",
+   "branchId",
+   "Branch",
+   "many-to-one"
+  ],
+  [
+   "Visit",
+   "bookingId",
+   "Booking",
+   "one-to-one"
+  ],
+  [
+   "Visit",
+   "patientId",
+   "Patient",
+   "many-to-one"
+  ],
+  [
+   "Visit",
+   "Vitals",
+   "embedded",
+   "one-to-one"
+  ],
+  [
+   "Visit",
+   "VisitAddendum",
+   "Visit",
+   "one-to-many append-only"
+  ],
+  [
+   "Visit",
+   "PrescriptionItem",
+   "Visit",
+   "one-to-many"
+  ],
+  [
+   "PaymentTransaction",
+   "shiftId",
+   "CashierShift",
+   "many-to-one"
+  ],
+  [
+   "PaymentTransaction",
+   "bookingId",
+   "Booking",
+   "many-to-one"
+  ],
+  [
+   "RefundTransaction",
+   "paymentId",
+   "PaymentTransaction",
+   "many-to-one"
+  ],
+  [
+   "CashMovement",
+   "shiftId",
+   "CashierShift",
+   "many-to-one"
+  ],
+  [
+   "DoctorSettlement",
+   "doctorId",
+   "Doctor",
+   "many-to-one"
+  ],
+  [
+   "DoctorSettlementItem",
+   "settlementId",
+   "DoctorSettlement",
+   "many-to-one"
+  ],
+  [
+   "StaffPayrollItem",
+   "periodId",
+   "StaffPayrollPeriod",
+   "many-to-one"
+  ],
+  [
+   "EmployeeLedgerEntry",
+   "employeeId",
+   "Doctor|StaffUser",
+   "many-to-one"
+  ],
+  [
+   "PatientTreatmentPlan",
+   "patientId",
+   "Patient",
+   "many-to-one"
+  ],
+  [
+   "SpecialtyRecordEntry",
+   "patientId",
+   "Patient",
+   "many-to-one"
+  ],
+  [
+   "DoctorSchedule",
+   "doctorId",
+   "Doctor",
+   "one-to-one"
+  ],
+  [
+   "DoctorLeave",
+   "doctorId",
+   "Doctor",
+   "many-to-one"
+  ],
+  [
+   "StaffUser",
+   "roleId",
+   "RoleDefinition",
+   "many-to-one"
+  ],
+  [
+   "StaffUser",
+   "BranchAssignment",
+   "Branch",
+   "many-to-many"
+  ],
+  [
+   "InventoryTransaction",
+   "itemId",
+   "InventoryItem",
+   "many-to-one"
+  ]
+ ],
+ "notes": [
+  "Field lists were extracted mechanically from Dart model classes; the backend developer must confirm nullability, indexes and constraints.",
+  "Field names marked dartType are not mapped yet.",
+  "Booking.bookingType=emergency means walk-in: no slot required, counted as waiting until slot end.",
+  "Friday is a clinic holiday in demo data; holidays come from Settings.specialHolidays and doctor schedules."
+ ]
+}

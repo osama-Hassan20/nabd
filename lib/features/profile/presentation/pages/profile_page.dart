@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_cubit.dart';
 import 'package:eyadty/core/cubits/local_passcode/local_passcode_state.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/offline/store/transactional_local_store.dart';
 import 'package:eyadty/core/routing/routes.dart';
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
@@ -106,6 +108,10 @@ class ProfilePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             _buildSecurityCard(context),
+                            if (isOwner) ...[
+                              const SizedBox(height: 16),
+                              _buildQaBackendModeCard(context),
+                            ],
                             const SizedBox(height: 16),
                             _buildLogoutButton(context),
                           ],
@@ -585,6 +591,82 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQaBackendModeCard(BuildContext context) {
+    final colors = context.themeColors;
+    final isLocal = AppConfig.isLocalMode;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.borderSubtle),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.developer_mode_rounded, color: colors.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'إعدادات الخادم (QA)',
+                  style: CustomAppFontStyle.bold14.copyWith(color: colors.textPrimary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'BASE_URL: ${AppConfig.baseUrl}',
+              style: CustomAppFontStyle.regular12.copyWith(color: colors.textSecondary),
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isLocal ? 'الوضع الحالي: محلي (Local)' : 'الوضع الحالي: خادم بعيد (Remote)',
+                        style: CustomAppFontStyle.semiBold13.copyWith(color: colors.textPrimary),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'تبديل الوضع يمسح البيانات المحلية ويسجل الخروج',
+                        style: CustomAppFontStyle.regular11.copyWith(color: colors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  key: const Key('qa_backend_mode_switch'),
+                  value: !isLocal,
+                  onChanged: (useRemote) async {
+                    final nextMode = useRemote ? BackendMode.remote : BackendMode.local;
+                    if (getIt.isRegistered<TransactionalLocalStore>()) {
+                      await getIt<TransactionalLocalStore>().clear();
+                    }
+                    await AppConfig.setRuntimeBackendMode(nextMode);
+                    await getIt.reset();
+                    await setupGetIt();
+                    if (context.mounted) {
+                      getIt<SessionCubit>().logout();
+                      context.go(AppRouter.login);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
