@@ -433,21 +433,45 @@ class BookingCard extends StatelessWidget {
                   ),
                 );
               } else {
-                detailWidget = Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colors.isDark
-                        ? Colors.amber.shade900.withValues(alpha: 0.2)
-                        : AppColors.statusWarningLight,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Text(
-                    '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
-                    style: CustomAppFontStyle.medium11.copyWith(
-                      color: colors.isDark ? Colors.amber.shade200 : AppColors.statusWarning,
+                final bookingDate = booking.appointmentTime ?? booking.date;
+                final nowCairo = CairoTimeHelper.now();
+                final isToday = bookingDate != null &&
+                    bookingDate.year == nowCairo.year &&
+                    bookingDate.month == nowCairo.month &&
+                    bookingDate.day == nowCairo.day;
+                if (bookingDate != null && !isToday) {
+                  final dateStr =
+                      '${bookingDate.year}/${bookingDate.month.toString().padLeft(2, '0')}/${bookingDate.day.toString().padLeft(2, '0')}';
+                  detailWidget = Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colors.textSecondary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                  ),
-                );
+                    child: Text(
+                      dateStr,
+                      style: CustomAppFontStyle.medium11.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  );
+                } else {
+                  detailWidget = Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colors.isDark
+                          ? Colors.amber.shade900.withValues(alpha: 0.2)
+                          : AppColors.statusWarningLight,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
+                      style: CustomAppFontStyle.medium11.copyWith(
+                        color: colors.isDark ? Colors.amber.shade200 : AppColors.statusWarning,
+                      ),
+                    ),
+                  );
+                }
               }
 
               return Row(

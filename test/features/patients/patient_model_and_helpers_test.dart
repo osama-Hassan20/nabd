@@ -162,7 +162,7 @@ void main() {
   });
 
   group('PatientModel Helpers & Calculations', () {
-    test('Contains exactly 44 fields', () {
+    test('Contains exactly 54 fields', () {
       final now = DateTime(2026, 11, 7);
       final lmp = DateTime(2026, 10, 15);
       final p = PatientModel(
@@ -206,8 +206,8 @@ void main() {
         updatedAt: now,
       );
 
-      // Verify all 44 fields are assigned
-      expect(p.props.length, 44);
+      // Verify all 54 fields are assigned
+      expect(p.props.length, 54);
       expect(p.phoneHasWhatsapp, isTrue);
       expect(p.lastMenstrualPeriodDate, lmp);
       expect(p.detailedAddress, 'شارع عباس العقاد');
@@ -274,16 +274,20 @@ void main() {
       expect(BloodGroupEnum.fromValue('invalid'), BloodGroupEnum.unknown);
     });
 
-    test('hasIncompleteProfile flag is true ONLY when DOB or gender are missing or unknown', () {
-      // DOB missing
+    test('hasIncompleteProfile flag is true ONLY when required fields (name, phone, or known gender) are missing', () {
+      // Optional DOB missing with required fields present -> complete
       const noDob = PatientModel(
+        name: 'سارة أحمد',
+        phone: '01012345678',
         dateOfBirth: null,
         gender: GenderEnum.female,
       );
-      expect(noDob.hasIncompleteProfile, isTrue);
+      expect(noDob.hasIncompleteProfile, isFalse);
 
       // Gender missing
       final noGender = PatientModel(
+        name: 'سارة أحمد',
+        phone: '01012345678',
         dateOfBirth: DateTime(1990, 1, 1),
         gender: null,
       );
@@ -291,14 +295,18 @@ void main() {
 
       // Gender unknown
       final unknownGender = PatientModel(
+        name: 'سارة أحمد',
+        phone: '01012345678',
         dateOfBirth: DateTime(1990, 1, 1),
         gender: GenderEnum.unknown,
       );
       expect(unknownGender.hasIncompleteProfile, isTrue);
 
-      // Complete profile: has DOB and known gender, even if all other fields are null
-      final minimalComplete = PatientModel(
-        dateOfBirth: DateTime(1990, 1, 1),
+      // Complete profile: has name, phone, and known gender, even if DOB and all other fields are null
+      const minimalComplete = PatientModel(
+        name: 'أحمد محمد',
+        phone: '01098765432',
+        dateOfBirth: null,
         gender: GenderEnum.male,
         bloodGroup: null,
         detailedAddress: null,

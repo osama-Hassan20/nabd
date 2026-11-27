@@ -218,12 +218,29 @@ class BookingsTable extends StatelessWidget {
         ),
       );
     } else {
-      waitOrStatusDetail = Text(
-        '${item.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
-        style: CustomAppFontStyle.regular11.copyWith(
-          color: AppColors.statusWarning,
-        ),
-      );
+      final bookingDate = item.appointmentTime ?? item.date;
+      final nowCairo = CairoTimeHelper.now();
+      final isToday = bookingDate != null &&
+          bookingDate.year == nowCairo.year &&
+          bookingDate.month == nowCairo.month &&
+          bookingDate.day == nowCairo.day;
+      if (bookingDate != null && !isToday) {
+        final dateStr =
+            '${bookingDate.year}/${bookingDate.month.toString().padLeft(2, '0')}/${bookingDate.day.toString().padLeft(2, '0')}';
+        waitOrStatusDetail = Text(
+          dateStr,
+          style: CustomAppFontStyle.regular11.copyWith(
+            color: AppColors.secondary,
+          ),
+        );
+      } else {
+        waitOrStatusDetail = Text(
+          '${item.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
+          style: CustomAppFontStyle.regular11.copyWith(
+            color: AppColors.statusWarning,
+          ),
+        );
+      }
     }
 
     final cell4 = Column(
