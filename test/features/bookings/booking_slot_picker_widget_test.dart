@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
@@ -170,6 +171,50 @@ void main() {
       expect(cubit.state.formState?.startTime, targetSlot.startTime);
       expect(cubit.state.formState?.endTime, targetSlot.endTime);
       expect(cubit.state.formState?.durationMinutes, 30);
+    });
+
+    testWidgets('4. Emergency booking shows walk-in now option and skips slot on holiday',
+        (tester) async {
+      cubit.initBookingForm(null);
+      cubit.updateFormBookingType(BookingTypeEnum.emergency);
+      cubit.updateFormTechnician(
+        const BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى'),
+      );
+      cubit.updateFormService(
+        const MedicalServiceModel(
+          id: 'SRV-01',
+          name: 'كشف طوارئ',
+          durationMinutes: 15,
+          consultationFee: 300,
+        ),
+      );
+
+      // Find next Friday (clinic holiday / no slots)
+      var friday = DateTime.now();
+      while (friday.weekday != DateTime.friday) {
+        friday = friday.add(const Duration(days: 1));
+      }
+      cubit.updateFormDate(friday);
+
+      await tester.pumpWidget(
+        wrapWithTestApp(
+          BlocProvider.value(
+            value: cubit,
+            child: const BookingFormSlotPickerSection(),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+
+      final walkInBtn = find.byKey(const Key('btn_emergency_walk_in_now'));
+      expect(walkInBtn, findsOneWidget);
+
+      await tester.tap(walkInBtn);
+      await tester.pumpAndSettle();
+
+      expect(cubit.state.formState?.startTime.isNotEmpty, isTrue);
+      expect(cubit.state.formState?.endTime.isNotEmpty, isTrue);
     });
   });
 }

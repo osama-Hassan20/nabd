@@ -1171,6 +1171,35 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     _checkPatientConflict();
   }
 
+  /// Selects an immediate "now / walk-in" slot for emergency/urgent bookings,
+  /// bypassing scheduled clinic slot availability (e.g. on clinic holidays).
+  void selectWalkInNowSlot() {
+    if (state.formState == null) return;
+    final now = CairoTimeHelper.now();
+    final duration = state.formState!.durationMinutes > 0
+        ? state.formState!.durationMinutes
+        : 15;
+    final end = now.add(Duration(minutes: duration));
+    final startStr =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final endStr =
+        '${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}';
+
+    emit(
+      state.copyWith(
+        formState: state.formState!.copyWith(
+          date: DateTime(now.year, now.month, now.day),
+          startTime: startStr,
+          endTime: endStr,
+          durationMinutes: duration,
+        ),
+        isPatientConflictConfirmed: false,
+      ),
+    );
+
+    _checkPatientConflict();
+  }
+
   void _checkPatientConflict() {
     final form = state.formState;
     if (form == null ||

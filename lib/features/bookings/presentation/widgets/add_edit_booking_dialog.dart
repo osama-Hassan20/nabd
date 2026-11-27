@@ -345,11 +345,15 @@ class _AddEditBookingDialogState extends State<AddEditBookingDialog> {
     }
 
     if (form.startTime.isEmpty || form.endTime.isEmpty) {
-      CustomToast(
-        context: context,
-        header: 'slot_picker_required'.tr(),
-      ).showErrorToast();
-      return;
+      if (form.bookingType == BookingTypeEnum.emergency) {
+        cubit.selectWalkInNowSlot();
+      } else {
+        CustomToast(
+          context: context,
+          header: 'slot_picker_required'.tr(),
+        ).showErrorToast();
+        return;
+      }
     }
 
     // فحص تعارض مواعيد المريض: إظهار حوار التأكيد في حال عدم التأكيد المسبق

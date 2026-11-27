@@ -10,6 +10,7 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/app_icons.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/slot_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/time_slot_model.dart';
 import 'package:eyadty/features/bookings/presentation/helpers/booking_time_formatter.dart';
@@ -84,6 +85,12 @@ class BookingFormSlotPickerSection extends StatelessWidget {
             const SizedBox(height: 14),
 
             // ─── تنبيهات توجيهية (طبيب / دوام / تعارض) ─────────────
+            if (hasDoctor &&
+                hasService &&
+                form.bookingType == BookingTypeEnum.emergency) ...[
+              _buildEmergencyWalkInBanner(context, cubit, form),
+              const SizedBox(height: 10),
+            ],
             if (hasDoctor &&
                 hasService &&
                 state.selectedDayAvailability ==
@@ -190,6 +197,8 @@ class BookingFormSlotPickerSection extends StatelessWidget {
                     date: date,
                     isSelected: isSelected,
                     availability: availability,
+                    allowHolidaySelection:
+                        state.formState?.bookingType == BookingTypeEnum.emergency,
                     onTap: () => cubit.updateFormDate(date),
                   );
                 },
@@ -244,6 +253,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     required DateTime date,
     required bool isSelected,
     required DoctorAvailabilityEnum availability,
+    bool allowHolidaySelection = false,
     required VoidCallback onTap,
   }) {
     final colors = context.themeColors;
@@ -285,7 +295,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
     final dayNum = '${date.day}';
 
     final card = InkWell(
-      onTap: isAvailable ? onTap : null,
+      onTap: (isAvailable || allowHolidaySelection) ? onTap : null,
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -394,6 +404,7 @@ class BookingFormSlotPickerSection extends StatelessWidget {
 
     final slots = state.availableSlots;
     if (slots.isEmpty) {
+      final isEmergency = state.formState?.bookingType == BookingTypeEnum.emergency;
       return Container(
         padding: const EdgeInsets.all(20),
         alignment: Alignment.center,
@@ -402,7 +413,10 @@ class BookingFormSlotPickerSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          'no_available_slots_on_day'.tr(),
+          isEmergency
+              ? 'لا توجد فترات مجدولة في هذا اليوم — يمكنك استخدام خيار "الآن / دخول فوري" للطوارئ.'
+              : 'no_available_slots_on_day'.tr(),
+          textAlign: TextAlign.center,
           style: CustomAppFontStyle.medium13.copyWith(
             color: AppColors.gray71717A,
           ),
@@ -695,6 +709,63 @@ class BookingFormSlotPickerSection extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── 4b. خيار الدخول الفوري للطوارئ (الآن / بدون فترة مجدولة) ─────────────
+  Widget _buildEmergencyWalkInBanner(
+    BuildContext context,
+    BookingsCubit cubit,
+    BookingFormState form,
+  ) {
+    final isNowSelected = form.startTime.isNotEmpty;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.emergency_outlined, color: AppColors.error, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'حالة طوارئ — دخول فوري بدون فترة مجدولة',
+                  style: CustomAppFontStyle.semiBold12.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isNowSelected
+                      ? 'تم تحديد وقت البدء (${form.startTime}) ويمكن الحفظ مباشرة حتى في أيام الإجازة.'
+                      : 'يمكنك تخطي الفترات المجدولة وتسجيل الدخول الفوري الآن (حتى في عطلة العيادة).',
+                  style: CustomAppFontStyle.regular11.copyWith(
+                    color: context.themeColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
+            key: const Key('btn_emergency_walk_in_now'),
+            onPressed: () => cubit.selectWalkInNowSlot(),
+            icon: const Icon(Icons.flash_on_rounded, size: 16),
+            label: const Text('الآن / دخول فوري'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.error,
+              side: const BorderSide(color: AppColors.error),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            ),
           ),
         ],
       ),

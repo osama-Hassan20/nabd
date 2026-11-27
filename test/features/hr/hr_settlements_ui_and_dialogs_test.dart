@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toastification/toastification.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
@@ -646,6 +647,56 @@ void main() {
 
       await tester.tap(printBtn);
       expect(printTriggered, isTrue);
+    });
+
+    testWidgets('17. Confirming a draft settlement shows settlement-confirmed toast',
+        (tester) async {
+      _setupDesktopView(tester);
+
+      final draftSettlement = DoctorSettlementModel(
+        id: 'SET-DRAFT-TOAST',
+        settlementNumber: 'SET-DOC-202605-099',
+        doctorId: 'DOC-OTHER',
+        doctorName: 'د. أحمد سعيد',
+        branchId: 'branch_1',
+        periodStart: DateTime(2026, 5, 1),
+        periodEnd: DateTime(2026, 5, 31),
+        totalVisitsCount: 4,
+        totalNetRevenuePiastres: 100000,
+        netPayablePiastres: 40000,
+        status: SettlementStatusEnum.draft,
+      );
+
+      await repo.saveDoctorSettlement(draftSettlement);
+      await hrCubit.init(branchId: 'branch_1', user: defaultManagerUser);
+
+      await tester.pumpWidget(
+        ToastificationWrapper(
+          child: _buildTestApp(
+            child: SettlementsTable(settlements: [draftSettlement]),
+            sessionCubit: sessionCubit,
+            hrCubit: hrCubit,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('btn_confirm_settlement_SET-DRAFT-TOAST')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('confirm'.tr()));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.text('hr_settlement_confirmed_successfully'.tr(), skipOffstage: false),
+        findsOneWidget,
+      );
+
+      // Drain toastification auto-close timer
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pumpAndSettle();
     });
   });
 }
