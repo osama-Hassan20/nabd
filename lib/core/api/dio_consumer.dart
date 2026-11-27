@@ -28,6 +28,7 @@ class DioConsumer implements ApiConsumer {
   Future post({
     required String path,
     Object? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   }) async {
@@ -36,6 +37,7 @@ class DioConsumer implements ApiConsumer {
       path,
       queryParameters: queryParameters,
       data: body,
+      options: options,
     );
 
     return response.data;
@@ -45,30 +47,16 @@ class DioConsumer implements ApiConsumer {
   Future put({
     required String path,
     Object? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   }) async {
     final response = await dio.put(
       cancelToken: cancelToken,
       path,
-      data: body,
       queryParameters: queryParameters,
-    );
-    return response.data;
-  }
-
-  @override
-  Future patch({
-    required String path,
-    Map<String, dynamic>? body,
-    Map<String, dynamic>? queryParameters,
-    CancelToken? cancelToken,
-  }) async {
-    final response = await dio.patch(
-      cancelToken: cancelToken,
-      path,
       data: body,
-      queryParameters: queryParameters,
+      options: options,
     );
     return response.data;
   }
@@ -77,14 +65,34 @@ class DioConsumer implements ApiConsumer {
   Future delete({
     required String path,
     Map<String, dynamic>? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   }) async {
     final response = await dio.delete(
+      cancelToken: cancelToken,
       path,
       queryParameters: queryParameters,
       data: body,
+      options: options,
+    );
+    return response.data;
+  }
+
+  @override
+  Future patch({
+    required String path,
+    Map<String, dynamic>? body,
+    Options? options,
+    Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
+  }) async {
+    final response = await dio.patch(
       cancelToken: cancelToken,
+      path,
+      queryParameters: queryParameters,
+      data: body,
+      options: options,
     );
     return response.data;
   }

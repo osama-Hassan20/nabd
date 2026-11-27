@@ -12,6 +12,7 @@ abstract class ApiConsumer {
   Future<dynamic> post({
     required String path,
     Object? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   });
@@ -19,6 +20,7 @@ abstract class ApiConsumer {
   Future<dynamic> put({
     required String path,
     Object? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   });
@@ -26,6 +28,7 @@ abstract class ApiConsumer {
   Future<dynamic> delete({
     required String path,
     Map<String, dynamic>? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   });
@@ -33,6 +36,7 @@ abstract class ApiConsumer {
   Future<dynamic> patch({
     required String path,
     Map<String, dynamic>? body,
+    Options? options,
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   });

@@ -250,7 +250,7 @@ Future<void> setupGetIt() async {
 
   if (AppConfig.isLocalMode) {
     getIt.registerSingleton<LocalServerApiConsumer>(
-      const LocalServerApiConsumer(),
+      LocalServerApiConsumer(),
     );
     getIt.registerSingleton<ApiConsumer>(getIt<LocalServerApiConsumer>());
   } else {
