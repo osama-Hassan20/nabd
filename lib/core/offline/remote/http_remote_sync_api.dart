@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:eyadty/core/api/api_consumer.dart';
+import 'package:eyadty/core/api/idempotency_helper.dart';
 import 'package:eyadty/core/offline/models/outbox_entry.dart';
 import 'package:eyadty/core/offline/remote/remote_sync_api.dart';
 
@@ -23,50 +25,75 @@ class HttpRemoteSyncApi implements RemoteSyncApi {
 
   @override
   Future<BatchPushResult> pushBatch(List<OutboxEntry> operations) async {
-    final response = await apiConsumer.post(
-      path: 'sync/push',
-      body: {
-        'operations': operations
+    if (operations.isEmpty) {
+      return const BatchPushResult(success: true, operationResults: []);
+    }
+    try {
+      final response = await apiConsumer.post(
+        path: 'sync/push',
+        options: IdempotencyHelper.options(operations.first.operationId),
+        body: {
+          'operations': operations
+              .map(
+                (op) => {
+                  'operationId': op.operationId,
+                  'entityType': op.entityType,
+                  'localId': op.localId,
+                  'operation': op.operation.name,
+                  'payload': op.payload,
+                  'baseRevision': op.baseRevision,
+                  'dependencyRefs': op.dependencyRefs,
+                },
+              )
+              .toList(),
+        },
+      );
+
+      final data = response is Map<String, dynamic>
+          ? (response['data'] as Map<String, dynamic>? ?? response)
+          : <String, dynamic>{};
+      final rawResults = (data['results'] as List<dynamic>?) ?? const [];
+
+      final results = rawResults.map((r) {
+        final map = Map<String, dynamic>.from(r as Map);
+        return SyncPushResult(
+          success: map['success'] == true,
+          operationId: (map['operationId'] ?? '').toString(),
+          serverId: map['serverId'] as String?,
+          serverCursor: map['serverCursor'] as String?,
+          confirmedRevision: (map['confirmedRevision'] as num?)?.toInt(),
+          hasConflict: map['hasConflict'] == true,
+          serverConflictVersion: map['serverConflictVersion'] is Map
+              ? Map<String, dynamic>.from(map['serverConflictVersion'] as Map)
+              : null,
+          errorMessage: map['errorMessage'] as String?,
+          isRetryable: map['isRetryable'] != false,
+        );
+      }).toList();
+
+      return BatchPushResult(
+        success: true,
+        operationResults: results,
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final isPermanent = status == 400 || status == 422 || status == 409;
+      return BatchPushResult(
+        success: false,
+        errorMessage: e.message ?? 'Sync HTTP error ($status)',
+        operationResults: operations
             .map(
-              (op) => {
-                'operationId': op.operationId,
-                'entityType': op.entityType,
-                'localId': op.localId,
-                'operation': op.operation.name,
-                'payload': op.payload,
-                'baseRevision': op.baseRevision,
-                'dependencyRefs': op.dependencyRefs,
-              },
+              (op) => SyncPushResult(
+                success: false,
+                operationId: op.operationId,
+                hasConflict: status == 409,
+                errorMessage: e.message ?? 'Sync HTTP error ($status)',
+                isRetryable: !isPermanent,
+              ),
             )
             .toList(),
-      },
-    );
-
-    final data = response is Map<String, dynamic>
-        ? (response['data'] as Map<String, dynamic>? ?? response)
-        : <String, dynamic>{};
-    final rawResults = (data['results'] as List<dynamic>?) ?? const [];
-
-    final results = rawResults.map((r) {
-      final map = Map<String, dynamic>.from(r as Map);
-      return SyncPushResult(
-        success: map['success'] == true,
-        operationId: (map['operationId'] ?? '').toString(),
-        serverId: map['serverId'] as String?,
-        serverCursor: map['serverCursor'] as String?,
-        confirmedRevision: map['confirmedRevision'] as int?,
-        hasConflict: map['hasConflict'] == true,
-        serverConflictVersion:
-            map['serverConflictVersion'] as Map<String, dynamic>?,
-        errorMessage: map['errorMessage'] as String?,
-        isRetryable: map['isRetryable'] != false,
       );
-    }).toList();
-
-    return BatchPushResult(
-      success: results.every((r) => r.success),
-      operationResults: results,
-    );
+    }
   }
 
   @override

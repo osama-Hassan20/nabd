@@ -16,6 +16,7 @@ import 'package:eyadty/core/local_server/handlers/medical_services_local_handler
 import 'package:eyadty/core/local_server/handlers/patients_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/settings_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/staff_users_local_handler.dart';
+import 'package:eyadty/core/local_server/handlers/sync_local_handler.dart';
 import 'package:eyadty/core/local_server/handlers/visits_local_handler.dart';
 import 'package:eyadty/core/local_server/local_server_db.dart';
 import 'package:eyadty/core/local_server/local_server_router.dart';
@@ -50,6 +51,7 @@ class LocalServerApiConsumer implements ApiConsumer {
     CashierLocalHandler.register(router);
     HrLocalHandler.register(router);
     NotificationsAndSpecialtyLocalHandler.register(router);
+    SyncLocalHandler.register(router);
   }
 
   Future<void> resetLocalData() => db.resetToSeeds();
