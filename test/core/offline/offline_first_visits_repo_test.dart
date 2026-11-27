@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
@@ -39,7 +40,7 @@ void main() {
       persistToStorage: true,
     );
 
-    mockRemote = VisitsRepoImpl();
+    mockRemote = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
     repo = OfflineFirstVisitsRepo(
       localStore: store,

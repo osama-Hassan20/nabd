@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
@@ -18,7 +19,7 @@ void main() {
       reachabilityProbe: (_, __) async => true,
       initialReachable: true,
     );
-    remoteRepo = DoctorsRepoImpl();
+    remoteRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer());
   });
 
   tearDown(() {

@@ -6,10 +6,19 @@ class VisitsLocalHandler {
   static void register(LocalServerRouter router) {
     router.register('GET', 'visits/queue', (req) async {
       final doctorId = req.queryParameters['doctorId']?.toString();
+      final branchId = req.queryParameters['branchId']?.toString();
+      final dateStr = req.queryParameters['date']?.toString();
       final bookings = router.db.collection('bookings').where((b) {
         if (b['isDeleted'] == true) return false;
+        if (branchId != null && branchId.isNotEmpty && (b['branchId'] ?? 'branch_1') != branchId) {
+          return false;
+        }
         if (doctorId != null && doctorId.isNotEmpty && b['doctorId'] != doctorId) {
           return false;
+        }
+        if (dateStr != null && dateStr.isNotEmpty) {
+          final raw = (b['appointmentTime'] ?? b['date'])?.toString() ?? '';
+          if (raw.isEmpty || !raw.startsWith(dateStr)) return false;
         }
         return true;
       }).toList();
@@ -61,12 +70,28 @@ class VisitsLocalHandler {
       final record = Map<String, dynamic>.from(req.body);
       if (idx == -1) {
         record['id'] ??= 'VIS-${DateTime.now().millisecondsSinceEpoch}';
-        record['status'] ??= 'in_progress';
+        record['status'] = 'in_progress';
+        record['startedAt'] ??= DateTime.now().toUtc().toIso8601String();
         list.insert(0, record);
         router.db.persist();
         return LocalServerRouter.ok(record);
       }
-      list[idx] = {...list[idx], ...record};
+      if (list[idx]['status'] == 'finalized') {
+        LocalServerRouter.throwHttpError(
+          req.path,
+          409,
+          'VISIT_IMMUTABLE',
+          'finalized_cannot_be_reopened',
+        );
+      }
+      final now = DateTime.now().toUtc().toIso8601String();
+      list[idx] = {
+        ...list[idx],
+        ...record,
+        'status': 'in_progress',
+        'startedAt': list[idx]['startedAt'] ?? now,
+        'lastSavedAt': now,
+      };
       router.db.persist();
       return LocalServerRouter.ok(list[idx]);
     });
@@ -76,17 +101,22 @@ class VisitsLocalHandler {
       final list = router.db.collection('visits');
       final idx = list.indexWhere((v) => v['id'] == id);
       if (idx == -1) {
-        LocalServerRouter.throwHttpError(req.path, 404, 'NOT_FOUND', 'Visit not found');
+        LocalServerRouter.throwHttpError(req.path, 404, 'NOT_FOUND', 'visit_not_found');
       }
       if (list[idx]['status'] == 'finalized') {
         LocalServerRouter.throwHttpError(
           req.path,
           409,
           'VISIT_IMMUTABLE',
-          'Finalized visit cannot be modified; append an addendum instead.',
+          'cannot_edit_finalized_visit',
         );
       }
-      list[idx] = {...list[idx], ...req.body, 'id': id};
+      list[idx] = {
+        ...list[idx],
+        ...req.body,
+        'id': id,
+        'lastSavedAt': DateTime.now().toUtc().toIso8601String(),
+      };
       router.db.persist();
       return LocalServerRouter.ok(list[idx]);
     });
@@ -94,18 +124,35 @@ class VisitsLocalHandler {
     router.register('POST', 'visits/{id}/vitals', (req) async {
       final id = req.pathParams['id']!;
       final list = router.db.collection('visits');
-      final idx = list.indexWhere((v) => v['id'] == id);
+      final idx = list.indexWhere((v) => v['id'] == id || v['bookingId'] == id);
+      final now = DateTime.now().toUtc().toIso8601String();
       if (idx == -1) {
         final record = {
-          'id': id,
+          'id': 'VIS-${DateTime.now().millisecondsSinceEpoch}',
+          'bookingId': id,
           ...req.body,
           'status': 'triage',
+          'triageAt': now,
+          'lastSavedAt': now,
         };
         list.insert(0, record);
         router.db.persist();
         return LocalServerRouter.ok(record);
       }
-      list[idx] = {...list[idx], 'vitals': req.body['vitals'] ?? req.body};
+      final st = list[idx]['status']?.toString();
+      if (st == 'in_progress' || st == 'finalized') {
+        LocalServerRouter.throwHttpError(
+          req.path,
+          409,
+          'VISIT_IMMUTABLE',
+          'cannot_record_vitals_on_active_or_finalized_visit',
+        );
+      }
+      list[idx] = {
+        ...list[idx],
+        'vitals': req.body['vitals'] ?? req.body,
+        'lastSavedAt': now,
+      };
       router.db.persist();
       return LocalServerRouter.ok(list[idx]);
     });
@@ -115,14 +162,24 @@ class VisitsLocalHandler {
       final list = router.db.collection('visits');
       final idx = list.indexWhere((v) => v['id'] == id);
       if (idx == -1) {
-        LocalServerRouter.throwHttpError(req.path, 404, 'NOT_FOUND', 'Visit not found');
+        LocalServerRouter.throwHttpError(req.path, 404, 'NOT_FOUND', 'visit_not_found');
       }
+      if (list[idx]['status'] == 'finalized') {
+        LocalServerRouter.throwHttpError(
+          req.path,
+          409,
+          'VISIT_IMMUTABLE',
+          'visit_already_finalized',
+        );
+      }
+      final now = DateTime.now().toUtc().toIso8601String();
       list[idx] = {
         ...list[idx],
         ...req.body,
         'id': id,
         'status': 'finalized',
-        'finalizedAt': DateTime.now().toUtc().toIso8601String(),
+        'finalizedAt': now,
+        'lastSavedAt': now,
       };
       router.db.persist();
       return LocalServerRouter.ok(list[idx]);

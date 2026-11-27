@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -79,13 +80,15 @@ void main() {
   });
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await AppSharedPreferences.initialSharedPreference();
     CairoTimeHelper.setFixedClock(DateTime(2026, 11, 10, 10, 0));
     await getIt.reset();
 
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    bookingsRepo = BookingsRepoImpl();
-    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
-    patientsRepo = PatientsRepoImpl();
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+    visitsRepo = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
+    patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
     const doctorUser = StaffUserModel(
       id: 'USR-DOC-01',
@@ -480,7 +483,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify draft was saved in repo
-      final updatedVisit = visitsRepo.visits.firstWhere((v) => v.id == 'VIS-001');
+      final updatedVisitRes = await visitsRepo.getVisitById(visitId: 'VIS-001');
+      final updatedVisit = updatedVisitRes.getOrElse(() => throw 'Visit not found')!;
       expect(updatedVisit.chiefComplaint, 'شكوى محدثة قبل الخروج');
     });
 

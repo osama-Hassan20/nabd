@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/medical_specialty_enum.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
@@ -50,7 +51,7 @@ void main() {
         final store1 = buildStore();
         final doctorsRepo = OfflineFirstDoctorsRepo(
           localStore: store1,
-          remoteRepo: DoctorsRepoImpl(),
+          remoteRepo: DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer()),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',
@@ -78,7 +79,7 @@ void main() {
         );
         final visitsRepo = OfflineFirstVisitsRepo(
           localStore: store1,
-          remoteRepo: VisitsRepoImpl(),
+          remoteRepo: VisitsRepoImpl(apiConsumer: LocalServerApiConsumer()),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',
@@ -264,7 +265,7 @@ void main() {
         );
         final visitsRepo2 = OfflineFirstVisitsRepo(
           localStore: store2,
-          remoteRepo: VisitsRepoImpl(),
+          remoteRepo: VisitsRepoImpl(apiConsumer: LocalServerApiConsumer()),
           dataModeService: dataMode,
           getCurrentAccountId: () => 'acc-1',
           getCurrentBranchId: () => 'branch_1',

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -38,7 +39,7 @@ void main() {
   late BookingsRepoImpl repo;
 
   setUp(() {
-    repo = BookingsRepoImpl();
+    repo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
   });
 
   group('B-DISC M-2: Repository, Calculator & Discount Operations Tests', () {

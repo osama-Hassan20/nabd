@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
@@ -41,13 +42,13 @@ void main() {
       CairoTimeHelper.setFixedClock(fixedNow);
       settingsRepo = SettingsRepoImpl();
       medicalServicesRepo = MedicalServicesRepoImpl();
-      bookingsRepo = BookingsRepoImpl(settingsRepo: settingsRepo);
-      doctorsRepo = DoctorsRepoImpl(
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer(), settingsRepo: settingsRepo);
+      doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,
       );
       // ربط الـ bookingsRepo بالـ doctorsRepo للفحص المتبادل
-      final dynamicRepo = BookingsRepoImpl(
+      final dynamicRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         doctorsRepo: doctorsRepo,
         settingsRepo: settingsRepo,
       );

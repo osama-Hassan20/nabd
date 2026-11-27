@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,8 +64,8 @@ void main() {
     setUp(() {
       CairoTimeHelper.setFixedClock(DateTime(2026, 11, 8, 8, 30));
       settingsRepo = SettingsRepoImpl();
-      bookingsRepo = BookingsRepoImpl(settingsRepo: settingsRepo);
-      doctorsRepo = DoctorsRepoImpl(
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer(), settingsRepo: settingsRepo);
+      doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,
       );

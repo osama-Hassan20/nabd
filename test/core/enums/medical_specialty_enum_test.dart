@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
@@ -79,7 +80,7 @@ void main() {
       );
       final repo1 = OfflineFirstDoctorsRepo(
         localStore: store1,
-        remoteRepo: DoctorsRepoImpl(),
+        remoteRepo: DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer()),
         dataModeService: dataMode,
         getCurrentAccountId: () => 'acc-1',
         getCurrentBranchId: () => 'branch-1',
@@ -105,7 +106,7 @@ void main() {
       );
       final repo2 = OfflineFirstDoctorsRepo(
         localStore: store2,
-        remoteRepo: DoctorsRepoImpl(),
+        remoteRepo: DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer()),
         dataModeService: dataMode,
         getCurrentAccountId: () => 'acc-1',
         getCurrentBranchId: () => 'branch-1',

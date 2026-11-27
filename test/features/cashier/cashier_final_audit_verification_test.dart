@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/payment_method.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
@@ -58,7 +59,7 @@ void main() {
   setUp(() {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
     cashierRepo = CashierRepoImpl(seedInitialData: false);
-    bookingsRepo = BookingsRepoImpl();
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
     staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
     settingsRepo = SettingsRepoImpl();
 

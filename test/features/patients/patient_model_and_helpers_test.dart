@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/utils/helpers/arabic_text_helper.dart';
@@ -83,7 +84,7 @@ void main() {
     late MedicalCatalogRepoImpl catalogRepo;
 
     setUp(() {
-      catalogRepo = MedicalCatalogRepoImpl();
+      catalogRepo = MedicalCatalogRepoImpl(apiConsumer: LocalServerApiConsumer());
     });
 
     test('Initializes with seed allergies and chronic diseases', () async {
@@ -318,7 +319,7 @@ void main() {
 
   group('PatientsRepoImpl Tests', () {
     test('Initializes with seed patients, correctly separates active vs archived', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       final activeRes = await repo.getPatients(params: const PaginationParams(page: 1, limit: 10));
       expect(activeRes.isRight(), isTrue);
@@ -340,8 +341,8 @@ void main() {
     });
 
     test('Data consistency between BookingsRepoImpl and PatientsRepoImpl', () async {
-      final bookingsRepo = BookingsRepoImpl();
-      final patientsRepo = PatientsRepoImpl(bookingsRepo: bookingsRepo);
+      final bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+      final patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
 
       final activeRes = await patientsRepo.getPatients(
         params: const PaginationParams(page: 1, limit: 10),
@@ -387,7 +388,7 @@ void main() {
     });
 
     test('Duplicate phone emits warning by default and allows bypass via allowDuplicatePhone', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       // Duplicate phone without flag -> Returns DuplicatePhoneWarningFailure
       final dupPhoneRes = await repo.addPatient(
@@ -410,7 +411,7 @@ void main() {
     });
 
     test('findPatientsByPhone finds all non-archived matching patients', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       final searchRes = await repo.findPatientsByPhone(phone: '01012345678');
       expect(searchRes.isRight(), isTrue);
@@ -421,7 +422,7 @@ void main() {
     });
 
     test('Enforces child guardian requirement on add', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       final childWithoutGuardian = await repo.addPatient(
         patient: PatientModel(
@@ -445,7 +446,7 @@ void main() {
     });
 
     test('Rejects archiving a patient with debt balance', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       // PAT-000102 has 150 EGP debt
       final debtArchive = await repo.archivePatient(id: 'PAT-000102');
@@ -456,7 +457,7 @@ void main() {
     });
 
     test('Rejects archiving a patient with upcoming appointments', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       // PAT-000101 has upcoming appointment today
       final upcomingArchive = await repo.archivePatient(id: 'PAT-000101');
@@ -467,7 +468,7 @@ void main() {
     });
 
     test('Allows valid unarchive of archived patient', () async {
-      final repo = PatientsRepoImpl();
+      final repo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       // PAT-000106 is archived -> unarchive it
       final unarchiveRes = await repo.unarchivePatient(id: 'PAT-000106');

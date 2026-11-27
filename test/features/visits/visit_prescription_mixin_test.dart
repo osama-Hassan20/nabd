@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
@@ -60,9 +61,9 @@ void main() {
   late VisitsCubit cubit;
 
   setUp(() {
-    bookingsRepo = BookingsRepoImpl();
-    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
-    patientsRepo = PatientsRepoImpl();
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+    visitsRepo = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
+    patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
     rolesProvider = FakeRolesSessionProvider(

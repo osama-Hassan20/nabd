@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -26,7 +27,7 @@ void main() {
     late GetBookingByIdUseCase getBookingByIdUseCase;
 
     setUp(() {
-      repo = BookingsRepoImpl();
+      repo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       createBookingUseCase = CreateBookingUseCase(repo: repo);
       updateBookingUseCase = UpdateBookingUseCase(repo: repo);
       getBookingByIdUseCase = GetBookingByIdUseCase(repo: repo);
@@ -97,8 +98,8 @@ void main() {
     });
 
     test('3. Cubit Form Flow: Changing consultationFee updates price without hourly multiplication', () async {
-      final patientsRepo = PatientsRepoImpl();
-      final doctorsRepo = DoctorsRepoImpl();
+      final patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
+      final doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       final cubit = BookingsCubit(
         getBookingSummaryUseCase: GetBookingSummaryUseCase(repo: repo),

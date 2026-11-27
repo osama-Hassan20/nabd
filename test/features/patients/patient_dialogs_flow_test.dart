@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,9 +30,9 @@ import 'package:eyadty/features/patients/presentation/widgets/form_components/ki
 import 'package:eyadty/features/patients/presentation/widgets/quick_add_patient_dialog.dart';
 
 PatientsCubit createTestPatientsCubit() {
-  final bookingsRepo = BookingsRepoImpl();
-  final patientsRepo = PatientsRepoImpl(bookingsRepo: bookingsRepo);
-  final catalogRepo = MedicalCatalogRepoImpl();
+  final bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+  final patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
+  final catalogRepo = MedicalCatalogRepoImpl(apiConsumer: LocalServerApiConsumer());
 
   return PatientsCubit(
     getPatientsUseCase: GetPatientsUseCase(repo: patientsRepo),

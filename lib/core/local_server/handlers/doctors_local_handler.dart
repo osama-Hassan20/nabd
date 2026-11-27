@@ -92,8 +92,35 @@ class DoctorsLocalHandler {
 
     router.register('POST', 'doctors/{id}/leaves', (req) async {
       final id = req.pathParams['id']!;
+      final force = req.body['force'] == true;
+      final start = DateTime.tryParse((req.body['startDate'] ?? '').toString());
+      final end = DateTime.tryParse((req.body['endDate'] ?? '').toString());
+      if (!force && start != null && end != null) {
+        final sDay = DateTime(start.year, start.month, start.day);
+        final eDay = DateTime(end.year, end.month, end.day, 23, 59, 59);
+        final conflicts = router.db.collection('bookings').where((b) {
+          if (b['isDeleted'] == true) return false;
+          if (b['doctorId'] != id) return false;
+          final st = b['status']?.toString();
+          if (st == 'cancelled' || st == 'completed') return false;
+          final dt = DateTime.tryParse(
+            (b['appointmentTime'] ?? b['date'] ?? '').toString(),
+          );
+          if (dt == null) return false;
+          return !dt.isBefore(sDay) && !dt.isAfter(eDay);
+        }).length;
+        if (conflicts > 0) {
+          LocalServerRouter.throwHttpError(
+            req.path,
+            409,
+            'CONFLICTING_BOOKINGS',
+            'يوجد $conflicts حجوزات متعارضة في هذه الفترة',
+            fields: {'conflictingCount': conflicts},
+          );
+        }
+      }
       final list = router.db.collection('doctorLeaves');
-      final record = Map<String, dynamic>.from(req.body);
+      final record = Map<String, dynamic>.from(req.body)..remove('force');
       record['id'] ??= 'LV-${DateTime.now().millisecondsSinceEpoch}';
       record['doctorId'] = id;
       list.add(record);

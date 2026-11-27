@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -64,7 +65,7 @@ void main() {
     late DeleteBookingUseCase deleteBookingUseCase;
 
     setUp(() {
-      bookingsRepo = BookingsRepoImpl();
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       createBookingUseCase = CreateBookingUseCase(
         repo: bookingsRepo,
         currentUserProvider: _FakeUserProvider(),
@@ -304,7 +305,7 @@ void main() {
 
     test('13. PatientsRepoImpl with lookup computes PAT-000102 debt as 150 EGP', () async {
       final lookup = BookingPatientBalanceLookupImpl(bookingsRepo);
-      final patientsRepo = PatientsRepoImpl(
+      final patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         bookingsRepo: bookingsRepo,
         balanceLookup: lookup,
       );
@@ -319,7 +320,7 @@ void main() {
 
     test('14. PatientsRepoImpl with lookup computes PAT-000105 debt as 0 EGP', () async {
       final lookup = BookingPatientBalanceLookupImpl(bookingsRepo);
-      final patientsRepo = PatientsRepoImpl(
+      final patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         bookingsRepo: bookingsRepo,
         balanceLookup: lookup,
       );

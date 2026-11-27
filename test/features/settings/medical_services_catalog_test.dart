@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/enums/user_role_enum.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
@@ -46,7 +47,7 @@ void main() {
 
     setUp(() {
       roleProvider = TestRoleProvider();
-      bookingsRepo = BookingsRepoImpl();
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       servicesRepo = MedicalServicesRepoImpl(
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,

@@ -106,14 +106,11 @@ mixin VisitConsultationMixin on SafeCubit<VisitsState> {
     );
 
     // 3. Find visit
-    VisitModel? visit;
-    if (visitsRepo is VisitsRepoImpl) {
-      visit = (visitsRepo as VisitsRepoImpl)
-          .visits
-          .where((v) => v.id == visitId)
-          .firstOrNull;
-    } else {
-      visit = state.queue.where((i) => i.visitId == visitId).firstOrNull?.visit;
+    VisitModel? visit =
+        state.queue.where((i) => i.visitId == visitId).firstOrNull?.visit;
+    if (visit == null) {
+      final visitRes = await visitsRepo.getVisitById(visitId: visitId);
+      visit = visitRes.fold((_) => null, (v) => v);
     }
 
     if (visit == null) {

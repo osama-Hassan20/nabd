@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_doctors_repo.dart';
@@ -14,7 +15,7 @@ void main() {
 
   setUp(() {
     store = InMemoryTransactionalStore();
-    mockRemoteRepo = DoctorsRepoImpl();
+    mockRemoteRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer());
     dataModeService = DataModeService();
     repo = OfflineFirstDoctorsRepo(
       localStore: store,

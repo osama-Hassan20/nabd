@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
@@ -16,8 +17,8 @@ void main() {
     final paginationParams = const PaginationParams(page: 1, limit: 100);
 
     setUp(() {
-      doctorsRepo = DoctorsRepoImpl();
-      bookingsRepo = BookingsRepoImpl();
+      doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer());
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       medicalServicesRepo = MedicalServicesRepoImpl();
       staffUsersRepo = StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger());
     });

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
@@ -52,7 +53,7 @@ void main() {
   setUp(() async {
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
     staffUsersRepo = StaffUsersRepoImpl(auditLogger: auditLogger);
-    bookingsRepo = BookingsRepoImpl();
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
     userProvider = FakeCurrentUserProvider();
     rolesProvider = FakeRolesProvider();
     permissionEvaluator = PermissionEvaluator(

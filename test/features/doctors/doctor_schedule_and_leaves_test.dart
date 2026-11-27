@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -416,9 +417,9 @@ void main() {
 
     setUp(() {
       roleProvider = TestRoleProvider();
-      bookingsRepo = BookingsRepoImpl();
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       settingsRepo = SettingsRepoImpl();
-      doctorsRepo = DoctorsRepoImpl(
+      doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,
@@ -543,9 +544,9 @@ void main() {
 
     setUp(() {
       roleProvider = TestRoleProvider();
-      bookingsRepo = BookingsRepoImpl();
+      bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       settingsRepo = SettingsRepoImpl();
-      doctorsRepo = DoctorsRepoImpl(
+      doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer(), 
         roleProvider: roleProvider,
         bookingsRepo: bookingsRepo,
         settingsRepo: settingsRepo,

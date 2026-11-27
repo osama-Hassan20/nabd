@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
@@ -11,24 +12,24 @@ void main() {
   late VisitsRepoImpl visitsRepo;
 
   setUp(() {
-    bookingsRepo = BookingsRepoImpl();
-    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+    visitsRepo = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
   });
 
   group('VisitsRepoImpl Seed & ActiveVisitLookup Tests', () {
-    test('seed data contains initial visits VIS-001, VIS-002, VIS-003', () {
-      expect(visitsRepo.visits.length, greaterThanOrEqualTo(3));
+    test('seed data contains initial visits VIS-001, VIS-002, VIS-003', () async {
 
-      final vis001 = visitsRepo.visits.firstWhere((v) => v.id == 'VIS-001');
+
+      final vis001 = (await visitsRepo.getVisitById(visitId: 'VIS-001')).getOrElse(() => null)!;
       expect(vis001.bookingId, 'MED-101');
       expect(vis001.status, VisitStatusEnum.inProgress);
       expect(vis001.doctorId, 'DOC-01');
 
-      final vis002 = visitsRepo.visits.firstWhere((v) => v.id == 'VIS-002');
+      final vis002 = (await visitsRepo.getVisitById(visitId: 'VIS-002')).getOrElse(() => null)!;
       expect(vis002.bookingId, 'MED-104');
       expect(vis002.status, VisitStatusEnum.finalized);
 
-      final vis003 = visitsRepo.visits.firstWhere((v) => v.id == 'VIS-003');
+      final vis003 = (await visitsRepo.getVisitById(visitId: 'VIS-003')).getOrElse(() => null)!;
       expect(vis003.bookingId, 'MED-107');
       expect(vis003.status, VisitStatusEnum.finalized);
     });

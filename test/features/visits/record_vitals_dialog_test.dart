@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -79,9 +80,9 @@ void main() {
     await getIt.reset();
 
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
-    bookingsRepo = BookingsRepoImpl();
-    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
-    patientsRepo = PatientsRepoImpl();
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+    visitsRepo = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
+    patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer());
 
     const nurseUser = StaffUserModel(
       id: 'USR-NURSE-01',

@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_repo_impl.dart';
@@ -17,8 +18,8 @@ void main() {
   late DeleteBookingUseCase deleteBookingUseCase;
 
   setUp(() {
-    bookingsRepo = BookingsRepoImpl();
-    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+    visitsRepo = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
 
     changeBookingStatusUseCase = ChangeBookingStatusUseCase(
       repo: bookingsRepo,

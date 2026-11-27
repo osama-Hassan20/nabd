@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/core/services/audit_logger.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
@@ -52,8 +53,8 @@ void main() {
   late SaveVisitDraftUseCase saveVisitDraftUseCase;
 
   setUp(() {
-    bookingsRepo = BookingsRepoImpl();
-    visitsRepo = VisitsRepoImpl(bookingsRepo: bookingsRepo);
+    bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+    visitsRepo = VisitsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
     auditLogger = InMemoryAuditLogger(seedInitialLogs: false);
 
     rolesProvider = FakeRolesSessionProvider(
@@ -486,7 +487,8 @@ void main() {
         ],
       );
 
-      final initialVisitsCount = visitsRepo.visits.length;
+      final initialVisitsRes = await visitsRepo.getVisitsByPatientId(patientId: 'PAT-000102');
+      final initialVisitsCount = initialVisitsRes.getOrElse(() => []).length;
 
       final res = await startConsultationUseCase(
         const StartConsultationParams(
@@ -508,7 +510,8 @@ void main() {
       expect(visit.specialty, 'عيون');
       expect(visit.vitals?.systolicBp, 125); // Preserved
       // Did NOT create a duplicate visit
-      expect(visitsRepo.visits.length, initialVisitsCount);
+      final afterVisitsRes = await visitsRepo.getVisitsByPatientId(patientId: 'PAT-000102');
+      expect(afterVisitsRes.getOrElse(() => []).length, initialVisitsCount);
     });
 
     test('Plan §8 T3: Saga rollback when upsertConsultationStart fails reverts booking to waiting', () async {
@@ -931,7 +934,7 @@ void main() {
       );
 
       final statusBefore =
-          bookingsRepo.bookings.firstWhere((b) => b.id == 'MED-101').status;
+          (await bookingsRepo.getBookingById('MED-101')).getOrElse(() => const BookingModel()).status;
 
       // 1. Missing chief complaint
       final resMissingChief = await finalizeVisitUseCase(
@@ -950,7 +953,7 @@ void main() {
         (_) => fail('should fail'),
       );
       expect(
-        bookingsRepo.bookings.firstWhere((b) => b.id == 'MED-101').status,
+        (await bookingsRepo.getBookingById('MED-101')).getOrElse(() => const BookingModel()).status,
         statusBefore,
       );
 
@@ -971,7 +974,7 @@ void main() {
         (_) => fail('should fail'),
       );
       expect(
-        bookingsRepo.bookings.firstWhere((b) => b.id == 'MED-101').status,
+        (await bookingsRepo.getBookingById('MED-101')).getOrElse(() => const BookingModel()).status,
         statusBefore,
       );
     });

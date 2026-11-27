@@ -1,3 +1,4 @@
+import 'package:eyadty/core/local_server/local_server_api_consumer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eyadty/core/cubits/session_cubit.dart';
@@ -210,9 +211,9 @@ void main() {
     });
 
     test('PatientsCubit.fetchPatientDetails logs view_patient_profile event automatically', () async {
-      final bookingsRepo = BookingsRepoImpl();
-      final patientsRepo = PatientsRepoImpl(bookingsRepo: bookingsRepo);
-      final catalogRepo = MedicalCatalogRepoImpl();
+      final bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
+      final patientsRepo = PatientsRepoImpl(apiConsumer: LocalServerApiConsumer(), bookingsRepo: bookingsRepo);
+      final catalogRepo = MedicalCatalogRepoImpl(apiConsumer: LocalServerApiConsumer());
 
       final cubit = PatientsCubit(
         getPatientsUseCase: GetPatientsUseCase(repo: patientsRepo),
