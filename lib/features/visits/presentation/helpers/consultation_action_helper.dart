@@ -115,10 +115,9 @@ class ConsultationActionHelper {
     }
     if (visit != null && visit.status != VisitStatusEnum.triage) return false;
     if (!isTodayBooking(booking.appointmentTime ?? booking.date)) return false;
-    if (!isCurrentBranch(
-      booking.branchId,
-      evaluator.userProvider.activeBranchId,
-    )) {
+    if (booking.branchId != null &&
+        evaluator.userProvider.activeBranchId != null &&
+        booking.branchId != evaluator.userProvider.activeBranchId) {
       return false;
     }
 

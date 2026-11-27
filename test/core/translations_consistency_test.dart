@@ -97,5 +97,38 @@ void main() {
         );
       }
     });
+
+    test('Neither ar-EG.json nor en-US.json contains duplicate keys', () {
+      List<String> findDuplicateKeys(String rawJson) {
+        final seen = <String>{};
+        final duplicates = <String>[];
+        final keyLineRegex = RegExp(r'^\s*"([^"\\]+)"\s*:', multiLine: true);
+        for (final match in keyLineRegex.allMatches(rawJson)) {
+          final key = match.group(1)!;
+          if (!seen.add(key)) {
+            duplicates.add(key);
+          }
+        }
+        return duplicates;
+      }
+
+      final arDups = findDuplicateKeys(
+        File('assets/translations/ar-EG.json').readAsStringSync(),
+      );
+      final enDups = findDuplicateKeys(
+        File('assets/translations/en-US.json').readAsStringSync(),
+      );
+
+      expect(
+        arDups,
+        isEmpty,
+        reason: 'Duplicate keys found in ar-EG.json: $arDups',
+      );
+      expect(
+        enDups,
+        isEmpty,
+        reason: 'Duplicate keys found in en-US.json: $enDups',
+      );
+    });
   });
 }

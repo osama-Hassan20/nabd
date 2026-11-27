@@ -24,6 +24,8 @@ import 'package:eyadty/features/cashier/presentation/manager/cashier_cubit.dart'
 import 'package:eyadty/features/cashier/presentation/widgets/dialogs/collect_payment_dialog.dart';
 import 'package:eyadty/features/visits/presentation/manager/visits_cubit.dart';
 import 'package:eyadty/features/visits/domain/repo/visits_repo.dart';
+import 'package:eyadty/features/visits/data/models/consultation_queue_item_model.dart';
+import 'package:eyadty/features/visits/presentation/widgets/dialogs/record_vitals_dialog.dart';
 
 class BookingsPage extends StatelessWidget {
   const BookingsPage({super.key});
@@ -86,6 +88,15 @@ class _BookingsPageView extends StatelessWidget {
       context: context,
       header: 'call_patient_success'.tr(),
     ).showTopToast();
+  }
+
+  void _onRecordVitals(BuildContext context, BookingModel booking) {
+    final visitsCubit = getIt<VisitsCubit>();
+    RecordVitalsDialog.show(
+      context: context,
+      item: ConsultationQueueItemModel(booking: booking, visit: null),
+      visitsCubit: visitsCubit,
+    );
   }
 
   void _onCollectPayment(BuildContext context, BookingModel booking) {
@@ -207,6 +218,7 @@ class _BookingsPageView extends StatelessWidget {
                       onCallPatient: (b) => _onCallPatient(context, b),
                       onStartConsultation: (b) =>
                           _onStartConsultation(context, b),
+                      onRecordVitals: (b) => _onRecordVitals(context, b),
                       onCollectPayment: (b) => _onCollectPayment(context, b),
                     ),
                   ),

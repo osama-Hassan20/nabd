@@ -11,6 +11,9 @@ import 'package:eyadty/core/storage/cache_helper.dart';
 import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
+import 'package:eyadty/features/bookings/presentation/widgets/bookings_table.dart';
+import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/bookings/data/repo/bookings_mock_repo_impl.dart';
 import 'package:eyadty/features/bookings/domain/repo/bookings_repo.dart';
 import 'package:eyadty/features/patients/data/repo/patients_mock_repo_impl.dart';
@@ -326,6 +329,95 @@ void main() {
       await tester.tap(find.text('مريض 1'));
       await tester.pump();
       expect(tappedVitalsItem?.booking?.id, equals('BK-1'));
+    });
+
+    testWidgets('Nurse on BookingsTable with walk-in after slot end: row tap opens vitals, 3-dot has record vitals and hides edit/transfer/cancel/payment',
+        (tester) async {
+      tester.view.physicalSize = const Size(1356, 847);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      sessionCubit.switchMockUser(
+        const StaffUserModel(
+          id: 'USR-NURSE-01',
+          fullName: 'ممرضة فاطمة',
+          isActive: true,
+          branchAssignments: [
+            BranchAssignmentModel(
+              branchId: 'branch_1',
+              roleIds: [RoleIds.nurse],
+            ),
+          ],
+        ),
+      );
+      if (getIt.isRegistered<PermissionEvaluator>()) {
+        getIt.unregister<PermissionEvaluator>();
+      }
+      getIt.registerSingleton<PermissionEvaluator>(sessionCubit.permissionEvaluator);
+      await tester.pump();
+
+      final now = CairoTimeHelper.now();
+      final pastSlotStart = now.subtract(const Duration(minutes: 90));
+      final pastSlotEnd = now.subtract(const Duration(minutes: 70));
+      final walkInAfterSlotEnd = BookingModel(
+        id: 'BOOK-WALKIN-LATE',
+        queueNumber: 1,
+        patientName: 'مريض طوارئ',
+        patientPhone: '01012345678',
+        doctorId: 'DOC-01',
+        doctorName: 'د. حسام',
+        bookingType: BookingTypeEnum.emergency,
+        visitType: BookingTypeEnum.emergency,
+        status: BookingStatusEnum.waiting,
+        branchId: 'branch_1',
+        date: DateTime(now.year, now.month, now.day),
+        appointmentTime: pastSlotStart,
+        startTime:
+            '${pastSlotStart.hour.toString().padLeft(2, '0')}:${pastSlotStart.minute.toString().padLeft(2, '0')}',
+        endTime:
+            '${pastSlotEnd.hour.toString().padLeft(2, '0')}:${pastSlotEnd.minute.toString().padLeft(2, '0')}',
+        consultationFee: 300,
+        totalPrice: 300,
+      );
+
+      BookingModel? vitalsTarget;
+      BookingModel? detailsTarget;
+
+      await tester.pumpWidget(
+        _buildLocalizedApp(
+          sessionCubit: sessionCubit,
+          child: SizedBox(
+            width: 960,
+            child: BookingsTable(
+              bookings: [walkInAfterSlotEnd],
+              onViewDetails: (b) => detailsTarget = b,
+              onEdit: (_) {},
+              onChangeStatus: (_) {},
+              onReassignTechnician: (_) {},
+              onDelete: (_) {},
+              onCollectPayment: (_) {},
+              onRecordVitals: (b) => vitalsTarget = b,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Tapping patient cell opens vitals, NOT details
+      await tester.tap(find.text('مريض طوارئ'));
+      await tester.pump();
+      expect(vitalsTarget?.id, equals('BOOK-WALKIN-LATE'));
+      expect(detailsTarget, isNull);
+
+      // 2. 3-dot menu has record vitals and hides edit/transfer/cancel/payment
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+
+      expect(find.text('visits_record_vitals'.tr()), findsOneWidget);
+      expect(find.text('edit_medical_appointment'.tr()), findsNothing);
+      expect(find.text('transfer_doctor'.tr()), findsNothing);
+      expect(find.text('cancel_appointment'.tr()), findsNothing);
+      expect(find.text('cashier_collect_btn'.tr()), findsNothing);
     });
 
     testWidgets('Mobile viewport renders ConsultationQueueCard instead of table', (tester) async {

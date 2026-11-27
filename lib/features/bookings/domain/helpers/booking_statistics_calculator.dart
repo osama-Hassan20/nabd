@@ -2,7 +2,6 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
-import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 
 /// Pure, testable helper to compute booking statistics & filter bookings
 /// according to Africa/Cairo local date, branch, and status definitions.
@@ -128,13 +127,6 @@ class BookingStatisticsCalculator {
 
     final today = DateTime(cairoNow.year, cairoNow.month, cairoNow.day);
     final targetDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-
-    // Walk-in / urgent bookings not yet checked in on today's date count as waiting, not no-show
-    final isWalkInOrUrgent = booking.bookingType == BookingTypeEnum.emergency ||
-        booking.visitType == BookingTypeEnum.emergency;
-    if (isWalkInOrUrgent && !targetDay.isBefore(today)) {
-      return false;
-    }
 
     // Evaluate slot end time (no-show only after slot end passes without check-in)
     final slotEndTime = _resolveSlotEndDateTime(booking, selectedDate);

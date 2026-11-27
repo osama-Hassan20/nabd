@@ -108,5 +108,86 @@ class CairoTimeHelper {
         : (hours == 2 ? 'ساعتان' : (hours <= 10 ? '$hours ساعات' : '$hours ساعة'));
     return 'متأخر $hourPart و $remainingMin دقيقة';
   }
+
+  /// Evaluates dynamic timing display for a waiting/scheduled booking against Cairo now.
+  /// Never returns a positive "remaining" label once the slot end has passed.
+  static BookingTimingInfo evaluateBookingTiming({
+    required DateTime? date,
+    String? startTime,
+    String? endTime,
+    int? durationMinutes,
+    bool isWalkIn = false,
+    DateTime? nowOverride,
+  }) {
+    if (date == null) {
+      return const BookingTimingInfo(label: '—', isLateOrExpired: false);
+    }
+
+    final cairo = nowOverride ?? now();
+    DateTime start = date;
+    if (startTime != null && startTime.contains(':')) {
+      final parts = startTime.split(':');
+      final hour = int.tryParse(parts.first) ?? 0;
+      final minute = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+      start = DateTime(date.year, date.month, date.day, hour, minute);
+    }
+
+    final safeDuration = (durationMinutes != null && durationMinutes > 0)
+        ? durationMinutes
+        : 15;
+    DateTime end = start.add(Duration(minutes: safeDuration));
+    if (endTime != null && endTime.contains(':')) {
+      final parts = endTime.split(':');
+      final hour = int.tryParse(parts.first) ?? 0;
+      final minute = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+      end = DateTime(date.year, date.month, date.day, hour, minute);
+    }
+
+    if (cairo.isBefore(start)) {
+      final rem = start.difference(cairo).inMinutes;
+      return BookingTimingInfo(
+        label: rem > 0 ? 'متبقي $rem دقيقة' : 'حان الموعد',
+        isLateOrExpired: false,
+      );
+    }
+
+    if (!cairo.isAfter(end)) {
+      if (isWalkIn) {
+        final remEnd = end.difference(cairo).inMinutes;
+        return BookingTimingInfo(
+          label: remEnd > 0 ? 'دخول فوري • متبقي $remEnd دقيقة' : 'دخول فوري • الآن',
+          isLateOrExpired: false,
+        );
+      }
+      final delay = cairo.difference(start).inMinutes;
+      if (delay > defaultGraceMinutes) {
+        return BookingTimingInfo(
+          label: formatDelayArabic(delay),
+          isLateOrExpired: true,
+        );
+      }
+      return const BookingTimingInfo(
+        label: 'حان الموعد',
+        isLateOrExpired: false,
+      );
+    }
+
+    // Slot end has passed without check-in -> late / expired (never positive remaining)
+    final overdue = cairo.difference(isWalkIn ? end : start).inMinutes;
+    return BookingTimingInfo(
+      label: overdue > 0 ? formatDelayArabic(overdue) : 'انتهى الوقت',
+      isLateOrExpired: true,
+    );
+  }
+}
+
+class BookingTimingInfo {
+  final String label;
+  final bool isLateOrExpired;
+
+  const BookingTimingInfo({
+    required this.label,
+    required this.isLateOrExpired,
+  });
 }
 

@@ -14,6 +14,7 @@ class BookingActionsMenu extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onCallPatient;
   final VoidCallback? onStartConsultation;
+  final VoidCallback? onRecordVitals;
   final VoidCallback? onCollectPayment;
   final VoidCallback? onRefundPayment;
   final String? consultationButtonKey;
@@ -29,6 +30,7 @@ class BookingActionsMenu extends StatelessWidget {
     this.onDelete,
     this.onCallPatient,
     this.onStartConsultation,
+    this.onRecordVitals,
     this.onCollectPayment,
     this.onRefundPayment,
     this.consultationButtonKey,
@@ -58,6 +60,9 @@ class BookingActionsMenu extends StatelessWidget {
             break;
           case 'start_consultation':
             onStartConsultation?.call();
+            break;
+          case 'record_vitals':
+            onRecordVitals?.call();
             break;
           case 'call_patient':
             onCallPatient?.call();
@@ -138,6 +143,28 @@ class BookingActionsMenu extends StatelessWidget {
                 Expanded(
                   child: Text(
                     (consultationButtonKey ?? 'visits_start_consultation').tr(),
+                    style: CustomAppFontStyle.semiBold13.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (onRecordVitals != null)
+          PopupMenuItem(
+            value: 'record_vitals',
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.monitor_heart_outlined,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'visits_record_vitals'.tr(),
                     style: CustomAppFontStyle.semiBold13.copyWith(
                       color: AppColors.primary,
                     ),

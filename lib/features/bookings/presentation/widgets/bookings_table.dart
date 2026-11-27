@@ -10,6 +10,7 @@ import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
@@ -24,6 +25,7 @@ class BookingsTable extends StatelessWidget {
   final void Function(BookingModel booking) onDelete;
   final void Function(BookingModel booking)? onCallPatient;
   final void Function(BookingModel booking)? onStartConsultation;
+  final void Function(BookingModel booking)? onRecordVitals;
   final void Function(BookingModel booking)? onCollectPayment;
   final void Function(BookingModel booking)? onRefundPayment;
 
@@ -37,25 +39,26 @@ class BookingsTable extends StatelessWidget {
     required this.onDelete,
     this.onCallPatient,
     this.onStartConsultation,
+    this.onRecordVitals,
     this.onCollectPayment,
     this.onRefundPayment,
   });
 
   static const Map<int, TableColumnWidth> columnWidths = {
-    0: FixedColumnWidth(55),  // Queue Number
-    1: FixedColumnWidth(130), // Patient Name & Phone
-    2: FixedColumnWidth(130), // Doctor & Clinic Room
-    3: FixedColumnWidth(100), // Visit Type
-    4: FixedColumnWidth(125), // Arrival & Est. Wait
-    5: FixedColumnWidth(95),  // Fee & Payment Status
-    6: FixedColumnWidth(110), // Queue Status
-    7: FixedColumnWidth(35),  // Actions
+    0: FixedColumnWidth(44),  // Queue Number
+    1: FixedColumnWidth(115), // Patient Name & Phone
+    2: FixedColumnWidth(115), // Doctor & Clinic Room
+    3: FixedColumnWidth(80),  // Visit Type
+    4: FixedColumnWidth(110), // Arrival & Est. Wait
+    5: FixedColumnWidth(82),  // Fee & Payment Status
+    6: FixedColumnWidth(100), // Queue Status
+    7: FixedColumnWidth(38),  // Actions
   };
 
   @override
   Widget build(BuildContext context) {
     return CustomTable(
-      minWidth: 950,
+      minWidth: 700,
       columnWidths: columnWidths,
       headers: [
         'queue_number'.tr(),
@@ -103,9 +106,41 @@ class BookingsTable extends StatelessWidget {
       ),
     );
 
+    PermissionEvaluator? evaluator;
+    try {
+      evaluator = getIt<PermissionEvaluator>();
+    } catch (_) {
+      evaluator = null;
+    }
+
+    final canStart = evaluator != null &&
+        ConsultationActionHelper.canStartConsultation(
+          booking: item,
+          visit: null,
+          evaluator: evaluator,
+        );
+    final canContinue = evaluator != null &&
+        ConsultationActionHelper.canContinueConsultation(
+          booking: item,
+          visit: null,
+          evaluator: evaluator,
+        );
+    final canVitals = evaluator != null &&
+        ConsultationActionHelper.canRecordVitals(
+          booking: item,
+          visit: null,
+          evaluator: evaluator,
+        );
+
     // 1: Patient (Name + Phone + File Number)
+    // Nurse opens vitals dialog on row tap; other roles open booking details.
+    final VoidCallback? rowTap =
+        (canVitals && !canStart && !canContinue && onRecordVitals != null)
+            ? () => onRecordVitals!(item)
+            : (onViewDetails != null ? () => onViewDetails!(item) : null);
+
     final cell1 = InkWell(
-      onTap: () => onViewDetails?.call(item),
+      onTap: rowTap,
       borderRadius: BorderRadius.circular(6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,21 +214,24 @@ class BookingsTable extends StatelessWidget {
     // 4: Arrival Time & Estimated Wait Remaining / Delay Info
     final isWalkIn = item.bookingType == BookingTypeEnum.emergency ||
         item.visitType == BookingTypeEnum.emergency;
-    final delayMinutes = isWalkIn
-        ? 0
-        : CairoTimeHelper.calculateDelayMinutes(
-            item.appointmentTime ?? item.date,
-            item.startTime,
-          );
-    final isDelayed = !isWalkIn &&
-        delayMinutes > CairoTimeHelper.defaultGraceMinutes &&
-        item.arrivalTime == null &&
-        (item.status == BookingStatusEnum.noShow || item.status == BookingStatusEnum.waiting);
+    final timingInfo = CairoTimeHelper.evaluateBookingTiming(
+      date: item.appointmentTime ?? item.date,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      durationMinutes: item.durationMinutes,
+      isWalkIn: isWalkIn,
+    );
 
     Widget waitOrStatusDetail;
-    if (item.status == BookingStatusEnum.noShow || isDelayed) {
+    if (item.status == BookingStatusEnum.noShow) {
+      final delayMinutes = CairoTimeHelper.calculateDelayMinutes(
+        item.appointmentTime ?? item.date,
+        item.startTime,
+      );
       waitOrStatusDetail = Text(
-        CairoTimeHelper.formatDelayArabic(delayMinutes),
+        delayMinutes > 0
+            ? CairoTimeHelper.formatDelayArabic(delayMinutes)
+            : BookingStatusEnum.noShow.label,
         style: CustomAppFontStyle.semiBold11.copyWith(
           color: AppColors.error,
         ),
@@ -239,11 +277,22 @@ class BookingsTable extends StatelessWidget {
             color: AppColors.secondary,
           ),
         );
+      } else if (item.arrivalTime != null ||
+          item.status == BookingStatusEnum.completed ||
+          item.status == BookingStatusEnum.inConsultation) {
+        waitOrStatusDetail = Text(
+          item.status?.label ?? '',
+          style: CustomAppFontStyle.regular11.copyWith(
+            color: colors.textSecondary,
+          ),
+        );
       } else {
         waitOrStatusDetail = Text(
-          '${item.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
-          style: CustomAppFontStyle.regular11.copyWith(
-            color: AppColors.statusWarning,
+          timingInfo.label,
+          style: CustomAppFontStyle.semiBold11.copyWith(
+            color: timingInfo.isLateOrExpired
+                ? AppColors.error
+                : AppColors.statusWarning,
           ),
         );
       }
@@ -363,25 +412,6 @@ class BookingsTable extends StatelessWidget {
     );
 
     // 7: Actions Popup Menu
-    PermissionEvaluator? evaluator;
-    try {
-      evaluator = getIt<PermissionEvaluator>();
-    } catch (_) {
-      evaluator = null;
-    }
-
-    final canStart = evaluator != null &&
-        ConsultationActionHelper.canStartConsultation(
-          booking: item,
-          visit: null,
-          evaluator: evaluator,
-        );
-    final canContinue = evaluator != null &&
-        ConsultationActionHelper.canContinueConsultation(
-          booking: item,
-          visit: null,
-          evaluator: evaluator,
-        );
     final showConsultation =
         (canStart || canContinue) && onStartConsultation != null;
     final consultationKey = ConsultationActionHelper.getConsultationButtonKey(
@@ -389,23 +419,42 @@ class BookingsTable extends StatelessWidget {
       visit: null,
     );
 
-    final canCollect = !item.isFreeConsultation &&
+    final canEditBooking = evaluator == null ||
+        evaluator.can(StaffPermissionEnum.editBooking, branchId: item.branchId);
+    final canCancelBooking = evaluator == null ||
+        evaluator.can(StaffPermissionEnum.cancelBooking, branchId: item.branchId);
+    final canReorderQueue = evaluator == null ||
+        evaluator.can(StaffPermissionEnum.reorderQueue, branchId: item.branchId);
+    final canCollectPerm = evaluator == null ||
+        evaluator.can(StaffPermissionEnum.collectPayment, branchId: item.branchId);
+    final canRefundPerm = evaluator == null ||
+        evaluator.can(StaffPermissionEnum.refundPayment, branchId: item.branchId);
+
+    final canCollect = canCollectPerm &&
+        !item.isFreeConsultation &&
         item.status != BookingStatusEnum.cancelled &&
         (item.netAmount > (item.paidAmount ?? 0));
-    final canRefund = (item.paidAmount ?? 0) > 0;
+    final canRefund = canRefundPerm && (item.paidAmount ?? 0) > 0;
 
     final cell7 = Center(
       child: BookingActionsMenu(
         onViewDetails: onViewDetails != null
             ? () => onViewDetails!(item)
             : null,
-        onEdit: () => onEdit(item),
-        onChangeStatus: () => onChangeStatus(item),
-        onReassignTechnician: () => onReassignTechnician(item),
-        onDelete: () => onDelete(item),
-        onCallPatient: onCallPatient != null ? () => onCallPatient!(item) : null,
+        onEdit: canEditBooking ? () => onEdit(item) : null,
+        onChangeStatus:
+            (canEditBooking || canCancelBooking) ? () => onChangeStatus(item) : null,
+        onReassignTechnician:
+            canReorderQueue ? () => onReassignTechnician(item) : null,
+        onDelete: canCancelBooking ? () => onDelete(item) : null,
+        onCallPatient: (canEditBooking || canReorderQueue) && onCallPatient != null
+            ? () => onCallPatient!(item)
+            : null,
         onStartConsultation:
             showConsultation ? () => onStartConsultation!(item) : null,
+        onRecordVitals: canVitals && onRecordVitals != null
+            ? () => onRecordVitals!(item)
+            : null,
         consultationButtonKey: consultationKey,
         onCollectPayment: canCollect && onCollectPayment != null
             ? () => onCollectPayment!(item)

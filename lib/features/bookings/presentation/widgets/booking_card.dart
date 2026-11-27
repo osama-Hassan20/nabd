@@ -10,6 +10,7 @@ import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.d
 import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/data/models/enums/payment_status_enum.dart';
 import 'package:eyadty/core/dependency_injection/dependency_injection.dart';
+import 'package:eyadty/core/enums/staff_permission_enum.dart';
 import 'package:eyadty/core/services/permission_evaluator.dart';
 import 'package:eyadty/features/visits/presentation/helpers/consultation_action_helper.dart';
 import 'package:eyadty/features/bookings/presentation/widgets/booking_actions_menu.dart';
@@ -24,6 +25,7 @@ class BookingCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback? onCallPatient;
   final VoidCallback? onStartConsultation;
+  final VoidCallback? onRecordVitals;
 
   const BookingCard({
     super.key,
@@ -35,6 +37,7 @@ class BookingCard extends StatelessWidget {
     required this.onDelete,
     this.onCallPatient,
     this.onStartConsultation,
+    this.onRecordVitals,
   });
 
   @override
@@ -182,6 +185,12 @@ class BookingCard extends StatelessWidget {
                             visit: null,
                             evaluator: evaluator,
                           );
+                      final canVitals = evaluator != null &&
+                          ConsultationActionHelper.canRecordVitals(
+                            booking: booking,
+                            visit: null,
+                            evaluator: evaluator,
+                          );
                       final showConsultation = (canStart || canContinue) &&
                           onStartConsultation != null;
                       final consultationKey =
@@ -190,15 +199,30 @@ class BookingCard extends StatelessWidget {
                         visit: null,
                       );
 
+                      final canEditBooking = evaluator == null ||
+                          evaluator.can(StaffPermissionEnum.editBooking,
+                              branchId: booking.branchId);
+                      final canCancelBooking = evaluator == null ||
+                          evaluator.can(StaffPermissionEnum.cancelBooking,
+                              branchId: booking.branchId);
+                      final canReorderQueue = evaluator == null ||
+                          evaluator.can(StaffPermissionEnum.reorderQueue,
+                              branchId: booking.branchId);
+
                       return BookingActionsMenu(
                         onViewDetails: onViewDetails,
-                        onEdit: onEdit,
-                        onChangeStatus: onChangeStatus,
-                        onReassignTechnician: onReassignTechnician,
-                        onDelete: onDelete,
-                        onCallPatient: onCallPatient,
+                        onEdit: canEditBooking ? onEdit : null,
+                        onChangeStatus:
+                            (canEditBooking || canCancelBooking) ? onChangeStatus : null,
+                        onReassignTechnician:
+                            canReorderQueue ? onReassignTechnician : null,
+                        onDelete: canCancelBooking ? onDelete : null,
+                        onCallPatient:
+                            (canEditBooking || canReorderQueue) ? onCallPatient : null,
                         onStartConsultation:
                             showConsultation ? onStartConsultation : null,
+                        onRecordVitals:
+                            canVitals ? onRecordVitals : null,
                         consultationButtonKey: consultationKey,
                       );
                     },
@@ -371,20 +395,20 @@ class BookingCard extends StatelessWidget {
             builder: (context) {
               final isWalkIn = booking.bookingType == BookingTypeEnum.emergency ||
                   booking.visitType == BookingTypeEnum.emergency;
-              final delayMinutes = isWalkIn
-                  ? 0
-                  : CairoTimeHelper.calculateDelayMinutes(
-                      booking.appointmentTime ?? booking.date,
-                      booking.startTime,
-                    );
-              final isDelayed = !isWalkIn &&
-                  delayMinutes > CairoTimeHelper.defaultGraceMinutes &&
-                  booking.arrivalTime == null &&
-                  (booking.status == BookingStatusEnum.noShow ||
-                      booking.status == BookingStatusEnum.waiting);
+              final timingInfo = CairoTimeHelper.evaluateBookingTiming(
+                date: booking.appointmentTime ?? booking.date,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                durationMinutes: booking.durationMinutes,
+                isWalkIn: isWalkIn,
+              );
 
               Widget detailWidget;
-              if (booking.status == BookingStatusEnum.noShow || isDelayed) {
+              if (booking.status == BookingStatusEnum.noShow) {
+                final delayMinutes = CairoTimeHelper.calculateDelayMinutes(
+                  booking.appointmentTime ?? booking.date,
+                  booking.startTime,
+                );
                 detailWidget = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -392,7 +416,9 @@ class BookingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
-                    CairoTimeHelper.formatDelayArabic(delayMinutes),
+                    delayMinutes > 0
+                        ? CairoTimeHelper.formatDelayArabic(delayMinutes)
+                        : BookingStatusEnum.noShow.label,
                     style: CustomAppFontStyle.semiBold11.copyWith(
                       color: AppColors.error,
                     ),
@@ -464,15 +490,19 @@ class BookingCard extends StatelessWidget {
                   detailWidget = Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: colors.isDark
-                          ? Colors.amber.shade900.withValues(alpha: 0.2)
-                          : AppColors.statusWarningLight,
+                      color: timingInfo.isLateOrExpired
+                          ? AppColors.error.withValues(alpha: 0.12)
+                          : (colors.isDark
+                              ? Colors.amber.shade900.withValues(alpha: 0.2)
+                              : AppColors.statusWarningLight),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
-                      '${booking.estimatedWaitMinutes ?? 15} ${'estimated_wait_min'.tr()}',
+                      timingInfo.label,
                       style: CustomAppFontStyle.medium11.copyWith(
-                        color: colors.isDark ? Colors.amber.shade200 : AppColors.statusWarning,
+                        color: timingInfo.isLateOrExpired
+                            ? AppColors.error
+                            : (colors.isDark ? Colors.amber.shade200 : AppColors.statusWarning),
                       ),
                     ),
                   );

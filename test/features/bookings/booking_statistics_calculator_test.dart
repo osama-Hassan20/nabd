@@ -380,6 +380,16 @@ void main() {
 
       expect(summary.inWaiting, equals(2));
       expect(summary.noShow, equals(1));
+
+      // 1 minute after walkIn slot end (14:01) without check-in -> walkIn becomes noShow
+      final afterWalkInEnd = BookingStatisticsCalculator.calculateSummary(
+        bookings: [walkIn],
+        selectedDate: testToday,
+        branchId: 'branch_1',
+        currentTime: currentTime.add(const Duration(minutes: 1)),
+      );
+      expect(afterWalkInEnd.inWaiting, equals(0));
+      expect(afterWalkInEnd.noShow, equals(1));
     });
   });
 }

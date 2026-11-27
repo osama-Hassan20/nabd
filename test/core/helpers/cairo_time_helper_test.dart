@@ -46,5 +46,57 @@ void main() {
       expect(CairoTimeHelper.isSameDay(d1, d3), isFalse);
       expect(CairoTimeHelper.isSameDay(d1, null), isFalse);
     });
+
+    test('5. evaluateBookingTiming updates dynamically with fake clock and never shows remaining after slot end', () {
+      addTearDown(CairoTimeHelper.resetFixedClock);
+      final day = DateTime(2026, 11, 27);
+
+      // Walk-in created at 04:49 with slot 04:49 - 05:09
+      CairoTimeHelper.setFixedClock(DateTime(2026, 11, 27, 4, 49));
+      final atCreation = CairoTimeHelper.evaluateBookingTiming(
+        date: day,
+        startTime: '04:49',
+        endTime: '05:09',
+        durationMinutes: 20,
+        isWalkIn: true,
+      );
+      expect(atCreation.isLateOrExpired, isFalse);
+      expect(atCreation.label, contains('متبقي 20 دقيقة'));
+
+      // At 06:29 (80 minutes after slot end 05:09) -> late/expired, never positive remaining
+      CairoTimeHelper.setFixedClock(DateTime(2026, 11, 27, 6, 29));
+      final afterSlotEnd = CairoTimeHelper.evaluateBookingTiming(
+        date: day,
+        startTime: '04:49',
+        endTime: '05:09',
+        durationMinutes: 20,
+        isWalkIn: true,
+      );
+      expect(afterSlotEnd.isLateOrExpired, isTrue);
+      expect(afterSlotEnd.label, isNot(contains('متبقي')));
+      expect(afterSlotEnd.label, contains('متأخر'));
+
+      // Scheduled 10:00 - 10:20: within 5m grace at 10:03 -> not late; at 10:10 -> late
+      CairoTimeHelper.setFixedClock(DateTime(2026, 11, 27, 10, 3));
+      final withinGrace = CairoTimeHelper.evaluateBookingTiming(
+        date: day,
+        startTime: '10:00',
+        endTime: '10:20',
+        durationMinutes: 20,
+        isWalkIn: false,
+      );
+      expect(withinGrace.isLateOrExpired, isFalse);
+
+      CairoTimeHelper.setFixedClock(DateTime(2026, 11, 27, 10, 10));
+      final pastGrace = CairoTimeHelper.evaluateBookingTiming(
+        date: day,
+        startTime: '10:00',
+        endTime: '10:20',
+        durationMinutes: 20,
+        isWalkIn: false,
+      );
+      expect(pastGrace.isLateOrExpired, isTrue);
+      expect(pastGrace.label, contains('متأخر 10 دقيقة'));
+    });
   });
 }

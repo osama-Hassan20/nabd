@@ -26,6 +26,7 @@ class AdaptiveBookingsView extends StatelessWidget {
   final void Function(BookingModel booking) onDelete;
   final void Function(BookingModel booking)? onCallPatient;
   final void Function(BookingModel booking)? onStartConsultation;
+  final void Function(BookingModel booking)? onRecordVitals;
   final void Function(BookingModel booking)? onCollectPayment;
   final void Function(BookingModel booking)? onRefundPayment;
 
@@ -38,6 +39,7 @@ class AdaptiveBookingsView extends StatelessWidget {
     required this.onDelete,
     this.onCallPatient,
     this.onStartConsultation,
+    this.onRecordVitals,
     this.onCollectPayment,
     this.onRefundPayment,
   });
@@ -195,6 +197,7 @@ class AdaptiveBookingsView extends StatelessWidget {
                       onDelete: onDelete,
                       onCallPatient: onCallPatient,
                       onStartConsultation: onStartConsultation,
+                      onRecordVitals: onRecordVitals,
                       onCollectPayment: onCollectPayment,
                       onRefundPayment: onRefundPayment,
                     ),
@@ -251,6 +254,9 @@ class AdaptiveBookingsView extends StatelessWidget {
                         onStartConsultation: onStartConsultation != null
                             ? () => onStartConsultation!(item)
                             : null,
+                        onRecordVitals: onRecordVitals != null
+                            ? () => onRecordVitals!(item)
+                            : null,
                       );
                     },
                   ),
@@ -298,6 +304,9 @@ class AdaptiveBookingsView extends StatelessWidget {
                           : null,
                       onStartConsultation: onStartConsultation != null
                           ? () => onStartConsultation!(item)
+                          : null,
+                      onRecordVitals: onRecordVitals != null
+                          ? () => onRecordVitals!(item)
                           : null,
                     );
                   },
