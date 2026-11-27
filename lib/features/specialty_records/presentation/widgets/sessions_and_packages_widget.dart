@@ -61,7 +61,12 @@ class SessionsAndPackagesWidgetState extends State<SessionsAndPackagesWidget> {
     res.fold((_) {}, (list) {
       if (mounted) {
         setState(() {
-          _entries = list.where((e) => e.kind == 'session_package').toList();
+          _entries = list
+              .where((e) =>
+                  e.kind == 'session_package' ||
+                  (widget.specialty == MedicalSpecialty.dentistry &&
+                      e.kind == 'dentistry_tooth'))
+              .toList();
           _loading = false;
         });
       }
@@ -291,11 +296,14 @@ class SessionsAndPackagesWidgetState extends State<SessionsAndPackagesWidget> {
           else
             ..._entries.map((entry) {
               final d = entry.data;
-              final proc = d['procedure']?.toString() ?? '';
-              final done = d['doneSessions'] ?? 1;
+              final proc = entry.kind == 'dentistry_tooth'
+                  ? '${d['procedure'] ?? ''} (سن ${d['toothFdi'] ?? '-'} - ${d['materials'] ?? ''})'
+                  : (d['procedure']?.toString() ?? '');
+              final done = d['doneSessions'] ?? d['sessionIndex'] ?? 1;
               final total = d['totalSessions'] ?? 1;
-              final rem = d['remainingSessions'] ?? 0;
-              final price = d['price'] ?? 0;
+              final rem = d['remainingSessions'] ??
+                  ((total is int && done is int) ? (total - done).clamp(0, 999) : 0);
+              final price = d['price'] ?? d['pricePerSession'] ?? 0;
               return Container(
                 margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.all(10),

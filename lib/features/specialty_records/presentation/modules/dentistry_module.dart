@@ -162,29 +162,6 @@ class _DentistryRecordWidgetState extends State<_DentistryRecordWidget> {
     );
     await repo.saveEntry(entry);
 
-    // Also add a visible row in Dental Sessions & Packages
-    await repo.saveEntry(
-      SpecialtyRecordEntryModel(
-        id: '',
-        patientId: widget.patientId,
-        visitId: widget.visitId,
-        specialty: MedicalSpecialty.dentistry,
-        kind: 'session_package',
-        data: {
-          'procedure': '$_selectedProc (سن $_selectedTooth - ${_materialCtrl.text.trim()})',
-          'toothFdi': _selectedTooth,
-          'toothStatus': _selectedStatus,
-          'materials': _materialCtrl.text.trim(),
-          'totalSessions': totalSessions,
-          'doneSessions': 1,
-          'remainingSessions': (totalSessions - 1).clamp(0, 999),
-          'price': price,
-          'nextSessionDate': nextDate.toIso8601String(),
-        },
-        createdAt: DateTime.now(),
-      ),
-    );
-
     await _load();
     await _sessionsKey.currentState?.reload();
   }

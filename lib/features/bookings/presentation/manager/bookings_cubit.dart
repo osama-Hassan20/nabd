@@ -243,7 +243,7 @@ class BookingsCubit extends SafeCubit<BookingsState> with SearchMixin {
     emit(state.copyWith(summaryStatus: RequestStatusEnum.loading));
     final result = await getBookingSummaryUseCase(
       GetBookingSummaryParams(
-        date: state.selectedDate ?? CairoTimeHelper.now(),
+        date: CairoTimeHelper.now(),
         branchId: state.selectedBranchId,
       ),
     );

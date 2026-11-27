@@ -6,6 +6,7 @@ import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
 import 'package:eyadty/core/uses_cases/params.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/domain/use_cases/params/change_booking_status_params.dart';
 import 'package:eyadty/features/patients/data/models/patient_model.dart';
 
@@ -121,6 +122,48 @@ void main() {
       );
       final summary = summaryRes.getOrElse(() => throw 'err');
       expect(summary.noShowCount, equals(1));
+    });
+
+    test('newVisit booking dated tomorrow appears in one_time date-filtered list and not today KPIs',
+        () async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
+      final tomorrowStr =
+          '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
+      final b = BookingModel(
+        id: 'B-TOMORROW-1',
+        patientId: 'P-1',
+        patientName: 'مريض الغد',
+        doctorId: 'D-1',
+        doctorName: 'د. حسام',
+        date: tomorrow,
+        appointmentTime: DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 9, 0),
+        visitType: BookingTypeEnum.newVisit,
+        status: BookingStatusEnum.scheduled,
+        branchId: 'branch-1',
+      );
+
+      await bookingsRepo.createBooking(b);
+
+      final listRes = await bookingsRepo.getBookings(
+        PaginationParams(
+          filterList: [
+            const FilterParam(key: 'bookingType', value: 'one_time'),
+            FilterParam(key: 'date', value: tomorrowStr),
+          ],
+        ),
+      );
+      final bookings = listRes.getOrElse(() => throw 'err').bookings ?? [];
+      expect(bookings.any((item) => item.id == 'B-TOMORROW-1'), isTrue);
+
+      final summaryRes = await bookingsRepo.getBookingSummary(
+        date: today,
+        branchId: 'branch-1',
+      );
+      final summary = summaryRes.getOrElse(() => throw 'err');
+      expect(summary.visitsToday, equals(0));
+      expect(summary.inWaiting, equals(0));
     });
   });
 }

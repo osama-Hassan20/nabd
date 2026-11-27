@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../features/bookings/data/models/booking_model.dart';
 import '../../../features/bookings/domain/contracts/active_visit_lookup.dart';
 import '../../../features/visits/data/models/consultation_queue_item_model.dart';
 import '../../../features/visits/data/models/enums/visit_status_enum.dart';
@@ -66,7 +67,37 @@ class OfflineFirstVisitsRepo implements VisitsRepo, ActiveVisitLookup {
       }
     }
 
-    // 3. Reconcile queue item statuses with local visits
+    // 3. Also include locally created/updated bookings from localStore
+    final localBookingRecs = await localStore.getEntities(
+      entityType: 'booking',
+      accountId: getCurrentAccountId(),
+      branchId: branchId,
+    );
+    final existingBookingIds = baseQueue
+        .map((item) => item.bookingId)
+        .whereType<String>()
+        .toSet();
+    for (final rec in localBookingRecs) {
+      if (rec.isTombstone) continue;
+      try {
+        final b = BookingModel.fromJson(Map<String, dynamic>.from(rec.payload));
+        if (b.id == null || existingBookingIds.contains(b.id)) continue;
+        if (doctorId != null && doctorId.isNotEmpty && b.doctorId != doctorId) {
+          continue;
+        }
+        final bDate = b.appointmentTime ?? b.date;
+        if (bDate != null &&
+            (bDate.year != date.year ||
+                bDate.month != date.month ||
+                bDate.day != date.day)) {
+          continue;
+        }
+        baseQueue.add(ConsultationQueueItemModel(booking: b));
+        existingBookingIds.add(b.id!);
+      } catch (_) {}
+    }
+
+    // 4. Reconcile queue item statuses with local visits
     final updatedQueue = baseQueue.map((item) {
       final localVisit = localVisitMap[item.bookingId];
       if (localVisit != null) {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -128,6 +130,8 @@ class _BeforeAfterPhotoUploadCardState
   final _picker = ImagePicker();
   String? _beforePath;
   String? _afterPath;
+  Uint8List? _beforeBytes;
+  Uint8List? _afterBytes;
   String? _validationError;
   List<SpecialtyRecordEntryModel> _photos = [];
 
@@ -155,13 +159,17 @@ class _BeforeAfterPhotoUploadCardState
   Future<void> _pickImage(bool isBefore) async {
     try {
       final file = await _picker.pickImage(source: ImageSource.gallery);
-      if (file == null || !mounted) return;
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
       setState(() {
         if (isBefore) {
           _beforePath = file.path;
+          _beforeBytes = bytes;
           _beforeCtrl.text = file.name;
         } else {
           _afterPath = file.path;
+          _afterBytes = bytes;
           _afterCtrl.text = file.name;
         }
         _validationError = null;
@@ -170,7 +178,9 @@ class _BeforeAfterPhotoUploadCardState
   }
 
   Future<void> _savePhotoEntry() async {
-    final hasAny = (_beforePath != null && _beforePath!.isNotEmpty) ||
+    final hasAny = _beforeBytes != null ||
+        _afterBytes != null ||
+        (_beforePath != null && _beforePath!.isNotEmpty) ||
         (_afterPath != null && _afterPath!.isNotEmpty) ||
         _beforeCtrl.text.trim().isNotEmpty ||
         _afterCtrl.text.trim().isNotEmpty;
@@ -194,6 +204,8 @@ class _BeforeAfterPhotoUploadCardState
           'afterLabel': _afterCtrl.text.trim(),
           if (_beforePath != null) 'beforePath': _beforePath,
           if (_afterPath != null) 'afterPath': _afterPath,
+          if (_beforeBytes != null) 'beforeBase64': base64Encode(_beforeBytes!),
+          if (_afterBytes != null) 'afterBase64': base64Encode(_afterBytes!),
           'capturedAt': DateTime.now().toIso8601String(),
         },
         createdAt: DateTime.now(),
@@ -203,7 +215,26 @@ class _BeforeAfterPhotoUploadCardState
     _afterCtrl.clear();
     _beforePath = null;
     _afterPath = null;
+    _beforeBytes = null;
+    _afterBytes = null;
     await _load();
+  }
+
+  Widget _buildThumbnail(String? b64) {
+    if (b64 == null || b64.isEmpty) return const SizedBox.shrink();
+    try {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.memory(
+          base64Decode(b64),
+          width: 48,
+          height: 48,
+          fit: BoxFit.cover,
+        ),
+      );
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
   }
 
   @override
@@ -236,6 +267,18 @@ class _BeforeAfterPhotoUploadCardState
           const SizedBox(height: 8),
           Row(
             children: [
+              if (_beforeBytes != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.memory(
+                    _beforeBytes!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               Expanded(
                 child: TextField(
                   controller: _beforeCtrl,
@@ -252,6 +295,18 @@ class _BeforeAfterPhotoUploadCardState
                 ),
               ),
               const SizedBox(width: 8),
+              if (_afterBytes != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.memory(
+                    _afterBytes!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               Expanded(
                 child: TextField(
                   controller: _afterCtrl,
@@ -283,10 +338,23 @@ class _BeforeAfterPhotoUploadCardState
             ),
           ],
           if (_photos.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            ..._photos.map((p) => Text(
-                  '• قبل: ${p.data['beforeLabel'] ?? '-'} ← بعد: ${p.data['afterLabel'] ?? '-'}',
-                  style: CustomAppFontStyle.regular12,
+            const SizedBox(height: 10),
+            ..._photos.map((p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      _buildThumbnail(p.data['beforeBase64']?.toString()),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'قبل: ${p.data['beforeLabel'] ?? '-'} ← بعد: ${p.data['afterLabel'] ?? '-'}',
+                          style: CustomAppFontStyle.regular12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildThumbnail(p.data['afterBase64']?.toString()),
+                    ],
+                  ),
                 )),
           ],
         ],

@@ -224,6 +224,10 @@ class OfflineFirstBookingsRepo implements BookingsRepo {
 
     if (bookingTypeFilter != null && bookingTypeFilter.isNotEmpty && bookingTypeFilter != 'all') {
       bookings = bookings.where((b) {
+        if (bookingTypeFilter == 'one_time') {
+          return b.bookingType == null ||
+              b.bookingType!.value.toLowerCase() != 'recurring';
+        }
         return b.bookingType?.value.toLowerCase() == bookingTypeFilter;
       }).toList();
     }

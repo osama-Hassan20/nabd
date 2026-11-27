@@ -202,15 +202,26 @@ void main() {
       expect(NutritionModule.bmiCategoryAr(bmi), equals('زيادة وزن'));
     });
 
-    test('PatientModel incompleteProfileReason specifies missing field', () {
-      const missingDob = PatientModel(id: 'P1', gender: GenderEnum.female);
-      expect(missingDob.incompleteProfileReason, equals('ناقص: تاريخ الميلاد'));
+    test('PatientModel incompleteProfileReason ignores optional DOB and flags required fields', () {
+      const missingDobOnly = PatientModel(
+        id: 'P1',
+        name: 'سارة',
+        phone: '01012345678',
+        gender: GenderEnum.female,
+      );
+      expect(missingDobOnly.hasIncompleteProfile, isFalse);
+      expect(missingDobOnly.incompleteProfileReason, isNull);
 
-      final missingGender = PatientModel(id: 'P2', dateOfBirth: DateTime(1990, 1, 1));
+      const missingGender = PatientModel(
+        id: 'P2',
+        name: 'أحمد',
+        phone: '01012345678',
+      );
+      expect(missingGender.hasIncompleteProfile, isTrue);
       expect(missingGender.incompleteProfileReason, equals('ناقص: النوع'));
     });
 
-    testWidgets('Dental registering a tooth adds a visible row under sessions & packages',
+    testWidgets('Dental registering a tooth adds a visible row under sessions & packages with single outbox write',
         (tester) async {
       tester.view.physicalSize = const Size(1280, 900);
       tester.view.devicePixelRatio = 1.0;
@@ -228,6 +239,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('علاج عصب (سن 16'), findsOneWidget);
+      final outbox = await store.getPendingOutboxEntries();
+      expect(outbox.length, equals(1));
     });
 
     testWidgets('Derm add session/package opens form and creates exactly one row',

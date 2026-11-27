@@ -198,17 +198,18 @@ class PatientModel extends Equatable {
   bool get hasChronicDiseases =>
       chronicDiseases != null && chronicDiseases!.isNotEmpty;
   bool get hasIncompleteProfile =>
-      dateOfBirth == null ||
+      (name == null || name!.trim().isEmpty) ||
+      (phone == null || phone!.trim().isEmpty) ||
       gender == null ||
       gender == GenderEnum.unknown;
 
   String? get incompleteProfileReason {
-    final missingGender = gender == null || gender == GenderEnum.unknown;
-    final missingDob = dateOfBirth == null;
-    if (missingGender && missingDob) return 'ناقص: النوع وتاريخ الميلاد';
-    if (missingGender) return 'ناقص: النوع';
-    if (missingDob) return 'ناقص: تاريخ الميلاد';
-    return null;
+    final missing = <String>[];
+    if (name == null || name!.trim().isEmpty) missing.add('الاسم');
+    if (phone == null || phone!.trim().isEmpty) missing.add('الهاتف');
+    if (gender == null || gender == GenderEnum.unknown) missing.add('النوع');
+    if (missing.isEmpty) return null;
+    return 'ناقص: ${missing.join('، ')}';
   }
 
   DateTime? get computedEdd =>

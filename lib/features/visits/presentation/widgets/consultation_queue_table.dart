@@ -61,6 +61,14 @@ class ConsultationQueueTable extends StatelessWidget {
                   color: colors.textSecondary,
                 ),
               ),
+              const SizedBox(height: 6),
+              Text(
+                'لإدخال العلامات الحيوية أو بدء الكشف، يرجى إنشاء حجز للمريض أولاً من قائمة الحجوزات.',
+                style: CustomAppFontStyle.regular12.copyWith(
+                  color: colors.textSecondary.withValues(alpha: 0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
