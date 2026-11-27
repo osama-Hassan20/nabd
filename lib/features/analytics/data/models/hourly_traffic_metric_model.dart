@@ -45,6 +45,11 @@ class HourlyTrafficMetricModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory HourlyTrafficMetricModel.fromJson(Map<String, dynamic> json) =>
+      HourlyTrafficMetricModel.fromMap(json);
+
   @override
   List<Object?> get props => [
         hour,

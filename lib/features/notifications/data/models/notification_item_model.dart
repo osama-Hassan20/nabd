@@ -54,6 +54,37 @@ class NotificationItemModel extends Equatable {
     );
   }
 
+  factory NotificationItemModel.fromJson(Map<String, dynamic> json) {
+    return NotificationItemModel(
+      id: (json['id'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      body: (json['body'] ?? '').toString(),
+      type: NotificationTypeEnum.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => NotificationTypeEnum.system,
+      ),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      isRead: json['isRead'] == true,
+      senderName: json['senderName'] as String?,
+      targetAudience: json['targetAudience'] as String?,
+      actionKey: json['actionKey'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'body': body,
+        'type': type.name,
+        'createdAt': createdAt.toIso8601String(),
+        'isRead': isRead,
+        if (senderName != null) 'senderName': senderName,
+        if (targetAudience != null) 'targetAudience': targetAudience,
+        if (actionKey != null) 'actionKey': actionKey,
+      };
+
   @override
   List<Object?> get props => [
         id,

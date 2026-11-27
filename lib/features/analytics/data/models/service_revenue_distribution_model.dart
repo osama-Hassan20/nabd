@@ -51,6 +51,11 @@ class ServiceRevenueDistributionModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory ServiceRevenueDistributionModel.fromJson(Map<String, dynamic> json) =>
+      ServiceRevenueDistributionModel.fromMap(json);
+
   @override
   List<Object?> get props => [
         serviceName,

@@ -34,6 +34,22 @@ class ConsultationQueueItemModel extends Equatable {
     );
   }
 
+  factory ConsultationQueueItemModel.fromJson(Map<String, dynamic> json) {
+    return ConsultationQueueItemModel(
+      booking: json['booking'] is Map<String, dynamic>
+          ? BookingModel.fromJson(json['booking'] as Map<String, dynamic>)
+          : null,
+      visit: json['visit'] is Map<String, dynamic>
+          ? VisitModel.fromJson(json['visit'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        if (booking != null) 'booking': booking!.toJson(),
+        if (visit != null) 'visit': visit!.toJson(),
+      };
+
   @override
   List<Object?> get props => [booking, visit];
 }

@@ -75,6 +75,11 @@ class DoctorPerformanceMetricModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory DoctorPerformanceMetricModel.fromJson(Map<String, dynamic> json) =>
+      DoctorPerformanceMetricModel.fromMap(json);
+
   @override
   List<Object?> get props => [
         doctorId,

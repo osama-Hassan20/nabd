@@ -57,6 +57,11 @@ class RevenueTrendPointModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory RevenueTrendPointModel.fromJson(Map<String, dynamic> json) =>
+      RevenueTrendPointModel.fromMap(json);
+
   @override
   List<Object?> get props => [
         label,

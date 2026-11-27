@@ -57,6 +57,11 @@ class BranchAnalyticsComparisonModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory BranchAnalyticsComparisonModel.fromJson(Map<String, dynamic> json) =>
+      BranchAnalyticsComparisonModel.fromMap(json);
+
   @override
   List<Object?> get props => [
         branchId,

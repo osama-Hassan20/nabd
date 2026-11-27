@@ -111,6 +111,11 @@ class AnalyticsSummaryKpiModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory AnalyticsSummaryKpiModel.fromJson(Map<String, dynamic> json) =>
+      AnalyticsSummaryKpiModel.fromMap(json);
+
   @override
   List<Object?> get props => [
         totalRevenuePiastres,
