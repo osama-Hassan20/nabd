@@ -30,13 +30,13 @@ void main() {
       );
       final data = res['data'] as Map<String, dynamic>;
       expect(data['accessToken'], isNotEmpty);
-      expect((data['user'] as Map)['id'], 'USER-DOC');
+      expect((data['user'] as Map)['id'], 'USER-DOC-01');
     });
 
-    test('Patients handler serves 8 seeded patients, creates, and searches by phone', () async {
+    test('Patients handler serves 9 seeded patients, creates, and searches by phone', () async {
       final listRes = await api.get(path: 'patients', queryParameters: {'page': 1, 'limit': 20});
-      expect((listRes['data'] as List).length, 8);
-      expect((listRes['meta'] as Map)['total'], 8);
+      expect((listRes['data'] as List).length, 9);
+      expect((listRes['meta'] as Map)['total'], 9);
 
       final created = await api.post(
         path: 'patients',
@@ -53,15 +53,15 @@ void main() {
         options: Options(headers: {'Idempotency-Key': 'op-pat-1'}),
       );
       final afterRes = await api.get(path: 'patients');
-      expect((afterRes['meta'] as Map)['total'], 9);
+      expect((afterRes['meta'] as Map)['total'], 10);
     });
 
     test('Doctors, Bookings, and Visits immutability & addendum work', () async {
       final docs = await api.get(path: 'doctors');
-      expect((docs['data'] as List).length, 3);
+      expect((docs['data'] as List).length, 13);
 
       final bookings = await api.get(path: 'bookings');
-      expect((bookings['data'] as List).length, 1);
+      expect((bookings['data'] as List).length, 9);
 
       final startRes = await api.put(
         path: 'visits/consultation-start',
@@ -94,7 +94,7 @@ void main() {
 
       // Resets after next call
       final okRes = await api.get(path: 'patients');
-      expect((okRes['data'] as List).length, 8);
+      expect((okRes['data'] as List).length, 9);
     });
   });
 }

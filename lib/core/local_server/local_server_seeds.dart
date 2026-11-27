@@ -360,7 +360,7 @@ class LocalServerSeeds {
 
     // 5. Medical Services
     final serviceFixtures = [
-      {'id': 'SRV-01', 'name': 'كشف جديد', 'specialty': MedicalSpecialty.cardiology.value, 'consultationFee': 300, 'revisitFee': 150, 'durationMinutes': 20, 'isActive': true},
+      {'id': 'SRV-01', 'name': 'كشف جديد', 'specialty': MedicalSpecialty.cardiology.value, 'consultationFee': 300, 'revisitFee': 150, 'durationMinutes': 30, 'isActive': true},
       {'id': 'SRV-02', 'name': 'متابعة حمل وسونار', 'specialty': MedicalSpecialty.obstetricsGynecology.value, 'consultationFee': 350, 'revisitFee': 200, 'durationMinutes': 20, 'isActive': true},
       {'id': 'SRV-03', 'name': 'كشف أطفال', 'specialty': MedicalSpecialty.pediatrics.value, 'consultationFee': 250, 'revisitFee': 120, 'durationMinutes': 15, 'isActive': true},
       {'id': 'SRV-04', 'name': 'استشارة قلب متخصصة', 'specialty': MedicalSpecialty.cardiology.value, 'consultationFee': 400, 'revisitFee': 200, 'durationMinutes': 30, 'assignedDoctorId': 'DOC-01', 'assignedDoctorName': 'د. حسام الدين مصطفى', 'isActive': true},

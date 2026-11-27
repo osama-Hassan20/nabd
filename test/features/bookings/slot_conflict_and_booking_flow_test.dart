@@ -178,6 +178,7 @@ void main() {
         const BookingTechnicianOption(id: 'DOC-01', name: 'د. حسام الدين مصطفى'),
       );
       // لم تكتمل المدخلات بعد (الخدمة غير محددة)
+      cubit.updateFormService(null);
       expect(cubit.state.slotsStatus, RequestStatusEnum.initial);
       expect(cubit.state.availableSlots, isEmpty);
 

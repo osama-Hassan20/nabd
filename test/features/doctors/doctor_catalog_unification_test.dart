@@ -20,7 +20,10 @@ void main() {
       doctorsRepo = DoctorsRepoImpl(apiConsumer: LocalServerApiConsumer());
       bookingsRepo = BookingsRepoImpl(apiConsumer: LocalServerApiConsumer());
       medicalServicesRepo = MedicalServicesRepoImpl(apiConsumer: LocalServerApiConsumer());
-      staffUsersRepo = StaffUsersRepoImpl(auditLogger: InMemoryAuditLogger());
+      staffUsersRepo = StaffUsersRepoImpl(
+        apiConsumer: LocalServerApiConsumer(),
+        auditLogger: InMemoryAuditLogger(),
+      );
     });
 
     test('1. DoctorsRepoImpl contains the 6 canonical doctors DOC-01 through DOC-06 plus specialty seed doctors', () async {

@@ -76,10 +76,10 @@ class StaffUsersLocalHandler {
       );
 
       if (user == null) {
-        LocalServerRouter.throwHttpError(req.path, 401, 'INVALID_CREDENTIALS', 'invalid_credentials');
+        LocalServerRouter.throwHttpError(req.path, 401, 'INVALID_CREDENTIALS', 'auth_invalid_credentials');
       }
       if (user['isActive'] == false) {
-        LocalServerRouter.throwHttpError(req.path, 403, 'USER_INACTIVE', 'user_account_inactive');
+        LocalServerRouter.throwHttpError(req.path, 403, 'USER_INACTIVE', 'auth_account_deactivated');
       }
       final passwords = router.db.collection('staffPasswords');
       final pwEntry = passwords.cast<Map<String, dynamic>?>().firstWhere(
@@ -88,7 +88,7 @@ class StaffUsersLocalHandler {
           );
       final expectedPw = pwEntry?['password']?.toString() ?? '123456';
       if (password != expectedPw && password != 'password123') {
-        LocalServerRouter.throwHttpError(req.path, 401, 'INVALID_CREDENTIALS', 'invalid_credentials');
+        LocalServerRouter.throwHttpError(req.path, 401, 'INVALID_CREDENTIALS', 'auth_invalid_credentials');
       }
       if (user['mustChangePassword'] == true) {
         LocalServerRouter.throwHttpError(

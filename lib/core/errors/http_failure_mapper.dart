@@ -128,8 +128,8 @@ class HttpFailureMapper {
 
       switch (status) {
         case 401:
-          return const ServerFailure(
-            errMessage: 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى',
+          return ServerFailure(
+            errMessage: message ?? 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى',
           );
         case 403:
           return PermissionDeniedFailure(
