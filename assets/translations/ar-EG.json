@@ -1364,6 +1364,8 @@
   "hr_settlement_period_overlapping": "فترة التسوية تتداخل مع فترة تسوية معتمدة لنفس الطبيب والفرع",
   "hr_settlement_already_confirmed_or_paid": "التسوية معتمدة أو منصرفة مسبقاً ولا يمكن تعديل حالتها",
   "hr_settlement_confirmed_successfully": "تم اعتماد التسوية بنجاح",
+  "hr_reversal_reason_hint": "أدخل سبب العكس (إلزامي)...",
+  "hr_confirm_reverse_btn": "تأكيد العكس",
   "hr_doctor_cannot_confirm_own_settlement": "فصل المهام: لا يجوز للطبيب اعتماد تسويته الخاصة بنفسه",
   "hr_settlement_not_confirmed_cannot_payout": "لا يمكن صرف تسوية لم يتم اعتمادها وقفلها أولاً",
   "hr_settlement_already_paid": "تم صرف هذه التسوية مسبقاً",

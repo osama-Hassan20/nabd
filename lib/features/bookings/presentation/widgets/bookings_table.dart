@@ -177,11 +177,17 @@ class BookingsTable extends StatelessWidget {
     );
 
     // 4: Arrival Time & Estimated Wait Remaining / Delay Info
-    final delayMinutes = CairoTimeHelper.calculateDelayMinutes(
-      item.appointmentTime ?? item.date,
-      item.startTime,
-    );
-    final isDelayed = delayMinutes > 0 && item.arrivalTime == null &&
+    final isWalkIn = item.bookingType == BookingTypeEnum.emergency ||
+        item.visitType == BookingTypeEnum.emergency;
+    final delayMinutes = isWalkIn
+        ? 0
+        : CairoTimeHelper.calculateDelayMinutes(
+            item.appointmentTime ?? item.date,
+            item.startTime,
+          );
+    final isDelayed = !isWalkIn &&
+        delayMinutes > CairoTimeHelper.defaultGraceMinutes &&
+        item.arrivalTime == null &&
         (item.status == BookingStatusEnum.noShow || item.status == BookingStatusEnum.waiting);
 
     Widget waitOrStatusDetail;

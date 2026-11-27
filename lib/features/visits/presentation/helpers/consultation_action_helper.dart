@@ -109,9 +109,12 @@ class ConsultationActionHelper {
     required PermissionEvaluator evaluator,
   }) {
     if (booking == null) return false;
-    if (booking.status != BookingStatusEnum.waiting) return false;
+    if (booking.status != BookingStatusEnum.waiting &&
+        booking.status != BookingStatusEnum.scheduled) {
+      return false;
+    }
     if (visit != null && visit.status != VisitStatusEnum.triage) return false;
-    if (!isTodayBooking(booking.appointmentTime)) return false;
+    if (!isTodayBooking(booking.appointmentTime ?? booking.date)) return false;
     if (!isCurrentBranch(
       booking.branchId,
       evaluator.userProvider.activeBranchId,

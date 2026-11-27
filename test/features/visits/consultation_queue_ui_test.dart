@@ -303,12 +303,14 @@ void main() {
         ),
       ];
 
+      ConsultationQueueItemModel? tappedVitalsItem;
       await tester.pumpWidget(
         _buildLocalizedApp(
           sessionCubit: sessionCubit,
           child: ConsultationQueueTable(
             items: items,
             evaluator: sessionCubit.permissionEvaluator,
+            onRecordVitals: (item) => tappedVitalsItem = item,
           ),
         ),
       );
@@ -319,6 +321,11 @@ void main() {
       // Nurse NEVER sees "بدء الكشف" nor "متابعة الكشف"
       expect(find.text('visits_start_consultation'.tr()), findsNothing);
       expect(find.text('visits_continue_consultation'.tr()), findsNothing);
+
+      // Tapping the patient row opens vitals for Nurse
+      await tester.tap(find.text('مريض 1'));
+      await tester.pump();
+      expect(tappedVitalsItem?.booking?.id, equals('BK-1'));
     });
 
     testWidgets('Mobile viewport renders ConsultationQueueCard instead of table', (tester) async {

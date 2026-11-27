@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 import 'package:eyadty/features/bookings/domain/helpers/booking_statistics_calculator.dart';
 
 void main() {
@@ -333,6 +334,52 @@ void main() {
               ))
           .length;
       expect(postponedRows, equals(summary.postponedToOther));
+    });
+
+    test('Walk-in/urgent not checked in counts as waiting; scheduled is no-show only after slot end',
+        () {
+      final walkIn = BookingModel(
+        id: 'WALKIN-1',
+        branchId: 'branch_1',
+        date: testToday,
+        appointmentTime: DateTime(2026, 11, 6, 13, 45),
+        startTime: '13:45',
+        endTime: '14:00',
+        bookingType: BookingTypeEnum.emergency,
+        status: BookingStatusEnum.waiting,
+      );
+
+      // Scheduled 13:50 - 14:20 at currentTime 14:00 -> slot has NOT ended yet -> waiting
+      final activeSlot = BookingModel(
+        id: 'SLOT-ACTIVE',
+        branchId: 'branch_1',
+        date: testToday,
+        appointmentTime: DateTime(2026, 11, 6, 13, 50),
+        startTime: '13:50',
+        endTime: '14:20',
+        status: BookingStatusEnum.waiting,
+      );
+
+      // Scheduled 13:00 - 13:30 at currentTime 14:00 -> slot HAS ended -> noShow
+      final endedSlot = BookingModel(
+        id: 'SLOT-ENDED',
+        branchId: 'branch_1',
+        date: testToday,
+        appointmentTime: DateTime(2026, 11, 6, 13, 0),
+        startTime: '13:00',
+        endTime: '13:30',
+        status: BookingStatusEnum.waiting,
+      );
+
+      final summary = BookingStatisticsCalculator.calculateSummary(
+        bookings: [walkIn, activeSlot, endedSlot],
+        selectedDate: testToday,
+        branchId: 'branch_1',
+        currentTime: currentTime,
+      );
+
+      expect(summary.inWaiting, equals(2));
+      expect(summary.noShow, equals(1));
     });
   });
 }

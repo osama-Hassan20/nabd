@@ -32,11 +32,11 @@ class ConsultationQueueTable extends StatelessWidget {
 
   static const Map<int, TableColumnWidth> columnWidths = {
     0: FixedColumnWidth(70), // Queue #
-    1: FlexColumnWidth(2.5), // Patient Name & Phone
-    2: FlexColumnWidth(2.2), // Assigned Doctor
-    3: FixedColumnWidth(110), // Time
-    4: FixedColumnWidth(130), // Visit Status
-    5: FixedColumnWidth(300), // Actions
+    1: FlexColumnWidth(2.4), // Patient Name & Phone
+    2: FlexColumnWidth(2.0), // Assigned Doctor
+    3: FixedColumnWidth(105), // Time
+    4: FixedColumnWidth(165), // Visit Status
+    5: FixedColumnWidth(260), // Actions
   };
 
   @override
@@ -76,7 +76,7 @@ class ConsultationQueueTable extends StatelessWidget {
     }
 
     return CustomTable(
-      minWidth: 850,
+      minWidth: 920,
       columnWidths: columnWidths,
       headers: [
         'visits_patient_queue_num'.tr(),
@@ -123,30 +123,35 @@ class ConsultationQueueTable extends StatelessWidget {
       ),
     );
 
-    // 1: Patient Name & Phone
-    final cell1 = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          booking?.patientName ?? '—',
-          style: CustomAppFontStyle.bold14.copyWith(
-            color: colors.textPrimary,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        if (booking?.patientPhone != null) ...[
-          const SizedBox(height: 2),
+    // 1: Patient Name & Phone (tapping opens vitals for nurse or primary consultation action)
+    final VoidCallback? rowPrimaryTap = _resolveRowPrimaryTap(item);
+    final cell1 = InkWell(
+      onTap: isLoading ? null : rowPrimaryTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Text(
-            booking!.patientPhone!,
-            style: CustomAppFontStyle.regular12.copyWith(
-              color: colors.textSecondary,
+            booking?.patientName ?? '—',
+            style: CustomAppFontStyle.bold14.copyWith(
+              color: colors.textPrimary,
             ),
-            textDirection: TextDirection.ltr,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
+          if (booking?.patientPhone != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              booking!.patientPhone!,
+              style: CustomAppFontStyle.regular12.copyWith(
+                color: colors.textSecondary,
+              ),
+              textDirection: TextDirection.ltr,
+            ),
+          ],
         ],
-      ],
+      ),
     );
 
     // 2: Doctor & Specialty
@@ -331,5 +336,39 @@ class ConsultationQueueTable extends StatelessWidget {
     }
 
     return const SizedBox.shrink();
+  }
+
+  VoidCallback? _resolveRowPrimaryTap(ConsultationQueueItemModel item) {
+    final booking = item.booking;
+    final visit = item.visit;
+    if (ConsultationActionHelper.canContinueConsultation(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
+    )) {
+      return onContinueConsultation != null ? () => onContinueConsultation!(item) : null;
+    }
+    if (ConsultationActionHelper.canStartConsultation(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
+    )) {
+      return onStartConsultation != null ? () => onStartConsultation!(item) : null;
+    }
+    if (ConsultationActionHelper.canRecordVitals(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
+    )) {
+      return onRecordVitals != null ? () => onRecordVitals!(item) : null;
+    }
+    if (ConsultationActionHelper.canViewConsultation(
+      booking: booking,
+      visit: visit,
+      evaluator: evaluator,
+    )) {
+      return onViewConsultation != null ? () => onViewConsultation!(item) : null;
+    }
+    return null;
   }
 }

@@ -65,6 +65,9 @@ class CairoTimeHelper {
     return isSameDay(date, cairo);
   }
 
+  /// Default grace period in minutes before a scheduled booking is considered late.
+  static const int defaultGraceMinutes = 5;
+
   /// Calculates delay in minutes between appointment time and current Cairo time.
   /// Positive value indicates appointment time has passed by that many minutes.
   static int calculateDelayMinutes(

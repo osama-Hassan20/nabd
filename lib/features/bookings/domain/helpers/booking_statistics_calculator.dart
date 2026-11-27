@@ -2,6 +2,7 @@ import 'package:eyadty/core/utils/helpers/cairo_time_helper.dart';
 import 'package:eyadty/features/bookings/data/models/booking_model.dart';
 import 'package:eyadty/features/bookings/data/models/booking_summary_model.dart';
 import 'package:eyadty/features/bookings/data/models/enums/booking_status_enum.dart';
+import 'package:eyadty/features/bookings/data/models/enums/booking_type_enum.dart';
 
 /// Pure, testable helper to compute booking statistics & filter bookings
 /// according to Africa/Cairo local date, branch, and status definitions.
@@ -125,13 +126,19 @@ class BookingStatisticsCalculator {
     final apptDate = booking.appointmentTime ?? booking.date;
     if (!CairoTimeHelper.isSameDay(apptDate, selectedDate)) return false;
 
-    // Evaluate time
-    final targetTime = _resolveAppointmentDateTime(booking, selectedDate);
-    if (targetTime == null) return false;
-
-    // Past date compared to Cairo today -> No-show
     final today = DateTime(cairoNow.year, cairoNow.month, cairoNow.day);
     final targetDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+
+    // Walk-in / urgent bookings not yet checked in on today's date count as waiting, not no-show
+    final isWalkInOrUrgent = booking.bookingType == BookingTypeEnum.emergency ||
+        booking.visitType == BookingTypeEnum.emergency;
+    if (isWalkInOrUrgent && !targetDay.isBefore(today)) {
+      return false;
+    }
+
+    // Evaluate slot end time (no-show only after slot end passes without check-in)
+    final slotEndTime = _resolveSlotEndDateTime(booking, selectedDate);
+    if (slotEndTime == null) return false;
 
     if (targetDay.isBefore(today)) {
       return true;
@@ -142,8 +149,8 @@ class BookingStatisticsCalculator {
       return false;
     }
 
-    // Today in Cairo: passed appointment time
-    return cairoNow.isAfter(targetTime);
+    // Today in Cairo: passed slot end time
+    return cairoNow.isAfter(slotEndTime);
   }
 
   /// Whether booking was cancelled for the selected date:
@@ -177,25 +184,36 @@ class BookingStatisticsCalculator {
     return !CairoTimeHelper.isSameDay(origDate, newDate);
   }
 
-  /// Resolves the exact DateTime (including hour and minute) for the booking.
-  static DateTime? _resolveAppointmentDateTime(
+  /// Resolves the slot end DateTime (including hour and minute) for the booking.
+  static DateTime? _resolveSlotEndDateTime(
     BookingModel booking,
     DateTime selectedDate,
   ) {
-    if (booking.appointmentTime != null) {
-      return booking.appointmentTime;
-    }
+    final day = booking.appointmentTime ?? booking.date ?? selectedDate;
+    final duration = (booking.durationMinutes != null && booking.durationMinutes! > 0)
+        ? booking.durationMinutes!
+        : 15;
 
-    final timeStr = booking.endTime ?? booking.startTime;
-    if (timeStr != null && timeStr.contains(':')) {
-      final parts = timeStr.split(':');
+    if (booking.endTime != null && booking.endTime!.contains(':')) {
+      final parts = booking.endTime!.split(':');
       final h = int.tryParse(parts[0]) ?? 0;
       final m = int.tryParse(parts[1]) ?? 0;
-      return DateTime(selectedDate.year, selectedDate.month, selectedDate.day, h, m);
+      return DateTime(day.year, day.month, day.day, h, m);
     }
 
-    final date = booking.date ?? selectedDate;
-    return DateTime(date.year, date.month, date.day, 12, 0);
+    if (booking.appointmentTime != null) {
+      return booking.appointmentTime!.add(Duration(minutes: duration));
+    }
+
+    if (booking.startTime != null && booking.startTime!.contains(':')) {
+      final parts = booking.startTime!.split(':');
+      final h = int.tryParse(parts[0]) ?? 0;
+      final m = int.tryParse(parts[1]) ?? 0;
+      return DateTime(day.year, day.month, day.day, h, m)
+          .add(Duration(minutes: duration));
+    }
+
+    return DateTime(day.year, day.month, day.day, 23, 59);
   }
 
   /// Evaluates whether a booking matches a given status filter,

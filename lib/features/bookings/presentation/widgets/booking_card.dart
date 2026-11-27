@@ -369,11 +369,16 @@ class BookingCard extends StatelessWidget {
           // ─── Arrival Time & Estimated Wait / Delay / Postpone Details ──────
           Builder(
             builder: (context) {
-              final delayMinutes = CairoTimeHelper.calculateDelayMinutes(
-                booking.appointmentTime ?? booking.date,
-                booking.startTime,
-              );
-              final isDelayed = delayMinutes > 0 &&
+              final isWalkIn = booking.bookingType == BookingTypeEnum.emergency ||
+                  booking.visitType == BookingTypeEnum.emergency;
+              final delayMinutes = isWalkIn
+                  ? 0
+                  : CairoTimeHelper.calculateDelayMinutes(
+                      booking.appointmentTime ?? booking.date,
+                      booking.startTime,
+                    );
+              final isDelayed = !isWalkIn &&
+                  delayMinutes > CairoTimeHelper.defaultGraceMinutes &&
                   booking.arrivalTime == null &&
                   (booking.status == BookingStatusEnum.noShow ||
                       booking.status == BookingStatusEnum.waiting);
