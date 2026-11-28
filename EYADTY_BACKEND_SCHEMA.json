@@ -5035,5 +5035,170 @@
   "Field names marked dartType are not mapped yet.",
   "Booking.bookingType=emergency means walk-in: no slot required, counted as waiting until slot end.",
   "Friday is a clinic holiday in demo data; holidays come from Settings.specialHolidays and doctor schedules."
- ]
+ ],
+ "money": {
+  "unit": "piastres",
+  "type": "integer",
+  "note": "1 EGP = 100 piastres. Cashier shifts, payments, refunds, movements, HR rules, settlements, and analytics KPIs use integer piastres."
+ },
+ "timezone": {
+  "storage": "UTC (ISO-8601)",
+  "clinicTimezone": "Africa/Cairo",
+  "note": "All timestamps are persisted in UTC. Day boundaries, slot availability, and Friday weekly holiday checks are evaluated in Africa/Cairo."
+ },
+ "constraints": {
+  "unique": [
+   {
+    "table": "patients",
+    "columns": [
+     "accountId",
+     "phone"
+    ]
+   },
+   {
+    "table": "patients",
+    "columns": [
+     "accountId",
+     "branchId",
+     "fileNumber"
+    ]
+   },
+   {
+    "table": "bookings",
+    "columns": [
+     "accountId",
+     "doctorId",
+     "appointmentTime"
+    ],
+    "where": "status NOT IN ('cancelled', 'postponed', 'noShow')"
+   },
+   {
+    "table": "staff_users",
+    "columns": [
+     "accountId",
+     "email"
+    ]
+   }
+  ],
+  "indexes": [
+   {
+    "table": "patients",
+    "columns": [
+     "accountId",
+     "branchId",
+     "name"
+    ]
+   },
+   {
+    "table": "bookings",
+    "columns": [
+     "accountId",
+     "branchId",
+     "date",
+     "doctorId"
+    ]
+   },
+   {
+    "table": "visits",
+    "columns": [
+     "accountId",
+     "bookingId"
+    ]
+   },
+   {
+    "table": "cashier_payments",
+    "columns": [
+     "accountId",
+     "shiftId",
+     "bookingId"
+    ]
+   },
+   {
+    "table": "audit_logs",
+    "columns": [
+     "accountId",
+     "branchId",
+     "timestamp"
+    ]
+   },
+   {
+    "table": "sync_changelog",
+    "columns": [
+     "accountId",
+     "entityType",
+     "seq"
+    ]
+   }
+  ]
+ },
+ "rolePermissions": {
+  "owner": [
+   "* (all StaffPermissionEnum values)"
+  ],
+  "branch_manager": [
+   "manageBranches",
+   "manageUsers",
+   "viewAuditLogs",
+   "createBooking",
+   "editBooking",
+   "cancelBooking",
+   "reorderQueue",
+   "accessPatients",
+   "createPatient",
+   "editPatient",
+   "viewVisitsQueue",
+   "viewMedicalRecordDiagnostics",
+   "viewConsultationNotes",
+   "viewAllDoctorsMedicalRecords",
+   "accessDoctors",
+   "manageDoctorSchedules",
+   "manageDoctorLeaves",
+   "approveLeavesAndReferrals",
+   "viewClinicalPerformance",
+   "accessCashier",
+   "collectPayment",
+   "refundPayment",
+   "viewAnalytics"
+  ],
+  "doctor": [
+   "viewVisitsQueue",
+   "startConsultation",
+   "viewMedicalRecordDiagnostics",
+   "viewConsultationNotes",
+   "editMedicalDiagnosis",
+   "issuePrescription",
+   "accessPatients",
+   "viewClinicalPerformance"
+  ],
+  "nurse": [
+   "viewVisitsQueue",
+   "recordVitals",
+   "accessPatients"
+  ],
+  "reception": [
+   "createBooking",
+   "editBooking",
+   "cancelBooking",
+   "reorderQueue",
+   "accessPatients",
+   "createPatient",
+   "editPatient",
+   "viewVisitsQueue",
+   "accessCashier",
+   "collectPayment"
+  ],
+  "accountant": [
+   "accessCashier",
+   "collectPayment",
+   "refundPayment",
+   "viewAnalytics"
+  ],
+  "hr": [
+   "manageUsers",
+   "accessDoctors",
+   "manageDoctorSchedules",
+   "manageDoctorLeaves",
+   "approveLeavesAndReferrals"
+  ]
+ }
 }

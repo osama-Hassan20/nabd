@@ -1,0 +1,3967 @@
+{
+ "openapi": "3.0.3",
+ "info": {
+  "title": "Eyadty Clinic SaaS API",
+  "version": "1.0-draft"
+ },
+ "servers": [
+  {
+   "url": "{BASE_URL}",
+   "description": "Configured BASE_URL"
+  }
+ ],
+ "paths": {
+  "/api/v1/admin/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "login",
+    "operationId": "LoginRepo.login",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/admin/auth/refresh": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "refresh token",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/admin/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "logout",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/admin/auth/profile": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "current profile",
+    "operationId": "LayoutRepo.getProfile",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/auth/forget-password": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "request reset",
+    "operationId": "ForgetPassRepo.verifyPhoneNumberInForgetPass",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/auth/verify": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "verify OTP",
+    "operationId": "ForgetPassRepo.checkOtp",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/auth/reset-password": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "reset password",
+    "operationId": "ForgetPassRepo.resetPassword",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/upload/image": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "upload file (multipart)",
+    "operationId": "FileUploadRepo.uploadFile",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/users/change-password": {
+   "put": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "change password",
+    "operationId": "SettingsRepo.changePassword",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients": {
+   "get": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "list (q,page,limit,archived,branchId)",
+    "operationId": "getPatients",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "create",
+    "operationId": "addPatient",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}": {
+   "get": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "get",
+    "operationId": "getPatientById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "update",
+    "operationId": "updatePatient",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "delete",
+    "operationId": "deletePatient",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/search-by-phone": {
+   "get": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "find by phone",
+    "operationId": "findPatientsByPhone",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/archive": {
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "archive",
+    "operationId": "archivePatient",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/unarchive": {
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "unarchive",
+    "operationId": "unarchivePatient",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/check-duplicate": {
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "duplicate check",
+    "operationId": "checkDuplicate",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/treatment-plans": {
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "add plan",
+    "operationId": "addTreatmentPlan",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/treatment-plans/{planId}": {
+   "put": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "update plan",
+    "operationId": "updateTreatmentPlan",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/treatment-plans/{planId}/sessions": {
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "record session",
+    "operationId": "recordTreatmentSession",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/treatment-plans/{planId}/payments": {
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "record plan payment",
+    "operationId": "recordTreatmentPayment",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-catalog-items": {
+   "get": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "allergy/chronic catalog",
+    "operationId": "MedicalCatalogRepo.getCatalogItems",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "patients"
+    ],
+    "summary": "add catalog item",
+    "operationId": "MedicalCatalogRepo.addCatalogItem",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings/summary": {
+   "get": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "summary KPIs",
+    "operationId": "getBookingSummary",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings": {
+   "get": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "list (date,doctorId,status,type,q,page)",
+    "operationId": "getBookings",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "create (incl. emergency walk-in)",
+    "operationId": "createBooking",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings/{id}": {
+   "get": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "get",
+    "operationId": "getBookingById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "update",
+    "operationId": "updateBooking",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "delete / cancel",
+    "operationId": "deleteBooking",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings/{id}/discount": {
+   "post": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "apply discount",
+    "operationId": "applyDiscount",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "remove discount",
+    "operationId": "removeDiscount",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{doctorId}/bookings": {
+   "get": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "doctor bookings for date / slots",
+    "operationId": "getDoctorBookingsForDate",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings/{id}/status": {
+   "patch": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "change status",
+    "operationId": "changeBookingStatus",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings/{id}/technician": {
+   "patch": {
+    "tags": [
+     "bookings"
+    ],
+    "summary": "reassign",
+    "operationId": "reassignTechnician",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/queue": {
+   "get": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "doctor queue",
+    "operationId": "getDoctorQueue",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/by-booking/{bookingId}": {
+   "get": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "by booking",
+    "operationId": "getVisitByBookingId",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/{id}": {
+   "get": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "get",
+    "operationId": "getVisitById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/visits": {
+   "get": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "patient visits",
+    "operationId": "getVisitsByPatientId",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/consultation-start": {
+   "put": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "upsert start",
+    "operationId": "upsertConsultationStart",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/{id}/draft": {
+   "put": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "save draft",
+    "operationId": "saveVisitDraft",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/{id}/vitals": {
+   "post": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "record vitals",
+    "operationId": "recordVitals",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/{id}/finalize": {
+   "post": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "finalize (immutable after)",
+    "operationId": "finalizeVisit",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/visits/{id}/addenda": {
+   "post": {
+    "tags": [
+     "visits"
+    ],
+    "summary": "append addendum",
+    "operationId": "addVisitAddendum",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors": {
+   "get": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "list",
+    "operationId": "getDoctors",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "create",
+    "operationId": "addDoctor",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}": {
+   "get": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "get",
+    "operationId": "getDoctorById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "update",
+    "operationId": "updateDoctor",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "delete",
+    "operationId": "deleteDoctor",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}/schedule": {
+   "get": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "schedule",
+    "operationId": "getDoctorSchedule",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "save schedule",
+    "operationId": "saveDoctorSchedule",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}/leaves": {
+   "get": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "leaves",
+    "operationId": "getDoctorLeaves",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "add leave",
+    "operationId": "addDoctorLeave",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}/leaves/{leaveId}": {
+   "delete": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "delete leave",
+    "operationId": "deleteDoctorLeave",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}/leaves/conflicts": {
+   "get": {
+    "tags": [
+     "doctors"
+    ],
+    "summary": "conflicting bookings count",
+    "operationId": "countConflictingBookings",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/current": {
+   "get": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "current shift",
+    "operationId": "getCurrentShift",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts": {
+   "get": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "history",
+    "operationId": "getShiftHistory",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/open": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "open",
+    "operationId": "openShift",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/{id}/close": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "close",
+    "operationId": "closeShift",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/{id}/force-close": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "force close",
+    "operationId": "forceCloseShift",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/{id}/approve-shortage": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "approve shortage",
+    "operationId": "approveShortage",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/payments": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "record payment (Idempotency-Key)",
+    "operationId": "recordPayment",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/payments/{id}/refund": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "refund",
+    "operationId": "refundPayment",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/movements": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "cash movement",
+    "operationId": "recordCashMovement",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/{id}/metrics": {
+   "get": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "metrics",
+    "operationId": "getShiftMetrics",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/shifts/{id}/payments": {
+   "get": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "payments of shift",
+    "operationId": "getPaymentsForShift",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/bookings/{id}/payments": {
+   "get": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "payments by booking",
+    "operationId": "getPaymentsByBookingId",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/payments": {
+   "get": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "payments by patient",
+    "operationId": "getPaymentsByPatientId",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/cashier/payments/{id}/void": {
+   "post": {
+    "tags": [
+     "cashier"
+    ],
+    "summary": "void rollback",
+    "operationId": "voidPaymentRollback",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs": {
+   "get": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "list",
+    "operationId": "getDrugs",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "add",
+    "operationId": "addDrug",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drug-categories": {
+   "get": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "categories",
+    "operationId": "getCategories",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs/{id}": {
+   "put": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "update",
+    "operationId": "updateDrug",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs/{id}/archive": {
+   "post": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "archive",
+    "operationId": "archiveDrug",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs/quick-add": {
+   "post": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "quick add",
+    "operationId": "quickAddDrug",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs/{id}/review": {
+   "post": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "review quick add",
+    "operationId": "reviewQuickAddDrug",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs/allergy-aliases": {
+   "put": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "update aliases",
+    "operationId": "updateAllergyAliases",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "get aliases",
+    "operationId": "getAllergyAliases",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}/prescription-templates": {
+   "get": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "templates",
+    "operationId": "getDoctorTemplates",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/prescription-templates/{id}": {
+   "put": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "save template",
+    "operationId": "savePrescriptionTemplate",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "delete template",
+    "operationId": "deletePrescriptionTemplate",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/drugs/import": {
+   "post": {
+    "tags": [
+     "drugs"
+    ],
+    "summary": "batch import",
+    "operationId": "importDrugsBatch",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/compensation-rules": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "list",
+    "operationId": "getCompensationRules",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/compensation-rules/{id}": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "get",
+    "operationId": "getCompensationRuleById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "save",
+    "operationId": "saveCompensationRule",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/doctors/{id}/compensation-rule/active": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "active rule",
+    "operationId": "getActiveRuleForDoctor",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/settlements": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "list",
+    "operationId": "getDoctorSettlements",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/settlements/{id}": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "get",
+    "operationId": "getDoctorSettlementById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "save draft",
+    "operationId": "saveDoctorSettlement",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/settlements/{id}/confirm": {
+   "post": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "confirm",
+    "operationId": "confirmDoctorSettlement",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/settlements/{id}/payout": {
+   "post": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "payout",
+    "operationId": "payoutDoctorSettlement",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/settlements/overlap": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "period overlap",
+    "operationId": "isPeriodOverlapping",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/ledger": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "ledger entries",
+    "operationId": "getEmployeeLedgerEntries",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "add entry",
+    "operationId": "addEmployeeLedgerEntry",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/ledger/{id}/reverse": {
+   "post": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "reverse (reason required, append only)",
+    "operationId": "reverseEmployeeLedgerEntry",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/payroll-profiles": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "profiles",
+    "operationId": "getStaffPayrollProfiles",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/payroll-profiles/{id}": {
+   "put": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "save",
+    "operationId": "saveStaffPayrollProfile",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/payroll-periods": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "list",
+    "operationId": "getStaffPayrollPeriods",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/payroll-periods/{id}": {
+   "get": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "get",
+    "operationId": "getStaffPayrollPeriodById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "save",
+    "operationId": "saveStaffPayrollPeriod",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/payroll-periods/{id}/confirm": {
+   "post": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "confirm",
+    "operationId": "confirmStaffPayrollPeriod",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/hr/payroll-periods/{id}/payout": {
+   "post": {
+    "tags": [
+     "hr"
+    ],
+    "summary": "payout",
+    "operationId": "payoutStaffPayrollPeriod",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/inventory/items": {
+   "get": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "list",
+    "operationId": "getItems",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "add",
+    "operationId": "addItem",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/inventory/items/{id}": {
+   "put": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "update",
+    "operationId": "updateItem",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "delete",
+    "operationId": "deleteItem",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/inventory/items/{id}/consumption": {
+   "post": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "consume",
+    "operationId": "recordConsumption",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/inventory/items/{id}/restock": {
+   "post": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "restock",
+    "operationId": "recordRestock",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/inventory/transactions": {
+   "get": {
+    "tags": [
+     "inventory"
+    ],
+    "summary": "transactions",
+    "operationId": "getTransactions",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-catalogs/{kind}": {
+   "get": {
+    "tags": [
+     "medicalCatalogs"
+    ],
+    "summary": "entries (radiology|labTests|chronicDiseases|allergies|surgeries)",
+    "operationId": "getEntries",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "medicalCatalogs"
+    ],
+    "summary": "add",
+    "operationId": "addEntry",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-catalogs/{kind}/{id}": {
+   "put": {
+    "tags": [
+     "medicalCatalogs"
+    ],
+    "summary": "update",
+    "operationId": "updateEntry",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "medicalCatalogs"
+    ],
+    "summary": "delete",
+    "operationId": "deleteEntry",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-catalogs/{kind}/{id}/active": {
+   "patch": {
+    "tags": [
+     "medicalCatalogs"
+    ],
+    "summary": "toggle",
+    "operationId": "toggleActive",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-services": {
+   "get": {
+    "tags": [
+     "medicalServices"
+    ],
+    "summary": "list",
+    "operationId": "getMedicalServices",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "medicalServices"
+    ],
+    "summary": "add",
+    "operationId": "addMedicalService",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-services/{id}": {
+   "get": {
+    "tags": [
+     "medicalServices"
+    ],
+    "summary": "get",
+    "operationId": "getMedicalServiceById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "medicalServices"
+    ],
+    "summary": "update",
+    "operationId": "updateMedicalService",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "medicalServices"
+    ],
+    "summary": "delete",
+    "operationId": "deleteMedicalService",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/medical-services/{id}/status": {
+   "patch": {
+    "tags": [
+     "medicalServices"
+    ],
+    "summary": "toggle",
+    "operationId": "toggleServiceStatus",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/settings/company": {
+   "get": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "get",
+    "operationId": "getCompanySettings",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "update",
+    "operationId": "updateCompanySettings",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/settings/special-holidays": {
+   "post": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "add holiday",
+    "operationId": "addSpecialHoliday",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/settings/special-holidays/{id}": {
+   "delete": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "delete holiday",
+    "operationId": "deleteSpecialHoliday",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/branches": {
+   "get": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "list",
+    "operationId": "getBranches",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "create",
+    "operationId": "createBranch",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/branches/{id}": {
+   "get": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "get",
+    "operationId": "getBranchById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "update",
+    "operationId": "updateBranch",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/branches/{id}/status": {
+   "patch": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "toggle",
+    "operationId": "toggleBranchStatus",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/branches/{id}/set-main": {
+   "post": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "set main",
+    "operationId": "setMainBranch",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/branches/{id}/copy-settings": {
+   "post": {
+    "tags": [
+     "branches"
+    ],
+    "summary": "copy settings",
+    "operationId": "copySettingsFromBranch",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/staff-users": {
+   "get": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "list",
+    "operationId": "StaffUsersRepo",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "create",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/staff-users/{id}": {
+   "put": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "update",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/staff-users/{id}/status": {
+   "patch": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "activate/deactivate",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/roles": {
+   "get": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "role definitions",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/roles/{id}": {
+   "put": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "save role + permission matrix",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/staff-users/{id}/branch-assignments": {
+   "get": {
+    "tags": [
+     "staffUsers"
+    ],
+    "summary": "assignments",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/audit-logs": {
+   "get": {
+    "tags": [
+     "auditLogs"
+    ],
+    "summary": "list (filters)",
+    "operationId": "getAuditLogs",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/audit-logs/{id}": {
+   "get": {
+    "tags": [
+     "auditLogs"
+    ],
+    "summary": "get",
+    "operationId": "getAuditLogById",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/audit-logs/export": {
+   "get": {
+    "tags": [
+     "auditLogs"
+    ],
+    "summary": "export csv",
+    "operationId": "exportAuditLogs",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/summary": {
+   "get": {
+    "tags": [
+     "analytics"
+    ],
+    "summary": "KPIs",
+    "operationId": "getAnalyticsSummary",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/revenue-trend": {
+   "get": {
+    "tags": [
+     "analytics"
+    ],
+    "summary": "trend",
+    "operationId": "getRevenueTrend",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/branch-comparison": {
+   "get": {
+    "tags": [
+     "analytics"
+    ],
+    "summary": "branches",
+    "operationId": "getBranchComparison",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/doctor-performance": {
+   "get": {
+    "tags": [
+     "analytics"
+    ],
+    "summary": "doctors",
+    "operationId": "getDoctorPerformance",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/hourly-traffic": {
+   "get": {
+    "tags": [
+     "analytics"
+    ],
+    "summary": "hours",
+    "operationId": "getHourlyTraffic",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/analytics/service-distribution": {
+   "get": {
+    "tags": [
+     "analytics"
+    ],
+    "summary": "services",
+    "operationId": "getServiceDistribution",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/notifications": {
+   "get": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "list",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/notifications/{id}/read": {
+   "patch": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "mark read",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/notifications/reception-signal": {
+   "post": {
+    "tags": [
+     "notifications"
+    ],
+    "summary": "call patient",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/specialty-records": {
+   "get": {
+    "tags": [
+     "specialtyRecords"
+    ],
+    "summary": "list",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "specialtyRecords"
+    ],
+    "summary": "add typed record (pediatrics growth/vaccines, ob-gyn, dental, derm/cosmetic)",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/patients/{id}/specialty-records/{recordId}": {
+   "put": {
+    "tags": [
+     "specialtyRecords"
+    ],
+    "summary": "update",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/sync/push": {
+   "post": {
+    "tags": [
+     "sync"
+    ],
+    "summary": "batch push of outbox operations; idempotent by operationId",
+    "operationId": "RemoteSyncApi.pushBatch",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  },
+  "/api/v1/sync/pull": {
+   "get": {
+    "tags": [
+     "sync"
+    ],
+    "summary": "incremental pull, opaque server cursor",
+    "operationId": "RemoteSyncApi.pullChanges",
+    "responses": {
+     "200": {
+      "description": "Success envelope {data, meta?}"
+     },
+     "401": {
+      "description": "Unauthorized"
+     },
+     "403": {
+      "description": "Permission denied"
+     },
+     "409": {
+      "description": "Version / idempotency conflict"
+     },
+     "422": {
+      "description": "Validation error with fields map"
+     }
+    }
+   }
+  }
+ }
+}

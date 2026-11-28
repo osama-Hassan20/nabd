@@ -1,5 +1,15 @@
 # وثيقة تتبع التقدم وإنجاز المهام (Project Progress Tracker)
 
+## 🚀 فرع العمل الحالي: `feature/offline-sync-engine`
+- **الهدف:** إصلاح جدول الدور والمواعيد على الويب، إغلاق التحقق من الوضع المحلي (`LOCAL`)، التحقق من الوضع البعيد (`REMOTE`) أمام الخادم الوهمي (`stub_backend_server.dart`)، وتوليد وثائق وعقود الـ Backend النهائية.
+- **الخطوات المنفذة:**
+  - **Step 1 (`c6d554e`):** إعادة ترتيب أعمدة `consultation_queue_table.dart` و`bookings_table.dart`، شريط التاريخ المضغوط `CompactDateStripWidget` بين 900 و1360px، شارة حالة غير مقتطعة مع `Tooltip`، ومؤشر تمرير/تلاشي في `CustomTable`، مع اختبارات `queue_and_bookings_responsive_viewport_test.dart` (8 اختبارات) و`consultation_queue_ui_test.dart` (5 اختبارات) و`bookings/` (106 اختبارات).
+  - **Step 2 & 3 (`2d60006`):** تشغيل مجلدات الاختبار غير المختبرة مسبقاً (253 + 143 = 396 اختباراً)، مراجعة إشارات `mock` في `lib/` (0 مستودعات وهمية)، التحقق من `resetLocalData` وحقن الأعطال (`409`، `422`، `503`) وإضافة فحص `from > to` (`INVALID_DATE_RANGE`) في `AnalyticsLocalHandler`.
+  - **Step 4 (`6d39761`):** توسيع `test/tools/stub_backend_server.dart` و`test/core/remote_mode_stub_server_test.dart` و`test/core/schema_validation_test.dart` (13/13 اختباراً ناجحاً: الترويسات، `401` refresh/logout، `403`، `409`، `422`، الترقيم على المرضى والحجوزات وسجلات التدقيق، ترتيب المزامنة والـ tombstones، ووضع الطيران).
+  - **Step 5:** تحديث `EYADTY_BACKEND_SCHEMA.json`، توليد `docs/openapi.json` عبر `tools/regenerate_backend_schema.dart`، وإضافة دليل التسليم `docs/BACKEND_HANDOFF.md`.
+
+---
+
 طبقاً لدليل التشغيل الذاتي `docs/AGENT_OPERATING_GUIDE.md` (قسم 10).
 
 ---
