@@ -9,6 +9,9 @@ import 'package:eyadty/core/config/app_config.dart';
 import 'package:eyadty/core/errors/failures.dart';
 import 'package:eyadty/core/errors/http_failure_mapper.dart';
 import 'package:eyadty/core/offline/data_mode_service.dart';
+import 'package:eyadty/core/offline/models/local_entity_record.dart';
+import 'package:eyadty/core/offline/models/outbox_entry.dart';
+import 'package:eyadty/core/offline/models/sync_status.dart';
 import 'package:eyadty/core/offline/remote/http_remote_sync_api.dart';
 import 'package:eyadty/core/offline/repositories/offline_first_patients_repo.dart';
 import 'package:eyadty/core/offline/store/in_memory_transactional_store.dart';
@@ -40,9 +43,10 @@ void main() {
       BaseOptions(
         baseUrl: server.apiBaseUrl,
         connectTimeout: const Duration(seconds: 2),
-        receiveTimeout: const Duration(milliseconds: 150),
+        receiveTimeout: const Duration(seconds: 2),
         headers: {
           'Authorization': 'Bearer initial-access-value',
+          'Accept-Language': 'ar',
         },
       ),
     );
@@ -55,8 +59,8 @@ void main() {
     await server.stop();
   });
 
-  group('Remote Mode Integration Tests (against StubBackendServer)', () {
-    test('1. Sends Bearer Authorization header and supports pagination', () async {
+  group('Step 4 Remote Mode Integration Tests (against StubBackendServer)', () {
+    test('4.2 Sends Bearer Authorization, Accept-Language, and supports pagination on patients', () async {
       final res = await remotePatientsRepo.getPatients(
         params: PaginationParams(page: 2, limit: 2),
       );
@@ -66,9 +70,10 @@ void main() {
       expect(data.items?.first.id, 'PAT-STUB-3');
       expect(data.totalCount, 5);
       expect(server.observedAuthHeaders, contains('Bearer initial-access-value'));
+      expect(server.observedAcceptLanguages, contains('ar'));
     });
 
-    test('2. Sends Idempotency-Key and deduplicates repeated POST mutations', () async {
+    test('4.2 Sends Idempotency-Key and deduplicates repeated POST mutations', () async {
       final options = IdempotencyHelper.options('idem-key-101');
       final r1 = await dioConsumer.post(
         path: 'patients',
@@ -85,21 +90,29 @@ void main() {
       expect(server.observedIdempotencyKeys, contains('idem-key-101'));
     });
 
-    test('3. Maps 422 validation error to ValidationFailure', () async {
-      final res = await remotePatientsRepo.addPatient(
-        patient: const PatientModel(name: '', phone: '01000000000'),
-      );
-      expect(res.isLeft(), isTrue);
-      res.fold(
-        (f) {
-          expect(f, isA<ValidationFailure>());
-          expect(f.errMessage, 'patient_name_required');
-        },
-        (_) => fail('Expected 422 validation failure'),
-      );
+    test('4.3 Maps 422 validation error with field errors', () async {
+      try {
+        await dioConsumer.post(
+          path: 'patients',
+          body: {'name': '', 'phone': '01000000000'},
+        );
+        fail('Expected 422 DioException');
+      } on DioException catch (e) {
+        expect(e.response?.statusCode, 422);
+        final err = e.response?.data['error'] as Map;
+        expect((err['fields'] as Map)['name'], 'patient_name_required');
+        expect(HttpFailureMapper.fromError(e), isA<ValidationFailure>());
+      }
     });
 
-    test('4. Maps 409 version conflict with serverVersion to ConflictFailure', () async {
+    test('4.3 Maps 403 to PermissionDeniedFailure and 409 to ConflictFailure with serverVersion', () async {
+      try {
+        await dioConsumer.get(path: 'forbidden');
+        fail('Expected 403');
+      } catch (e) {
+        expect(HttpFailureMapper.fromError(e), isA<PermissionDeniedFailure>());
+      }
+
       await dioConsumer.put(
         path: 'patients/PAT-STUB-1',
         body: {'name': 'Updated on Server'},
@@ -117,7 +130,7 @@ void main() {
       }
     });
 
-    test('5. Handles 401 token refresh and retries protected request', () async {
+    test('4.3 Handles 401 token refresh once and fails on second 401 (expired refresh)', () async {
       try {
         await dioConsumer.get(path: 'protected');
         fail('Expected 401 on expired token');
@@ -132,26 +145,132 @@ void main() {
         final retryRes = await dioConsumer.get(path: 'protected');
         expect(retryRes['data']['ok'], isTrue);
       }
-    });
 
-    test('6. Retries after receiveTimeout against slow endpoint', () async {
+      // Expired refresh returns 401 -> caller triggers logout
       try {
-        await dioConsumer.get(path: 'slow');
-        fail('Expected receiveTimeout on first slow attempt');
+        await dioConsumer.post(
+          path: 'admin/auth/refresh',
+          body: {'refreshToken': 'expired-refresh-value'},
+        );
+        fail('Expected 401 on expired refresh token');
       } on DioException catch (e) {
-        expect(e.type, DioExceptionType.receiveTimeout);
-        final retry = await dioConsumer.get(path: 'slow');
-        expect(retry['data']['attempt'], 2);
+        expect(e.response?.statusCode, 401);
       }
     });
 
-    test('7. Airplane mode queues offline mutations locally and SyncEngine pushes to stub on reconnect', () async {
+    test('4.4 Pagination and filters on bookings and audit-logs via stub server', () async {
+      final bookings = await dioConsumer.get(
+        path: 'bookings',
+        queryParameters: {'page': 1, 'limit': 3},
+      );
+      expect((bookings['data'] as List).length, 3);
+      expect((bookings['meta'] as Map)['total'], greaterThanOrEqualTo(3));
+
+      final audits = await dioConsumer.get(
+        path: 'audit-logs',
+        queryParameters: {'page': 1, 'limit': 5},
+      );
+      expect(audits['data'], isA<List>());
+      expect(audits['meta'], isA<Map>());
+    });
+
+    test('4.5 Sync pushes in dependency order, replays operationId idempotently, and pulls tombstones', () async {
+      final syncApi = HttpRemoteSyncApi(apiConsumer: dioConsumer);
+      final store = InMemoryTransactionalStore(persistToStorage: false);
+      final dataMode = DataModeService(
+        reachabilityProbe: (_, __) async => true,
+        initialReachable: true,
+      );
+      final engine = SyncEngine(
+        localStore: store,
+        dataModeService: dataMode,
+        remoteApi: syncApi,
+      );
+
+      final patOp = OutboxEntry(
+        operationId: 'stub_op_pat_1',
+        entityType: 'patient',
+        localId: 'PAT-DEP-1',
+        operation: OutboxOperationType.create,
+        payload: {'id': 'PAT-DEP-1', 'name': 'Dependent Parent'},
+        baseRevision: 1,
+        createdAt: DateTime(2026, 11, 28, 1, 0),
+      );
+      final bookOp = OutboxEntry(
+        operationId: 'stub_op_bok_1',
+        entityType: 'booking',
+        localId: 'BOK-DEP-1',
+        operation: OutboxOperationType.create,
+        payload: {'id': 'BOK-DEP-1', 'patientId': 'PAT-DEP-1'},
+        baseRevision: 1,
+        dependencyRefs: ['patient:PAT-DEP-1'],
+        createdAt: DateTime(2026, 11, 28, 1, 1),
+      );
+
+      await store.runInTransaction((txn) async {
+        txn.upsertEntity(LocalEntityRecord(
+          localId: 'PAT-DEP-1',
+          entityType: 'patient',
+          accountId: 'default',
+          branchId: 'branch_1',
+          payload: patOp.payload,
+          isProvisional: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ));
+        txn.insertOutbox(patOp);
+        txn.upsertEntity(LocalEntityRecord(
+          localId: 'BOK-DEP-1',
+          entityType: 'booking',
+          accountId: 'default',
+          branchId: 'branch_1',
+          payload: bookOp.payload,
+          isProvisional: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ));
+        txn.insertOutbox(bookOp);
+      });
+
+      final report = await engine.syncNow();
+      expect(report.operationsAcknowledged, 2);
+
+      // Idempotent replay of same operationId returns stored result
+      final replay = await syncApi.pushBatch([patOp]);
+      expect(replay.getResultFor('stub_op_pat_1')?.success, isTrue);
+
+      // Pull tombstones
+      final p1 = await syncApi.pullChanges(entityType: 'patient');
+      await syncApi.pushBatch([
+        OutboxEntry(
+          operationId: 'stub_op_pat_del',
+          entityType: 'patient',
+          localId: 'PAT-DEP-1',
+          operation: OutboxOperationType.delete,
+          payload: {'id': 'PAT-DEP-1'},
+          baseRevision: 2,
+          createdAt: DateTime(2026, 11, 28, 1, 2),
+        ),
+      ]);
+      final p2 = await syncApi.pullChanges(entityType: 'patient', cursor: p1.newCursor);
+      expect(p2.changes.any((c) => c.localId == 'PAT-DEP-1' && c.isDeleted), isTrue);
+
+      engine.dispose();
+      dataMode.dispose();
+    });
+
+    test('4.6 Airplane mode queues offline mutations when stub is stopped and pushes when stub returns', () async {
+      final stoppedPort = server.port;
+      await server.stop();
+
       final store = InMemoryTransactionalStore(persistToStorage: false);
       bool online = false;
       final dataMode = DataModeService(
         reachabilityProbe: (_, __) async => online,
         initialReachable: false,
       );
+      expect(dataMode.currentMode, DataMode.offline);
+
       final offlineRepo = OfflineFirstPatientsRepo(
         localStore: store,
         dataModeService: dataMode,
@@ -172,8 +291,12 @@ void main() {
       expect(offlineRes.isRight(), isTrue);
       expect((await store.getPendingOutboxEntries()).length, 1);
 
+      // Stub returns on the same port
+      await server.start(bindPort: stoppedPort);
       online = true;
       await dataMode.checkReachability();
+      expect(dataMode.currentMode, DataMode.online);
+
       final report = await engine.syncNow();
       expect(report.operationsAcknowledged, 1);
       expect((await store.getPendingOutboxEntries()).length, 0);

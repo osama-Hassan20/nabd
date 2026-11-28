@@ -38,7 +38,9 @@ class AuditLogsLocalHandler {
   static void register(LocalServerRouter router) {
     router.register('GET', 'audit-logs', (req) async {
       final items = _filter(router.db.collection('auditLogs'), req.queryParameters);
-      return LocalServerRouter.ok(items);
+      final page = int.tryParse(req.queryParameters['page']?.toString() ?? '1') ?? 1;
+      final limit = int.tryParse(req.queryParameters['limit']?.toString() ?? '100') ?? 100;
+      return LocalServerRouter.paginated(items, page: page, limit: limit);
     });
 
     router.register('GET', 'audit-logs/export', (req) async {
