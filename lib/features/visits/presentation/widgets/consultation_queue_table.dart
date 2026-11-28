@@ -31,12 +31,12 @@ class ConsultationQueueTable extends StatelessWidget {
   });
 
   static const Map<int, TableColumnWidth> columnWidths = {
-    0: FixedColumnWidth(70), // Queue #
-    1: FlexColumnWidth(2.4), // Patient Name & Phone
-    2: FlexColumnWidth(2.0), // Assigned Doctor
-    3: FixedColumnWidth(105), // Time
-    4: FixedColumnWidth(165), // Visit Status
-    5: FixedColumnWidth(260), // Actions
+    0: FixedColumnWidth(54),  // Queue #
+    1: FlexColumnWidth(2.0),  // Patient Name & Phone
+    2: FlexColumnWidth(1.6),  // Assigned Doctor
+    3: IntrinsicColumnWidth(), // Visit Status (compact chip, never truncated)
+    4: IntrinsicColumnWidth(), // Actions
+    5: FixedColumnWidth(80),  // Time
   };
 
   @override
@@ -76,15 +76,15 @@ class ConsultationQueueTable extends StatelessWidget {
     }
 
     return CustomTable(
-      minWidth: 920,
+      minWidth: 780,
       columnWidths: columnWidths,
       headers: [
         'visits_patient_queue_num'.tr(),
         'visits_patient_name'.tr(),
         'visits_assigned_doctor'.tr(),
-        'visits_booking_time'.tr(),
         'visits_filter_status'.tr(),
         'visits_actions'.tr(),
+        'visits_booking_time'.tr(),
       ],
       rows: items.map((item) => _buildRow(context, item)).toList(),
     );
@@ -125,32 +125,36 @@ class ConsultationQueueTable extends StatelessWidget {
 
     // 1: Patient Name & Phone (tapping opens vitals for nurse or primary consultation action)
     final VoidCallback? rowPrimaryTap = _resolveRowPrimaryTap(item);
-    final cell1 = InkWell(
-      onTap: isLoading ? null : rowPrimaryTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            booking?.patientName ?? '—',
-            style: CustomAppFontStyle.bold14.copyWith(
-              color: colors.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (booking?.patientPhone != null) ...[
-            const SizedBox(height: 2),
+    final patientName = booking?.patientName ?? '—';
+    final cell1 = Tooltip(
+      message: patientName,
+      child: InkWell(
+        onTap: isLoading ? null : rowPrimaryTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             Text(
-              booking!.patientPhone!,
-              style: CustomAppFontStyle.regular12.copyWith(
-                color: colors.textSecondary,
+              patientName,
+              style: CustomAppFontStyle.bold14.copyWith(
+                color: colors.textPrimary,
               ),
-              textDirection: TextDirection.ltr,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            if (booking?.patientPhone != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                booking!.patientPhone!,
+                style: CustomAppFontStyle.regular12.copyWith(
+                  color: colors.textSecondary,
+                ),
+                textDirection: TextDirection.ltr,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
 
@@ -181,12 +185,22 @@ class ConsultationQueueTable extends StatelessWidget {
       ],
     );
 
-    // 3: Time
+    // 3: Status Badge
+    final cellStatus = Center(
+      child: VisitStatusBadge(status: visit?.status),
+    );
+
+    // 4: Actions
+    final cellActions = Center(
+      child: _buildActionButtons(context, item),
+    );
+
+    // 5: Time
     final appointmentTime = booking?.appointmentTime;
     final timeStr = appointmentTime != null
         ? DateFormat('hh:mm a', 'ar').format(appointmentTime)
         : '—';
-    final cell3 = Center(
+    final cellTime = Center(
       child: Text(
         timeStr,
         style: CustomAppFontStyle.medium12.copyWith(
@@ -195,17 +209,7 @@ class ConsultationQueueTable extends StatelessWidget {
       ),
     );
 
-    // 4: Status Badge
-    final cell4 = Center(
-      child: VisitStatusBadge(status: visit?.status),
-    );
-
-    // 5: Actions
-    final cell5 = Center(
-      child: _buildActionButtons(context, item),
-    );
-
-    return [cell0, cell1, cell2, cell3, cell4, cell5];
+    return [cell0, cell1, cell2, cellStatus, cellActions, cellTime];
   }
 
   Widget _buildActionButtons(

@@ -1,11 +1,10 @@
 import 'package:eyadty/core/utils/extensions/theme_mode_extensions.dart';
-import 'package:eyadty/core/utils/theme/app_colors.dart';
 import 'package:eyadty/core/utils/theme/custom_app_font_styles.dart';
 import 'package:eyadty/shared/widgets/custom_container.dart';
 import 'package:eyadty/shared/widgets/shimmer/custom_shimmer_container.dart';
 import 'package:flutter/material.dart';
 
-class CustomTable extends StatelessWidget {
+class CustomTable extends StatefulWidget {
   const CustomTable({
     super.key,
     required this.headers,
@@ -35,97 +34,149 @@ class CustomTable extends StatelessWidget {
   final Color? headerColor;
 
   @override
+  State<CustomTable> createState() => _CustomTableState();
+}
+
+class _CustomTableState extends State<CustomTable> {
+  final ScrollController _horizontalController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.themeColors;
 
-    // Validate that each row has the same number of elements as headers
-    for (var row in rows) {
+    for (var row in widget.rows) {
       assert(
-        row.length == headers.length,
-        'Each row must have exactly ${headers.length} children to match the headers.',
+        row.length == widget.headers.length,
+        'Each row must have exactly ${widget.headers.length} children to match the headers.',
       );
     }
 
-    final effectiveHeaderColor = headerColor ?? colors.tableHeaderBackground;
+    final effectiveHeaderColor =
+        widget.headerColor ?? colors.tableHeaderBackground;
+    final cardBg = widget.backgroundColor ?? colors.cardBackground;
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final needsScroll = constraints.maxWidth < widget.minWidth;
+        final tableWidget = ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: constraints.maxWidth > widget.minWidth
+                ? constraints.maxWidth
+                : widget.minWidth,
+            maxWidth: constraints.maxWidth > widget.minWidth
+                ? constraints.maxWidth
+                : widget.minWidth,
+          ),
+          child: Table(
+            columnWidths: widget.columnWidths,
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            children: [
+              TableRow(
+                decoration: BoxDecoration(color: effectiveHeaderColor),
+                children: widget.headers.map((title) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 14,
+                    ),
+                    child: Center(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: CustomAppFontStyle.bold13.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              ...widget.rows.asMap().entries.map((entry) {
+                final int index = entry.key;
+                final List<Widget> rowWidgets = entry.value;
+                final isLast = index == widget.rows.length - 1;
+
+                return TableRow(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: isLast
+                          ? BorderSide.none
+                          : BorderSide(
+                              color: colors.borderSubtle,
+                              width: 1,
+                            ),
+                    ),
+                  ),
+                  children: rowWidgets.map((cellWidget) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(color: colors.textPrimary),
+                        child: cellWidget,
+                      ),
+                    );
+                  }).toList(),
+                );
+              }),
+            ],
+          ),
+        );
+
+        final scrollable = Scrollbar(
+          controller: _horizontalController,
+          thumbVisibility: needsScroll,
+          child: SingleChildScrollView(
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            child: tableWidget,
+          ),
+        );
+
         return CustomContainer(
-          backGroundColor: backgroundColor ?? colors.cardBackground,
+          backGroundColor: cardBg,
           padding: EdgeInsets.zero,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: constraints.maxWidth > minWidth
-                      ? constraints.maxWidth
-                      : minWidth,
-                ),
-                child: Table(
-                  columnWidths: columnWidths,
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  children: [
-                    // Header Row
-                    TableRow(
-                      decoration: BoxDecoration(color: effectiveHeaderColor),
-                      children: headers.map((title) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 14,
-                          ),
-                          child: Center(
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: CustomAppFontStyle.bold13.copyWith(
-                                color: colors.textSecondary,
+            child: needsScroll
+                ? Stack(
+                    children: [
+                      scrollable,
+                      Positioned.directional(
+                        textDirection: Directionality.of(context),
+                        top: 0,
+                        bottom: 0,
+                        end: 0,
+                        width: 24,
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: AlignmentDirectional.centerStart
+                                    .resolve(Directionality.of(context)),
+                                end: AlignmentDirectional.centerEnd
+                                    .resolve(Directionality.of(context)),
+                                colors: [
+                                  cardBg.withValues(alpha: 0.0),
+                                  cardBg.withValues(alpha: 0.85),
+                                ],
                               ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    // Data Rows
-                    ...rows.asMap().entries.map((entry) {
-                      final int index = entry.key;
-                      final List<Widget> rowWidgets = entry.value;
-                      final isLast = index == rows.length - 1;
-
-                      return TableRow(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: isLast
-                                ? BorderSide.none
-                                : BorderSide(
-                                    color: colors.borderSubtle,
-                                    width: 1,
-                                  ),
                           ),
                         ),
-                        children: rowWidgets.map((cellWidget) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
-                            child: DefaultTextStyle.merge(
-                              style: TextStyle(
-                                color: colors.textPrimary,
-                              ),
-                              child: cellWidget,
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
+                      ),
+                    ],
+                  )
+                : scrollable,
           ),
         );
       },

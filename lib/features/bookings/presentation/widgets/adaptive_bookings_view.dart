@@ -56,9 +56,10 @@ class AdaptiveBookingsView extends StatelessWidget {
       builder: (context, state) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            final isDesktop = constraints.maxWidth >= 1000;
+            final hasWideSideCalendar = constraints.maxWidth >= 1360;
+            final isDesktop = constraints.maxWidth >= 900;
             final isTablet =
-                constraints.maxWidth >= 700 && constraints.maxWidth < 1000;
+                constraints.maxWidth >= 700 && constraints.maxWidth < 900;
 
             // 1. Loading State
             if (state.bookingsStatus == RequestStatusEnum.loading &&
@@ -175,6 +176,43 @@ class AdaptiveBookingsView extends StatelessWidget {
 
             // 3. Desktop Layout
             if (isDesktop) {
+              final tableWidget = BookingsTable(
+                bookings: state.bookings,
+                onViewDetails: onViewDetails,
+                onEdit: onEdit,
+                onChangeStatus: onChangeStatus,
+                onReassignTechnician: onReassignTechnician,
+                onDelete: onDelete,
+                onCallPatient: onCallPatient,
+                onStartConsultation: onStartConsultation,
+                onRecordVitals: onRecordVitals,
+                onCollectPayment: onCollectPayment,
+                onRefundPayment: onRefundPayment,
+              );
+
+              if (!hasWideSideCalendar) {
+                return Column(
+                  children: [
+                    CompactDateStripWidget(
+                      selectedDate: state.selectedDate,
+                      selectedMonth: state.selectedMonth,
+                      isMonthFilterActive: state.isMonthFilterActive,
+                      onDateSelected: cubit.onDateSelected,
+                      onMonthSelected: cubit.onMonthSelected,
+                      onYearSelected: cubit.setCalendarYear,
+                      onNextMonth: cubit.nextCalendarMonth,
+                      onPrevMonth: cubit.previousCalendarMonth,
+                      onNextDay: cubit.nextCalendarDay,
+                      onPrevDay: cubit.previousCalendarDay,
+                      onGoToToday: cubit.goToToday,
+                      onClearFilter: cubit.clearDateFilter,
+                    ),
+                    const SizedBox(height: 16),
+                    tableWidget,
+                  ],
+                );
+              }
+
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -187,21 +225,7 @@ class AdaptiveBookingsView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
-                    child: BookingsTable(
-                      bookings: state.bookings,
-                      onViewDetails: onViewDetails,
-                      onEdit: onEdit,
-                      onChangeStatus: onChangeStatus,
-                      onReassignTechnician: onReassignTechnician,
-                      onDelete: onDelete,
-                      onCallPatient: onCallPatient,
-                      onStartConsultation: onStartConsultation,
-                      onRecordVitals: onRecordVitals,
-                      onCollectPayment: onCollectPayment,
-                      onRefundPayment: onRefundPayment,
-                    ),
-                  ),
+                  Expanded(child: tableWidget),
                 ],
               );
             }

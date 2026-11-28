@@ -413,8 +413,11 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                             ]
                           : null,
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           dayName,
@@ -451,6 +454,7 @@ class _CompactDateStripWidgetState extends State<CompactDateStripWidget> {
                           ),
                         ],
                       ],
+                    ),
                     ),
                   ),
                 );

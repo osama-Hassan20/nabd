@@ -45,30 +45,30 @@ class BookingsTable extends StatelessWidget {
   });
 
   static const Map<int, TableColumnWidth> columnWidths = {
-    0: FixedColumnWidth(44),  // Queue Number
-    1: FixedColumnWidth(115), // Patient Name & Phone
-    2: FixedColumnWidth(115), // Doctor & Clinic Room
-    3: FixedColumnWidth(80),  // Visit Type
-    4: FixedColumnWidth(110), // Arrival & Est. Wait
-    5: FixedColumnWidth(82),  // Fee & Payment Status
-    6: FixedColumnWidth(100), // Queue Status
-    7: FixedColumnWidth(38),  // Actions
+    0: FixedColumnWidth(44),   // Queue Number
+    1: FixedColumnWidth(150),  // Patient Name & Phone
+    2: FixedColumnWidth(140),  // Doctor & Clinic Room
+    3: IntrinsicColumnWidth(), // Queue Status (compact chip, never truncated)
+    4: IntrinsicColumnWidth(), // Actions (primary icon + 3-dot menu)
+    5: IntrinsicColumnWidth(), // Arrival & Est. Wait
+    6: IntrinsicColumnWidth(), // Visit Type
+    7: IntrinsicColumnWidth(), // Fee & Payment Status
   };
 
   @override
   Widget build(BuildContext context) {
     return CustomTable(
-      minWidth: 700,
+      minWidth: 760,
       columnWidths: columnWidths,
       headers: [
         'queue_number'.tr(),
         'patient'.tr(),
         'doctor_and_clinic'.tr(),
-        'visit_type'.tr(),
-        'arrival_and_wait'.tr(),
-        'fee_and_payment'.tr(),
         'queue_status'.tr(),
         'actions_label'.tr(),
+        'arrival_and_wait'.tr(),
+        'visit_type'.tr(),
+        'fee_and_payment'.tr(),
       ],
       rows: bookings
           .map(
@@ -139,6 +139,8 @@ class BookingsTable extends StatelessWidget {
             ? () => onRecordVitals!(item)
             : (onViewDetails != null ? () => onViewDetails!(item) : null);
 
+    final patientDisplayName =
+        item.patientName ?? item.customerName ?? 'patient_unassigned'.tr();
     final cell1 = InkWell(
       onTap: rowTap,
       borderRadius: BorderRadius.circular(6),
@@ -147,7 +149,7 @@ class BookingsTable extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            item.patientName ?? item.customerName ?? 'patient_unassigned'.tr(),
+            patientDisplayName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: CustomAppFontStyle.semiBold14.copyWith(
@@ -376,42 +378,45 @@ class BookingsTable extends StatelessWidget {
       ],
     );
 
-    // 6: Queue Status Badge (With Pulsing/Solid Status Dot)
+    // Status Badge (compact chip with icon + short label + Tooltip, intrinsic width)
     final status = item.status ?? BookingStatusEnum.waiting;
-    final cell6 = Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: status.backgroundColor,
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(
-                color: status.color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
+    final statusIcon = switch (status) {
+      BookingStatusEnum.waiting => Icons.schedule_outlined,
+      BookingStatusEnum.inConsultation => Icons.medical_services_outlined,
+      BookingStatusEnum.completed => Icons.check_circle_outline,
+      BookingStatusEnum.cancelled => Icons.cancel_outlined,
+      BookingStatusEnum.noShow => Icons.person_off_outlined,
+      BookingStatusEnum.postponed => Icons.event_repeat_outlined,
+    };
+    final cellStatus = Center(
+      child: Tooltip(
+        message: status.label,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: status.backgroundColor,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(statusIcon, size: 13, color: status.color),
+              const SizedBox(width: 4),
+              Text(
                 status.label,
                 style: CustomAppFontStyle.medium12.copyWith(
                   color: status.color,
                 ),
-                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                softWrap: false,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
 
-    // 7: Actions Popup Menu
+    // Actions: primary icon button + 3-dot popup menu
     final showConsultation =
         (canStart || canContinue) && onStartConsultation != null;
     final consultationKey = ConsultationActionHelper.getConsultationButtonKey(
@@ -436,35 +441,76 @@ class BookingsTable extends StatelessWidget {
         (item.netAmount > (item.paidAmount ?? 0));
     final canRefund = canRefundPerm && (item.paidAmount ?? 0) > 0;
 
-    final cell7 = Center(
-      child: BookingActionsMenu(
-        onViewDetails: onViewDetails != null
-            ? () => onViewDetails!(item)
-            : null,
-        onEdit: canEditBooking ? () => onEdit(item) : null,
-        onChangeStatus:
-            (canEditBooking || canCancelBooking) ? () => onChangeStatus(item) : null,
-        onReassignTechnician:
-            canReorderQueue ? () => onReassignTechnician(item) : null,
-        onDelete: canCancelBooking ? () => onDelete(item) : null,
-        onCallPatient: (canEditBooking || canReorderQueue) && onCallPatient != null
-            ? () => onCallPatient!(item)
-            : null,
-        onStartConsultation:
-            showConsultation ? () => onStartConsultation!(item) : null,
-        onRecordVitals: canVitals && onRecordVitals != null
-            ? () => onRecordVitals!(item)
-            : null,
-        consultationButtonKey: consultationKey,
-        onCollectPayment: canCollect && onCollectPayment != null
-            ? () => onCollectPayment!(item)
-            : null,
-        onRefundPayment: canRefund && onRefundPayment != null
-            ? () => onRefundPayment!(item)
-            : null,
+    Widget? primaryActionIcon;
+    if (canVitals && !canStart && !canContinue && onRecordVitals != null) {
+      primaryActionIcon = IconButton(
+        tooltip: 'visits_record_vitals'.tr(),
+        icon: const Icon(Icons.monitor_heart_outlined, size: 18),
+        color: colors.primary,
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        padding: EdgeInsets.zero,
+        onPressed: () => onRecordVitals!(item),
+      );
+    } else if (showConsultation) {
+      primaryActionIcon = IconButton(
+        tooltip: consultationKey.tr(),
+        icon: const Icon(Icons.play_arrow_rounded, size: 20),
+        color: colors.primary,
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        padding: EdgeInsets.zero,
+        onPressed: () => onStartConsultation!(item),
+      );
+    } else if (canCollect && onCollectPayment != null) {
+      primaryActionIcon = IconButton(
+        tooltip: 'cashier_collect_btn'.tr(),
+        icon: const Icon(Icons.payments_outlined, size: 18),
+        color: colors.primary,
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+        padding: EdgeInsets.zero,
+        onPressed: () => onCollectPayment!(item),
+      );
+    }
+
+    final cellActions = Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (primaryActionIcon != null) primaryActionIcon,
+          BookingActionsMenu(
+            onViewDetails: onViewDetails != null
+                ? () => onViewDetails!(item)
+                : null,
+            onEdit: canEditBooking ? () => onEdit(item) : null,
+            onChangeStatus: (canEditBooking || canCancelBooking)
+                ? () => onChangeStatus(item)
+                : null,
+            onReassignTechnician:
+                canReorderQueue ? () => onReassignTechnician(item) : null,
+            onDelete: canCancelBooking ? () => onDelete(item) : null,
+            onCallPatient:
+                (canEditBooking || canReorderQueue) && onCallPatient != null
+                    ? () => onCallPatient!(item)
+                    : null,
+            onStartConsultation:
+                showConsultation ? () => onStartConsultation!(item) : null,
+            onRecordVitals: canVitals && onRecordVitals != null
+                ? () => onRecordVitals!(item)
+                : null,
+            consultationButtonKey: consultationKey,
+            onCollectPayment: canCollect && onCollectPayment != null
+                ? () => onCollectPayment!(item)
+                : null,
+            onRefundPayment: canRefund && onRefundPayment != null
+                ? () => onRefundPayment!(item)
+                : null,
+          ),
+        ],
       ),
     );
 
-    return [cell0, cell1, cell2, cell3, cell4, cell5, cell6, cell7];
+    return [cell0, cell1, cell2, cellStatus, cellActions, cell4, cell3, cell5];
   }
 }
