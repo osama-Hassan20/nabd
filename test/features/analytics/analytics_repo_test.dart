@@ -309,5 +309,15 @@ void main() {
       expect(traffic.getOrElse(() => [const HourlyTrafficMetricModel()]).isEmpty, isTrue);
       expect(services.getOrElse(() => [const ServiceRevenueDistributionModel()]).isEmpty, isTrue);
     });
+
+    test('26. Rejects custom range when from > to with ValidationFailure', () async {
+      final res = await repo.getAnalyticsSummary(
+        branchId: 'branch_1',
+        timeRange: AnalyticsTimeRangeEnum.custom,
+        customStart: DateTime(2026, 11, 20),
+        customEnd: DateTime(2026, 11, 10),
+      );
+      expect(res.isLeft(), isTrue);
+    });
   });
 }

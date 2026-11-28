@@ -96,5 +96,38 @@ void main() {
       final okRes = await api.get(path: 'patients');
       expect((okRes['data'] as List).length, 9);
     });
+
+    test('Failure injection 409/422 works on bookings, patients, and cashier payments', () async {
+      for (final code in [409, 422, 503]) {
+        LocalServerConfig.injectedFailureStatusCode = code;
+        expect(
+          () => api.post(path: 'bookings', body: {'patientId': 'PAT-000101'}),
+          throwsA(isA<DioException>().having((e) => e.response?.statusCode, 'status', code)),
+        );
+        LocalServerConfig.injectedFailureStatusCode = code;
+        expect(
+          () => api.post(path: 'cashier/payments', body: {'shiftId': 'SHIFT-CAI-01'}),
+          throwsA(isA<DioException>().having((e) => e.response?.statusCode, 'status', code)),
+        );
+        LocalServerConfig.injectedFailureStatusCode = code;
+        expect(
+          () => api.post(path: 'patients', body: {'name': 'Test'}),
+          throwsA(isA<DioException>().having((e) => e.response?.statusCode, 'status', code)),
+        );
+      }
+    });
+
+    test('resetLocalData restores exact seeded state after mutations', () async {
+      await api.post(
+        path: 'patients',
+        body: {'name': 'مريض مؤقت', 'phone': '01199998888', 'gender': 'male'},
+      );
+      final afterAdd = await api.get(path: 'patients');
+      expect((afterAdd['meta'] as Map)['total'], 10);
+
+      await api.resetLocalData();
+      final afterReset = await api.get(path: 'patients');
+      expect((afterReset['meta'] as Map)['total'], 9);
+    });
   });
 }

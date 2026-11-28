@@ -18,8 +18,26 @@ class AnalyticsLocalHandler {
     );
   }
 
+  static void _validateDateRange(LocalServerRequest req) {
+    final fromStr = req.queryParameters['from']?.toString();
+    final toStr = req.queryParameters['to']?.toString();
+    if (fromStr != null && toStr != null) {
+      final from = DateTime.tryParse(fromStr);
+      final to = DateTime.tryParse(toStr);
+      if (from != null && to != null && from.isAfter(to)) {
+        LocalServerRouter.throwHttpError(
+          req.path,
+          422,
+          'INVALID_DATE_RANGE',
+          'تاريخ البداية يجب أن يكون قبل تاريخ النهاية',
+        );
+      }
+    }
+  }
+
   static void register(LocalServerRouter router) {
     router.register('GET', 'analytics/summary', (req) async {
+      _validateDateRange(req);
       final branchId = req.queryParameters['branchId']?.toString();
       final range = _parseRange(req.queryParameters['range']?.toString());
       if (branchId == 'branch_unknown' || branchId == 'non_existent') {
